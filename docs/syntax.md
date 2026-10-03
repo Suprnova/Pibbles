@@ -29,9 +29,29 @@ The front end owns every check that needs only one file's text: indentation, mal
 ## Diagnostics
 
 ```csharp
-public sealed record Diagnostic(string Code, DiagnosticSeverity Severity, SourceLocation Location, string Message);
+public sealed record Diagnostic(string Code, DiagnosticSeverity Severity, SourceLocation Location, string Message, string? Label, string? Help);
+public readonly record struct SourceLocation(string Path, TextSpan Span, LinePosition Start, LinePosition End);
 ```
 
-- Codes are stable and grouped by stage: `PIB1xxx` syntax, `PIB2xxx` declarations and binding, `PIB3xxx` flow and content checks, `PIB4xxx` localization, `PIB5xxx` style ([semantics design](semantics.md)), `PIB6xxx` spelling ([tooling design](tooling.md#spell-checking)). Severities are error, warning, info and hint. Hints are for pure style: VS Code shows them as faint dots, and the CLI shows them only with `--style`.
-- Every code has one entry in the diagnostic catalog: code, default severity, message template and a short explanation. `docs/diagnostics.md` documents each code. `.editorconfig` can override a code's severity, per code or per category, and per folder ([tooling design](tooling.md#configuration)).
-- Messages say what is wrong and, where possible, how to fix it: *"Unknown actor 'Note'. If this line is narration, escape the colon: `Note\:`."*
+- Codes are stable and grouped by stage: `PIB1xxx` syntax, `PIB2xxx` declarations and binding, `PIB3xxx` flow and content checks, `PIB4xxx` localization, `PIB5xxx` style ([semantics design](semantics.md)), `PIB6xxx` spelling ([tooling design](tooling.md#spell-checking)). The range also gives a code's `.editorconfig` category. Severities are error, warning, info and hint. Hints are for pure style: VS Code shows them as faint dots, and the CLI shows them only with `--style`.
+- Every code has one descriptor in `DiagnosticCatalog`, a named static member such as `DiagnosticCatalog.MixedIndentation`: code, default severity, and templates for the message, the label and the help. `docs/diagnostics.md` documents each code. `.editorconfig` can override a code's severity, per code or per category, and per folder ([tooling design](tooling.md#configuration)).
+- A code is registered in the same change as the check that reports it, so every registered code always has a fixture and an entry in `docs/diagnostics.md`.
+- Templates are formatted with the invariant culture. Messages quote Pibbles source, which always writes `0.5` with a dot, and the same diagnostic must read the same on every machine.
+- Positions are 0-based in the core and 1-based wherever a person reads them. A column counts UTF-16 code units, as .NET strings and the language server protocol do, so a tab is one column. A `SourceLocation` carries its line and column, so a consumer needs no source text to print it.
+
+### How diagnostics read
+
+Most people who read a diagnostic are writers, not programmers. Every message follows the [writing rules in the catalog](diagnostics.md#writing-messages): a plain headline, the source line with the problem marked, and a concrete fix.
+
+```text
+error[PIB1015]: This text comes after a tag, but tags go at the end of the line.
+  --> story/kitchen.pib:12:11
+   |
+12 | mira: I'm #winning today.
+   |           ^^^^^^^^ this starts a tag
+   |
+   = help: If "#winning" is part of what Mira says, put a backslash before the #:
+           mira: I'm \#winning today.
+```
+
+The **message** is the headline, the **label** sits under the marked span, and the **help** says how to fix it. The label and help are optional. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.
