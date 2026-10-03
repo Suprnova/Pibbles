@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Pibbles/Pibbles.csproj" />
+    <Project Path="src/Pibbles.Cli/Pibbles.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pibbles.Tests/Pibbles.Tests.csproj" />
+  </Folder>
+</Solution>

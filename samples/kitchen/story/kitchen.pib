@@ -1,0 +1,86 @@
+// A short scene in a kitchen. Each node is a conversation the game starts by name:
+// kitchen.enter when the scene opens, and one node for each thing worth a look.
+// Only kitchen.door has line IDs so far; `pibbles ids` adds the rest.
+
+@prefix kitchen
+
+== .enter
+@show mira left
+@show rex right
+@if visits(.enter) > 1:
+    rex: Back in the kitchen. Thrilling.
+    @enter_room kitchen on_exit=.leave
+    @end
+
+mira (worried): This kitchen gives me the creeps.
+rex (grumpy): It's a kitchen.{w 0.4} Relax.
+mira (worried): Who said that?
+rex: Rex. I live in the walls.{w} Kidding. I'm behind the fridge.
+mira: Let's look around. Press {icon interact} to inspect things.
+@enter_room kitchen on_exit=.leave
+
+== .fridge
+@sequence:
+    - mira: It's a fridge.{@sfx fridge_hum} It hums. [wave]Ominously.[/wave]
+    - mira (smug): Still a fridge.
+    - mira: I refuse to look at this fridge again.
+
+== .drawer
+@once:
+    mira: Spoons, spoons, more spoons, and...{w} [clue]a small brass key[/clue]!
+    @set $has_key = true
+    mira (happy): Press {icon inventory} to check your items.
+    @end
+mira: Just spoons now.
+
+== .window
+@if has_item("crowbar"):
+    mira: I could pry it open... but the door's right there.
+    @end
+@cycle:
+    - mira: Dusty.
+    - mira: Very dusty.
+        @wait 0.5s
+        @sfx sneeze
+        mira (angry): Ugh.
+    - mira: When did anyone last clean this?
+    - rex: You two stare at everything, don't you?
+
+== .door #was:.front_door
+@if $door_open:
+    @jump .leave
+
+// Deadpan. She's said this about every door so far.
+mira (worried): Locked.{w} Of course it's locked. #id:k7qp2x
+
+-> Rattle the handle #id:c4ne8r
+    @sfx door_rattle
+    @jolt mira
+    mira (angry): [shout]Open up![/shout]{@shake_screen 0.5} #id:p2vd7t
+    @set $bravery += 1
+    @call common.stuck #id:r4hc6v
+-> Use the key  @if $has_key #show_disabled #id:m3xw9a
+    @sfx key_turn
+    @set $door_open = true
+    mira (happy): Got it! #id:h8ya3k
+    @jump .leave
+-> Knock politely  @once #id:t5bq2m
+    rex (surprised): Did you just knock on a door you're trying to break open? #id:w9fz4e
+    mira (smug): Manners matter, Rex. #id:d6kr8u
+-> Leave it #id:x2jm5p
+    @end
+
+rex: {if $bravery > 2}Maybe stop hitting it?{else}Well, that didn't work.{/if} #id:q7gt3n
+
+== .leave
+@hide rex
+@move mira offscreen nowait
+mira (happy): Onward!
+rex (surprised): Wait for m—
+@camera hallway
+
+== common.stuck
+@cycle:
+    - mira (sad): Nope.
+    - mira (sad): Not that.
+    - mira (sad): That's not it either.

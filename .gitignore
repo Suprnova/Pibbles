@@ -1,0 +1,16 @@
+# Pre-implementation material, kept out of the public repository
+plans/
+review/
+
+# Local agent settings
+.claude/settings.local.json
+
+# Build output
+bin/
+obj/
+TestResults/
+
+# IDEs
+.vs/
+.idea/
+*.user

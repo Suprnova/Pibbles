@@ -1,0 +1,49 @@
+// Documentation prelude: everything the `pib` code blocks in the language
+// reference and the writer's guide use without declaring it themselves. Each
+// block compiles together with this file. It must not define anything a block
+// defines, such as kitchen.door or common.stuck.
+
+@actor mira:
+    name: Mira
+    poses: neutral, happy, sad, smug, worried, angry
+
+@actor rex:
+    name: Rex
+    poses: neutral, grumpy, surprised
+
+@enum position: left, center, right, offscreen
+@enum room: kitchen, cellar
+@enum sound: thud, door_rattle, key_turn, sigh
+
+@var $has_key = false
+@var $door_open = false
+@var $bravery = 0
+@var $attempts = 0
+@var $player_name = "Sam"
+@var $found_panel = false
+@var $saw_this = false
+
+@command show(who: actor, at: position = center)
+@command hide(who: actor)
+@command move(who: actor, to: position) waits
+@command jolt(who: actor) inline
+@command sfx(name: sound) inline
+@command shake_screen(strength: number = 1) inline
+@command enter_room(which: room, on_exit: node)
+
+@markup clue
+@markup shout
+@markup wave(amplitude: number = 1, frequency: number = 5)
+
+@icon interact, inventory
+
+@tag thought, show_disabled, box: string
+
+@function has_item(id: string) -> bool
+@function item_name(id: string) -> string
+
+// Nodes the examples jump to, call or count visits of.
+== kitchen.leave
+== cellar.stairs
+== example.room
+== example.other_room

@@ -1,0 +1,45 @@
+// Story-wide declarations: the contract between the writers and the game.
+// The game must implement everything declared here.
+
+@actor mira:
+    name: Mira
+    poses: neutral, happy, sad, smug, worried, angry
+
+@actor rex:
+    name: Rex
+    poses: neutral, grumpy, surprised
+
+@enum position: left, center, right, offscreen
+@enum room: kitchen, cellar, study
+@enum sound: door_rattle, key_turn, fridge_hum, sneeze
+@enum camera_target: hallway, door, fridge
+
+@var $has_key = false
+@var $door_open = false
+@var $bravery = 0
+
+// Staging
+@command show(who: actor, at: position = center)
+@command hide(who: actor)
+@command move(who: actor, to: position) waits
+
+// Effects
+@command jolt(who: actor) inline
+@command shake_screen(strength: number = 1, duration: duration = 0.3s) inline
+@command sfx(name: sound) inline
+@command camera(target: camera_target) waits
+
+// Game flow
+@command enter_room(which: room, on_exit: node)
+
+@markup clue
+@markup shout
+@markup wave(amplitude: number = 1, frequency: number = 5)
+
+@icon interact, inventory
+
+// Tags the game reads: #show_disabled greys out an unavailable option instead
+// of hiding it.
+@tag show_disabled
+
+@function has_item(id: string) -> bool
