@@ -6,7 +6,7 @@ Pibbles is a narrative scripting language for visual novels, plus a .NET library
 
 ```text
 Pibbles.slnx
-Directory.Build.props        shared build settings: net10.0, C# 14, nullable, warnings as errors
+Directory.Build.props        shared build settings: C# 14, nullable, warnings as errors
 global.json                  SDK version; `dotnet test` runs on Microsoft Testing Platform
 src/Pibbles/                 the core: net8.0 + net10.0, BCL only
 src/Pibbles.Cli/             the `pibbles` .NET tool
@@ -22,6 +22,7 @@ docs/                        the living documentation: design docs, the language
 ```text
 dotnet build
 dotnet test
+dotnet test -p:TestAllTargets=true                                                             (net8.0 too, as CI does)
 dotnet run --project src/Pibbles.Cli -- check samples/kitchen                                  (Phase 1)
 dotnet run --project src/Pibbles.Cli -- play samples/kitchen --start kitchen.door --script <file>  (Phase 3)
 ```

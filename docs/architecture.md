@@ -20,7 +20,7 @@ Each stage is a pure function of its inputs, except the runner, which mutates th
 
 ```
 Pibbles.slnx
-Directory.Build.props          net10.0 by default, C# 14, nullable, warnings as errors, code style enforced in builds
+Directory.Build.props          C# 14, nullable, warnings as errors, code style enforced in builds
 global.json                    SDK version; `dotnet test` runs on Microsoft Testing Platform
 src/
   Pibbles/                     the core: net8.0 + net10.0, BCL only, no package references, trimming/AOT analyzers on
@@ -49,7 +49,7 @@ docs/                          design documents, the language reference and the 
 ## Target frameworks
 
 - **Godot's C# packages set a minimum .NET version, not a fixed one.** Since Godot 4.4 that minimum is .NET 8, and projects are free to target newer versions ([Godot blog](https://godotengine.org/article/godotsharp-packages-net8/)). A game can target `net10.0`.
-- **The core and `Pibbles.Godot` target `net8.0` and `net10.0`,** so any Godot 4.4+ project can use them. C# 14 compiles for both targets. The exceptions are features and APIs that need a newer runtime, which the core avoids or puts behind a `net10.0`-only code path. Every build compiles both targets, so an API or language feature .NET 8 lacks fails the build right away. Local test runs use `net10.0` only. CI also runs the tests on `net8.0`, which catches behavior that differs between the runtimes, such as Unicode segmentation and culture data.
+- **The core and `Pibbles.Godot` target `net8.0` and `net10.0`,** so any Godot 4.4+ project can use them. C# 14 compiles for both targets. The exceptions are features and APIs that need a newer runtime, which the core avoids or puts behind a `net10.0`-only code path. Every build compiles both targets, so an API or language feature .NET 8 lacks fails the build right away. Local test runs use `net10.0` only. CI also runs the tests on `net8.0`, through `-p:TestAllTargets=true`, which catches behavior that differs between the runtimes, such as Unicode segmentation and culture data.
 - **The CLI, language server, tests and benchmarks** are tools, not dependencies, so they target `net10.0` only.
 
 **Culture data:** some .NET deployments run in invariant-globalization mode, with no locale data. Number formatting must never assume the data is there. If a culture can't be loaded, Pibbles formats with the invariant culture and reports it once as a warning instead of throwing. Phase 4 checks an exported desktop build of a Godot project with a one-line probe: log `CultureInfo.GetCultureInfo("de-DE").NumberFormat.NumberDecimalSeparator`. It should print `,`. If it prints `.` or throws, the build is running without culture data.
