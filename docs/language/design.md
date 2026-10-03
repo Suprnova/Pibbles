@@ -109,14 +109,14 @@ Each extension below is fully designed, and joins the language when its trigger 
 
 ### Grammar
 
-The full grammar is the [v1 grammar](reference.md#appendix-grammar) plus the changes below. v1 already [reserves](reference.md#reserved-words) every word, tag and line marker they use, so each change either adds an alternative behind a new keyword or token, or makes valid something v1 rejects. None changes what a valid v1 story means, and none needs more than one token of lookahead. The mid-line pose extension keeps both properties only if v1 decides [Q16](reference.md#open-questions) in a compatible way ([below](#pose-changes-partway-through-a-line)).
+The full grammar is the [v1 grammar](reference.md#appendix-grammar) plus the changes below. v1 already [reserves](reference.md#reserved-words) every word, tag and line marker they use, so each change either adds an alternative behind a new keyword or token, or makes valid something v1 rejects. None changes what a valid v1 story means, and none needs more than one token of lookahead.
 
 | Extension | Kind | Changes |
 | --- | --- | --- |
 | `@shuffle`, `@shuffle once`, `random()` | Additive | `variation` |
 | `@else` after `@once:` and `@shuffle once:` | Additive: v1 reports a stray `@else` | `variation` |
 | Inline variations | Additive, with lexer changes | `inline_item`; new `ivariation`, `alternatives`, `alternative_text`; four more fused `{` tokens; `\|` becomes a token |
-| Pose changes partway through a line | Additive, if Q16 is decided compatibly | `point_body` |
+| Pose changes partway through a line | Additive: v1 rejects `{name (…)}` | `point_body` |
 | `{auto}` | Additive | `point_body` |
 | Personas | Additive: v1 reports an unknown actor property | `actor_prop`; new `persona_prop` |
 | Terms | Additive | `declaration`, `point_body`; new `term_decl` |
@@ -263,15 +263,10 @@ alternative_text ::= (inline_item - PIPE)*                               /* Q18 
 **Grammar:**
 
 ```
-point_body      ::= … | "(" NAME ")" | NAME call_args
+point_body      ::= … | "(" NAME ")" | NAME "(" NAME ")"
 ```
 
-`{(pose)}` starts with a token no v1 point can start with. `{actor (pose)}` is a harder case. With insignificant whitespace, it's the same token sequence as a one-argument call such as `{has_item(key)}`, so no amount of lookahead can tell them apart. Either of Q16's approaches keeps it compatible, as long as v1 applies it to points:
-
-- **Adjacency:** `{has_item(key)}` is a call and `{mira (happy)}` is a pose change. v1 must then already reject `{fn (x)}`, so the extension only gives a meaning to something v1 rejects.
-- **One syntax node for both:** the parser reads `NAME call_args` either way, and the binder decides by whether the NAME is an actor or a function. This works whatever Q16 decides for command arguments.
-
-What would break compatibility is v1 accepting `{fn (x)}` as a call and the extension later reading the same text as a pose change.
+`{(pose)}` starts with a token no v1 point can start with. `{actor (pose)}` is told apart from a call by the space: a call's `(` touches its name and lexes as CALL_OPEN, while the `(` in `{mira (happy)}` is a plain `(` ([tokens](reference.md#tokens)). v1 already rejects `{fn (x)}`, so the extension only gives a meaning to something v1 rejects.
 
 **Guide text:**
 
@@ -388,13 +383,13 @@ With `$pronouns` set to `she`, those read: *"She is late again. Tell her I said 
 
 ```
 declaration     ::= … | term_decl
-term_decl       ::= "@term" NAME "=" inline_text EOL                     /* Q7, Q9 */
+term_decl       ::= "@term" NAME "=" inline_text EOL
 point_body      ::= … | NAME call_args?
 ```
 
 - `call_args` becomes optional in `point_body`. After the NAME, `(` means a call and `}` means a term.
 - A capitalized reference (`{They}`) is an ordinary NAME, which the binder matches to its lowercase term.
-- A term body ends in text, so Q7 and Q9 decide whether a `//` or `#` in it is text, as they do for a text line.
+- A term body ends in text, so like a text line it can't have a trailing comment. A term takes no tags, so a `#` followed by a letter in its body is an error, escaped as `\#`.
 - What a term body may contain is a check.
 
 **Guide text:**

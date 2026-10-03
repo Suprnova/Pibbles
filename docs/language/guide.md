@@ -234,12 +234,13 @@ This line appears while Mira is still moving.
 
 ## Special characters
 
-Some characters mean something to Pibbles: `[ ] { } # \` and, in some places, `:` and `@`. To write one literally, put a backslash in front of it:
+Some characters mean something to Pibbles: `[ ] { } # \` and, in some places, `:` and `@`. To write one literally, put a backslash in front of it. A `#` only needs one when a letter follows it, and so does an `@` in option text:
 
 ```pib
 This line shows \[square brackets\] and \{curly braces\}.
 This line ends with a hashtag \#literally.
 This line shows a backslash: \\
+-> Email me \@home
 ```
 
 ## Comments
@@ -249,7 +250,7 @@ This line shows a backslash: \\
 This line is story text. // This is NOT a comment. It's part of the line.
 ```
 
-In dialogue and narration, a comment must be on its own line, so a line that contains a web address or `//` still reads correctly.
+In dialogue, narration and options, a comment must be on its own line, so a line that contains a web address or `//` still reads correctly. A comment line can sit at any indentation.
 
 ## Line IDs
 
@@ -342,7 +343,7 @@ mira: This line might be shown as a thought bubble. #thought
 mira: This line might be shown in a phone-message box. #box:phone
 ```
 
-Which tags mean something depends on the game, so the available tags are listed in the cast list. Pibbles tells you if you use one that isn't listed, so a typo like `#thougth` never slips through. To write a hashtag as part of the text, escape it: `\#winning`.
+Which tags mean something depends on the game, so the available tags are listed in the cast list. Pibbles tells you if you use one that isn't listed, so a typo like `#thougth` never slips through. Tags always come last on the line: once a tag starts, only more tags can follow it. To write a hashtag as part of the text, escape it: `\#winning`.
 
 Some tags are on or off, like `#thought`. Others need a value after a colon, like `#box:phone`. The cast list says which is which, and Pibbles tells you if a value is missing or shouldn't be there.
 
@@ -364,7 +365,7 @@ The game can answer questions about things Pibbles doesn't track itself, like th
 This line mentions an item by its display name: {item_name("crowbar")}.
 ```
 
-The available questions are listed in the cast list.
+Write the brackets right up against the name: `has_item("crowbar")`, not `has_item ("crowbar")`. The available questions are listed in the cast list.
 
 ## Declarations: the cast and vocabulary
 

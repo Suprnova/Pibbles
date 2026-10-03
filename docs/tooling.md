@@ -8,7 +8,7 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 
 | Command | Purpose | Phase |
 | --- | --- | --- |
-| `pibbles check [root]` | Compiles the story and prints diagnostics as `file(line,col): severity CODE: message`, the MSBuild format that editors and CI already understand. Exits non-zero on errors, or on warnings with `--warnaserror`. `--release` checks what a release build would ship; in v1 that's everything, and [drafts](#with-extensions) give it meaning later, so CI's command never has to change. CI runs `--release --warnaserror`. `--style` also shows hints ([semantics design](semantics.md)). `--format json` gives tools machine-readable output. Severities come from `.editorconfig`. | 1 (syntax), 2 (full) |
+| `pibbles check [root]` | Compiles the story and prints diagnostics as `file(line,col): severity CODE: message`, the MSBuild format that editors and CI already understand. Exits non-zero on errors, or on warnings with `--warnaserror`. `--release` checks what a release build would ship; in v1 that's everything, and [drafts](#with-extensions) give it meaning later, so CI's command never has to change. CI runs `--release --warnaserror`. `--style` also shows hints ([semantics design](semantics.md)). `--format json` gives tools machine-readable output. Severities come from `.editorconfig`. | 1 (syntax), 2 (full analysis and `.editorconfig`) |
 | `pibbles play [root] --start <node>` | Plays the story in the terminal: lines with speaker and pose, markers shown inline (`⟨w 0.5⟩`, `⟨@sfx thud⟩`), numbered choices. `--set $var=value` seeds variables. Host functions are stubbed through `--stub has_item=true` or a stub file. | 3 |
 | `pibbles play … --script <file>` | Non-interactive: takes choices from a file and prints a deterministic transcript. It's the same format the transcript tests use, so a writer's reproduction of a bug becomes a test by copying files. | 3 |
 | `pibbles ids [root]` | Adds missing `#id:` tags in place | 2 |
@@ -24,7 +24,7 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 
 ## VS Code extension
 
-It lives in `editors/vscode/` and ships in two steps:
+It lives in `editors/vscode/`. CI builds it as a `.vsix`, which writers install locally and which is attached to GitHub pre-releases. It isn't published to the VS Code Marketplace. It ships in two steps:
 
 1. **Syntax highlighting (right after Phase 1),** as a TextMate grammar, which needs no server. It highlights headers, speakers and poses, `@` statements, options, inline `[markup]` and `{points}`, tags and comments. Snippets cover common shapes (`@if`, choices, variation blocks). `#id:` tags are faded, or hidden except on the line under the cursor ([localization design](localization.md#keeping-them-out-of-the-way)). This is cheap and gives writers most of the day-to-day benefit.
 2. **Language client (Phase 6),** which starts `pibbles lsp`.

@@ -22,10 +22,37 @@ Severities are error, warning, info and hint. `.editorconfig` can override any o
 | Code | Default | Example message |
 | --- | --- | --- |
 | PIB1001 | Error | Mixed tabs and spaces in indentation |
+| PIB1002 | Error | This line's indentation doesn't match any block above it |
+| PIB1003 | Error | Unexpected indentation: only a line ending in `:`, an option or an alternative opens a block |
+| PIB1004 | Error | `@if $door_open:` needs an indented block below it |
+| PIB1005 | Error | `///` notes aren't supported yet. Use `//` for a comment. |
 | PIB1010 | Error | Unclosed markup `[clue]` |
 | PIB1011 | Error | Markup closed out of order: expected `[/i]`, found `[/b]` |
+| PIB1012 | Error | `[/b]` closes markup that was never opened. If this is text, escape it: `\[/b]` |
+| PIB1013 | Error | `{if` has no `{/if}` on this line |
+| PIB1014 | Error | `\n` isn't an escape: only punctuation can follow `\`. For a backslash, write `\\` |
+| PIB1015 | Error | Text after a tag. Tags go at the end of the line; if this is text, escape the `#`: `\#winning` |
+| PIB1016 | Error | Option text can't contain `{w}`. Put pauses and commands in the option's body. |
+| PIB1017 | Error | `{name}` isn't a point. Did you mean `{$name}` or `{name()}`? |
 | PIB1020 | Error | `@prefix` must come before everything else in the file except comments |
+| PIB1021 | Error | Declarations must come before the file's first node |
+| PIB1022 | Error | This line is outside any node. Add a node header (`== name`) above it. |
 | PIB1030 | Error | `@else` has no `@if` directly above it at the same indentation |
+| PIB1031 | Error | A `@cycle:` block holds only alternatives, each starting with `- ` |
+| PIB1032 | Error | An alternative is a single-line statement. Put `@if` on the line below, indented. |
+| PIB1033 | Error | `@if` needs a `:` at the end of the line |
+| PIB1040 | Error | Unexpected `)` |
+| PIB1041 | Error | Unterminated string |
+| PIB1042 | Error | `.5` isn't a number. Write `0.5` |
+| PIB1043 | Error | Tag names hold only letters, digits and `_`: `#show-disabled` |
+| PIB1044 | Error | A display name can't contain `[`, `{` or `\` |
+| PIB1045 | Error | `kitchen.door` isn't a single name. Only node names have dots. |
+| PIB1050 | Error | Positional argument after a named one. Positional arguments come first, then named ones, then `wait` or `nowait`. |
+| PIB1051 | Error | Remove the space before `(`: a call is written `has_item("key")` |
+| PIB1052 | Error | `#id:K7` isn't a line ID: an ID is a lowercase letter, then lowercase letters, digits and `_` |
+| PIB1053 | Error | A node header takes only `#was:` tags |
+| PIB1054 | Error | `mira:` has no pose and no text. For a pose change, write `mira (happy):` |
+| PIB1055 | Error | Comparisons can't be chained. Write `$a < $b and $b < $c` |
 | PIB2001 | Error | Unknown actor `Note`. If this is narration, escape the colon: `Note\:` |
 | PIB2002 | Error | Actor `mira` has no pose `smirk`. Did you mean `smug`? |
 | PIB2003 | Error | `(to Rex)` isn't a pose: a pose is a single name. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:` |

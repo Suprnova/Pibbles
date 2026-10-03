@@ -6,7 +6,7 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
 
 1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, and reports duplicates and reserved-word clashes. [Relative node names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
 2. **Binding pass.** Resolves each node body against the symbol table: actors, poses for a given actor, variables, commands and their arguments, markup, icons, tags, functions, node references, and enum members resolved by expected type. It type-checks expressions and produces a bound tree.
-3. **Flow and content checks.** Unreachable statements after `@jump`/`@end`/`@return`, empty choices, missing or duplicate line IDs, nodes never referenced (reported as information only, because the host starts nodes by name), and inline elements not allowed in option text.
+3. **Flow and content checks.** Unreachable statements after `@jump`/`@end`/`@return`, empty choices, missing or duplicate line IDs, and nodes never referenced (reported as information only, because the host starts nodes by name). What option text may contain is a [syntax check](syntax.md#syntax-checks).
 
 The result is exposed as a `SemanticModel`. It answers the questions the language server asks: the symbol at a position, the references to a symbol, and the declaration of a symbol. Designing this API into the model from the start is what makes the language server a thin layer later.
 

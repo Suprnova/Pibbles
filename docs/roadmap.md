@@ -56,8 +56,9 @@ Each phase ends with something usable and a clear exit check.
 - Line classifier, statement parser, inline parser, syntax tree, diagnostic infrastructure and catalog.
 - `pibbles check` reports syntax errors.
 - TextMate grammar, and Code Spell Checker defaults for `.pib` files ([tooling design](tooling.md#vs-code-extension)).
+- CI: builds both core targets, runs the tests on `net10.0` and `net8.0`, checks the sample story, and builds the VS Code extension.
 
-**Exit:** every file in `samples/kitchen` parses, the completeness gates pass for syntax (every node kind snapshotted, every syntax diagnostic has a fixture, documentation examples extracted), the round-trip, totality and line-independence properties and mutation fuzzing pass, and writers get highlighting in VS Code.
+**Exit:** every file in `samples/kitchen` parses, the completeness gates pass for syntax (every node kind snapshotted, every syntax diagnostic has a fixture, documentation examples extracted and parsed), the round-trip, totality and line-independence properties and mutation fuzzing pass, CI runs all of it on every push, and writers get highlighting in VS Code. Until the binder exists, a `pib` example passes if it parses with no syntax diagnostics, and a `pib-error` example is checked against its PIB1xxx codes only.
 
 ### Phase 2: Semantics
 

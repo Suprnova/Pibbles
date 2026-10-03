@@ -56,12 +56,12 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 - **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens after a statement or declaration ending in `:`, which tags and a comment may follow (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor`), or after a `->` option or `-` alternative.
 - **Blank lines** are ignored.
-- **Comments:** `//` starts a comment on a line of its own, or after the content of a statement, declaration or node header. Text lines can't have trailing comments, because `//` shows up in normal prose and URLs.
+- **Comments:** `//` starts a comment on a line of its own, or after the content of an `@` line or a node header. A line with text in it can't have a trailing comment, because `//` shows up in normal prose and URLs: text lines, options and an actor's `name:` all count. Comment lines don't take part in indentation, so a comment can sit at any indentation.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
 - **Variables:** `$` followed by an identifier (`$has_key`).
-- **Escapes:** in text, a backslash makes the next punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\\`, and so on.
-- **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
+- **Escapes:** in text, a backslash makes the next punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\\`, and so on.
+- **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
 - **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once: #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
 
@@ -192,7 +192,7 @@ mira (sad):
 - Consecutive `->` options at the same indentation form one choice. Each option's body is the more-indented block below it, and may be empty.
 - **Option text** supports markup, interpolation, icons and conditionals. It does not support commands or pauses: those belong in the body.
 - **Options are sticky by default:** an option stays available after the player picks it. `@once` makes an option disappear after it's picked.
-- **Modifiers** come after the text: `@if expr` makes the option available only while `expr` is true, and `@once` removes the option for good after it's chosen once. Tags go last.
+- **Modifiers** come after the text: `@if expr` makes the option available only while `expr` is true, and `@once` removes the option for good after it's chosen once. Tags go last. In option text, an `@` followed by a letter ends the text and starts the modifiers, so an `@` that belongs to the text is escaped (`\@`) when a letter follows it. `-> Email me @ home` needs no escape.
 - **When a choice is reached:** options removed by `@once` are left out. Every other option goes to the host with its tags, an `IsAvailable` flag, and a `WasChosen` flag. The host decides whether an unavailable option is hidden or shown greyed out, for example with a `#show_disabled` tag of its own.
 - **Availability and option text are evaluated when the choice is reached,** and again when a save restores it, so a restored choice reflects the current state.
 - **If no option is available,** the choice is skipped.
@@ -274,6 +274,7 @@ Each block has an **entry count** `n` in the state: how many times execution has
 
 - `@name` followed by positional arguments, then named arguments (`name=value`), then optionally `wait` or `nowait`.
 - **Positional arguments** are simple expressions: literals, variables, bare identifiers, dotted names (including relative node names) and function calls. Anything with operators goes in parentheses.
+- **A call's `(` touches its name.** `@foo bar(x)` passes one argument, the result of calling `bar`. `@foo bar (x)` passes two: `bar` and `x`. The same holds everywhere a function is called, in expressions and in `{fn(args)}`.
 - **Bare names** are read against the parameter's type: enum members, actors and node names ([bare names](#bare-names)). Strings are always quoted.
 - **Inline use is opt-in.** Only commands declared `inline` can appear inside text as `{@name …}`. Every other command can only be used on its own `@` line, where it runs exactly once. Loading a save made during a line shows that line again from the start, and its inline commands fire again ([runtime design](../runtime.md#saving-mid-dialogue)). So `inline` is for presentational commands that are harmless to repeat, and the analyzer rejects any other command in text.
 - **Wait semantics:** a command declared with `waits` makes the story wait until the host reports it done. `nowait` overrides that for one call. `wait` does the opposite for a command without `waits`.
@@ -473,7 +474,7 @@ v1 reports every NOTE line as an error.
 **Indentation** turns widths into tokens:
 
 1. A stack of widths starts as `[0]`. A line's width is the number of characters in its `indent`. A file indents with spaces or with tabs, never both, so each character counts as one.
-2. BLANK lines are skipped (Q3 for COMMENT lines).
+2. BLANK, COMMENT and NOTE lines are skipped.
 3. A line wider than the top of the stack pushes its width and emits INDENT. A narrower line pops widths and emits a DEDENT for each until the top is no wider than the line. If the top then isn't equal to the line's width, the indentation is inconsistent: that's an error, and the line joins the innermost block it fits in.
 4. Every line ends with EOL. At the end of the file, each width left above 0 emits a DEDENT.
 
@@ -483,7 +484,7 @@ INDENT and DEDENT come from widths alone. An INDENT where the syntax allows no b
 
 The lexer has three modes:
 
-- **Code mode** reads HEADER and AT lines after their marker, actor properties, option modifiers, and everything inside `[…]` and `{…}`. Whitespace between tokens is insignificant, except as Q16 decides. The longest match wins.
+- **Code mode** reads HEADER and AT lines after their marker, actor properties, option modifiers, and everything inside `[…]` and `{…}`. Whitespace between tokens is insignificant, except before `(`: a `(` directly after a NAME is CALL_OPEN, and any other `(` is PUNCT. The longest match wins.
 - **Inline mode** reads text: a TEXT line after its speaker, option text, and the text around spans and points.
 - **Raw mode** reads an actor's `name:` value.
 
@@ -500,8 +501,9 @@ NUMBER          ::= digit+ ("." digit+)?                                  /* Q5 
 DURATION        ::= NUMBER ("ms" | "s")              /* not followed by a letter, digit or "_" */
 STRING          ::= '"' ([^"#x5C#xA#xD] | #x5C ["#x5C])* '"'
 TAG             ::= "#" letter (letter | digit | "_")* (":" [^#x20#x9#xA#xD]*)?     /* Q6 */
-COMMENT         ::= "//" [^#xA#xD]*                                       /* Q7 */
+COMMENT         ::= "//" [^#xA#xD]*            /* only on HEADER and AT lines and in an actor's poses: */
 AT_WORD         ::= "@" ident
+CALL_OPEN       ::= "("                          /* directly after a NAME, with no whitespace between */
 PUNCT           ::= "(" | ")" | "," | ":" | "?" | "=" | "+=" | "-=" | "->"
                   | "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" | "%"
 ```
@@ -514,7 +516,7 @@ Inline mode:
 SPEAKER         ::= ident (ws* pose)? ws* ":"      /* followed by ws or the end of the line */
 pose            ::= "(" ws* ident ws* ")"
 TEXT            ::= text_char+
-text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag starts (Q9) or, in option text, a modifier (Q10) */
+text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag or, in option text, a modifier starts */
 ESCAPE          ::= #x5C escapable                                        /* Q11 */
 SPAN_OPEN       ::= "["
 SPAN_CLOSE      ::= "[" ws* "/"
@@ -526,7 +528,8 @@ BRACE_CLOSE     ::= "{" ws* "/"
 ```
 
 - SPEAKER is only tried at the start of a TEXT line. If it doesn't match, the whole line is inline text.
-- The lexer looks ahead at characters before it picks a token, which is separate from the parser's one-token lookahead. A `#` starts a tag only when the character after it is a letter, so `my #1 fan` needs no escape. `\#` is only needed when `#` followed by a letter should be text.
+- The lexer looks ahead at characters before it picks a token, which is separate from the parser's one-token lookahead. A `#` starts a tag only when the character after it is a letter, so `my #1 fan` needs no escape. `\#` is only needed when `#` followed by a letter should be text. Once a tag starts, the lexer reads tags to the end of the line, and anything that isn't a tag is an error.
+- In option text, an `@` followed by a letter ends the text, and the lexer reads the rest of the line in code mode: modifiers, then tags. `\@` is only needed when `@` followed by a letter should be text.
 - A `[` or `{` fuses with a `/` or keyword after it into one token, and a fused keyword can't be followed by a letter, digit or `_`. This keeps every inline decision to one token: `{elif` ends the branch before it, while a plain `{` starts a point.
 - After a bracket or brace token, the lexer reads code mode up to the matching `]` or `}`, then returns to inline mode.
 - `]` and `}` on their own are text.
@@ -534,7 +537,7 @@ BRACE_CLOSE     ::= "{" ws* "/"
 Raw mode:
 
 ```ebnf
-RAW             ::= [^#xA#xD]*                                            /* Q7, Q12 */
+RAW             ::= [^#xA#xD]*                                            /* Q12 */
 ```
 
 ### Structure
@@ -578,9 +581,9 @@ param           ::= NAME ":" type ("=" constant)?
 ```ebnf
 statement       ::= text_line | choice | if_stmt | set_stmt | flow_stmt
                   | wait_stmt | variation | command_stmt
-text_line       ::= SPEAKER? inline_text TAG* EOL                         /* Q9, Q14 */
+text_line       ::= SPEAKER? inline_text TAG* EOL                         /* Q14 */
 choice          ::= option+                          /* greedy: consecutive options are one choice */
-option          ::= "->" inline_text option_modifier* TAG* EOL block?     /* Q9, Q10 */
+option          ::= "->" inline_text option_modifier* TAG* EOL block?
 option_modifier ::= "@if" expr | "@once"
 if_stmt         ::= "@if" expr ":" EOL block elif_clause* else_clause?
 elif_clause     ::= "@elif" expr ":" EOL block
@@ -595,14 +598,15 @@ alternative     ::= "-" alternative_line block?                           /* Q15
 alternative_line ::= /* Q15 */
 command_stmt    ::= AT_WORD arg* wait_flag? EOL
 arg             ::= NAME arg_tail? | VARIABLE | literal | "(" expr ")"
-arg_tail        ::= "=" value | call_args                                 /* Q16 */
-value           ::= NAME call_args? | VARIABLE | literal | "(" expr ")"   /* Q16 */
-call_args       ::= "(" (expr ("," expr)*)? ")"
+arg_tail        ::= "=" value | call_args
+value           ::= NAME call_args? | VARIABLE | literal | "(" expr ")"
+call_args       ::= CALL_OPEN (expr ("," expr)*)? ")"
 wait_flag       ::= "wait" | "nowait"
 ```
 
 - Every statement starts with a different token: a TEXT line, `->`, a distinct AT_WORD keyword, or a command. `@elif` and `@else` start no statement, so one that doesn't follow an `@if` block is an error.
 - `arg` folds positional and named arguments together, so the parser never has to look past a NAME for an `=`. Their order is a [check](#checks).
+- CALL_OPEN keeps calls LL(1): after a NAME, CALL_OPEN continues the same argument as a call, and a PUNCT `(` starts the next argument.
 
 ### Inline text
 
@@ -612,7 +616,7 @@ inline_item     ::= TEXT | ESCAPE | span | point | cond
 span            ::= SPAN_OPEN NAME arg* "]" inline_text SPAN_CLOSE NAME "]"
 point           ::= BRACE point_body "}"
 point_body      ::= VARIABLE
-                  | NAME call_args                                        /* Q16 */
+                  | NAME call_args
                   | AT_WORD arg* wait_flag?
                   | "w" arg?
                   | "p"
@@ -656,6 +660,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - `#was` names a node, only on a node header. A node header takes no other tag in v1.
 - Node names, node aliases and line IDs are all distinct from one another.
 - Option text can't contain commands, `{w}` or `{p}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
+- A `(` separated from the NAME before it by whitespace, where only a call can follow the NAME (`{fn (x)}`, `has_item ("key")`), is an error that suggests removing the space.
 - A declared name isn't a [reserved word](#reserved-words) for its kind, and uses ASCII letters only.
 
 ### Open questions
@@ -664,18 +669,13 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 | --- | --- | --- | --- |
 | 1 | `source` | Is a byte-order mark allowed? Some Windows editors write one. | Allowed and skipped; an error |
 | 2 | NOTE class | Which lines are notes? "Starts with `///`" also catches `////` comment banners. | Any line starting with `///`; `///` followed by `ws` or the end of the line, with longer runs of slashes being comments |
-| 3 | Indentation | Do COMMENT lines take part? | Skipped like BLANK lines, so a comment can sit at any indentation; indented like any other line |
 | 5 | `NUMBER` | Which number forms are allowed? | Also `.5` (safe, since a NAME can't start with a dot then a digit); also `1.`; exponents; digit separators |
 | 6 | `TAG` | Which characters can a tag name hold? | Identifier characters only; also `-` |
-| 7 | `COMMENT`, `RAW` | Which lines can end in a `//` comment? Text lines can't, but option lines and actor `name:` values also end in text. | By mode: `//` is a comment only in code mode, so an option can have one after its modifiers or tags but never right after its text; by line: no line with a text or raw part has comments |
-| 9 | `text_char`, `text_line`, `option` | Where do trailing tags start? `I'm #winning today` | A `#` followed by a letter always starts a tag, and text after a tag is an error (escape with `\#`); only the run of tags at the end of the line is tags, and any `#` before it is text |
-| 10 | `text_char`, `option` | Where does option text end? `-> Email me @ home` | At whitespace followed by `@if` or `@once`; at any `@` (escape with `\@`); at the run of modifiers and tags at the end of the line |
 | 11 | `ESCAPE` | Which characters can follow `\`? What about a `\` at the end of a line? A letter or digit after `\` must be an error ([extension compatibility](#extension-compatibility)). | Punctuation only, with anything else an error; anything but letters and digits; an unknown escape is literal text |
 | 12 | `name_prop`, `RAW` | What can a display name hold? `[`, `{` and `\` in it must be errors ([extension compatibility](#extension-compatibility)). | Plain text, trimmed; inline text with markup, which makes it inline mode instead of raw |
 | 13 | `constant`, `arg` | Can a constant or positional argument be negative (`@var $x = -1`, `@foo -1`)? This belongs in the syntax: a negative NUMBER token would break `$a-1`. | `"-"? NUMBER` in `constant`, with arguments needing parentheses; `"-"? NUMBER` in both |
 | 14 | `text_line` | What does `mira:`, with neither pose nor text, do? | An error; shows an empty line; nothing |
 | 15 | `alternative` | Which statements can follow `- `? `- @if $x:` opens a block that would also be the alternative's continuation. | Single-line statements only (text lines, `@set`, flow, `@wait` and commands); any statement, with a block opener's block serving as the continuation |
-| 16 | `arg_tail`, `value`, `point_body` | Is `NAME (…)` a call, or a NAME followed by another argument? `@foo bar (x)` needs a second token past `bar` to decide. The mid-line pose extension depends on the answer for points ([language design](design.md#pose-changes-partway-through-a-line)). | Adjacency: `bar(x)` is a call, `bar (x)` is two arguments; a call in a positional argument needs parentheses, as in `(bar(x))`, so a `(` after a NAME always starts a new argument |
 | 17 | `eq_expr`, `rel_expr` | What do `a == b == c` and `a < b < c` mean? | Left-associative, so `(a == b) == c` type-checks and `a < b < c` doesn't; non-associative, so both are syntax errors; chained, as in Python |
 
 ### Definition order
@@ -686,18 +686,18 @@ Characters and tokens are defined first, from the bottom up, because every later
 | --- | --- | --- |
 | 1 | `source`, `newline`, `line`, `indent`, `ws`, `content` | Q1 |
 | 2 | Line classification | Q2 |
-| 3 | Indentation: INDENT, DEDENT, EOL | Q3 |
+| 3 | Indentation: INDENT, DEDENT, EOL | |
 | 4 | `letter`, `mark`, `digit`, `ident` | |
 | 5 | `NAME`, `VARIABLE` | |
 | 6 | `NUMBER`, `DURATION`, `STRING` | Q5 |
 | 7 | `TAG` | Q6 |
-| 8 | `COMMENT` | Q7 |
-| 9 | `AT_WORD`, `PUNCT`, keywords | |
+| 8 | `COMMENT` | |
+| 9 | `AT_WORD`, `CALL_OPEN`, `PUNCT`, keywords | |
 | 10 | `SPEAKER`, `pose` | |
-| 11 | `TEXT`, `text_char` | Q9, Q10 |
+| 11 | `TEXT`, `text_char` | |
 | 12 | `ESCAPE` | Q11 |
 | 13 | `SPAN_OPEN`, `SPAN_CLOSE`, `BRACE`, `BRACE_IF`, `BRACE_ELIF`, `BRACE_ELSE`, `BRACE_CLOSE` | |
-| 14 | `RAW` | Q7, Q12 |
+| 14 | `RAW` | Q12 |
 | 15 | `file`, `prefix_line`, `node`, `header_line`, `block` | |
 | 16 | `declaration` | |
 | 17 | `actor_decl`, `actor_prop`, `name_prop`, `poses_prop` | Q12 |
@@ -705,15 +705,15 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 19 | `var_decl`, `type`, `constant`, `literal` | Q13 |
 | 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` | |
 | 21 | `statement` | |
-| 22 | `text_line` | Q9, Q14 |
-| 23 | `choice`, `option`, `option_modifier` | Q9, Q10 |
+| 22 | `text_line` | Q14 |
+| 23 | `choice`, `option`, `option_modifier` | |
 | 24 | `if_stmt`, `elif_clause`, `else_clause` | |
 | 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` | |
 | 26 | `variation`, `alternative`, `alternative_line` | Q15 |
-| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` | Q13, Q16 |
+| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` | Q13 |
 | 28 | `inline_text`, `inline_item` | |
 | 29 | `span` | |
-| 30 | `point`, `point_body` | Q16 |
+| 30 | `point`, `point_body` | |
 | 31 | `cond` | |
 | 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` | Q17 |
 
@@ -722,9 +722,9 @@ Characters and tokens are defined first, from the bottom up, because every later
 The [grammar extensions](design.md#grammar-extensions), and the notes and `required` markup that arrive with localization, only add to this grammar, and none of them needs more than one token of lookahead. The [language design](design.md#grammar) lists each one's changes. These keep that true:
 
 - v1 [reserves](#reserved-words) every word, tag and line marker the extensions use, in the positions the extensions will use them, so no valid v1 story can already mean something by them.
+- v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (pose)}` free for the [mid-line pose extension](design.md#pose-changes-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
 - **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) isn't reserved. Its keyword and case markers (`plural`, `zero`, `one`, `two`, `few`, `many`, `other`) are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their syntax is chosen to avoid names stories already use, or the change is announced as breaking.
 - Some open questions must be decided in a particular direction, or an extension would change what a valid v1 story means:
   - **Q11:** a letter or digit after `\` is an error, so new escapes (`\n`, `\u1234`) can be added.
   - **Q12:** `[`, `{` and `\` in a display name are errors, so display names can later hold markup.
-  - **Q16:** decided in a way the mid-line pose extension can keep ([language design](design.md#pose-changes-partway-through-a-line)).
