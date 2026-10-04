@@ -47,24 +47,25 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1021 | Error | Declarations have to come before the file's first node. | Move this above the first `==` line, or into another file. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
+| PIB1023 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
 | PIB1030 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
 | PIB1031 | Error | A `@cycle:` block can only hold alternatives. | Start each alternative with `- `. |
 | PIB1032 | Error | `@if` can't start an alternative. | Write the alternative's first line after the `- `, and put the `@if` on the line below it, indented. |
 | PIB1033 | Error | I expected a `:` at the end of this `@if` line. | Add it: `@if $door_open:`. |
-| PIB1040 | Error | I didn't expect `)` here. | Check for a missing `(` or an extra `)`. |
+| PIB1040 | Error | I didn't expect `extra` here. | — |
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
 | PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, like `kitchen_door`. |
+| PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | I read `has_item ("key")` as two separate things, because of the space before `(`. | To call `has_item`, remove the space: `has_item("key")`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
-| PIB1053 | Error | A node header can only have `#was:` tags. | Move other tags to the lines inside the node. |
+| PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
 | PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or change her pose with `mira (happy):`. If this is narration, escape the colon: `mira\:`. |
-| PIB1060 | Error | I expected a value after `+`. | Finish the expression, or remove the `+`. |
-| PIB1061 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
-| PIB1062 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
+| PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
+| PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
 | PIB2002 | Error | Mira has no pose called `smirk`. | Did you mean `smug`? |
 | PIB2003 | Error | `(to Rex)` isn't a pose: a pose is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
@@ -113,6 +114,17 @@ The first indented line uses spaces, so the tab (shown as `→`) on the last lin
 
 `mira: Hm.` is indented less than the line above, so it leaves the `@if` block, but four spaces lines up with no block above it: the `@if` is at zero and its block is at eight. Pibbles treats the line as part of the outer block, the one at zero. Indent it to match the block it belongs to: zero to come after the `@if`, or eight to be part of it.
 
+### PIB1003
+
+**Only some lines can have indented lines under them:** a line ending in `:` (`@if`, `@else`, `@once:` and the other block openers), an option (`->`) and an alternative (`- `). An indented line anywhere else is reported once, on the first line of the block, and the block's lines are read as if they weren't indented.
+
+```text
+@jump kitchen.leave
+    mira: Bye!
+```
+
+Remove the indentation, or put the lines under a line that opens a block.
+
 ### PIB1005
 
 **`///` is reserved for notes to translators, which arrive with localization.** Until then, a line starting with `///` is an error, so stories written now can't already be using it for something else. A line starting with four or more slashes, such as a `////////` banner, is an ordinary comment.
@@ -133,6 +145,54 @@ Write it as an ordinary comment for now: `// Mira is joking here.`
 ```
 
 To show a backslash itself, write two: `"C:\\Users\\mira"`.
+
+### PIB1020
+
+**`@prefix` sets the group name for a whole file, so it comes first, after nothing but comments.**
+
+```text
+@var $has_key = false
+@prefix kitchen
+```
+
+Move `@prefix` above everything else. A second `@prefix` in the same file is [PIB1023](#pib1023) instead.
+
+### PIB1022
+
+**Everything a story shows or does belongs to a node.** Before a file's first node (`== name`), only `@prefix`, comments and declarations can appear.
+
+```text
+mira: Hello!
+
+== kitchen.enter
+```
+
+Add a node header above the line, or move the line into an existing node.
+
+### PIB1023
+
+**A file has one prefix at most,** because the prefix is what every relative name in the file (`.door`) is relative to. A second `@prefix` is reported wherever it appears, and the message names the line of the first one.
+
+```text
+@prefix kitchen
+
+== .door
+mira: Locked.
+
+@prefix cellar
+```
+
+To keep nodes under two group names, split the file in two, each with its own `@prefix`. A node can also use its full name (`== cellar.stairs`) in a file whose prefix is something else.
+
+### PIB1040
+
+**A line has something I can't read where it is.** This is the general code, for leftovers that no more specific code describes: an extra word after a statement, a node header indented inside a block, and so on.
+
+```text
+@jump kitchen.leave now
+```
+
+Remove what's extra. If a word belongs to the next line, move it there.
 
 ### PIB1041
 
@@ -163,6 +223,26 @@ Write `@wait 2s`.
 ```
 
 Write `#show_disabled`, and declare it that way with `@tag`.
+
+### PIB1046
+
+**A line is missing a part it needs,** such as the node name after `@jump`, `@call`, `==`, `@prefix` or `#was:`.
+
+```text
+@jump
+```
+
+Write the missing part: `@jump kitchen.leave`.
+
+### PIB1053
+
+**Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names. The host never reads a node header, so other tags would have no effect there.
+
+```text
+== kitchen.fridge #thought
+```
+
+Put the tag on the line inside the node that it belongs to.
 
 ## With extensions
 

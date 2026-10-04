@@ -159,7 +159,7 @@ public class LineClassifierTests
     {
         var source = new SourceText("story.pib", text);
 
-        Line end = LineClassifier.Classify(source).Tokens[^1].Line;
+        SourceLine end = LineClassifier.Classify(source).Tokens[^1].Line;
 
         Assert.Equal((LineKind.EndOfFile, 2, new TextSpan(text.Length, 0)), (end.Kind, end.Number, end.Content));
     }

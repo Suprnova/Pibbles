@@ -1,0 +1,23 @@
+// A file's structure: a prefix, declarations, then nodes.
+
+@prefix kitchen
+
+@actor mira:
+    name: Mira
+@var $door_open = false
+
+== .door #was:.front_door #was:kitchen.entrance
+@if $door_open:
+    @jump .leave
+    mira: Already open.
+mira: Locked.
+-> Knock
+    @call common.knock #id:k7qp2x #thought
+    @return
+@end
+
+== .leave
+@end // A comment after a statement.
+
+== common.knock
+@return

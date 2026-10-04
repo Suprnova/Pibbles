@@ -8,6 +8,9 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <!-- Test names are Unit_Scenario_ExpectedBehavior. -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <!-- Verify's maintenance-fee check: Pibbles is open source and generates no revenue. Renew before the date passes. -->
+    <Verify_SponsorshipExemption>OpenSource</Verify_SponsorshipExemption>
+    <Verify_SponsorshipExemptionUntil>2027-09</Verify_SponsorshipExemptionUntil>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Verify.XunitV3" Version="33.2.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
   </ItemGroup>
 

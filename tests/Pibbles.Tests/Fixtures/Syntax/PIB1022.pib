@@ -1,0 +1,17 @@
+// Everything but declarations has to be inside a node.
+
+A line of narration before any node.
+// PIB1022
+@jump fixture.lines
+// PIB1022
+-> An option before any node
+// PIB1022
+    with a body that goes with it.
+
+// Must not trigger
+
+@var $x = 1
+@actor mira:
+    name: Mira
+== fixture.lines
+Narration inside a node.

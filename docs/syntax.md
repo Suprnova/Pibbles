@@ -22,7 +22,10 @@ The front end owns every check that needs only one file's text: indentation, mal
 
 ## Syntax tree
 
-- Immutable `record` types. Each node carries a `TextSpan` (start and length in the file), and positions map to line and column through a per-file line map. The parts of a node that later stages report on or edit, such as a speaker's name, its pose and each tag, carry their own spans.
+- **One tree per file.** `SyntaxTree.Parse(SourceText)` parses a file into a `FileSyntax` root and its syntax diagnostics, and never throws. A story is many trees: the files only meet when the [binder](semantics.md#passes) joins their names.
+- **Public, immutable `record` types,** named with a `Syntax` suffix (`JumpStatementSyntax`, `NodeSyntax`), so later stages can use the plain names for their own types. Each node carries a `TextSpan` (start and length in the file) that covers its own text and everything under it, including a statement's block. Positions map to line and column through a per-file line map. The parts of a node that later stages report on or edit, such as a speaker's name, its pose and each tag, carry their own spans.
+- **Nodes hold values, not tokens.** A name is its text (`kitchen.door`, or `.door` relative to the prefix), and a tag is its name and value. Literals hold their parsed values, with escapes resolved. Operators are enums with their own spans. Parentheses are kept as a node of their own, so spans stay faithful to the source. The lexer's tokens never appear in the tree.
+- **Errors leave a complete tree.** A part the source leaves out is a zero-length node (a missing name has empty text), and the line's one diagnostic says what was missing.
 - The tree is not lossless: it keeps no trivia. Tools that edit source (inserting line IDs, quick fixes) edit text at node spans, which is enough. A lossless tree would only be needed for a formatter, and that's a stretch goal.
 - Every edit reparses the whole file. Files are small, and whole-file parsing is fast enough for per-keystroke language-server updates ([performance](runtime.md#performance)). Incremental parsing is out of scope.
 

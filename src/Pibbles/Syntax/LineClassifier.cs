@@ -31,7 +31,7 @@ internal sealed class LineClassifier
         for (int number = 0; number < source.LineCount; number++)
             Read(number);
 
-        var end = new Line(source.LineCount - 1, LineKind.EndOfFile, new(source.Text.Length, 0));
+        var end = new SourceLine(source.LineCount - 1, LineKind.EndOfFile, new(source.Text.Length, 0));
         for (; widths.Count > 1; widths.Pop())
             tokens.Add(new(LineTokenKind.Dedent, end));
 
@@ -47,7 +47,7 @@ internal sealed class LineClassifier
 
         ReadOnlySpan<char> content = text.TrimStart(" \t");
         var indentation = new TextSpan(start, text.Length - content.Length);
-        var line = new Line(number, KindOf(content), new(indentation.End, content.Length));
+        var line = new SourceLine(number, KindOf(content), new(indentation.End, content.Length));
 
         if (line.Kind is LineKind.Note)
             Report(DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
@@ -76,7 +76,7 @@ internal sealed class LineClassifier
     /// A line that mixes tabs and spaces still indents by its width, so a region pasted with the other character keeps its
     /// structure, and only reports that it mixes them.
     /// </summary>
-    private void Indent(Line line, TextSpan indentation)
+    private void Indent(SourceLine line, TextSpan indentation)
     {
         bool mixed = HasMixedIndentation(indentation);
 

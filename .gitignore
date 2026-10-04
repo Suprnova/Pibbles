@@ -9,6 +9,7 @@ review/
 bin/
 obj/
 TestResults/
+*.received.*
 
 # IDEs
 .vs/

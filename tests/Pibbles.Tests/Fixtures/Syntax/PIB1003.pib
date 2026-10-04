@@ -1,0 +1,20 @@
+// Only a line ending in `:`, an option or an alternative can have indented lines under it.
+
+== fixture.indent
+    Indented under a node header.
+// PIB1003
+@jump fixture.other
+    Indented under a jump.
+// PIB1003
+    Still in the same block, which is only reported once.
+@end
+        @end
+// PIB1003
+
+// Must not trigger
+
+@if true:
+    A block under an @if.
+-> An option
+    with a body.
+    // A comment at any indentation.

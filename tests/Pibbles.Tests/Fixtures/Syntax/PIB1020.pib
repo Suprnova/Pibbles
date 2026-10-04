@@ -1,0 +1,12 @@
+// @prefix comes first in a file, after nothing but comments.
+
+@var $x = 1
+@prefix fixture
+// PIB1020
+== fixture.first
+@prefix inside
+// PIB1020
+
+// Must not trigger
+
+// PIB1023.pib has a @prefix with only comments above it.

@@ -1,0 +1,18 @@
+// Anything left on a line that I can't read.
+
+== fixture.unexpected #was:fixture.old extra
+//                                     ^^^^^ PIB1040
+@jump fixture.other fixture.another
+//                  ^^^^^^^^^^^^^^^ PIB1040
+@end now
+//   ^^^ PIB1040
+@call fixture.other #id:k7qp2x "text"
+//                             ^^^^^^ PIB1040
+@if true:
+    == fixture.nested
+//  ^^ PIB1040
+
+// Must not trigger
+
+@jump fixture.other // A comment after a statement.
+@return

@@ -1,0 +1,22 @@
+// Some lines need a name after their keyword.
+
+== fixture.missing #was:
+//                      ^ PIB1046
+@jump
+//   ^ PIB1046
+@call #id:k7qp2x
+//   ^ PIB1046
+@prefix
+// PIB1020
+==
+//^ PIB1046
+== fixture.alias #was
+//                   ^ PIB1046
+== fixture.dot #was:.
+//                  ^ PIB1046
+
+// Must not trigger
+
+== fixture.renamed #was:fixture.old #was:.older
+@jump fixture.renamed
+@call .relative #id:k7qp2x
