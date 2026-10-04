@@ -24,7 +24,7 @@ internal static class Init
         string settingsFile = Path.Combine(root, ProjectSettings.FileName);
         if (File.Exists(settingsFile))
         {
-            error.WriteLine($"`{Display(settingsFile, currentDirectory)}` already exists, so this is already a Pibbles project. I left it as it is.");
+            error.WriteLine($"`{DisplayPath.Of(settingsFile, currentDirectory)}` already exists, so this is already a Pibbles project. I left it as it is.");
             return Check.CouldNotRun;
         }
 
@@ -49,19 +49,19 @@ internal static class Init
             }
         }
 
-        string[] paths = [.. created.Select(entry => Display(entry.Path, currentDirectory))];
+        string[] paths = [.. created.Select(entry => DisplayPath.Of(entry.Path, currentDirectory))];
         int width = paths.Max(path => path.Length);
-        output.WriteLine($"I made a Pibbles project in `{Display(root, currentDirectory)}`:");
+        output.WriteLine($"I made a Pibbles project in {DisplayPath.Folder(root, currentDirectory)}:");
         foreach ((string path, (_, string description)) in paths.Zip(created))
             output.WriteLine($"  {path.PadRight(width)}  {description}");
 
         if (hasSources)
-            output.WriteLine($"`{Display(story, currentDirectory)}` already has .pib files, so I left them as they are.");
+            output.WriteLine($"{DisplayPath.Folder(story, currentDirectory)} already has .pib files, so I left them as they are.");
 
         output.WriteLine();
-        string check = Path.GetRelativePath(currentDirectory, root) is "." ? "pibbles check" : $"pibbles check {Display(root, currentDirectory)}";
+        string check = DisplayPath.Of(root, currentDirectory) is "." ? "pibbles check" : $"pibbles check {DisplayPath.Of(root, currentDirectory)}";
         output.WriteLine(blank && !hasSources
-            ? $"Next, add .pib files to `{Display(story, currentDirectory)}`, then run `{check}` to check them."
+            ? $"Next, add .pib files to {DisplayPath.Folder(story, currentDirectory)}, then run `{check}` to check them."
             : $"Next, run `{check}` to check the story.");
 
         return Check.Passed;
@@ -73,7 +73,4 @@ internal static class Init
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
-
-    private static string Display(string path, string currentDirectory) =>
-        Path.GetRelativePath(currentDirectory, path).Replace('\\', '/');
 }

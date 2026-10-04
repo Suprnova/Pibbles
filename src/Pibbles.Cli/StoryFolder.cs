@@ -28,18 +28,18 @@ internal static class StoryFolder
         string storyFolder = Path.GetFullPath(settings.Story, fullRoot);
         if (!Directory.Exists(storyFolder))
         {
-            error.WriteLine($"I can't find the story folder `{Display(storyFolder, currentDirectory)}`. Put the story's `.pib` files there, name another folder with `story` in `pibbles.json`, or run `pibbles init` to start a new project.");
+            error.WriteLine($"I can't find the story folder `{DisplayPath.Of(storyFolder, currentDirectory)}`. Put the story's `.pib` files there, name another folder with `story` in `pibbles.json`, or run `pibbles init` to start a new project.");
             return null;
         }
 
         string[] files = [.. Directory.EnumerateFiles(storyFolder, "*.pib", SearchOption.AllDirectories).Order(StringComparer.Ordinal)];
         if (files.Length == 0)
         {
-            error.WriteLine($"There are no `.pib` files in `{Display(storyFolder, currentDirectory)}`.");
+            error.WriteLine($"There are no `.pib` files in {DisplayPath.Folder(storyFolder, currentDirectory)}.");
             return null;
         }
 
-        return [.. files.Select(file => new SourceText(Display(file, currentDirectory), File.ReadAllText(file)))];
+        return [.. files.Select(file => new SourceText(DisplayPath.Of(file, currentDirectory), File.ReadAllText(file)))];
     }
 
     /// <summary>Reads the project's settings, or the defaults when it has no <c>pibbles.json</c>.</summary>
@@ -48,7 +48,4 @@ internal static class StoryFolder
         string file = Path.Combine(root, ProjectSettings.FileName);
         return File.Exists(file) ? ProjectSettings.Parse(File.ReadAllText(file), error) : ProjectSettings.Default;
     }
-
-    private static string Display(string path, string currentDirectory) =>
-        Path.GetRelativePath(currentDirectory, path).Replace('\\', '/');
 }

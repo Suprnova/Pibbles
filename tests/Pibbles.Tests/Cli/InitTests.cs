@@ -36,6 +36,7 @@ public sealed class InitTests : IDisposable
         int exitCode = Check.Run(sources, new(OutputFormat.MSBuild), output);
 
         Assert.Equal(Check.Passed, exitCode);
+        Assert.StartsWith("I made a Pibbles project in this folder:", output.ToString());
         Assert.EndsWith("Next, run `pibbles check` to check the story.\n", output.ToString().ReplaceLineEndings("\n"));
     }
 
