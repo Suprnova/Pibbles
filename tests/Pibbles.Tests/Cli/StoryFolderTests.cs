@@ -29,7 +29,7 @@ public sealed class StoryFolderTests : IDisposable
     [Fact]
     public void Load_StorySetting_ReadsThatFolder()
     {
-        Write("pibbles.json", """{ "version": "1.0", "story": "dialogue" }""");
+        Write("pibbles.json", """{ "schema": 1, "story": "dialogue" }""");
         Write("dialogue/a.pib", "== a");
 
         IReadOnlyList<SourceText>? sources = StoryFolder.Load(".", root.FullName, error);

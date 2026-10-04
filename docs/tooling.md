@@ -8,6 +8,7 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 
 | Command | Purpose | Phase |
 | --- | --- | --- |
+| `pibbles init [folder]` | Starts a project in `folder` (the current directory by default, made if it doesn't exist): a `pibbles.json` with the current settings, and a story folder holding a short example story whose comments explain each part, which `pibbles check` passes. `--blank` leaves the story folder empty. It never overwrites an existing `pibbles.json`, and leaves a story folder that already has `.pib` files as it is. Writers rarely know JSON, so this is how a project's settings file gets made. | 1 |
 | `pibbles check [root]` | Compiles the story and prints each diagnostic with its source line, the problem marked, and a fix ([how diagnostics read](syntax.md#how-diagnostics-read)). `--format msbuild` prints one line per diagnostic instead, as `file(line,col): severity CODE: message`, the format editors and CI annotations understand. `--format json` gives tools machine-readable output. Color is used only when writing to a terminal, and never when `NO_COLOR` is set. Exits non-zero on errors, or on warnings with `--warnaserror`. `--release` checks what a release build would ship; in v1 that's everything, and [drafts](#with-extensions) give it meaning later, so CI's command never has to change. CI runs `--release --warnaserror --format msbuild`. `--style` also shows hints ([semantics design](semantics.md)). Severities come from `.editorconfig`. | 1 (syntax), 2 (full analysis and `.editorconfig`) |
 | `pibbles explain <code>` | Prints a diagnostic's full entry: what it means, an example that triggers it, and how to fix it. The same text as the [diagnostics catalog](diagnostics.md). | 1 |
 | `pibbles play [root] --start <node>` | Plays the story in the terminal: lines with speaker and pose, markers shown inline (`⟨w 0.5⟩`, `⟨@sfx thud⟩`), numbered choices. `--set $var=value` seeds variables. Host functions are stubbed through `--stub has_item=true` or a stub file. | 3 |
@@ -80,6 +81,27 @@ A word is accepted if any of these contain it:
 Hunspell dictionaries are read with [WeCantSpell.Hunspell](https://github.com/aarondandy/WeCantSpell.Hunspell), a pure .NET port. Its license, and the bundled `en` dictionary's, are confirmed in Phase 6 before depending on them.
 
 Translations aren't checked yet. The same check can later run on each `<locale>.po` with that locale's dictionary and its own word list.
+
+## Project settings
+
+`pibbles.json` in the project root holds the facts about a project that aren't per file. The file and every key in it are optional, since each key has a default, and `pibbles init` writes it:
+
+```json
+{
+  "schema": 1,
+  "story": "story"
+}
+```
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `schema` | Which version of this format the file uses | `1` |
+| `story` | The story folder, relative to the project root | `"story"` |
+
+- **Only keys something uses are defined.** A later key arrives with the feature that reads it, with a default, and raises the schema by one: the version (for saves and release manifests), `sourceLocale` and `localization` (localization), `voice` (voice tooling) and `drafts` (drafts). `pibbles init` always writes the current schema.
+- **An older schema still reads,** with each newer key at its default. A change that a default can't cover, such as a renamed key, comes with an upgrade step that rewrites the file.
+- **A newer schema than the tools know** is an error that asks the writer to update Pibbles, rather than a file misread.
+- **An unknown key is an error** that lists the settings, so a typo such as `stroy` is never silently ignored.
 
 ## Configuration
 

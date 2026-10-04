@@ -25,8 +25,17 @@ check.SetAction(result =>
     return Check.Run(sources, new(result.GetValue(format), result.GetValue(warnAsError), result.GetValue(style), color), Console.Out);
 });
 
+var folder = new Argument<string>("folder")
+{
+    Description = "Where to start the project. It's made if it doesn't exist yet.",
+    DefaultValueFactory = _ => ".",
+};
+var blank = new Option<bool>("--blank") { Description = "Start with an empty story folder, instead of an example story that explains itself." };
+var init = new Command("init", "Start a new project: a pibbles.json and a story folder with an example story.") { folder, blank };
+init.SetAction(result => Init.Run(result.GetValue(folder)!, Directory.GetCurrentDirectory(), result.GetValue(blank), Console.Out, Console.Error));
+
 var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB1011." };
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, Console.Error));
 
-return new RootCommand("Pibbles: checks and plays narrative scripts.") { check, explain }.Parse(args).Invoke();
+return new RootCommand("Pibbles: checks and plays narrative scripts.") { init, check, explain }.Parse(args).Invoke();

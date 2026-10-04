@@ -14,6 +14,8 @@ Stories live in plain text files ending in `.pib`, inside the game's `story/` fo
 
 Any text editor works. Visual Studio Code with the Pibbles extension adds colors.
 
+To start a new story from scratch, run `pibbles init` in an empty folder. It sets up the project and a short example story whose comments explain each part, which is a good first file to read and then change.
+
 ## The golden rule
 
 **A line that doesn't start with a special symbol is story text.** Everything else is marked:

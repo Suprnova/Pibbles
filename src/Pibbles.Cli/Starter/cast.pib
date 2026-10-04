@@ -1,0 +1,13 @@
+// The cast list: everything the story uses that the game provides. Pibbles checks
+// every name the story uses against it, so a typo is caught before anyone plays.
+// Lines starting with // are comments, notes for whoever reads the script.
+
+// A character. Lines of dialogue start with their ID: `guide: Hello!`
+// `name:` is the name the player sees, and `poses:` lists how they can look.
+// The first pose is where they start.
+@actor guide:
+    name: Guide
+    poses: neutral, happy
+
+// A variable: something the story remembers, saved with the game.
+@var $asked_for_help = false

@@ -14,6 +14,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Pibbles.Tests" />
     <EmbeddedResource Include="..\..\docs\diagnostics.md" LogicalName="diagnostics.md" />
+    <EmbeddedResource Include="Starter\*.pib" LogicalName="Starter/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

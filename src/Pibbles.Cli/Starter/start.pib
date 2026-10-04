@@ -1,0 +1,20 @@
+// A node is a conversation the game starts by name. This one is `start.hello`.
+// Everything up to the next line starting with == belongs to it.
+
+== start.hello
+// Dialogue: the speaker's ID, a colon, then what they say.
+guide: Hello! This is your first Pibbles story.
+
+// A pose in brackets changes how the speaker looks, until it changes again.
+guide (happy): Lines without a speaker are narration, like the next one.
+The guide waves.
+
+// A choice. Each -> is an option, and the indented lines under it run when it's picked.
+-> Tell me more
+    @set $asked_for_help = true
+    guide: The writer's guide covers everything a story can do.
+-> Goodbye
+    guide: See you soon!
+
+// After an option's lines, the story continues here, below the whole choice.
+guide (neutral): That's all for now.

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Pibbles.Syntax;
 
 namespace Pibbles.Cli;
@@ -9,8 +8,6 @@ namespace Pibbles.Cli;
 /// </summary>
 internal static class StoryFolder
 {
-    private const string DefaultStory = "story";
-
     /// <summary>
     /// Reads every source file in the story under <paramref name="root"/>. Paths are shown relative to
     /// <paramref name="currentDirectory"/>, with <c>/</c> between folders. Returns <see langword="null"/> after writing
@@ -25,13 +22,13 @@ internal static class StoryFolder
             return null;
         }
 
-        if (!TryReadStorySetting(fullRoot, error, out string story))
+        if (ReadSettings(fullRoot, error) is not { } settings)
             return null;
 
-        string storyFolder = Path.GetFullPath(story, fullRoot);
+        string storyFolder = Path.GetFullPath(settings.Story, fullRoot);
         if (!Directory.Exists(storyFolder))
         {
-            error.WriteLine($"I can't find the story folder `{Display(storyFolder, currentDirectory)}`. Put the story's `.pib` files there, or name another folder with `story` in `pibbles.json`.");
+            error.WriteLine($"I can't find the story folder `{Display(storyFolder, currentDirectory)}`. Put the story's `.pib` files there, name another folder with `story` in `pibbles.json`, or run `pibbles init` to start a new project.");
             return null;
         }
 
@@ -45,33 +42,11 @@ internal static class StoryFolder
         return [.. files.Select(file => new SourceText(Display(file, currentDirectory), File.ReadAllText(file)))];
     }
 
-    private static bool TryReadStorySetting(string root, TextWriter error, out string story)
+    /// <summary>Reads the project's settings, or the defaults when it has no <c>pibbles.json</c>.</summary>
+    public static ProjectSettings? ReadSettings(string root, TextWriter error)
     {
-        story = DefaultStory;
-        string settings = Path.Combine(root, "pibbles.json");
-        if (!File.Exists(settings))
-            return true;
-
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(settings));
-            if (!document.RootElement.TryGetProperty("story", out JsonElement value))
-                return true;
-
-            if (value.ValueKind is JsonValueKind.String && value.GetString() is { Length: > 0 } folder)
-            {
-                story = folder;
-                return true;
-            }
-
-            error.WriteLine("`story` in `pibbles.json` has to be a folder name, in quotes.");
-            return false;
-        }
-        catch (JsonException exception)
-        {
-            error.WriteLine($"I can't read `pibbles.json`: {exception.Message}");
-            return false;
-        }
+        string file = Path.Combine(root, ProjectSettings.FileName);
+        return File.Exists(file) ? ProjectSettings.Parse(File.ReadAllText(file), error) : ProjectSettings.Default;
     }
 
     private static string Display(string path, string currentDirectory) =>
