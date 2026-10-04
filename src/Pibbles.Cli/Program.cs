@@ -51,7 +51,8 @@ var code = new Argument<string>("code") { Description = "A diagnostic code, such
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, errors, outputColor));
 
-var pibbles = new RootCommand("Pibbles: checks and plays narrative scripts.") { init, check, explain };
+// Named here rather than after the executable: installed as a tool, the CLI runs as Pibbles.Cli.dll, and help would say so.
+var pibbles = new Command("pibbles", "Pibbles: checks and plays narrative scripts.") { new HelpOption(), new VersionOption(), init, check, explain };
 pibbles.SetAction(result => new HelpAction().Invoke(result));
 
 return pibbles.Parse(args).Invoke();

@@ -6,6 +6,7 @@ review/
 .claude/settings.local.json
 
 # Build output
+artifacts/
 bin/
 obj/
 TestResults/
