@@ -174,6 +174,7 @@ mira (sad):
 - **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds more than one name (`mira (to Rex): Fine.`) is an error, since a pose is a single name. A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
 - **`speaker (pose):`** sets the actor's pose, then shows the line. The pose stays until it's changed again.
 - **`speaker (pose):` with no text** changes the pose without showing a line.
+- **`speaker:` with neither a pose nor text** is an error. For a box that shows only the speaker's name, write a point and no text: `mira: {w}`.
 - Each line is shown as one message, and its text is inline-markup text ([below](#inline-text)). Leading and trailing whitespace is trimmed.
 
 ### Choices
@@ -583,7 +584,7 @@ param           ::= NAME ":" type ("=" constant)?
 ```ebnf
 statement       ::= text_line | choice | if_stmt | set_stmt | flow_stmt
                   | wait_stmt | variation | command_stmt
-text_line       ::= SPEAKER? inline_text TAG* EOL                         /* Q14 */
+text_line       ::= SPEAKER? inline_text TAG* EOL
 choice          ::= option+                          /* greedy: consecutive options are one choice */
 option          ::= "->" inline_text option_modifier* TAG* EOL block?
 option_modifier ::= "@if" expr | "@once"
@@ -670,7 +671,6 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |
 | 12 | `name_prop`, `RAW` | What can a display name hold? `[`, `{` and `\` in it must be errors ([extension compatibility](#extension-compatibility)). | Plain text, trimmed; inline text with markup, which makes it inline mode instead of raw |
-| 14 | `text_line` | What does `mira:`, with neither pose nor text, do? | An error; shows an empty line; nothing |
 | 15 | `alternative` | Which statements can follow `- `? `- @if $x:` opens a block that would also be the alternative's continuation. | Single-line statements only (text lines, `@set`, flow, `@wait` and commands); any statement, with a block opener's block serving as the continuation |
 
 ### Definition order
@@ -700,7 +700,7 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 19 | `var_decl`, `type`, `constant`, `literal` | |
 | 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` | |
 | 21 | `statement` | |
-| 22 | `text_line` | Q14 |
+| 22 | `text_line` | |
 | 23 | `choice`, `option`, `option_modifier` | |
 | 24 | `if_stmt`, `elif_clause`, `else_clause` | |
 | 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` | |

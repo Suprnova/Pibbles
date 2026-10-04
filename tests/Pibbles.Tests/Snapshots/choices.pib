@@ -1,0 +1,16 @@
+// Choices and their options.
+
+== snapshot.choices
+-> Rattle the handle #id:c4ne8r
+    mira (angry): [shout]Open up![/shout]
+    @set $bravery += 1
+-> Use the key  @if $has_key #show_disabled #id:m3xw9a
+    @jump kitchen.leave
+-> Knock politely  @once
+-> Both  @if $has_key @once
+-> Email me @ home
+-> [b]Bold[/b] {$name} {icon interact} {if $x}yes{else}no{/if}  @once @if $x
+    -> A nested choice
+        @end
+mira: Between two choices.
+-> A second choice

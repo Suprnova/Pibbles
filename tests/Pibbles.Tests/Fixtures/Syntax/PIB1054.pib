@@ -1,0 +1,14 @@
+// A speaker needs a pose or something to say.
+
+== fixture.empty
+mira:
+// PIB1054
+mira :   #thought
+// PIB1054
+
+// Must not trigger
+
+mira (sad):
+mira: {w}
+mira: Something.
+mira\: is narration.

@@ -1,0 +1,14 @@
+// A markup close needs an open span to close.
+
+== fixture.unopened
+mira: Plain text.[/b]
+//               ^^^^ PIB1012
+mira: [b]Bold[/b] and[/b]
+//                   ^^^^ PIB1012
+mira: [b]{if $a}text[/b]{/if}[/b]
+//                  ^^^^ PIB1012
+
+// Must not trigger
+
+mira: \[/b] is escaped text.
+mira: [b]Bold[/b]

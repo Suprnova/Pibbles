@@ -39,11 +39,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1010 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
 | PIB1011 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
 | PIB1012 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
-| PIB1013 | Error | I can't find the `{/if}` that ends this `{if}`. | Conditional text ends on the same line, with `{/if}`. |
+| PIB1013 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
 | PIB1014 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
 | PIB1015 | Error | This text comes after a tag, but tags go at the end of the line. | If `#winning` is part of the text, put a backslash before the `#`: `\#winning`. |
 | PIB1016 | Error | An option's text can't contain `{w}`. | Pauses and commands go in the indented lines under the option. |
-| PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. |
+| PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1021 | Error | Declarations have to come before the file's first node. | Move this above the first `==` line, or into another file. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
@@ -63,7 +63,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
-| PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or change her pose with `mira (happy):`. If this is narration, escape the colon: `mira\:`. |
+| PIB1054 | Error | `mira:` has nothing after it. | Write what mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`. |
 | PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
@@ -148,6 +148,46 @@ mira: I live in the walls.
 
 Write it as an ordinary comment for now: `// Mira is joking here.`
 
+### PIB1010
+
+**A markup span closes on the same line it opens on,** with `[/name]`. It also has to close inside the same conditional branch: a span opened inside `{if}…{/if}` closes before the branch ends, and one opened outside closes outside. An unclosed span is treated as running to the end of the line, or of its branch.
+
+```text
+mira: That's [clue]the master key.
+```
+
+Close it where the styling should end: `mira: That's [clue]the master key[/clue].`
+
+### PIB1011
+
+**Spans close innermost first,** like brackets: `[b][i]…[/i][/b]`, never `[b][i]…[/b][/i]`. The span that was opened last has to close first. The close is still read as closing both, so nothing else is reported.
+
+```text
+mira: [b][i]Both.[/b][/i]
+```
+
+Swap the closes: `mira: [b][i]Both.[/i][/b]`.
+
+### PIB1012
+
+**A `[/name]` has to close a span that's open at that point.** Spans don't cross conditional branches, so a close inside `{if}…{/if}` can't close a span opened before it.
+
+```text
+mira: That's it.[/b]
+```
+
+Remove the close, or add the `[b]` it belongs to. If the brackets are meant as text, escape the first one: `\[/b]`.
+
+### PIB1013
+
+**A `{`, a `[` or an `{if}` has to close on the same line,** with `}`, `]` or `{/if}`. The message points at the opener that's still open.
+
+```text
+rex: {if $bravery > 2}Maybe stop hitting it?
+```
+
+Add the closer where it belongs: `rex: {if $bravery > 2}Maybe stop hitting it?{/if}`.
+
 ### PIB1014
 
 **A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only ASCII punctuation can follow a backslash. A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
@@ -157,6 +197,41 @@ Write it as an ordinary comment for now: `// Mira is joking here.`
 ```
 
 To show a backslash itself, write two: `"C:\\Users\\mira"`.
+
+### PIB1015
+
+**Tags are labels for the game, and they go at the end of a line,** after its text and an option's modifiers. A `#` followed by a letter always starts a tag, so text after one is reported.
+
+```text
+mira: I'm #winning today.
+```
+
+If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning today.` A `#` followed by anything other than a letter, as in `my #1 fan`, needs no escape.
+
+### PIB1016
+
+**An option's text is shown in a menu, so it can't pause or run commands.** `{w}`, `{p}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
+
+```text
+-> Knock{w} and wait
+```
+
+Move the pause into the option's body:
+
+```text
+-> Knock and wait
+    {w}
+```
+
+### PIB1017
+
+**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{p}`, `{br}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
+
+```text
+mira: Hi, {name}.
+```
+
+Write `{$name}` for a variable, or `{name()}` for a function. If the braces are meant as text, escape the first one: `\{name}`.
 
 ### PIB1020
 
@@ -300,6 +375,16 @@ Remove the space: `@if has_item("key"):`.
 ```
 
 Put the tag on the line inside the node that it belongs to.
+
+### PIB1054
+
+**A speaker's name and colon need something after them:** text to say, or a pose to change to. A bare `mira:` is reported, since it's most likely unfinished.
+
+```text
+mira:
+```
+
+Write what Mira says, or `mira (happy):` to change her pose without a line. For a message box that shows only her name, write `mira: {w}`, which waits for the player and shows no text.
 
 ### PIB1055
 

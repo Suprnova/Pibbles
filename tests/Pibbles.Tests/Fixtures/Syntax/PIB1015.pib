@@ -1,0 +1,15 @@
+// Tags go at the end of the line.
+
+== fixture.tags
+mira: I'm #winning today.
+//        ^^^^^^^^ PIB1015
+mira: Hi. #thought and more
+//        ^^^^^^^^ PIB1015
+-> Go #show_disabled @once
+//    ^^^^^^^^^^^^^^ PIB1015
+
+// Must not trigger
+
+mira: I'm \#winning today. #thought
+mira: My #1 fan. #thought #box:phone
+-> Go  @once #show_disabled

@@ -1,0 +1,169 @@
+File 1:1-19:1
+  Nodes:
+    Node 3:1-18:10
+      Name: Name 3:4-3:17 Text="snapshot.text"
+      Body:
+        TextLine 4:1-4:19
+          Speaker: Name 4:1-4:5 Text="mira"
+          Content:
+            TextRun 4:7-4:19 Text="Hello there."
+        TextLine 5:1-5:32
+          Speaker: Name 5:1-5:5 Text="mira"
+          Pose: Name 5:7-5:11 Text="smug"
+          Content:
+            TextRun 5:14-5:32 Text="I knew you'd come."
+        TextLine 6:1-6:12
+          Speaker: Name 6:1-6:5 Text="mira"
+          Pose: Name 6:7-6:10 Text="sad"
+        TextLine 7:1-7:57
+          Speaker: Name 7:1-7:5 Text="mira"
+          Pose: Name 7:6-7:11 Text="happy"
+          Content:
+            TextRun 7:15-7:57 Text="Spacing around the speaker doesn't matter."
+        TextLine 8:1-8:34
+          Content:
+            TextRun 8:1-8:34 Text="The kitchen smells of old coffee."
+        TextLine 9:1-9:78
+          Content:
+            TextRun 9:1-9:78 Text="Note: escaped colons, [brackets], {braces}, #hashes and a \\ backslash."
+        TextLine 10:1-10:37
+          Content:
+            TextRun 10:1-10:37 Text="my #1 fan, and ] and } on their own."
+        TextLine 11:1-11:78
+          Speaker: Name 11:1-11:5 Text="mira"
+          Content:
+            TextRun 11:7-11:14 Text="That's "
+            Markup 11:14-11:24
+              Name: Name 11:15-11:16 Text="b"
+              Content:
+                TextRun 11:17-11:20 Text="not"
+            TextRun 11:24-11:27 Text=" a "
+            Markup 11:27-11:57
+              Name: Name 11:28-11:32 Text="clue"
+              Content:
+                TextRun 11:33-11:40 Text="normal "
+                Markup 11:40-11:50
+                  Name: Name 11:41-11:42 Text="i"
+                  Content:
+                    TextRun 11:43-11:46 Text="key"
+            TextRun 11:57-11:58 Text="."
+          Tags:
+            Tag 11:59-11:67 Name="thought" Value=null
+            Tag 11:68-11:78 Name="box" Value="phone"
+        TextLine 12:1-12:97
+          Speaker: Name 12:1-12:4 Text="rex"
+          Content:
+            Markup 12:6-12:40
+              Name: Name 12:7-12:11 Text="wave"
+              Arguments:
+                Argument 12:12-12:23
+                  Name: Name 12:12-12:21 Text="amplitude"
+                  Value: NumberLiteral 12:22-12:23 Value=2
+              Content:
+                TextRun 12:24-12:33 Text="Spooooky."
+            TextRun 12:40-12:41 Text=" "
+            Markup 12:41-12:67
+              Name: Name 12:42-12:47 Text="speed"
+              Arguments:
+                Argument 12:48-12:51
+                  Value: NumberLiteral 12:48-12:51 Value=0.3
+              Content:
+                TextRun 12:52-12:59 Text="Slowly."
+            TextRun 12:67-12:68 Text=" "
+            Markup 12:68-12:97
+              Name: Name 12:69-12:74 Text="color"
+              Arguments:
+                Argument 12:75-12:84
+                  Value: StringLiteral 12:75-12:84 Value="#ff0000"
+              Content:
+                TextRun 12:85-12:89 Text="Red."
+        TextLine 13:1-13:82
+          Speaker: Name 13:1-13:5 Text="mira"
+          Content:
+            TextRun 13:7-13:11 Text="Hi, "
+            Interpolation 13:11-13:25
+              Value: VariableExpression 13:12-13:24 Name="player_name"
+            TextRun 13:25-13:36 Text=". You have "
+            Interpolation 13:36-13:55
+              Value: CallExpression 13:37-13:54
+                Function: Name 13:37-13:47 Text="item_count"
+                Arguments:
+                  StringLiteral 13:48-13:53 Value="key"
+            TextRun 13:55-13:65 Text=" keys and "
+            Icon 13:65-13:81
+              Name: Name 13:71-13:80 Text="inventory"
+            TextRun 13:81-13:82 Text="."
+        TextLine 14:1-14:68
+          Speaker: Name 14:1-14:5 Text="mira"
+          Content:
+            TextRun 14:7-14:14 Text="Locked."
+            Pause 14:14-14:17
+            TextRun 14:17-14:28 Text=" Of course."
+            Pause 14:28-14:35
+              Duration: NumberLiteral 14:31-14:34 Value=0.5
+            TextRun 14:35-14:43 Text=" Really."
+            PageBreak 14:43-14:46
+            TextRun 14:46-14:55 Text="New page."
+            LineBreak 14:55-14:59
+            TextRun 14:59-14:68 Text="New line."
+        TextLine 15:1-15:84
+          Speaker: Name 15:1-15:5 Text="mira"
+          Content:
+            Markup 15:7-15:30
+              Name: Name 15:8-15:13 Text="shout"
+              Content:
+                TextRun 15:14-15:22 Text="Open up!"
+            InlineCommand 15:30-15:49 Wait=Default
+              Command: Name 15:32-15:44 Text="shake_screen"
+              Arguments:
+                Argument 15:45-15:48
+                  Value: NumberLiteral 15:45-15:48 Value=0.5
+            InlineCommand 15:49-15:66 Wait=Wait
+              Command: Name 15:51-15:55 Text="jolt"
+              Arguments:
+                Argument 15:56-15:60
+                  Value: NameExpression 15:56-15:60 Name="mira"
+            InlineCommand 15:66-15:84 Wait=NoWait
+              Command: Name 15:68-15:71 Text="sfx"
+              Arguments:
+                Argument 15:72-15:76
+                  Value: NameExpression 15:72-15:76 Name="thud"
+        TextLine 16:1-16:108
+          Speaker: Name 16:1-16:4 Text="rex"
+          Content:
+            TextRun 16:6-16:10 Text="You "
+            ConditionalText 16:10-16:107
+              Condition: BinaryExpression 16:14-16:26 Operator=Greater OperatorSpan=16:23-16:24
+                Left: VariableExpression 16:14-16:22 Name="bravery"
+                Right: NumberLiteral 16:25-16:26 Value=2
+              Content:
+                TextRun 16:27-16:42 Text="actually hit it"
+              ElseIfs:
+                ElseIfText 16:42-16:78
+                  Condition: BinaryExpression 16:48-16:60 Operator=Greater OperatorSpan=16:57-16:58
+                    Left: VariableExpression 16:48-16:56 Name="bravery"
+                    Right: NumberLiteral 16:59-16:60 Value=0
+                  Content:
+                    TextRun 16:61-16:78 Text="barely touched it"
+              Else: ElseText 16:78-16:102
+                Content:
+                  TextRun 16:84-16:102 Text="haven't even tried"
+            TextRun 16:107-16:108 Text="."
+        TextLine 17:1-17:52
+          Speaker: Name 17:1-17:5 Text="mira"
+          Content:
+            ConditionalText 17:7-17:30
+              Condition: VariableExpression 17:11-17:13 Name="a"
+              Content:
+                Markup 17:14-17:25
+                  Name: Name 17:15-17:16 Text="b"
+                  Content:
+                    TextRun 17:17-17:21 Text="bold"
+            ConditionalText 17:30-17:52
+              Condition: VariableExpression 17:35-17:37 Name="b"
+              Content:
+                TextRun 17:39-17:45 Text="spaced"
+        TextLine 18:1-18:10
+          Speaker: Name 18:1-18:5 Text="mira"
+          Content:
+            Pause 18:7-18:10

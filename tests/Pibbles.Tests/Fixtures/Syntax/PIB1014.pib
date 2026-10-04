@@ -1,4 +1,4 @@
-// In quoted text, a backslash only goes before punctuation.
+// A backslash only goes before punctuation, in text and in quoted strings.
 
 == fixture.escapes
 @set $x = "First line\nsecond line"
@@ -7,8 +7,15 @@
 //           ^^ PIB1014
 @set $x = "Tab\9"
 //            ^^ PIB1014
+mira: A line\nbreak.
+//          ^^ PIB1014
+mira: Ends with a backslash\
+//                         ^ PIB1014
+-> Option \t text
+//        ^^ PIB1014
 
 // Must not trigger
 
 @set $x = "A \"quote\" and a backslash \\ inside."
 @set $x = "\# \{ \[ \: \@ \$ \~"
+mira: \[ \] \{ \} \# \: \@ \\ \" \~

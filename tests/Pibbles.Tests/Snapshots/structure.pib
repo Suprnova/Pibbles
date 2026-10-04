@@ -17,6 +17,8 @@ mira: Locked.
 @end
 
 == .leave
+@once:
+    mira: Still a placeholder until variations arrive.
 @end // A comment after a statement.
 
 == common.knock

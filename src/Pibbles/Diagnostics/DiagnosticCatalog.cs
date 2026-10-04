@@ -41,6 +41,38 @@ public static class DiagnosticCatalog
         "`///` notes aren't supported yet.",
         help: "For a comment, use `//`.");
 
+    /// <summary>PIB1010: a markup span with no close on its line, or none before a conditional-text boundary.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor UnclosedMarkup { get; } = new(
+        "PIB1010",
+        DiagnosticSeverity.Error,
+        "I can't find the end of this `[{0}]`.",
+        help: "Close it on the same line with `[/{0}]`.");
+
+    /// <summary>PIB1011: a markup close for an outer span while an inner one is still open.</summary>
+    /// <remarks>Argument: the name of the innermost open span.</remarks>
+    public static DiagnosticDescriptor MarkupOutOfOrder { get; } = new(
+        "PIB1011",
+        DiagnosticSeverity.Error,
+        "I expected `[/{0}]` here, because `[{0}]` was opened last.",
+        help: "Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`.");
+
+    /// <summary>PIB1012: a markup close with no matching open span.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor UnopenedMarkup { get; } = new(
+        "PIB1012",
+        DiagnosticSeverity.Error,
+        "`[/{0}]` closes markup that was never opened.",
+        help: "If you meant the text `[/{0}]`, put a backslash before it: `\\[/{0}]`.");
+
+    /// <summary>PIB1013: a bracket, brace or <c>{if}</c> that isn't closed on its line.</summary>
+    /// <remarks>Arguments: the missing closer, such as <c>}</c> or <c>{/if}</c>, and the opener it should close.</remarks>
+    public static DiagnosticDescriptor Unclosed { get; } = new(
+        "PIB1013",
+        DiagnosticSeverity.Error,
+        "I can't find the `{0}` that ends this `{1}`.",
+        help: "Close it on the same line.");
+
     /// <summary>PIB1014: a backslash followed by something other than ASCII punctuation.</summary>
     /// <remarks>Argument: the backslash and the character after it.</remarks>
     public static DiagnosticDescriptor InvalidEscape { get; } = new(
@@ -48,6 +80,31 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "I don't know the escape `{0}`.",
         help: @"A backslash only goes before punctuation. To show a backslash, write `\\`.");
+
+    /// <summary>PIB1015: text after a tag, which ends the line's text.</summary>
+    /// <remarks>Argument: the tag the text comes after.</remarks>
+    public static DiagnosticDescriptor TextAfterTag { get; } = new(
+        "PIB1015",
+        DiagnosticSeverity.Error,
+        "This text comes after a tag, but tags go at the end of the line.",
+        "this starts a tag",
+        "If `{0}` is part of the text, put a backslash before the `#`: `\\{0}`.");
+
+    /// <summary>PIB1016: a command, <c>{w}</c> or <c>{p}</c> in an option's text.</summary>
+    /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
+    public static DiagnosticDescriptor NotInOption { get; } = new(
+        "PIB1016",
+        DiagnosticSeverity.Error,
+        "An option's text can't contain `{0}`.",
+        help: "Pauses and commands go in the indented lines under the option.");
+
+    /// <summary>PIB1017: a point that isn't a variable, call, command or brace keyword.</summary>
+    /// <remarks>Argument: the point as written.</remarks>
+    public static DiagnosticDescriptor UnknownPoint { get; } = new(
+        "PIB1017",
+        DiagnosticSeverity.Error,
+        "I don't know what `{0}` means.",
+        help: "To show a variable, write `{{$name}}`. To call a function, write `{{name()}}`. If the braces are part of the text, put a backslash before the `{{`.");
 
     /// <summary>PIB1020: a file's only <c>@prefix</c> line, after something other than comments.</summary>
     public static DiagnosticDescriptor MisplacedPrefix { get; } = new(
@@ -147,6 +204,14 @@ public static class DiagnosticCatalog
         "`{0}` can't go on {1}.",
         help: "{2}");
 
+    /// <summary>PIB1054: a speaker with neither a pose nor text.</summary>
+    /// <remarks>Argument: the speaker's name as written.</remarks>
+    public static DiagnosticDescriptor EmptyLine { get; } = new(
+        "PIB1054",
+        DiagnosticSeverity.Error,
+        "`{0}:` has nothing after it.",
+        help: "Write what {0} says after the colon, or write `{0}: {{w}}` for a box with only their name. To change their pose without a line, write `{0} (pose):`.");
+
     /// <summary>PIB1055: a negative number as a command argument, without parentheses.</summary>
     /// <remarks>Argument: the negative value as written, such as <c>-1</c>.</remarks>
     public static DiagnosticDescriptor NegativeArgument { get; } = new(
@@ -178,7 +243,14 @@ public static class DiagnosticCatalog
         UnexpectedIndentation,
         MissingBlock,
         UnsupportedNote,
+        UnclosedMarkup,
+        MarkupOutOfOrder,
+        UnopenedMarkup,
+        Unclosed,
         InvalidEscape,
+        TextAfterTag,
+        NotInOption,
+        UnknownPoint,
         MisplacedPrefix,
         OutsideNode,
         DuplicatePrefix,
@@ -192,6 +264,7 @@ public static class DiagnosticCatalog
         ArgumentOrder,
         SpaceBeforeCall,
         TagNotAllowed,
+        EmptyLine,
         NegativeArgument,
         UnclosedParenthesis,
         ChainedComparison,

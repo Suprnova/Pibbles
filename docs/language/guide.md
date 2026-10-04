@@ -70,7 +70,7 @@ mira (sad): Now her pose is "sad".
 mira (neutral):
 ```
 
-The last line has no text. It changes Mira's pose without showing a message. Each character's poses are listed in the cast list, and Pibbles tells you if you use one that doesn't exist.
+The last line has no text. It changes Mira's pose without showing a message. A name and a colon with nothing at all after it, `mira:`, is an error. For a message box with only Mira's name in it, write `mira: {w}`. Each character's poses are listed in the cast list, and Pibbles tells you if you use one that doesn't exist.
 
 The parentheses hold a single pose name, not a stage direction. `mira (to Rex): Fine.` is an error. To note how a line should be said, put a `//` comment above it.
 

@@ -1,0 +1,18 @@
+// Text lines and every kind of inline element.
+
+== snapshot.text
+mira: Hello there.
+mira (smug): I knew you'd come.
+mira (sad):
+mira(happy) : Spacing around the speaker doesn't matter.
+The kitchen smells of old coffee.
+Note\: escaped colons, \[brackets\], \{braces\}, \#hashes and a \\ backslash.
+my #1 fan, and ] and } on their own.
+mira: That's [b]not[/b] a [clue]normal [i]key[/i][/clue]. #thought #box:phone
+rex: [wave amplitude=2]Spooooky.[/wave] [speed 0.3]Slowly.[/speed] [color "#ff0000"]Red.[/color]
+mira: Hi, {$player_name}. You have {item_count("key")} keys and {icon inventory}.
+mira: Locked.{w} Of course.{w 0.5} Really.{p}New page.{br}New line.
+mira: [shout]Open up![/shout]{@shake_screen 0.5}{@jolt mira wait}{@sfx thud nowait}
+rex: You {if $bravery > 2}actually hit it{elif $bravery > 0}barely touched it{else}haven't even tried{/if}.
+mira: {if $a}[b]bold[/b]{/if}{ if $b }spaced{ /if }
+mira: {w}

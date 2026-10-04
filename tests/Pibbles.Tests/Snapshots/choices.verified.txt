@@ -1,0 +1,82 @@
+File 1:1-17:1
+  Nodes:
+    Node 3:1-16:19
+      Name: Name 3:4-3:20 Text="snapshot.choices"
+      Body:
+        Choice 4:1-14:13
+          Options:
+            Option 4:1-6:23 IsOnce=false
+              Text:
+                TextRun 4:4-4:21 Text="Rattle the handle"
+              Tags:
+                Tag 4:22-4:32 Name="id" Value="c4ne8r"
+              Body:
+                TextLine 5:5-5:42
+                  Speaker: Name 5:5-5:9 Text="mira"
+                  Pose: Name 5:11-5:16 Text="angry"
+                  Content:
+                    Markup 5:19-5:42
+                      Name: Name 5:20-5:25 Text="shout"
+                      Content:
+                        TextRun 5:26-5:34 Text="Open up!"
+                SetStatement 6:5-6:23 Operator=Add OperatorSpan=6:19-6:21
+                  Variable: VariableExpression 6:10-6:18 Name="bravery"
+                  Value: NumberLiteral 6:22-6:23 Value=1
+            Option 7:1-8:24 IsOnce=false
+              Text:
+                TextRun 7:4-7:15 Text="Use the key"
+              Condition: VariableExpression 7:21-7:29 Name="has_key"
+              Tags:
+                Tag 7:30-7:44 Name="show_disabled" Value=null
+                Tag 7:45-7:55 Name="id" Value="m3xw9a"
+              Body:
+                JumpStatement 8:5-8:24
+                  Target: Name 8:11-8:24 Text="kitchen.leave"
+            Option 9:1-9:25 IsOnce=true
+              Text:
+                TextRun 9:4-9:18 Text="Knock politely"
+            Option 10:1-10:28 IsOnce=true
+              Text:
+                TextRun 10:4-10:8 Text="Both"
+              Condition: VariableExpression 10:14-10:22 Name="has_key"
+            Option 11:1-11:19 IsOnce=false
+              Text:
+                TextRun 11:4-11:19 Text="Email me @ home"
+            Option 12:1-14:13 IsOnce=true
+              Text:
+                Markup 12:4-12:15
+                  Name: Name 12:5-12:6 Text="b"
+                  Content:
+                    TextRun 12:7-12:11 Text="Bold"
+                TextRun 12:15-12:16 Text=" "
+                Interpolation 12:16-12:23
+                  Value: VariableExpression 12:17-12:22 Name="name"
+                TextRun 12:23-12:24 Text=" "
+                Icon 12:24-12:39
+                  Name: Name 12:30-12:38 Text="interact"
+                TextRun 12:39-12:40 Text=" "
+                ConditionalText 12:40-12:63
+                  Condition: VariableExpression 12:44-12:46 Name="x"
+                  Content:
+                    TextRun 12:47-12:50 Text="yes"
+                  Else: ElseText 12:50-12:58
+                    Content:
+                      TextRun 12:56-12:58 Text="no"
+              Condition: VariableExpression 12:75-12:77 Name="x"
+              Body:
+                Choice 13:5-14:13
+                  Options:
+                    Option 13:5-14:13 IsOnce=false
+                      Text:
+                        TextRun 13:8-13:23 Text="A nested choice"
+                      Body:
+                        EndStatement 14:9-14:13
+        TextLine 15:1-15:27
+          Speaker: Name 15:1-15:5 Text="mira"
+          Content:
+            TextRun 15:7-15:27 Text="Between two choices."
+        Choice 16:1-16:19
+          Options:
+            Option 16:1-16:19 IsOnce=false
+              Text:
+                TextRun 16:4-16:19 Text="A second choice"

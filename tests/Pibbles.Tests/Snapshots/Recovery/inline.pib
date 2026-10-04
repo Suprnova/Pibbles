@@ -1,0 +1,12 @@
+// Broken inline text still leaves a complete tree.
+
+== snapshot.inline
+mira: [clue]Never closed.
+mira: [b][i]Crossed.[/b]
+mira: Closed [/b] without opening.
+mira: {$name never closed.
+mira: {they} is not a point.
+mira: I'm #winning today.
+-> Wait {w} here
+mira: {if $a}never closed
+mira:

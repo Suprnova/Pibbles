@@ -85,3 +85,23 @@ public enum CommandWait
     /// <summary><c>nowait</c>: the story carries on at once.</summary>
     NoWait,
 }
+
+/// <summary>A line of dialogue or narration, such as <c>mira (smug): I knew you'd come.</c></summary>
+/// <remarks>A line with a pose and no text, <c>mira (sad):</c>, changes the pose without showing a line.</remarks>
+/// <param name="Speaker">The speaker, or <see langword="null"/> for narration.</param>
+/// <param name="Pose">The pose in parentheses after the speaker, or <see langword="null"/>.</param>
+/// <param name="Content">The line's text, with its leading and trailing whitespace trimmed.</param>
+/// <param name="Tags">The tags at the end of the line.</param>
+public sealed record TextLineSyntax(NameSyntax? Speaker, NameSyntax? Pose, IReadOnlyList<InlineSyntax> Content, IReadOnlyList<TagSyntax> Tags) : StatementSyntax;
+
+/// <summary>A choice: consecutive <c>-></c> options at the same indentation.</summary>
+/// <param name="Options">The options, in order.</param>
+public sealed record ChoiceSyntax(IReadOnlyList<OptionSyntax> Options) : StatementSyntax;
+
+/// <summary>One option of a choice, such as <c>-> Use the key  @if $has_key #show_disabled</c>, and its block.</summary>
+/// <param name="Text">The option's text.</param>
+/// <param name="Condition">The <c>@if</c> modifier's condition, or <see langword="null"/>.</param>
+/// <param name="IsOnce">Whether the option has the <c>@once</c> modifier, which removes it after it's picked.</param>
+/// <param name="Tags">The tags at the end of the line.</param>
+/// <param name="Body">The statements that run when the option is picked.</param>
+public sealed record OptionSyntax(IReadOnlyList<InlineSyntax> Text, ExpressionSyntax? Condition, bool IsOnce, IReadOnlyList<TagSyntax> Tags, IReadOnlyList<StatementSyntax> Body) : SyntaxNode;

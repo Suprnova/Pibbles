@@ -1,0 +1,70 @@
+File 1:1-13:1
+  Nodes:
+    Node 3:1-12:6
+      Name: Name 3:4-3:19 Text="snapshot.inline"
+      Body:
+        TextLine 4:1-4:26
+          Speaker: Name 4:1-4:5 Text="mira"
+          Content:
+            Markup 4:7-4:26
+              Name: Name 4:8-4:12 Text="clue"
+              Content:
+                TextRun 4:13-4:26 Text="Never closed."
+        TextLine 5:1-5:25
+          Speaker: Name 5:1-5:5 Text="mira"
+          Content:
+            Markup 5:7-5:25
+              Name: Name 5:8-5:9 Text="b"
+              Content:
+                Markup 5:10-5:21
+                  Name: Name 5:11-5:12 Text="i"
+                  Content:
+                    TextRun 5:13-5:21 Text="Crossed."
+        TextLine 6:1-6:35
+          Speaker: Name 6:1-6:5 Text="mira"
+          Content:
+            TextRun 6:7-6:14 Text="Closed "
+            TextRun 6:18-6:35 Text=" without opening."
+        TextLine 7:1-7:27
+          Speaker: Name 7:1-7:5 Text="mira"
+          Content:
+            Interpolation 7:7-7:27
+              Value: VariableExpression 7:8-7:13 Name="name"
+        TextLine 8:1-8:29
+          Speaker: Name 8:1-8:5 Text="mira"
+          Content:
+            Interpolation 8:7-8:13
+              Value: NameExpression 8:8-8:12 Name="they"
+            TextRun 8:13-8:29 Text=" is not a point."
+        TextLine 9:1-9:26
+          Speaker: Name 9:1-9:5 Text="mira"
+          Content:
+            TextRun 9:7-9:10 Text="I'm"
+          Tags:
+            Tag 9:11-9:19 Name="winning" Value=null
+        Choice 10:1-10:17
+          Options:
+            Option 10:1-10:17 IsOnce=false
+              Text:
+                TextRun 10:4-10:9 Text="Wait "
+                Pause 10:9-10:12
+                TextRun 10:12-10:17 Text=" here"
+        TextLine 11:1-11:26
+          Speaker: Name 11:1-11:5 Text="mira"
+          Content:
+            ConditionalText 11:7-11:26
+              Condition: VariableExpression 11:11-11:13 Name="a"
+              Content:
+                TextRun 11:14-11:26 Text="never closed"
+        TextLine 12:1-12:6
+          Speaker: Name 12:1-12:5 Text="mira"
+Diagnostics:
+  PIB1010 4:7 I can't find the end of this `[clue]`.
+  PIB1011 5:21 I expected `[/i]` here, because `[i]` was opened last.
+  PIB1012 6:14 `[/b]` closes markup that was never opened.
+  PIB1013 7:7 I can't find the `}` that ends this `{`.
+  PIB1017 8:7 I don't know what `{they}` means.
+  PIB1015 9:11 This text comes after a tag, but tags go at the end of the line.
+  PIB1016 10:9 An option's text can't contain `{w}`.
+  PIB1013 11:7 I can't find the `{/if}` that ends this `{if}`.
+  PIB1054 12:1 `mira:` has nothing after it.

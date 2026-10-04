@@ -12,9 +12,21 @@ internal sealed partial class Parser
     private void ParseStatement(List<StatementSyntax> statements)
     {
         SourceLine line = Current.Line;
-        if (line.Kind is not LineKind.At)
+        if (line.Kind is LineKind.Option)
+        {
+            statements.Add(ParseChoice());
+            return;
+        }
+
+        if (line.Kind is LineKind.Dash)
         {
             statements.Add(ParseUnparsedStatement(line));
+            return;
+        }
+
+        if (line.Kind is not LineKind.At)
+        {
+            statements.Add(ParseTextLine(line));
             return;
         }
 
@@ -213,26 +225,7 @@ internal sealed partial class Parser
         var command = new NameSyntax(TextOf(token.Span)[1..]) { Span = new(token.Span.Start + 1, token.Span.Length - 1) };
         Advance();
 
-        List<ArgumentSyntax> arguments = [];
-        CommandWait wait = CommandWait.Default;
-        while (!AtLineEnd && !lineFailed)
-        {
-            if (token.Kind is TokenKind.Name && TextOf(token.Span) is "wait" or "nowait")
-            {
-                wait = TextOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
-                Advance();
-                break;
-            }
-
-            if (ParseArgument() is not { } argument)
-                break;
-
-            if (argument.Name is null && arguments.Any(previous => previous.Name is not null))
-                Fail(DiagnosticCatalog.ArgumentOrder, argument.Span);
-
-            arguments.Add(argument);
-        }
-
+        List<ArgumentSyntax> arguments = ParseArguments(allowWait: true, out CommandWait wait);
         int end = previousEnd;
         FinishLine();
         return new(command, arguments, wait) { Span = new(start, end - start) };

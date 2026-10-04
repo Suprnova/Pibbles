@@ -1,0 +1,12 @@
+// Markup closes innermost first.
+
+== fixture.order
+mira: [b][i]Both.[/b]
+//               ^^^^ PIB1011
+mira: [clue][wave]Key.[/clue]
+//                    ^^^^^^^ PIB1011
+
+// Must not trigger
+
+mira: [b][i]Both.[/i][/b]
+mira: [b]One[/b] [i]then another[/i].

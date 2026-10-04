@@ -295,14 +295,18 @@ internal sealed partial class Parser
 
     private TagSyntax ReadTag()
     {
-        string text = TextOf(token.Span);
-        int colon = text.IndexOf(':', StringComparison.Ordinal);
-        var tag = colon < 0
-            ? new TagSyntax(text[1..], null) { Span = token.Span }
-            : new TagSyntax(text[1..colon], text[(colon + 1)..]) { Span = token.Span };
-
+        TagSyntax tag = TagFrom(token);
         Advance();
         return tag;
+    }
+
+    private TagSyntax TagFrom(Token tag)
+    {
+        string text = TextOf(tag.Span);
+        int colon = text.IndexOf(':', StringComparison.Ordinal);
+        return colon < 0
+            ? new TagSyntax(text[1..], null) { Span = tag.Span }
+            : new TagSyntax(text[1..colon], text[(colon + 1)..]) { Span = tag.Span };
     }
 
     private TextSpan SpanFrom(int start) => new(start, previousEnd - start);

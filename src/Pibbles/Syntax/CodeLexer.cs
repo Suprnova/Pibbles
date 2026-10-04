@@ -205,7 +205,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private void SkipIdentifier()
     {
-        while (Position < span.End && IsIdentifierPart(Position))
+        while (Position < span.End && IsIdentifierPart(text, Position))
             Position += char.IsSurrogatePair(text, Position) ? 2 : 1;
     }
 
@@ -220,7 +220,11 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     private bool IsIdentifierStart(int index, bool allowUnderscore = true) =>
         index < span.End && (char.IsLetter(text, index) || allowUnderscore && text[index] is '_');
 
-    private bool IsIdentifierPart(int index) =>
+    /// <summary>Whether a character can start an identifier: a letter or <c>_</c>.</summary>
+    internal static bool IsIdentifierStart(string text, int index) => char.IsLetter(text, index) || text[index] is '_';
+
+    /// <summary>Whether a character can continue an identifier: a letter, a combining mark, an ASCII digit or <c>_</c>.</summary>
+    internal static bool IsIdentifierPart(string text, int index) =>
         char.IsLetter(text, index)
         || IsDigit(text[index])
         || text[index] is '_'
@@ -232,7 +236,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     private static bool IsDigit(char c) => char.IsAsciiDigit(c);
 
     /// <summary>ASCII punctuation, the characters a backslash can make literal.</summary>
-    private static bool IsEscapable(char c) => char.IsAscii(c) && (char.IsPunctuation(c) || char.IsSymbol(c));
+    internal static bool IsEscapable(char c) => char.IsAscii(c) && (char.IsPunctuation(c) || char.IsSymbol(c));
 
     private void Report(DiagnosticDescriptor descriptor, int start, params object?[] arguments) =>
         diagnostics.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));
