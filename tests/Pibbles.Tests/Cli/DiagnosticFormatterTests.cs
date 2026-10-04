@@ -81,6 +81,31 @@ public sealed class DiagnosticFormatterTests : IDisposable
         Assert.Equal(expected, DiagnosticFormatter.Summary(files, diagnostics));
     }
 
+    [Fact]
+    public void WritePretty_WithColor_HighlightsProblemAndPaintsCodeAndFix()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\nmira: I'm #winning today.\n");
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        DiagnosticFormatter.WritePretty(output, source, diagnostic, color: true);
+
+        string text = output.ToString();
+        Assert.Contains("mira: I'm \e[1;31m#winning\e[0m today.", text);
+        Assert.Contains("\e[36m#winning\e[39m is part of", text);
+        Assert.Contains("\e[32mmira: I'm \\#winning today.\e[0m", text);
+    }
+
+    [Fact]
+    public void WritePretty_WithColor_ShowsBackticksInSourceVerbatim()
+    {
+        var source = new SourceText("story.pib", "mira: Use `this` [b]here");
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        DiagnosticFormatter.WritePretty(output, source, diagnostic, color: true);
+
+        Assert.Contains("mira: Use `this` ", output.ToString());
+    }
+
     private static Diagnostic Problem(SourceText source, TextSpan span, string? label, string? help) =>
         new("PIB0000", DiagnosticSeverity.Error, source.GetLocation(span), "message", label, help);
 

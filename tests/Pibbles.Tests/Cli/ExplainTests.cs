@@ -47,7 +47,7 @@ public sealed class ExplainTests : IDisposable
 
         Assert.Equal(Check.Passed, exitCode);
         Assert.Equal(
-            "PIB1010 (error): I can't find the end of this `[clue]`.\nHelp: Close it with `[/clue]`.\n\n**A span closes on its line.**\n\n    mira: [clue]Key\n\nClose it.\n\n",
+            "error[PIB1010]: I can't find the end of this `[clue]`.\n  = help: Close it with `[/clue]`.\n\nA span closes on its line.\n\n    mira: [clue]Key\n\nClose it.\n\n",
             output.ToString().ReplaceLineEndings("\n"));
     }
 
@@ -56,7 +56,7 @@ public sealed class ExplainTests : IDisposable
     {
         Explain.Run("PIB2001", Catalog, output, error);
 
-        Assert.Equal("PIB2001 (error): I don't know an actor called `Note`.\nHelp: Escape the colon.\n", output.ToString().ReplaceLineEndings("\n"));
+        Assert.Equal("error[PIB2001]: I don't know an actor called `Note`.\n  = help: Escape the colon.\n", output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Theory]
@@ -78,7 +78,18 @@ public sealed class ExplainTests : IDisposable
             using var explanation = new StringWriter();
 
             Assert.Equal(Check.Passed, Explain.Run(descriptor.Code, explanation, error));
-            Assert.Contains("\n**", explanation.ToString().ReplaceLineEndings("\n"));
+            Assert.Contains("\n\n", explanation.ToString().ReplaceLineEndings("\n"));
+            Assert.DoesNotContain("**", explanation.ToString());
         });
+    }
+
+    [Fact]
+    public void Run_WithColor_PaintsHeadlineAndExamples()
+    {
+        Explain.Run("PIB1010", Catalog, output, error, color: true);
+
+        string text = output.ToString();
+        Assert.Contains("\e[1;31merror[PIB1010]", text);
+        Assert.Contains("    \e[32mmira: [clue]Key", text);
     }
 }

@@ -6,6 +6,13 @@ using Pibbles.Cli;
 // Stories and messages hold any character, and Windows consoles otherwise use an old code page that mangles them.
 Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
+// Color only when writing to a terminal, and never when NO_COLOR is set (no-color.org). Messages to people go through
+// a StyledWriter, which renders their markup; machine-readable output never does.
+bool noColor = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"));
+bool outputColor = !Console.IsOutputRedirected && !noColor;
+var messages = new StyledWriter(Console.Out, outputColor);
+var errors = new StyledWriter(Console.Error, !Console.IsErrorRedirected && !noColor);
+
 var root = new Argument<string?>("folder")
 {
     Description = "The project's folder, with pibbles.json and the story folder in it. Leave it out to check the folder you're in.",
@@ -23,11 +30,10 @@ var style = new Option<bool>("--style") { Description = "Also show style hints."
 var check = new Command("check", "Check the story in a project's folder, or the folder you're in, for problems.") { root, format, warnAsError, release, style };
 check.SetAction(result =>
 {
-    if (StoryFolder.Load(result.GetValue(root) ?? ".", Directory.GetCurrentDirectory(), Console.Error) is not { } sources)
+    if (StoryFolder.Load(result.GetValue(root) ?? ".", Directory.GetCurrentDirectory(), errors) is not { } sources)
         return Check.CouldNotRun;
 
-    bool color = !Console.IsOutputRedirected && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"));
-    return Check.Run(sources, new(result.GetValue(format), result.GetValue(warnAsError), result.GetValue(style), color), Console.Out);
+    return Check.Run(sources, new(result.GetValue(format), result.GetValue(warnAsError), result.GetValue(style), outputColor), Console.Out);
 });
 
 var folder = new Argument<string?>("folder")
@@ -37,11 +43,11 @@ var folder = new Argument<string?>("folder")
 };
 var blank = new Option<bool>("--blank") { Description = "Start with an empty story folder, instead of an example story that explains itself." };
 var init = new Command("init", "Start a new project in a folder, or the folder you're in: a pibbles.json and a story folder with an example story.") { folder, blank };
-init.SetAction(result => Init.Run(result.GetValue(folder) ?? ".", Directory.GetCurrentDirectory(), result.GetValue(blank), Console.Out, Console.Error));
+init.SetAction(result => Init.Run(result.GetValue(folder) ?? ".", Directory.GetCurrentDirectory(), result.GetValue(blank), messages, errors));
 
 var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB1011." };
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
-explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, Console.Error));
+explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, errors, outputColor));
 
 var pibbles = new RootCommand("Pibbles: checks and plays narrative scripts.") { init, check, explain };
 pibbles.SetAction(result => new HelpAction().Invoke(result));

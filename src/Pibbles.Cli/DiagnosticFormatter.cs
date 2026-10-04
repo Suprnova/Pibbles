@@ -1,6 +1,7 @@
 using System.Globalization;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
+using static Pibbles.Cli.Ansi;
 
 namespace Pibbles.Cli;
 
@@ -11,8 +12,9 @@ internal static class DiagnosticFormatter
 
     /// <summary>
     /// Writes a diagnostic for people, as <c>docs/syntax.md</c> shows: a headline, where it is, the source line with the
-    /// problem marked and labeled, and the help, whose later lines line up under its first. Tabs in the line are shown
-    /// as four spaces.
+    /// problem marked and labeled, and the help. A help's later lines are examples, lined up under its first. With color,
+    /// the problem is highlighted in the source line too, quoted code in the prose is cyan, and the help is green. Tabs in
+    /// the line are shown as four spaces.
     /// </summary>
     public static void WritePretty(TextWriter output, SourceText source, Diagnostic diagnostic, bool color)
     {
@@ -22,42 +24,47 @@ internal static class DiagnosticFormatter
         TextSpan lineSpan = source.GetLineSpan(location.Start.Line);
         string line = source.Text.Substring(lineSpan.Start, lineSpan.Length);
 
+        int markFrom = Math.Min(location.Start.Column, line.Length);
+        int markTo = Math.Clamp(location.Span.End - lineSpan.Start, markFrom, line.Length);
         int markStart = DisplayWidth(line, location.Start.Column);
-        int markEnd = DisplayWidth(line, Math.Min(location.Span.End, lineSpan.End) - lineSpan.Start);
-        string marks = new('^', Math.Max(markEnd - markStart, 1));
-        string severity = Name(diagnostic.Severity);
+        string marks = new('^', Math.Max(DisplayWidth(line, markTo) - markStart, 1));
         string tint = Tint(diagnostic.Severity);
+        string bar = Paint("|", Blue, color);
+        string label = diagnostic.Label is null ? "" : $" {Markup.Render(diagnostic.Label, color)}";
 
-        output.WriteLine($"{Paint($"{severity}[{diagnostic.Code}]", $"1;{tint}", color)}{Paint($": {diagnostic.Message}", "1", color)}");
+        output.WriteLine($"{Paint($"{Name(diagnostic.Severity)}[{diagnostic.Code}]", tint, color)}{Paint($": {Markup.Render(diagnostic.Message, color)}", Bold, color)}");
         output.WriteLine($"{gutter}{Paint("-->", Blue, color)} {location.Path}:{lineNumber}:{Number(location.Start.Column)}");
-        output.WriteLine($"{gutter} {Paint("|", Blue, color)}");
-        output.WriteLine($"{Paint($"{lineNumber} |", Blue, color)} {line.Replace("\t", new string(' ', TabWidth), StringComparison.Ordinal)}");
-        output.WriteLine($"{gutter} {Paint("|", Blue, color)} {new string(' ', markStart)}{Paint(diagnostic.Label is null ? marks : $"{marks} {diagnostic.Label}", $"1;{tint}", color)}");
+        output.WriteLine($"{gutter} {bar}");
+        output.WriteLine($"{Paint($"{lineNumber} |", Blue, color)} {Expand(line[..markFrom])}{Paint(Expand(line[markFrom..markTo]), tint, color)}{Expand(line[markTo..])}");
+        output.WriteLine($"{gutter} {bar} {new string(' ', markStart)}{Paint(marks + label, tint, color)}");
 
         if (diagnostic.Help is not null)
         {
             string[] help = diagnostic.Help.Split('\n');
-            output.WriteLine($"{gutter} {Paint("|", Blue, color)}");
-            output.WriteLine($"{gutter} {Paint("=", Blue, color)} {Paint("help", "1", color)}: {help[0]}");
-            foreach (string more in help[1..])
-                output.WriteLine($"{gutter}{HelpIndent}{more}");
+            output.WriteLine($"{gutter} {bar}");
+            output.WriteLine($"{gutter} {Paint("=", Blue, color)} {Paint("help", Green, color)}: {Markup.Render(help[0], color)}");
+            foreach (string example in help[1..])
+                output.WriteLine($"{gutter}{HelpIndent}{Paint(example, Example, color)}");
         }
     }
 
-    /// <summary>The closing line of the readable format, such as <c>Checked 3 files: 2 errors and 1 warning.</c></summary>
-    public static string Summary(int files, IReadOnlyCollection<Diagnostic> diagnostics)
+    /// <summary>
+    /// The closing line of the readable format, such as <c>Checked 3 files: 2 errors and 1 warning.</c> With color, each
+    /// count is in its severity's color, and "no problems" is green.
+    /// </summary>
+    public static string Summary(int files, IReadOnlyCollection<Diagnostic> diagnostics, bool color = false)
     {
         string[] counts =
         [
             .. new[] { (DiagnosticSeverity.Error, "error"), (DiagnosticSeverity.Warning, "warning"), (DiagnosticSeverity.Info, "note"), (DiagnosticSeverity.Hint, "hint") }
-                .Select(entry => (Count: diagnostics.Count(diagnostic => diagnostic.Severity == entry.Item1), Word: entry.Item2))
+                .Select(entry => (Severity: entry.Item1, Count: diagnostics.Count(diagnostic => diagnostic.Severity == entry.Item1), Word: entry.Item2))
                 .Where(entry => entry.Count > 0)
-                .Select(entry => Plural(entry.Count, entry.Word)),
+                .Select(entry => Paint(Plural(entry.Count, entry.Word), Tint(entry.Severity), color)),
         ];
 
         string found = counts.Length switch
         {
-            0 => "no problems",
+            0 => Paint("no problems", Green, color),
             1 => counts[0],
             _ => $"{string.Join(", ", counts[..^1])} and {counts[^1]}",
         };
@@ -93,22 +100,12 @@ internal static class DiagnosticFormatter
         writer.WriteEndArray();
     });
 
-    private const string Blue = "1;34";
-
     /// <summary>Lines up a help's later lines with its first, after <c> = help: </c>.</summary>
     private const string HelpIndent = "         ";
 
     private static string Name(DiagnosticSeverity severity) => severity.ToString().ToLowerInvariant();
 
-    private static string Tint(DiagnosticSeverity severity) => severity switch
-    {
-        DiagnosticSeverity.Error => "31",
-        DiagnosticSeverity.Warning => "33",
-        DiagnosticSeverity.Info => "36",
-        _ => "37",
-    };
-
-    private static string Paint(string text, string codes, bool color) => color ? $"\e[{codes}m{text}\e[0m" : text;
+    private static string Expand(string text) => text.Replace("\t", new string(' ', TabWidth), StringComparison.Ordinal);
 
     private static string Number(int zeroBased) => (zeroBased + 1).ToString(CultureInfo.InvariantCulture);
 

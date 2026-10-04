@@ -63,7 +63,7 @@ internal static class Check
                     output.WriteLine();
                 }
 
-                output.WriteLine(DiagnosticFormatter.Summary(sources.Count, [.. found.Select(entry => entry.Diagnostic)]));
+                output.WriteLine(DiagnosticFormatter.Summary(sources.Count, [.. found.Select(entry => entry.Diagnostic)], options.Color));
                 break;
         }
 
