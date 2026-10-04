@@ -24,6 +24,7 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 
 **How `pibbles check` reads the story and reports it:**
 
+- **The project** is found from the folder given, or the current directory, by going up to the nearest folder with a `pibbles.json` ([project root](language/reference.md#files-and-structure)). So `pibbles check` works from anywhere inside a project, such as its `story/` folder. `pibbles init` doesn't search: it starts a project exactly where it's told.
 - **The story** is every `.pib` file under the story folder: `story/` under the root, or the folder that `pibbles.json`'s `story` setting names.
 - **Paths in diagnostics** are relative to the current directory, so they point at the right file from an editor's terminal or a CI job, whichever folder the root is.
 - **The readable format** ends with a summary line, such as `Checked 3 files: 2 errors and 1 warning.` The `msbuild` and `json` formats print only the diagnostics.

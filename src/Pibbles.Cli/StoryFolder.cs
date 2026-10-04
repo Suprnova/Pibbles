@@ -3,8 +3,9 @@ using Pibbles.Syntax;
 namespace Pibbles.Cli;
 
 /// <summary>
-/// Finds a project's story on disk: the folder named by <c>pibbles.json</c>'s <c>story</c> setting, or <c>story</c>
-/// without one, and every <c>.pib</c> file under it.
+/// Finds a project's story on disk. The project is the nearest folder with a <c>pibbles.json</c>, from the given folder
+/// up, the way git finds a repository, so the tools work from anywhere inside a project. Its story is the folder named
+/// by <c>pibbles.json</c>'s <c>story</c> setting, or <c>story</c>, and every <c>.pib</c> file under it.
 /// </summary>
 internal static class StoryFolder
 {
@@ -15,12 +16,14 @@ internal static class StoryFolder
     /// </summary>
     public static IReadOnlyList<SourceText>? Load(string root, string currentDirectory, TextWriter error)
     {
-        string fullRoot = Path.GetFullPath(root, currentDirectory);
-        if (!Directory.Exists(fullRoot))
+        string start = Path.GetFullPath(root, currentDirectory);
+        if (!Directory.Exists(start))
         {
             error.WriteLine($"I can't find the folder `{root}`.");
             return null;
         }
+
+        string fullRoot = FindProject(start);
 
         if (ReadSettings(fullRoot, error) is not { } settings)
             return null;
@@ -40,6 +43,18 @@ internal static class StoryFolder
         }
 
         return [.. files.Select(file => new SourceText(DisplayPath.Of(file, currentDirectory), File.ReadAllText(file)))];
+    }
+
+    /// <summary>The nearest folder with a <c>pibbles.json</c>, from <paramref name="start"/> up, or <paramref name="start"/> itself if there's none.</summary>
+    private static string FindProject(string start)
+    {
+        for (DirectoryInfo? folder = new(start); folder is not null; folder = folder.Parent)
+        {
+            if (File.Exists(Path.Combine(folder.FullName, ProjectSettings.FileName)))
+                return folder.FullName;
+        }
+
+        return start;
     }
 
     /// <summary>Reads the project's settings, or the defaults when it has no <c>pibbles.json</c>.</summary>

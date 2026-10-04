@@ -48,6 +48,32 @@ public sealed class StoryFolderTests : IDisposable
     }
 
     [Theory]
+    [InlineData("story")]
+    [InlineData("story/rooms")]
+    public void Load_FromInsideProject_FindsProjectAbove(string folder)
+    {
+        Write("pibbles.json", "{ \"schema\": 1 }");
+        Write("story/start.pib", "== start");
+        Write("story/rooms/kitchen.pib", "== kitchen");
+
+        IReadOnlyList<SourceText>? sources = StoryFolder.Load(".", Path.Combine(root.FullName, folder), error);
+
+        Assert.Equal(2, sources!.Count);
+        Assert.Contains(sources, source => source.Path.EndsWith("kitchen.pib", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Load_FromInsideStoryFolder_ShowsPathsFromThere()
+    {
+        Write("pibbles.json", "{}");
+        Write("story/start.pib", "== start");
+
+        IReadOnlyList<SourceText>? sources = StoryFolder.Load(".", Path.Combine(root.FullName, "story"), error);
+
+        Assert.Equal(["start.pib"], sources!.Select(source => source.Path));
+    }
+
+    [Theory]
     [InlineData(null, null, "I can't find the folder `missing`.", "missing")]
     [InlineData(null, null, "I can't find the story folder `story`.", ".")]
     [InlineData("pibbles.json", "{ not json", "I can't read `pibbles.json`:", ".")]
