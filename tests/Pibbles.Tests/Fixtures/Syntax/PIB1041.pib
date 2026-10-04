@@ -1,0 +1,14 @@
+// Quoted text has to end on the line it starts on.
+
+== fixture.strings
+@set $x = "Never ends
+//        ^^^^^^^^^^^ PIB1041
+@set $x = "Ends with a backslash\
+//        ^^^^^^^^^^^^^^^^^^^^^^^ PIB1041
+
+// Must not trigger
+
+@set $x = "Ends."
+@set $x = "Has a \" inside."
+@set $x = ""
+@set $x = "One" + "two"

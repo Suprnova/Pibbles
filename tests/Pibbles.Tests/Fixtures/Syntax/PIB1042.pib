@@ -1,0 +1,25 @@
+// Numbers are digits with at most one dot, and durations end in s or ms.
+
+== fixture.numbers
+@set $x = 1e5
+//        ^^^ PIB1042
+@set $x = 1_000
+//        ^^^^^ PIB1042
+@set $x = 1.2.3
+//        ^^^^^ PIB1042
+@wait 2sec
+//    ^^^^ PIB1042
+@wait 0.5s2
+//    ^^^^^ PIB1042
+
+// Must not trigger
+
+@set $x = 3
+@set $x = 0.5
+@set $x = .5
+@set $x = 1.
+@set $x = $y-1
+@wait 300ms
+@wait 0.5s
+@wait .5s
+@wait (1.5 * 2)

@@ -60,7 +60,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
 - **Variables:** `$` followed by an identifier (`$has_key`).
-- **Escapes:** in text, a backslash makes the next punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\\`, and so on.
+- **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
 - **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
 - **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once: #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
@@ -282,7 +282,7 @@ Each block has an **entry count** `n` in the state: how many times execution has
 
 ## Expressions
 
-- **Literals:** `true`/`false`, numbers (`3`, `0.5`), strings (`"text"`, with `\"` and `\\` escapes), durations (`0.5s`, `300ms`, or a plain number meaning seconds where a `duration` is expected).
+- **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error.
 - **References:** `$variable`, `function(args)`, and [bare names](#bare-names) for enum members, actors and nodes.
 - **Operators,** from lowest to highest precedence: `or`; `and`; `not`; `== !=`; `< <= > >=`; `+ -`; `* / %`; unary `-`; then parentheses. `+` also joins strings.
 - **Built-in functions:** `visits(node) -> number`.
@@ -497,10 +497,10 @@ digit           ::= [0-9]
 ident           ::= (letter | "_") (letter | mark | digit | "_")*
 NAME            ::= "."? ident ("." ident)*
 VARIABLE        ::= "$" ident
-NUMBER          ::= digit+ ("." digit+)?                                  /* Q5 */
-DURATION        ::= NUMBER ("ms" | "s")              /* not followed by a letter, digit or "_" */
-STRING          ::= '"' ([^"#x5C#xA#xD] | #x5C ["#x5C])* '"'
-TAG             ::= "#" letter (letter | digit | "_")* (":" [^#x20#x9#xA#xD]*)?     /* Q6 */
+NUMBER          ::= digit+ ("." digit*)? | "." digit+    /* not followed by a letter, digit, "_" or "." */
+DURATION        ::= NUMBER ("ms" | "s")              /* not followed by a letter, digit, "_" or "." */
+STRING          ::= '"' ([^"#x5C#xA#xD] | ESCAPE)* '"'
+TAG             ::= "#" letter (letter | digit | "_")* (":" [^#x20#x9#xA#xD]*)?
 COMMENT         ::= "//" [^#xA#xD]*            /* only on HEADER and AT lines and in an actor's poses: */
 AT_WORD         ::= "@" ident
 CALL_OPEN       ::= "("                          /* directly after a NAME, with no whitespace between */
@@ -517,7 +517,8 @@ SPEAKER         ::= ident (ws* pose)? ws* ":"      /* followed by ws or the end 
 pose            ::= "(" ws* ident ws* ")"
 TEXT            ::= text_char+
 text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag or, in option text, a modifier starts */
-ESCAPE          ::= #x5C escapable                                        /* Q11 */
+ESCAPE          ::= #x5C escapable
+escapable       ::= [#x21-#x2F#x3A-#x40#x5B-#x60#x7B-#x7E]          /* ASCII punctuation */
 SPAN_OPEN       ::= "["
 SPAN_CLOSE      ::= "[" ws* "/"
 BRACE           ::= "{"
@@ -667,9 +668,6 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |
-| 5 | `NUMBER` | Which number forms are allowed? | Also `.5` (safe, since a NAME can't start with a dot then a digit); also `1.`; exponents; digit separators |
-| 6 | `TAG` | Which characters can a tag name hold? | Identifier characters only; also `-` |
-| 11 | `ESCAPE` | Which characters can follow `\`? What about a `\` at the end of a line? A letter or digit after `\` must be an error ([extension compatibility](#extension-compatibility)). | Punctuation only, with anything else an error; anything but letters and digits; an unknown escape is literal text |
 | 12 | `name_prop`, `RAW` | What can a display name hold? `[`, `{` and `\` in it must be errors ([extension compatibility](#extension-compatibility)). | Plain text, trimmed; inline text with markup, which makes it inline mode instead of raw |
 | 13 | `constant`, `arg` | Can a constant or positional argument be negative (`@var $x = -1`, `@foo -1`)? This belongs in the syntax: a negative NUMBER token would break `$a-1`. | `"-"? NUMBER` in `constant`, with arguments needing parentheses; `"-"? NUMBER` in both |
 | 14 | `text_line` | What does `mira:`, with neither pose nor text, do? | An error; shows an empty line; nothing |
@@ -687,13 +685,13 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 3 | Indentation: INDENT, DEDENT, EOL | |
 | 4 | `letter`, `mark`, `digit`, `ident` | |
 | 5 | `NAME`, `VARIABLE` | |
-| 6 | `NUMBER`, `DURATION`, `STRING` | Q5 |
-| 7 | `TAG` | Q6 |
+| 6 | `NUMBER`, `DURATION`, `STRING` | |
+| 7 | `TAG` | |
 | 8 | `COMMENT` | |
 | 9 | `AT_WORD`, `CALL_OPEN`, `PUNCT`, keywords | |
 | 10 | `SPEAKER`, `pose` | |
 | 11 | `TEXT`, `text_char` | |
-| 12 | `ESCAPE` | Q11 |
+| 12 | `ESCAPE` | |
 | 13 | `SPAN_OPEN`, `SPAN_CLOSE`, `BRACE`, `BRACE_IF`, `BRACE_ELIF`, `BRACE_ELSE`, `BRACE_CLOSE` | |
 | 14 | `RAW` | Q12 |
 | 15 | `file`, `prefix_line`, `node`, `header_line`, `block` | |
@@ -719,10 +717,10 @@ Characters and tokens are defined first, from the bottom up, because every later
 
 The [grammar extensions](design.md#grammar-extensions), and the notes and `required` markup that arrive with localization, only add to this grammar, and none of them needs more than one token of lookahead. The [language design](design.md#grammar) lists each one's changes. These keep that true:
 
+- A letter or digit after `\` is an error, so new escapes (`\n`, `\u1234`) can be added.
 - v1 [reserves](#reserved-words) every word, tag and line marker the extensions use, in the positions the extensions will use them, so no valid v1 story can already mean something by them.
 - v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (pose)}` free for the [mid-line pose extension](design.md#pose-changes-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
 - **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) isn't reserved. Its keyword and case markers (`plural`, `zero`, `one`, `two`, `few`, `many`, `other`) are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their syntax is chosen to avoid names stories already use, or the change is announced as breaking.
 - Some open questions must be decided in a particular direction, or an extension would change what a valid v1 story means:
-  - **Q11:** a letter or digit after `\` is an error, so new escapes (`\n`, `\u1234`) can be added.
   - **Q12:** `[`, `{` and `\` in a display name are errors, so display names can later hold markup.

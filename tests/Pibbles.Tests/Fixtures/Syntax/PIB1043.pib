@@ -1,0 +1,14 @@
+// Tag names hold letters, digits and _.
+
+== fixture.tags
+@call fixture.other #show-disabled
+//                  ^^^^^^^^^^^^^^ PIB1043
+@call fixture.other #box.big:phone
+//                  ^^^^^^^^ PIB1043
+
+// Must not trigger
+
+@call fixture.other #show_disabled
+@call fixture.other #box:any-value.at/all
+@call fixture.other #box:
+@call fixture.other #id:k7qp2x #thought

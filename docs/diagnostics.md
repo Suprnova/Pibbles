@@ -53,7 +53,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1033 | Error | I expected a `:` at the end of this `@if` line. | Add it: `@if $door_open:`. |
 | PIB1040 | Error | I didn't expect `)` here. | Check for a missing `(` or an extra `)`. |
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
-| PIB1042 | Error | `.5` isn't a number I can read. | Write it as `0.5`. |
+| PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
 | PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, like `kitchen_door`. |
@@ -62,7 +62,9 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
 | PIB1053 | Error | A node header can only have `#was:` tags. | Move other tags to the lines inside the node. |
 | PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or change her pose with `mira (happy):`. If this is narration, escape the colon: `mira\:`. |
-| PIB1055 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
+| PIB1060 | Error | I expected a value after `+`. | Finish the expression, or remove the `+`. |
+| PIB1061 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
+| PIB1062 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
 | PIB2002 | Error | Mira has no pose called `smirk`. | Did you mean `smug`? |
 | PIB2003 | Error | `(to Rex)` isn't a pose: a pose is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
@@ -121,6 +123,46 @@ mira: I live in the walls.
 ```
 
 Write it as an ordinary comment for now: `// Mira is joking here.`
+
+### PIB1014
+
+**A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only ASCII punctuation can follow a backslash. A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
+
+```text
+@set $path = "C:\Users\mira"
+```
+
+To show a backslash itself, write two: `"C:\\Users\\mira"`.
+
+### PIB1041
+
+**Quoted text has to end with a `"` on the same line it starts on.** Everything after an opening `"` is part of the text until the closing one, so without it, the rest of the line becomes text too.
+
+```text
+@enter_room "kitchen on_exit=kitchen.leave
+```
+
+Add the closing `"` where the text should end: `@enter_room "kitchen" on_exit=kitchen.leave`. To put a quote inside quoted text, write `\"`.
+
+### PIB1042
+
+**A number is digits with at most one `.`, and a duration is a number followed by `s` or `ms`.** `3`, `0.5`, `.5`, `1.`, `0.5s` and `300ms` are all fine. Exponents (`1e5`) and digit separators (`1_000`) aren't supported, and anything written directly after a number, other than `s` or `ms`, is reported as part of it.
+
+```text
+@wait 2sec
+```
+
+Write `@wait 2s`.
+
+### PIB1043
+
+**A tag name holds only letters, digits and `_`, and starts with a letter.** A tag's value, after the `:`, can hold anything except spaces.
+
+```text
+-> Use the key  @if $has_key #show-disabled
+```
+
+Write `#show_disabled`, and declare it that way with `@tag`.
 
 ## With extensions
 
