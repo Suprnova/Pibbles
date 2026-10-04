@@ -1,7 +1,8 @@
+using Pibbles.Cli.Output;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Commands;
 
 /// <summary>How <c>pibbles check</c> prints diagnostics.</summary>
 internal enum OutputFormat

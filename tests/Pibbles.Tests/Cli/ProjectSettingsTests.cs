@@ -1,4 +1,4 @@
-using Pibbles.Cli;
+using Pibbles.Cli.Projects;
 
 namespace Pibbles.Tests.Cli;
 

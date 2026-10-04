@@ -16,8 +16,17 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Pibbles.Tests" />
     <EmbeddedResource Include="..\..\docs\diagnostics.md" LogicalName="diagnostics.md" />
-    <EmbeddedResource Include="Starter\*.pib" LogicalName="Starter/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Projects\Starter\*.pib" LogicalName="Starter/%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <!--
+    A published executable is named after the command, pibbles, not the project. The assembly keeps its name: a pibbles.dll
+    would clash with the core's Pibbles.dll on file systems that ignore case. The executable finds its assembly by name.
+  -->
+  <Target Name="NameExecutableAfterCommand" AfterTargets="Publish">
+    <Move SourceFiles="$(PublishDir)$(AssemblyName).exe" DestinationFiles="$(PublishDir)$(ToolCommandName).exe" Condition="Exists('$(PublishDir)$(AssemblyName).exe')" />
+    <Move SourceFiles="$(PublishDir)$(AssemblyName)" DestinationFiles="$(PublishDir)$(ToolCommandName)" Condition="Exists('$(PublishDir)$(AssemblyName)')" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.12" />

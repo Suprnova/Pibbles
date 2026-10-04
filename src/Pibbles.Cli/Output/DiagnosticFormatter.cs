@@ -1,9 +1,9 @@
 using System.Globalization;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
-using static Pibbles.Cli.Ansi;
+using static Pibbles.Cli.Output.Ansi;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>Writes diagnostics in each of <c>pibbles check</c>'s formats.</summary>
 internal static class DiagnosticFormatter

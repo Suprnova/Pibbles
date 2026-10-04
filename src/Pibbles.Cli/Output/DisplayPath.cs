@@ -1,4 +1,4 @@
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>How paths read in the CLI's output: relative to the current directory, with <c>/</c> between folders.</summary>
 internal static class DisplayPath

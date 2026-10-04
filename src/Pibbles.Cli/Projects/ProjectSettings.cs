@@ -1,6 +1,7 @@
 using System.Text.Json;
+using Pibbles.Cli.Output;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Projects;
 
 /// <summary>
 /// A project's settings, from <c>pibbles.json</c> in its root. Every setting has a default, so the file, and any key in

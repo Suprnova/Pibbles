@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>
 /// Renders the light markup in messages and explanations: <c>`code`</c> and <c>**bold**</c>. With color, code is cyan

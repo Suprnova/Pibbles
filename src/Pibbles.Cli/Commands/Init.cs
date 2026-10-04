@@ -1,6 +1,8 @@
 using System.Reflection;
+using Pibbles.Cli.Output;
+using Pibbles.Cli.Projects;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Commands;
 
 /// <summary>
 /// <c>pibbles init [folder]</c>: starts a project with a <c>pibbles.json</c> and a story folder. By default the folder

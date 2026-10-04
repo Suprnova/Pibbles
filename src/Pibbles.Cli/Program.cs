@@ -1,7 +1,9 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Text;
-using Pibbles.Cli;
+using Pibbles.Cli.Commands;
+using Pibbles.Cli.Output;
+using Pibbles.Cli.Projects;
 
 // Stories and messages hold any character, and Windows consoles otherwise use an old code page that mangles them.
 Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);

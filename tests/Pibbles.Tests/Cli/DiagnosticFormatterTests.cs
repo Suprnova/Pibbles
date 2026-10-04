@@ -1,4 +1,4 @@
-using Pibbles.Cli;
+using Pibbles.Cli.Output;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 

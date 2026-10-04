@@ -1,8 +1,8 @@
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>
 /// Writes JSON field by field, which needs no reflection, so the trimmed CLI can use it. The output is indented with

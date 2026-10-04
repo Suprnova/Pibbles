@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Pibbles.Cli;
+using Pibbles.Cli.Commands;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 

@@ -1,6 +1,7 @@
+using Pibbles.Cli.Output;
 using Pibbles.Syntax;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Projects;
 
 /// <summary>
 /// Finds a project's story on disk. The project is the nearest folder with a <c>pibbles.json</c>, from the given folder

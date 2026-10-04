@@ -1,4 +1,4 @@
-using Pibbles.Cli;
+using Pibbles.Cli.Commands;
 using Pibbles.Diagnostics;
 
 namespace Pibbles.Tests.Cli;

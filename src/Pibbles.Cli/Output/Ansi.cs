@@ -1,6 +1,6 @@
 using Pibbles.Diagnostics;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>The terminal colors of the CLI's readable output: severities in their colors, structure in blue, fixes in green.</summary>
 internal static class Ansi

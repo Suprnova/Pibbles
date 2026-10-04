@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Output;
 
 /// <summary>
 /// A writer for messages to people, such as <c>init</c>'s report and the errors the commands print, that renders their

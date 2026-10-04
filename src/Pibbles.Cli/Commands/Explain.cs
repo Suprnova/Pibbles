@@ -1,8 +1,9 @@
 using System.Reflection;
+using Pibbles.Cli.Output;
 using Pibbles.Diagnostics;
-using static Pibbles.Cli.Ansi;
+using static Pibbles.Cli.Output.Ansi;
 
-namespace Pibbles.Cli;
+namespace Pibbles.Cli.Commands;
 
 /// <summary>
 /// <c>pibbles explain &lt;code&gt;</c>: prints a diagnostic's entry from <c>docs/diagnostics.md</c>, which the CLI
