@@ -1,6 +1,4 @@
 using System.Globalization;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 
@@ -10,14 +8,6 @@ namespace Pibbles.Cli;
 internal static class DiagnosticFormatter
 {
     private const int TabWidth = 4;
-
-    /// <summary>Camel-case and indented, with backticks and quotes left readable: the output is never embedded in HTML.</summary>
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-    };
 
     /// <summary>
     /// Writes a diagnostic for people, as <c>docs/syntax.md</c> shows: a headline, where it is, the source line with the
@@ -80,20 +70,28 @@ internal static class DiagnosticFormatter
         $"{diagnostic.Location.Path}({Number(diagnostic.Location.Start.Line)},{Number(diagnostic.Location.Start.Column)}): {Name(diagnostic.Severity)} {diagnostic.Code}: {diagnostic.Message}";
 
     /// <summary>A JSON array with one object per diagnostic. Lines and columns are 1-based.</summary>
-    public static string Json(IEnumerable<Diagnostic> diagnostics) =>
-        JsonSerializer.Serialize(diagnostics.Select(diagnostic => new JsonDiagnostic(
-            diagnostic.Location.Path,
-            diagnostic.Location.Start.Line + 1,
-            diagnostic.Location.Start.Column + 1,
-            diagnostic.Location.End.Line + 1,
-            diagnostic.Location.End.Column + 1,
-            Name(diagnostic.Severity),
-            diagnostic.Code,
-            diagnostic.Message,
-            diagnostic.Label,
-            diagnostic.Help)), JsonOptions);
+    public static string Json(IEnumerable<Diagnostic> diagnostics) => JsonText.Write(writer =>
+    {
+        writer.WriteStartArray();
+        foreach (Diagnostic diagnostic in diagnostics)
+        {
+            SourceLocation location = diagnostic.Location;
+            writer.WriteStartObject();
+            writer.WriteString("path", location.Path);
+            writer.WriteNumber("line", location.Start.Line + 1);
+            writer.WriteNumber("column", location.Start.Column + 1);
+            writer.WriteNumber("endLine", location.End.Line + 1);
+            writer.WriteNumber("endColumn", location.End.Column + 1);
+            writer.WriteString("severity", Name(diagnostic.Severity));
+            writer.WriteString("code", diagnostic.Code);
+            writer.WriteString("message", diagnostic.Message);
+            writer.WriteString("label", diagnostic.Label);
+            writer.WriteString("help", diagnostic.Help);
+            writer.WriteEndObject();
+        }
 
-    private sealed record JsonDiagnostic(string Path, int Line, int Column, int EndLine, int EndColumn, string Severity, string Code, string Message, string? Label, string? Help);
+        writer.WriteEndArray();
+    });
 
     private const string Blue = "1;34";
 

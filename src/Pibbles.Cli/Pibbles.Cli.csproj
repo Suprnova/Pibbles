@@ -5,6 +5,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>pibbles</ToolCommandName>
+    <!-- The CLI can be published trimmed as a single executable, so every build checks for code trimming would break. -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

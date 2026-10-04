@@ -75,8 +75,11 @@ internal sealed record ProjectSettings(string Story)
     }
 
     /// <summary>The settings as <c>pibbles.json</c> text, with the current schema.</summary>
-    public string ToJson() =>
-        JsonSerializer.Serialize(new Dictionary<string, object> { ["schema"] = Schema, ["story"] = Story }, Indented) + "\n";
-
-    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+    public string ToJson() => JsonText.Write(writer =>
+    {
+        writer.WriteStartObject();
+        writer.WriteNumber("schema", Schema);
+        writer.WriteString("story", Story);
+        writer.WriteEndObject();
+    }) + "\n";
 }
