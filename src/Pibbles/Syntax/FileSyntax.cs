@@ -15,9 +15,3 @@ public sealed record PrefixSyntax(NameSyntax Name) : SyntaxNode;
 /// <param name="Aliases">The node's former names, from its <c>#was:</c> tags.</param>
 /// <param name="Body">The node's statements.</param>
 public sealed record NodeSyntax(NameSyntax Name, IReadOnlyList<NameSyntax> Aliases, IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
-
-/// <summary>A declaration: part of the contract between the story and the host.</summary>
-public abstract record DeclarationSyntax : SyntaxNode;
-
-/// <summary>A declaration the parser doesn't read yet. Its line and any block under it are skipped.</summary>
-public sealed record UnparsedDeclarationSyntax : DeclarationSyntax;

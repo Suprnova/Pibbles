@@ -1,0 +1,26 @@
+// Every kind of declaration.
+
+@actor mira:
+    name: Mira Okafor
+    poses: neutral, happy, sad
+@actor rex:
+    poses: neutral
+@enum position: left, center, right, offscreen
+@var $has_key = false
+@var $bravery = 0
+@var $delay = -0.5s
+@var $offset = -3
+@var $player_name = "Sam"
+@var $where: position = left
+@var $next: node = kitchen.door
+@command show(who: actor, at: position = center)
+@command move(who: actor, to: position) waits
+@command jolt(who: actor) inline
+@command blink() inline waits // A comment after a declaration.
+@command shake_screen (strength: number = 1, duration: duration = 0.3s) inline
+@markup clue
+@markup wave(amplitude: number = 1, frequency: number = 5)
+@icon interact, inventory
+@tag thought, show_disabled, box: string, mood: position?
+@function has_item(id: string) -> bool
+@function rolled() -> number

@@ -1,0 +1,17 @@
+// Declarations go before a file's first node.
+
+@var $early = 1
+== fixture.declarations
+@var $late = 1
+// PIB1021
+@actor rex:
+// PIB1021
+    name: Rex
+@if true:
+    @command nope()
+//  ^^^^^^^^ PIB1021
+
+// Must not trigger
+
+@set $early = 2
+@show rex

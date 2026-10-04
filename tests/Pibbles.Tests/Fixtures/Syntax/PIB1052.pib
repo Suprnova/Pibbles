@@ -1,0 +1,21 @@
+// A line ID is a lowercase letter, then lowercase letters, digits and `_`.
+
+== fixture.ids
+mira: Hi. #id:K7qp2x
+//        ^^^^^^^^^^ PIB1052
+mira: Hi. #id:7kqp2x
+//        ^^^^^^^^^^ PIB1052
+mira: Hi. #id:
+//        ^^^^ PIB1052
+mira: Hi. #id
+//        ^^^ PIB1052
+-> Go #id:k7-qp
+//    ^^^^^^^^^ PIB1052
+
+// Must not trigger
+
+mira: Hi. #id:k7qp2x
+mira: Hi. #id:a #thought
+@call fixture.ids #id:snake_case_id
+@once: #id:b8k2qd
+    mira: Hm.

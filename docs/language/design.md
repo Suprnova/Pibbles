@@ -540,7 +540,7 @@ claim           ::= NAME (".." NAME)? ("@" version)?                     /* Q20 
 
 ### Open questions
 
-These add to the [v1 questions](reference.md#open-questions), and are decided when the extension is implemented.
+Each is decided when its extension is implemented, preferring to reject a form over giving it a fallback meaning, as the [v1 grammar](reference.md#appendix-grammar) does.
 
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |

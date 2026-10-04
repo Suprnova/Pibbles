@@ -27,6 +27,8 @@ internal sealed partial class Parser
         if (speaker is not null && pose is null && content.Count == 0)
             Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Text);
 
+        CheckTags(tags, pose is not null && content.Count == 0 ? TagPlace.PoseChange : TagPlace.TextLine);
+
         index++;
         return new(speaker, pose, content, tags) { Span = new(start, TrimmedEnd(line) - start) };
     }
@@ -77,9 +79,9 @@ internal sealed partial class Parser
         return end;
     }
 
-    private ChoiceSyntax ParseChoice()
+    private ChoiceSyntax ParseChoice(SourceLine first)
     {
-        List<OptionSyntax> options = [];
+        List<OptionSyntax> options = [ParseOption(first)];
         while (Current is { Kind: LineTokenKind.Line, Line.Kind: LineKind.Option })
             options.Add(ParseOption(Current.Line));
 
@@ -122,7 +124,7 @@ internal sealed partial class Parser
             }
 
             tags = [];
-            while (token.Kind is TokenKind.Tag && !lineFailed)
+            while (token.Kind is TokenKind.Tag)
                 tags.Add(ReadTag());
 
             if (token.Kind is not TokenKind.EndOfLine)
@@ -138,6 +140,7 @@ internal sealed partial class Parser
             tags = ParseTrailingTags();
         }
 
+        CheckTags(tags, TagPlace.Option);
         int lineEnd = TrimmedEnd(line);
         index++;
 

@@ -1,0 +1,121 @@
+File 1:1-27:1
+  Declarations:
+    ActorDeclaration 3:1-5:31 DisplayName="Mira Okafor" DisplayNameSpan=4:11-4:22
+      Name: Name 3:8-3:12 Text="mira"
+      Poses:
+        Name 5:12-5:19 Text="neutral"
+        Name 5:21-5:26 Text="happy"
+        Name 5:28-5:31 Text="sad"
+    ActorDeclaration 6:1-7:19 DisplayName=null DisplayNameSpan=null
+      Name: Name 6:8-6:11 Text="rex"
+      Poses:
+        Name 7:12-7:19 Text="neutral"
+    EnumDeclaration 8:1-8:47
+      Name: Name 8:7-8:15 Text="position"
+      Members:
+        Name 8:17-8:21 Text="left"
+        Name 8:23-8:29 Text="center"
+        Name 8:31-8:36 Text="right"
+        Name 8:38-8:47 Text="offscreen"
+    VariableDeclaration 9:1-9:22
+      Variable: VariableExpression 9:6-9:14 Name="has_key"
+      Value: BooleanLiteral 9:17-9:22 Value=false
+    VariableDeclaration 10:1-10:18
+      Variable: VariableExpression 10:6-10:14 Name="bravery"
+      Value: NumberLiteral 10:17-10:18 Value=0
+    VariableDeclaration 11:1-11:20
+      Variable: VariableExpression 11:6-11:12 Name="delay"
+      Value: UnaryExpression 11:15-11:20 Operator=Negate OperatorSpan=11:15-11:16
+        Operand: DurationLiteral 11:16-11:20 Seconds=0.5
+    VariableDeclaration 12:1-12:18
+      Variable: VariableExpression 12:6-12:13 Name="offset"
+      Value: UnaryExpression 12:16-12:18 Operator=Negate OperatorSpan=12:16-12:17
+        Operand: NumberLiteral 12:17-12:18 Value=3
+    VariableDeclaration 13:1-13:26
+      Variable: VariableExpression 13:6-13:18 Name="player_name"
+      Value: StringLiteral 13:21-13:26 Value="Sam"
+    VariableDeclaration 14:1-14:29
+      Variable: VariableExpression 14:6-14:12 Name="where"
+      Type: Name 14:14-14:22 Text="position"
+      Value: NameExpression 14:25-14:29 Name="left"
+    VariableDeclaration 15:1-15:32
+      Variable: VariableExpression 15:6-15:11 Name="next"
+      Type: Name 15:13-15:17 Text="node"
+      Value: NameExpression 15:20-15:32 Name="kitchen.door"
+    CommandDeclaration 16:1-16:49 IsInline=false Waits=false
+      Name: Name 16:10-16:14 Text="show"
+      Parameters:
+        Parameter 16:15-16:25
+          Name: Name 16:15-16:18 Text="who"
+          Type: Name 16:20-16:25 Text="actor"
+        Parameter 16:27-16:48
+          Name: Name 16:27-16:29 Text="at"
+          Type: Name 16:31-16:39 Text="position"
+          Default: NameExpression 16:42-16:48 Name="center"
+    CommandDeclaration 17:1-17:46 IsInline=false Waits=true
+      Name: Name 17:10-17:14 Text="move"
+      Parameters:
+        Parameter 17:15-17:25
+          Name: Name 17:15-17:18 Text="who"
+          Type: Name 17:20-17:25 Text="actor"
+        Parameter 17:27-17:39
+          Name: Name 17:27-17:29 Text="to"
+          Type: Name 17:31-17:39 Text="position"
+    CommandDeclaration 18:1-18:33 IsInline=true Waits=false
+      Name: Name 18:10-18:14 Text="jolt"
+      Parameters:
+        Parameter 18:15-18:25
+          Name: Name 18:15-18:18 Text="who"
+          Type: Name 18:20-18:25 Text="actor"
+    CommandDeclaration 19:1-19:30 IsInline=true Waits=true
+      Name: Name 19:10-19:15 Text="blink"
+    CommandDeclaration 20:1-20:79 IsInline=true Waits=false
+      Name: Name 20:10-20:22 Text="shake_screen"
+      Parameters:
+        Parameter 20:24-20:44
+          Name: Name 20:24-20:32 Text="strength"
+          Type: Name 20:34-20:40 Text="number"
+          Default: NumberLiteral 20:43-20:44 Value=1
+        Parameter 20:46-20:71
+          Name: Name 20:46-20:54 Text="duration"
+          Type: Name 20:56-20:64 Text="duration"
+          Default: DurationLiteral 20:67-20:71 Seconds=0.3
+    MarkupDeclaration 21:1-21:13
+      Name: Name 21:9-21:13 Text="clue"
+    MarkupDeclaration 22:1-22:59
+      Name: Name 22:9-22:13 Text="wave"
+      Parameters:
+        Parameter 22:14-22:35
+          Name: Name 22:14-22:23 Text="amplitude"
+          Type: Name 22:25-22:31 Text="number"
+          Default: NumberLiteral 22:34-22:35 Value=1
+        Parameter 22:37-22:58
+          Name: Name 22:37-22:46 Text="frequency"
+          Type: Name 22:48-22:54 Text="number"
+          Default: NumberLiteral 22:57-22:58 Value=5
+    IconDeclaration 23:1-23:26
+      Names:
+        Name 23:7-23:15 Text="interact"
+        Name 23:17-23:26 Text="inventory"
+    TagDeclaration 24:1-24:58
+      Entries:
+        TagEntry 24:6-24:13 AllowsEmpty=false
+          Name: Name 24:6-24:13 Text="thought"
+        TagEntry 24:15-24:28 AllowsEmpty=false
+          Name: Name 24:15-24:28 Text="show_disabled"
+        TagEntry 24:30-24:41 AllowsEmpty=false
+          Name: Name 24:30-24:33 Text="box"
+          Type: Name 24:35-24:41 Text="string"
+        TagEntry 24:43-24:58 AllowsEmpty=true
+          Name: Name 24:43-24:47 Text="mood"
+          Type: Name 24:49-24:57 Text="position"
+    FunctionDeclaration 25:1-25:39
+      Name: Name 25:11-25:19 Text="has_item"
+      Parameters:
+        Parameter 25:20-25:30
+          Name: Name 25:20-25:22 Text="id"
+          Type: Name 25:24-25:30 Text="string"
+      ReturnType: Name 25:35-25:39 Text="bool"
+    FunctionDeclaration 26:1-26:29
+      Name: Name 26:11-26:17 Text="rolled"
+      ReturnType: Name 26:23-26:29 Text="number"

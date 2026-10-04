@@ -294,6 +294,17 @@ When the player inspects the same thing again, it's nicer to say something new. 
 | `@cycle:` | Goes through the options in order, then loops back to the first |
 | `@once:` | Runs only the first time, then is skipped |
 
+The line after `- ` is a single line: dialogue, narration, `@set`, a jump or a command. To start an option with a condition, put the `-` on a line of its own, and the whole option on the indented lines below it:
+
+```pib
+@cycle:
+    -
+        @if $has_key:
+            mira: I could use the key.
+        mira: Or not.
+    - mira: Nope.
+```
+
 ## Conditional wording
 
 To change a few words instead of a whole line, put a condition inside the line:

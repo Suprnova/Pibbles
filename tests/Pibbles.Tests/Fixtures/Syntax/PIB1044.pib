@@ -1,0 +1,16 @@
+// A display name is plain text.
+
+@actor mira:
+    name: Mira [the brave]
+//        ^^^^^^^^^^^^^^^^ PIB1044
+@actor rex:
+    name: {$rex_name}
+//        ^^^^^^^^^^^ PIB1044
+@actor sam:
+    name: Sam\Samwise
+//        ^^^^^^^^^^^ PIB1044
+
+// Must not trigger
+
+@actor ana:
+    name: Ana O'Neill-Okafor (Jr.) #1 // all text

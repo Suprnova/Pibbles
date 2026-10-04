@@ -113,6 +113,13 @@ public static class DiagnosticCatalog
         "`@prefix` has to come first in the file.",
         help: "Move it to the top. Only comments can go above it.");
 
+    /// <summary>PIB1021: a declaration inside a node.</summary>
+    public static DiagnosticDescriptor DeclarationInNode { get; } = new(
+        "PIB1021",
+        DiagnosticSeverity.Error,
+        "Declarations have to come before the file's first node.",
+        help: "Move this above the first `==` line, or into another file.");
+
     /// <summary>PIB1022: a statement before the file's first node.</summary>
     public static DiagnosticDescriptor OutsideNode { get; } = new(
         "PIB1022",
@@ -135,6 +142,22 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "This `{0}` has no `@if` to belong to.",
         help: "Put it right after the `@if` block, at the same indentation as the `@if`.");
+
+    /// <summary>PIB1031: a line in a variation block that isn't an alternative.</summary>
+    /// <remarks>Argument: the variation's keyword, such as <c>@cycle</c>.</remarks>
+    public static DiagnosticDescriptor NotAlternative { get; } = new(
+        "PIB1031",
+        DiagnosticSeverity.Error,
+        "A `{0}:` block can only hold alternatives.",
+        help: "Start each alternative with `- `.");
+
+    /// <summary>PIB1032: a block opener right after an alternative's <c>- </c>.</summary>
+    /// <remarks>Argument: the opener, such as <c>@if</c> or <c>-></c>.</remarks>
+    public static DiagnosticDescriptor OpenerInAlternative { get; } = new(
+        "PIB1032",
+        DiagnosticSeverity.Error,
+        "`{0}` can't start an alternative.",
+        help: "Put `-` on its own line, and the `{0}` on the line below it, indented.");
 
     /// <summary>PIB1033: a block opener without its <c>:</c>.</summary>
     /// <remarks>Arguments: the keyword, and the line as written.</remarks>
@@ -174,6 +197,21 @@ public static class DiagnosticCatalog
         "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
         help: "Write `{1}`.");
 
+    /// <summary>PIB1044: a display name holding <c>[</c>, <c>{</c> or <c>\</c>.</summary>
+    public static DiagnosticDescriptor InvalidDisplayName { get; } = new(
+        "PIB1044",
+        DiagnosticSeverity.Error,
+        @"A display name can't contain `[`, `{{` or `\`.",
+        help: "Write the name as plain text.");
+
+    /// <summary>PIB1045: a dotted or relative name where a single identifier is being declared.</summary>
+    /// <remarks>Argument: the name as written.</remarks>
+    public static DiagnosticDescriptor DottedName { get; } = new(
+        "PIB1045",
+        DiagnosticSeverity.Error,
+        "`{0}` has a dot, but only node names can.",
+        help: "Use a single name, with `_` between words if it needs them.");
+
     /// <summary>PIB1046: a required part of a line is missing.</summary>
     /// <remarks>Arguments: what's missing, such as <c>a node name</c>, and the text it should follow.</remarks>
     public static DiagnosticDescriptor Missing { get; } = new(
@@ -195,6 +233,14 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "There's a space between `{0}` and its `(`.",
         help: "To call `{0}`, remove the space: `{0}(…)`.");
+
+    /// <summary>PIB1052: an <c>#id</c> whose value isn't a line ID.</summary>
+    /// <remarks>Argument: the tag as written.</remarks>
+    public static DiagnosticDescriptor InvalidLineId { get; } = new(
+        "PIB1052",
+        DiagnosticSeverity.Error,
+        "`{0}` isn't a line ID I can use.",
+        help: "Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you.");
 
     /// <summary>PIB1053: a tag on a line that doesn't take it.</summary>
     /// <remarks>Arguments: the tag, the kind of line it's on, and what that line takes instead.</remarks>
@@ -252,17 +298,23 @@ public static class DiagnosticCatalog
         NotInOption,
         UnknownPoint,
         MisplacedPrefix,
+        DeclarationInNode,
         OutsideNode,
         DuplicatePrefix,
         StrayClause,
+        NotAlternative,
+        OpenerInAlternative,
         MissingColon,
         Unexpected,
         UnterminatedString,
         MalformedNumber,
         MalformedTagName,
+        InvalidDisplayName,
+        DottedName,
         Missing,
         ArgumentOrder,
         SpaceBeforeCall,
+        InvalidLineId,
         TagNotAllowed,
         EmptyLine,
         NegativeArgument,

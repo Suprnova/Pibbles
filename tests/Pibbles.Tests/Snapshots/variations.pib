@@ -1,0 +1,25 @@
+// Variation blocks and their alternatives.
+
+== snapshot.variations
+@sequence:
+    - mira: It's a fridge.
+    - mira (smug): Still a fridge.
+    - mira: I refuse to look at this fridge again.
+@cycle: #id:c9wq2a
+    - mira: Dusty.
+    - mira: Very dusty.
+        @wait 0.5s
+        @sfx sneeze
+    - @jump snapshot.elsewhere
+    -
+        @if $has_key:
+            mira: I could use the key.
+        mira: Anyway.
+    - // A comment after the dash is a bare dash.
+        @end
+@once: #id:b8k2qd
+    mira: Whoa, a secret panel!
+    @set $found_panel = true
+- A dash outside a variation is text.
+-
+mira (sad): #thought

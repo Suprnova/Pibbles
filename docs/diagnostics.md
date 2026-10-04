@@ -50,14 +50,14 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1023 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
 | PIB1030 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
 | PIB1031 | Error | A `@cycle:` block can only hold alternatives. | Start each alternative with `- `. |
-| PIB1032 | Error | `@if` can't start an alternative. | Write the alternative's first line after the `- `, and put the `@if` on the line below it, indented. |
+| PIB1032 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
 | PIB1033 | Error | I expected a `:` at the end of this `@if` line. | Add it: `@if $door_open:`. |
 | PIB1040 | Error | I didn't expect `extra` here. | — |
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
-| PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, like `kitchen_door`. |
+| PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
@@ -244,6 +244,17 @@ Write `{$name}` for a variable, or `{name()}` for a function. If the braces are 
 
 Move `@prefix` above everything else. A second `@prefix` in the same file is [PIB1023](#pib1023) instead.
 
+### PIB1021
+
+**Declarations make up the contract between the story and the game, and they all come before a file's first node.** That keeps them easy to find, and keeps the cast list in one place. A file can hold only declarations.
+
+```text
+== kitchen.door
+@var $door_open = false
+```
+
+Move the declaration above the first `==` line, or into the file that holds the story's other declarations.
+
 ### PIB1022
 
 **Everything a story shows or does belongs to a node.** Before a file's first node (`== name`), only `@prefix`, comments and declarations can appear.
@@ -284,6 +295,37 @@ mira: Hm.
 ```
 
 Move the clause up to just after the `@if` block, or indent it to match the `@if` it belongs to.
+
+### PIB1031
+
+**A `@sequence:` or `@cycle:` block holds only alternatives, each starting with `- `.** The block picks one alternative each time it's reached, so a line without a `- ` has no alternative to belong to. It's reported once per block, and each such line is read as an alternative of its own. `@once:` is different: it holds ordinary lines.
+
+```text
+@cycle:
+    mira: Hm.
+    mira: Huh.
+```
+
+Start each alternative with `- `: `- mira: Hm.`
+
+### PIB1032
+
+**After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@wait` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
+
+```text
+@cycle:
+    - @if $has_key:
+        mira: I could use the key.
+```
+
+Put the `-` on its own line, and the opener on the indented line below it:
+
+```text
+@cycle:
+    -
+        @if $has_key:
+            mira: I could use the key.
+```
 
 ### PIB1033
 
@@ -336,6 +378,27 @@ Write `@wait 2s`.
 
 Write `#show_disabled`, and declare it that way with `@tag`.
 
+### PIB1044
+
+**An actor's display name, after `name:`, is plain text.** `[`, `{` and `\` are reserved there, so that display names can hold markup in a later version without changing any story. Everything else, including `#`, `//` and quotes, is part of the name.
+
+```text
+@actor mira:
+    name: Mira [the brave]
+```
+
+Write the name as plain text: `name: Mira the Brave`.
+
+### PIB1045
+
+**Names you declare are single names:** actors, poses, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.
+
+```text
+@enum rooms.kitchen: fridge, sink
+```
+
+Use a single name: `@enum kitchen_spots: fridge, sink`.
+
 ### PIB1046
 
 **A line is missing a part it needs,** such as the node name after `@jump`, `@call`, `==`, `@prefix` or `#was:`.
@@ -366,9 +429,19 @@ Write `@show mira at=left`.
 
 Remove the space: `@if has_item("key"):`.
 
+### PIB1052
+
+**A line ID is a lowercase letter, then lowercase letters, digits and `_`.** IDs keep saves and translations attached to their lines, and they're used as file names for recorded voice lines, so they stay lowercase to work on every file system. You rarely type them: `pibbles ids` adds them.
+
+```text
+mira: Locked. #id:K7qp2x
+```
+
+Fix the ID by hand, or delete the tag and run `pibbles ids` to make a new one.
+
 ### PIB1053
 
-**Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names. The host never reads a node header, so other tags would have no effect there.
+**Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names, and `#was:` goes nowhere else. A variation block (`@sequence:`, `@cycle:`, `@once:`) only takes `#id:`. A line takes one `#id:` at most, and a line that only changes a pose takes none, since a save never stops on it.
 
 ```text
 == kitchen.fridge #thought

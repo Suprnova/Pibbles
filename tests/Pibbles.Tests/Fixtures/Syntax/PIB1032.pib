@@ -1,0 +1,24 @@
+// After `- ` comes a single-line statement. A bare `-` holds a block.
+
+== fixture.alternatives
+@cycle:
+    - @if $x:
+//    ^^^ PIB1032
+        mira: Hm.
+    - @once:
+//    ^^^^^ PIB1032
+        mira: Hm.
+    - -> An option
+//    ^^ PIB1032
+
+// Must not trigger
+
+@cycle:
+    -
+        @if $x:
+            mira: A bare dash can start with a block opener.
+    - mira: A single-line statement.
+        @if $x:
+            mira: Its continuation can hold one too.
+    - @jump fixture.alternatives
+    - @set $x = 1

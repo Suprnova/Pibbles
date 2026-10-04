@@ -47,7 +47,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 | `//` | Comment |
 | `@` | Statement or declaration |
 | `->` | Choice option |
-| `- ` (inside a variation block) | Variation alternative |
+| `- `, or a `-` on its own (inside a variation block) | Variation alternative |
 | anything else | Text line: dialogue or narration |
 
 **The text-first rule:** a line that doesn't start with one of these markers is always text. So *"If you say so."* is narration, not a broken `if` statement.
@@ -249,7 +249,16 @@ The value's type must match the variable's declared type.
     @set $found_panel = true
 ```
 
-An alternative starts with `- ` followed by a statement. Lines indented more deeply below it continue the same alternative.
+An alternative starts with `- ` followed by a single-line statement: a text line, `@set`, `@jump`, `@call`, `@return`, `@end`, `@wait` or a command. Lines indented more deeply below it continue the same alternative. A `-` on its own line starts an alternative that is entirely the indented block below it, so an alternative can begin with a block opener such as `@if`:
+
+```pib
+@cycle:
+    -
+        @if $has_key:
+            mira: I could use the key.
+        mira: Or not.
+    - mira: Nope.
+```
 
 Each block has an **entry count** `n` in the state: how many times execution has entered it, keyed by the block's `#id`. On entry, the runner reads `n`, picks what to run from it, stores `n + 1`, then runs the pick. With `count` alternatives:
 
@@ -436,7 +445,7 @@ The grammar has four layers, and each one reads only what the layer below it pro
 
 Two parts of the language aren't context-free: indentation, handled in layer 1, and matching a `[/name]` to its `[name]`, handled in layer 4.
 
-A production marked `/* Qn */` depends on an [open question](#open-questions). Each question is decided when its production is implemented, and this section is updated then. A decision prefers rejecting a form over accepting it with a fallback meaning, such as "treat it as text": a rejected form can gain a meaning later without changing any valid story, and an accepted one can't. [Definition order](#definition-order) lists every production in the order it gets formally defined.
+Where the grammar could give a form a fallback meaning, such as "treat it as text", it rejects the form instead: a rejected form can gain a meaning later without changing any valid story, and an accepted one can't. [Definition order](#definition-order) lists every production in the order it's formally defined.
 
 ### Notation
 
@@ -463,12 +472,12 @@ Each line is classified by how its `content` starts, checked in this order:
 | `==` | HEADER |
 | `@` | AT |
 | `->` | OPTION |
-| `-` followed by `ws` | DASH |
+| `-` followed by `ws` or the end of the line | DASH |
 | anything else | TEXT |
 
 The parser reads two classes by context, which the classifier doesn't know:
 
-- **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
+- **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. A `-` with nothing after it but a comment has no content: its alternative is the block below it. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
 - **TEXT** inside an `@actor` block is an actor property.
 
 A byte-order mark at the start of the file is skipped. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error.
@@ -540,7 +549,7 @@ BRACE_CLOSE     ::= "{" ws* "/"
 Raw mode:
 
 ```ebnf
-RAW             ::= [^#xA#xD]*                                            /* Q12 */
+RAW             ::= [^#xA#xD]*                         /* trimmed; a "[", "{" or #x5C in it is an error */
 ```
 
 ### Structure
@@ -560,7 +569,7 @@ declaration     ::= actor_decl | enum_decl | var_decl | command_decl
                   | markup_decl | icon_decl | tag_decl | function_decl
 actor_decl      ::= "@actor" NAME ":" EOL INDENT actor_prop+ DEDENT
 actor_prop      ::= name_prop | poses_prop
-name_prop       ::= "name" ":" RAW EOL                                    /* Q12 */
+name_prop       ::= "name" ":" RAW EOL
 poses_prop      ::= "poses" ":" name_list EOL
 enum_decl       ::= "@enum" NAME ":" name_list EOL
 icon_decl       ::= "@icon" name_list EOL
@@ -597,8 +606,8 @@ flow_stmt       ::= "@jump" NAME EOL | "@call" NAME TAG* EOL | "@return" EOL | "
 wait_stmt       ::= "@wait" expr EOL
 variation       ::= ("@sequence" | "@cycle") ":" TAG* EOL INDENT alternative+ DEDENT
                   | "@once" ":" TAG* EOL block
-alternative     ::= "-" alternative_line block?                           /* Q15 */
-alternative_line ::= /* Q15 */
+alternative     ::= "-" (alternative_line block? | EOL block)
+alternative_line ::= text_line | set_stmt | flow_stmt | wait_stmt | command_stmt
 command_stmt    ::= AT_WORD arg* wait_flag? EOL
 arg             ::= NAME arg_tail? | VARIABLE | literal | "(" expr ")"
 arg_tail        ::= "=" value | call_args
@@ -666,51 +675,44 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - A `(` separated from the NAME before it by whitespace, where only a call can follow the NAME (`{fn (x)}`, `has_item ("key")`), is an error that suggests removing the space.
 - A declared name isn't a [reserved word](#reserved-words) for its kind, and uses ASCII letters only.
 
-### Open questions
-
-| Q | Production | Question | Options |
-| --- | --- | --- | --- |
-| 12 | `name_prop`, `RAW` | What can a display name hold? `[`, `{` and `\` in it must be errors ([extension compatibility](#extension-compatibility)). | Plain text, trimmed; inline text with markup, which makes it inline mode instead of raw |
-| 15 | `alternative` | Which statements can follow `- `? `- @if $x:` opens a block that would also be the alternative's continuation. | Single-line statements only (text lines, `@set`, flow, `@wait` and commands); any statement, with a block opener's block serving as the continuation |
-
 ### Definition order
 
 Characters and tokens are defined first, from the bottom up, because every later production depends on which tokens exist. The syntax is then defined from the top down, so every production is reachable from `file` and the dispatch on each line is complete. Expressions come last: they're self-contained, and follow directly from the precedence list.
 
-| # | Productions | Questions |
-| --- | --- | --- |
-| 1 | `source`, `newline`, `line`, `indent`, `ws`, `content` | |
-| 2 | Line classification | |
-| 3 | Indentation: INDENT, DEDENT, EOL | |
-| 4 | `letter`, `mark`, `digit`, `ident` | |
-| 5 | `NAME`, `VARIABLE` | |
-| 6 | `NUMBER`, `DURATION`, `STRING` | |
-| 7 | `TAG` | |
-| 8 | `COMMENT` | |
-| 9 | `AT_WORD`, `CALL_OPEN`, `PUNCT`, keywords | |
-| 10 | `SPEAKER`, `pose` | |
-| 11 | `TEXT`, `text_char` | |
-| 12 | `ESCAPE` | |
-| 13 | `SPAN_OPEN`, `SPAN_CLOSE`, `BRACE`, `BRACE_IF`, `BRACE_ELIF`, `BRACE_ELSE`, `BRACE_CLOSE` | |
-| 14 | `RAW` | Q12 |
-| 15 | `file`, `prefix_line`, `node`, `header_line`, `block` | |
-| 16 | `declaration` | |
-| 17 | `actor_decl`, `actor_prop`, `name_prop`, `poses_prop` | Q12 |
-| 18 | `enum_decl`, `icon_decl`, `tag_decl`, `tag_entry`, `name_list` | |
-| 19 | `var_decl`, `type`, `constant`, `literal` | |
-| 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` | |
-| 21 | `statement` | |
-| 22 | `text_line` | |
-| 23 | `choice`, `option`, `option_modifier` | |
-| 24 | `if_stmt`, `elif_clause`, `else_clause` | |
-| 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` | |
-| 26 | `variation`, `alternative`, `alternative_line` | Q15 |
-| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` | |
-| 28 | `inline_text`, `inline_item` | |
-| 29 | `span` | |
-| 30 | `point`, `point_body` | |
-| 31 | `cond` | |
-| 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` | |
+| # | Productions |
+| --- | --- |
+| 1 | `source`, `newline`, `line`, `indent`, `ws`, `content` |
+| 2 | Line classification |
+| 3 | Indentation: INDENT, DEDENT, EOL |
+| 4 | `letter`, `mark`, `digit`, `ident` |
+| 5 | `NAME`, `VARIABLE` |
+| 6 | `NUMBER`, `DURATION`, `STRING` |
+| 7 | `TAG` |
+| 8 | `COMMENT` |
+| 9 | `AT_WORD`, `CALL_OPEN`, `PUNCT`, keywords |
+| 10 | `SPEAKER`, `pose` |
+| 11 | `TEXT`, `text_char` |
+| 12 | `ESCAPE` |
+| 13 | `SPAN_OPEN`, `SPAN_CLOSE`, `BRACE`, `BRACE_IF`, `BRACE_ELIF`, `BRACE_ELSE`, `BRACE_CLOSE` |
+| 14 | `RAW` |
+| 15 | `file`, `prefix_line`, `node`, `header_line`, `block` |
+| 16 | `declaration` |
+| 17 | `actor_decl`, `actor_prop`, `name_prop`, `poses_prop` |
+| 18 | `enum_decl`, `icon_decl`, `tag_decl`, `tag_entry`, `name_list` |
+| 19 | `var_decl`, `type`, `constant`, `literal` |
+| 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` |
+| 21 | `statement` |
+| 22 | `text_line` |
+| 23 | `choice`, `option`, `option_modifier` |
+| 24 | `if_stmt`, `elif_clause`, `else_clause` |
+| 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` |
+| 26 | `variation`, `alternative`, `alternative_line` |
+| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` |
+| 28 | `inline_text`, `inline_item` |
+| 29 | `span` |
+| 30 | `point`, `point_body` |
+| 31 | `cond` |
+| 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` |
 
 ### Extension compatibility
 
@@ -721,5 +723,4 @@ The [grammar extensions](design.md#grammar-extensions), and the notes and `requi
 - v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (pose)}` free for the [mid-line pose extension](design.md#pose-changes-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
 - **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) isn't reserved. Its keyword and case markers (`plural`, `zero`, `one`, `two`, `few`, `many`, `other`) are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their syntax is chosen to avoid names stories already use, or the change is announced as breaking.
-- Some open questions must be decided in a particular direction, or an extension would change what a valid v1 story means:
-  - **Q12:** `[`, `{` and `\` in a display name are errors, so display names can later hold markup.
+- `[`, `{` and `\` in a display name are errors, so display names can later hold markup.

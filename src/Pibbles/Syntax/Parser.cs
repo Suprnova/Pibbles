@@ -13,8 +13,6 @@ namespace Pibbles.Syntax;
 /// </remarks>
 internal sealed partial class Parser
 {
-    private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
-
     private readonly SourceText source;
     private readonly IReadOnlyList<LineToken> lines;
     private readonly List<Diagnostic> diagnostics;
@@ -90,8 +88,13 @@ internal sealed partial class Parser
 
             if (DeclarationKeywords.Contains(word))
             {
-                declarations.Add(new UnparsedDeclarationSyntax { Span = line.Content });
-                SkipRestOfLine();
+                declarations.Add(ParseDeclaration(line));
+                return;
+            }
+
+            if (ExtensionKeywords.Contains(word))
+            {
+                Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{word}`");
                 index++;
                 SkipBlock();
                 return;
@@ -136,7 +139,7 @@ internal sealed partial class Parser
 
         NameSyntax name = ExpectName("a node name", "==");
         List<NameSyntax> aliases = [];
-        while (token.Kind is TokenKind.Tag && !lineFailed)
+        while (token.Kind is TokenKind.Tag)
         {
             TagSyntax tag = ReadTag();
             if (tag.Name is not "was")
@@ -187,34 +190,16 @@ internal sealed partial class Parser
             }
             else
             {
-                ParseStatement(statements);
+                ParseStatement(statements, Current.Line);
             }
         }
 
         return statements;
     }
 
-    /// <summary>Consumes a line the parser doesn't read yet, and parses the block under it as its body.</summary>
-    private UnparsedStatementSyntax ParseUnparsedStatement(SourceLine line)
-    {
-        index++;
-        List<StatementSyntax> body = [];
-        if (Current.Kind is LineTokenKind.Indent)
-        {
-            index++;
-            body = ParseStatements(nodeLevel: false);
-            SkipDedent();
-        }
-
-        int end = body.Count > 0 ? Math.Max(body[^1].Span.End, line.Content.End) : line.Content.End;
-        return new(body) { Span = new(line.Content.Start, end - line.Content.Start) };
-    }
-
     private void ReportUnexpectedIndentation()
     {
-        SourceLine line = Current.Line;
-        int start = source.GetLineSpan(line.Number).Start;
-        Report(DiagnosticCatalog.UnexpectedIndentation, new(start, line.Content.Start - start));
+        Report(DiagnosticCatalog.UnexpectedIndentation, IndentationOf(Current.Line));
         index++;
     }
 
@@ -282,7 +267,7 @@ internal sealed partial class Parser
 
     private NameSyntax ExpectName(string what, string after)
     {
-        if (token.Kind is TokenKind.Name && !lineFailed)
+        if (token.Kind is TokenKind.Name)
         {
             var name = new NameSyntax(TextOf(token.Span)) { Span = token.Span };
             Advance();

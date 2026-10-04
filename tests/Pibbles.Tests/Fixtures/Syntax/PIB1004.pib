@@ -20,3 +20,14 @@
 //    ^ PIB1033
 
 // A missing `:` is reported, and the block check is left out for that line.
+
+// Openers in declarations and variations
+
+@cycle:
+    -
+//  ^ PIB1004
+    - mira: Hm.
+@sequence:
+// PIB1004
+@once:
+// PIB1004

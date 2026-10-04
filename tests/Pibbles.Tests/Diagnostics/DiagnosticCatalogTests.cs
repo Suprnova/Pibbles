@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Pibbles.Diagnostics;
+using Pibbles.Syntax;
 using Pibbles.Tests.Fixtures;
 
 namespace Pibbles.Tests.Diagnostics;
@@ -30,6 +31,14 @@ public partial class DiagnosticCatalogTests
     }
 
     [Fact]
+    public void All_EveryTemplateFormats()
+    {
+        SourceLocation location = new SourceText("story.pib", "").GetLocation(new(0, 0));
+
+        Assert.All(DiagnosticCatalog.All, descriptor => descriptor.Create(location, "first", "second", "third"));
+    }
+
+    [Fact]
     public void All_EveryCodeIsInDocumentedTableWithItsSeverity()
     {
         Dictionary<string, string> table = Section("Codes")
@@ -42,6 +51,14 @@ public partial class DiagnosticCatalogTests
             Assert.True(table.TryGetValue(descriptor.Code, out string? severity), $"{descriptor.Code} isn't in the table in docs/diagnostics.md.");
             Assert.Equal(descriptor.DefaultSeverity.ToString(), severity);
         });
+    }
+
+    [Fact]
+    public void DocumentedSyntaxCodes_AreAllRegistered()
+    {
+        string[] documented = [.. Section("Codes").Select(line => TableRow().Match(line)).Where(match => match.Success && match.Groups["code"].Value.StartsWith("PIB1", StringComparison.Ordinal)).Select(match => match.Groups["code"].Value)];
+
+        Assert.All(documented, code => Assert.Contains(DiagnosticCatalog.All, descriptor => descriptor.Code == code));
     }
 
     [Fact]

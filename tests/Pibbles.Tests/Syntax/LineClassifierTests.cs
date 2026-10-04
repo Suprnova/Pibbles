@@ -13,7 +13,7 @@ public class LineClassifierTests
     [InlineData("-\tmira: Nope.", nameof(LineKind.Dash))]
     [InlineData("mira: Locked.", nameof(LineKind.Text))]
     [InlineData("If you say so.", nameof(LineKind.Text))]
-    [InlineData("-", nameof(LineKind.Text))]
+    [InlineData("-", nameof(LineKind.Dash))]
     [InlineData("-- Dashes are text.", nameof(LineKind.Text))]
     [InlineData("= One equals sign is text.", nameof(LineKind.Text))]
     [InlineData("/ One slash is text.", nameof(LineKind.Text))]

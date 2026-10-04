@@ -18,9 +18,23 @@ public sealed record ReturnStatementSyntax : StatementSyntax;
 /// <summary><c>@end</c>: ends the dialogue and clears the call stack.</summary>
 public sealed record EndStatementSyntax : StatementSyntax;
 
-/// <summary>A statement the parser doesn't read yet, and the statements in the block under it.</summary>
-/// <param name="Body">The statements in the indented block under the line, if any.</param>
-public sealed record UnparsedStatementSyntax(IReadOnlyList<StatementSyntax> Body) : StatementSyntax;
+/// <summary><c>@sequence:</c> or <c>@cycle:</c>, and the alternatives in its block.</summary>
+/// <param name="Kind">Which alternative runs on each entry.</param>
+/// <param name="Tags">The tags after the <c>:</c>, which hold the block's <c>#id</c>.</param>
+/// <param name="Alternatives">The alternatives, in order.</param>
+public sealed record VariationStatementSyntax(VariationKind Kind, IReadOnlyList<TagSyntax> Tags, IReadOnlyList<AlternativeSyntax> Alternatives) : StatementSyntax;
+
+/// <summary>
+/// One alternative of a variation: <c>- </c> and a single-line statement, with any indented lines under it; or a bare
+/// <c>-</c> with the whole alternative in the block under it.
+/// </summary>
+/// <param name="Body">The alternative's statements.</param>
+public sealed record AlternativeSyntax(IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
+
+/// <summary><c>@once:</c> and its block, which runs the first time execution reaches it and is skipped after that.</summary>
+/// <param name="Tags">The tags after the <c>:</c>, which hold the block's <c>#id</c>.</param>
+/// <param name="Body">The statements that run on the first entry.</param>
+public sealed record OnceStatementSyntax(IReadOnlyList<TagSyntax> Tags, IReadOnlyList<StatementSyntax> Body) : StatementSyntax;
 
 /// <summary><c>@if condition:</c> and its block, with any <c>@elif</c> and <c>@else</c> clauses after it.</summary>
 /// <param name="Condition">The condition.</param>
@@ -105,3 +119,13 @@ public sealed record ChoiceSyntax(IReadOnlyList<OptionSyntax> Options) : Stateme
 /// <param name="Tags">The tags at the end of the line.</param>
 /// <param name="Body">The statements that run when the option is picked.</param>
 public sealed record OptionSyntax(IReadOnlyList<InlineSyntax> Text, ExpressionSyntax? Condition, bool IsOnce, IReadOnlyList<TagSyntax> Tags, IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
+
+/// <summary>Which alternative a variation runs on each entry.</summary>
+public enum VariationKind
+{
+    /// <summary><c>@sequence:</c> runs the next alternative each time, then stays on the last.</summary>
+    Sequence,
+
+    /// <summary><c>@cycle:</c> runs the next alternative each time, starting over after the last.</summary>
+    Cycle,
+}

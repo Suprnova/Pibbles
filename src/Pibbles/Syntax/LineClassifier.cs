@@ -59,7 +59,8 @@ internal sealed class LineClassifier
         tokens.Add(new(LineTokenKind.Line, line));
     }
 
-    private static LineKind KindOf(ReadOnlySpan<char> content) => content switch
+    /// <summary>Classifies a line by how its content starts. A bare <c>-</c> is an alternative marker, like <c>- </c> followed by text.</summary>
+    internal static LineKind KindOf(ReadOnlySpan<char> content) => content switch
     {
         [] => LineKind.Blank,
         ['/', '/', '/'] or ['/', '/', '/', not '/', ..] => LineKind.Note,
@@ -67,7 +68,7 @@ internal sealed class LineClassifier
         ['=', '=', ..] => LineKind.Header,
         ['@', ..] => LineKind.At,
         ['-', '>', ..] => LineKind.Option,
-        ['-', ' ' or '\t', ..] => LineKind.Dash,
+        ['-'] or ['-', ' ' or '\t', ..] => LineKind.Dash,
         _ => LineKind.Text,
     };
 

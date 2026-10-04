@@ -1,0 +1,91 @@
+File 1:1-26:1
+  Nodes:
+    Node 3:1-25:21
+      Name: Name 3:4-3:23 Text="snapshot.variations"
+      Body:
+        VariationStatement 4:1-7:51 Kind=Sequence
+          Alternatives:
+            Alternative 5:5-5:27
+              Body:
+                TextLine 5:7-5:27
+                  Speaker: Name 5:7-5:11 Text="mira"
+                  Content:
+                    TextRun 5:13-5:27 Text="It's a fridge."
+            Alternative 6:5-6:35
+              Body:
+                TextLine 6:7-6:35
+                  Speaker: Name 6:7-6:11 Text="mira"
+                  Pose: Name 6:13-6:17 Text="smug"
+                  Content:
+                    TextRun 6:20-6:35 Text="Still a fridge."
+            Alternative 7:5-7:51
+              Body:
+                TextLine 7:7-7:51
+                  Speaker: Name 7:7-7:11 Text="mira"
+                  Content:
+                    TextRun 7:13-7:51 Text="I refuse to look at this fridge again."
+        VariationStatement 8:1-19:13 Kind=Cycle
+          Tags:
+            Tag 8:9-8:19 Name="id" Value="c9wq2a"
+          Alternatives:
+            Alternative 9:5-9:19
+              Body:
+                TextLine 9:7-9:19
+                  Speaker: Name 9:7-9:11 Text="mira"
+                  Content:
+                    TextRun 9:13-9:19 Text="Dusty."
+            Alternative 10:5-12:20
+              Body:
+                TextLine 10:7-10:24
+                  Speaker: Name 10:7-10:11 Text="mira"
+                  Content:
+                    TextRun 10:13-10:24 Text="Very dusty."
+                WaitStatement 11:9-11:19
+                  Duration: DurationLiteral 11:15-11:19 Seconds=0.5
+                CommandStatement 12:9-12:20 Wait=Default
+                  Command: Name 12:10-12:13 Text="sfx"
+                  Arguments:
+                    Argument 12:14-12:20
+                      Value: NameExpression 12:14-12:20 Name="sneeze"
+            Alternative 13:5-13:31
+              Body:
+                JumpStatement 13:7-13:31
+                  Target: Name 13:13-13:31 Text="snapshot.elsewhere"
+            Alternative 14:5-17:22
+              Body:
+                IfStatement 15:9-16:39
+                  Condition: VariableExpression 15:13-15:21 Name="has_key"
+                  Body:
+                    TextLine 16:13-16:39
+                      Speaker: Name 16:13-16:17 Text="mira"
+                      Content:
+                        TextRun 16:19-16:39 Text="I could use the key."
+                TextLine 17:9-17:22
+                  Speaker: Name 17:9-17:13 Text="mira"
+                  Content:
+                    TextRun 17:15-17:22 Text="Anyway."
+            Alternative 18:5-19:13
+              Body:
+                EndStatement 19:9-19:13
+        OnceStatement 20:1-22:29
+          Tags:
+            Tag 20:8-20:18 Name="id" Value="b8k2qd"
+          Body:
+            TextLine 21:5-21:32
+              Speaker: Name 21:5-21:9 Text="mira"
+              Content:
+                TextRun 21:11-21:32 Text="Whoa, a secret panel!"
+            SetStatement 22:5-22:29 Operator=Assign OperatorSpan=22:23-22:24
+              Variable: VariableExpression 22:10-22:22 Name="found_panel"
+              Value: BooleanLiteral 22:25-22:29 Value=true
+        TextLine 23:1-23:38
+          Content:
+            TextRun 23:1-23:38 Text="- A dash outside a variation is text."
+        TextLine 24:1-24:2
+          Content:
+            TextRun 24:1-24:2 Text="-"
+        TextLine 25:1-25:21
+          Speaker: Name 25:1-25:5 Text="mira"
+          Pose: Name 25:7-25:10 Text="sad"
+          Tags:
+            Tag 25:13-25:21 Name="thought" Value=null
