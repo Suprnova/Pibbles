@@ -1,5 +1,9 @@
 using System.CommandLine;
+using System.Text;
 using Pibbles.Cli;
+
+// Stories and messages hold any character, and Windows consoles otherwise use an old code page that mangles them.
+Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
 var root = new Argument<string>("root")
 {
