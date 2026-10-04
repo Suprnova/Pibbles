@@ -5,11 +5,19 @@ namespace Pibbles.Syntax;
 /// <summary>Text lines, choices and options: the lines whose content is mostly inline text.</summary>
 internal sealed partial class Parser
 {
+    /// <summary>Whose text the line being parsed holds, for messages: <c>what mira says</c>, <c>the text</c> or <c>the option's text</c>.</summary>
+    private string textOwner = "the text";
+
+    /// <summary>Where the content of the line being parsed starts, for messages that rewrite the line.</summary>
+    private int textLineStart;
+
     private TextLineSyntax ParseTextLine(SourceLine line)
     {
         lineFailed = false;
         inlineEnd = line.Content.End;
         int start = line.Content.Start;
+        textOwner = "the text";
+        textLineStart = start;
 
         NameSyntax? speaker = null;
         NameSyntax? pose = null;
@@ -17,6 +25,7 @@ internal sealed partial class Parser
         if (MatchSpeaker(start) is { } match)
         {
             speaker = new(TextOf(match.Speaker)) { Span = match.Speaker };
+            textOwner = $"what {speaker.Text} says";
             pose = match.Pose is { } poseSpan ? new(TextOf(poseSpan)) { Span = poseSpan } : null;
             textStart = match.End;
         }
@@ -95,6 +104,8 @@ internal sealed partial class Parser
         lineFailed = false;
         inlineEnd = line.Content.End;
         int start = line.Content.Start;
+        textOwner = "the option's text";
+        textLineStart = start;
 
         List<InlineSyntax> text = ParseInlineText(SkipWhitespace(start + 2), line.Content.End, option: true);
         ExpressionSyntax? condition = null;
@@ -130,7 +141,7 @@ internal sealed partial class Parser
             if (token.Kind is not TokenKind.EndOfLine)
             {
                 if (tags.Count > 0)
-                    Fail(DiagnosticCatalog.TextAfterTag, tags[0].Span, TextOf(tags[0].Span));
+                    ReportTextAfterTag(tags[0]);
                 else
                     Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
             }
@@ -154,6 +165,14 @@ internal sealed partial class Parser
 
         int end = body.Count > 0 ? Math.Max(body[^1].Span.End, lineEnd) : lineEnd;
         return new(text, condition, isOnce, tags, body) { Span = new(start, end - start) };
+    }
+
+    /// <summary>Reports text after a tag, with the line rewritten so the tag's <c>#</c> is escaped, as the fix.</summary>
+    private void ReportTextAfterTag(TagSyntax tag)
+    {
+        string before = source.Text[textLineStart..tag.Span.Start];
+        string after = source.Text[tag.Span.Start..inlineEnd].TrimEnd(' ', '\t');
+        Fail(DiagnosticCatalog.TextAfterTag, tag.Span, TextOf(tag.Span), textOwner, $"{before}\\{after}");
     }
 
     private int TrimmedEnd(SourceLine line) =>

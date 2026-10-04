@@ -41,7 +41,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1012 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
 | PIB1013 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
 | PIB1014 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
-| PIB1015 | Error | This text comes after a tag, but tags go at the end of the line. | If `#winning` is part of the text, put a backslash before the `#`: `\#winning`. |
+| PIB1015 | Error | This text comes after a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
 | PIB1016 | Error | An option's text can't contain `{w}`. | Pauses and commands go in the indented lines under the option. |
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |

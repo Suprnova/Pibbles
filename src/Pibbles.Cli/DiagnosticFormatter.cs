@@ -21,7 +21,8 @@ internal static class DiagnosticFormatter
 
     /// <summary>
     /// Writes a diagnostic for people, as <c>docs/syntax.md</c> shows: a headline, where it is, the source line with the
-    /// problem marked and labeled, and the help. Tabs in the line are shown as four spaces.
+    /// problem marked and labeled, and the help, whose later lines line up under its first. Tabs in the line are shown
+    /// as four spaces.
     /// </summary>
     public static void WritePretty(TextWriter output, SourceText source, Diagnostic diagnostic, bool color)
     {
@@ -45,8 +46,11 @@ internal static class DiagnosticFormatter
 
         if (diagnostic.Help is not null)
         {
+            string[] help = diagnostic.Help.Split('\n');
             output.WriteLine($"{gutter} {Paint("|", Blue, color)}");
-            output.WriteLine($"{gutter} {Paint("=", Blue, color)} {Paint("help", "1", color)}: {diagnostic.Help}");
+            output.WriteLine($"{gutter} {Paint("=", Blue, color)} {Paint("help", "1", color)}: {help[0]}");
+            foreach (string more in help[1..])
+                output.WriteLine($"{gutter}{HelpIndent}{more}");
         }
     }
 
@@ -92,6 +96,9 @@ internal static class DiagnosticFormatter
     private sealed record JsonDiagnostic(string Path, int Line, int Column, int EndLine, int EndColumn, string Severity, string Code, string Message, string? Label, string? Help);
 
     private const string Blue = "1;34";
+
+    /// <summary>Lines up a help's later lines with its first, after <c> = help: </c>.</summary>
+    private const string HelpIndent = "         ";
 
     private static string Name(DiagnosticSeverity severity) => severity.ToString().ToLowerInvariant();
 

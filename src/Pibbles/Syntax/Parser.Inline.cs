@@ -325,7 +325,7 @@ internal sealed partial class Parser
             {
                 var rest = new TextSpan(position, inlineEnd - position);
                 if (tags.Count > 0)
-                    Fail(DiagnosticCatalog.TextAfterTag, tags[0].Span, TextOf(tags[0].Span));
+                    ReportTextAfterTag(tags[0]);
                 else
                     Fail(DiagnosticCatalog.Unexpected, rest, $"`{TextOf(rest).TrimEnd()}`");
 

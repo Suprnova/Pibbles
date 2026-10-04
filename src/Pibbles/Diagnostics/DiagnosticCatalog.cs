@@ -82,13 +82,16 @@ public static class DiagnosticCatalog
         help: @"A backslash only goes before punctuation. To show a backslash, write `\\`.");
 
     /// <summary>PIB1015: text after a tag, which ends the line's text.</summary>
-    /// <remarks>Argument: the tag the text comes after.</remarks>
+    /// <remarks>
+    /// Arguments: the tag the text comes after; whose text it is, such as <c>what mira says</c> or <c>the text</c>; and
+    /// the line with the tag escaped, which the help shows on a line of its own.
+    /// </remarks>
     public static DiagnosticDescriptor TextAfterTag { get; } = new(
         "PIB1015",
         DiagnosticSeverity.Error,
         "This text comes after a tag, but tags go at the end of the line.",
         "this starts a tag",
-        "If `{0}` is part of the text, put a backslash before the `#`: `\\{0}`.");
+        "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
     /// <summary>PIB1016: a command, <c>{w}</c> or <c>{p}</c> in an option's text.</summary>
     /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
