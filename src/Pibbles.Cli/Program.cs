@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Text;
 using Pibbles.Cli;
 
@@ -42,4 +43,7 @@ var code = new Argument<string>("code") { Description = "A diagnostic code, such
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, Console.Error));
 
-return new RootCommand("Pibbles: checks and plays narrative scripts.") { init, check, explain }.Parse(args).Invoke();
+var pibbles = new RootCommand("Pibbles: checks and plays narrative scripts.") { init, check, explain };
+pibbles.SetAction(result => new HelpAction().Invoke(result));
+
+return pibbles.Parse(args).Invoke();
