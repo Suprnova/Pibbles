@@ -21,6 +21,15 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 
 Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 
+**How `pibbles check` reads the story and reports it:**
+
+- **The story** is every `.pib` file under the story folder: `story/` under the root, or the folder that `pibbles.json`'s `story` setting names.
+- **Paths in diagnostics** are relative to the current directory, so they point at the right file from an editor's terminal or a CI job, whichever folder the root is.
+- **The readable format** ends with a summary line, such as `Checked 3 files: 2 errors and 1 warning.` The `msbuild` and `json` formats print only the diagnostics.
+- **JSON** is an array with one object per diagnostic: `path`, `line`, `column`, `endLine` and `endColumn` (1-based), `severity`, `code`, `message`, `label` and `help`.
+- **Exit codes:** 0 when the check passes, 1 when an error fails it (or a warning, with `--warnaserror`), and 2 when there's nothing to check, such as a missing story folder. `pibbles explain` exits 2 for a code it doesn't know.
+- **In CI,** the workflow registers `.github/pibbles-problem-matcher.json`, which turns `--format msbuild` output into annotations on the changed lines.
+
 `pibbles play` matters more than it looks. Writers can test a branch without launching the game or knowing C#, and it gives coding agents an end-to-end check that needs no engine.
 
 ## VS Code extension

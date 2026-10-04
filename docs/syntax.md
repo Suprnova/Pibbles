@@ -53,8 +53,7 @@ error[PIB1015]: This text comes after a tag, but tags go at the end of the line.
 12 | mira: I'm #winning today.
    |           ^^^^^^^^ this starts a tag
    |
-   = help: If "#winning" is part of what Mira says, put a backslash before the #:
-           mira: I'm \#winning today.
+   = help: If `#winning` is part of the text, put a backslash before the `#`: `\#winning`.
 ```
 
 The **message** is the headline, the **label** sits under the marked span, and the **help** says how to fix it. The label and help are optional. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.

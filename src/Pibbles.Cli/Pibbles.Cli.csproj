@@ -11,4 +11,13 @@
     <ProjectReference Include="..\Pibbles\Pibbles.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Pibbles.Tests" />
+    <EmbeddedResource Include="..\..\docs\diagnostics.md" LogicalName="diagnostics.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.12" />
+  </ItemGroup>
+
 </Project>

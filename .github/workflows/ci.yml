@@ -28,3 +28,8 @@ jobs:
 
       - name: Test on net8.0 and net10.0
         run: dotnet test --configuration Release --no-build -p:TestAllTargets=true
+
+      - name: Check the sample story
+        run: |
+          echo "::add-matcher::.github/pibbles-problem-matcher.json"
+          dotnet run --project src/Pibbles.Cli --configuration Release --no-build -- check samples/kitchen --release --warnaserror --format msbuild
