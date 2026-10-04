@@ -1,0 +1,19 @@
+// A line that steps back has to line up with a block above it.
+
+== fixture.dedent
+@if true:
+        Indented by eight.
+    Indented by four, which lines up with no block above.
+// PIB1002
+
+// Must not trigger
+
+@if true:
+    @if true:
+        Two blocks deep.
+    One block deep.
+Back at the top.
+@if true:
+      Any width works for a new block.
+   // A comment can sit at any indentation.
+Back at the top again.

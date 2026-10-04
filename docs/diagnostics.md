@@ -86,6 +86,42 @@ The style rules, PIB5001 to PIB5040, are documented with examples in the [semant
 
 One section per implemented code, headed `### PIB1001`. The CLI embeds this file at build time, so `pibbles explain` and the docs never drift apart.
 
+### PIB1001
+
+**Indentation decides which lines belong to an `@if`, an option or a variation, so a file has to indent the same way throughout.** A tab and a space look different widths in different editors, so Pibbles doesn't guess how many spaces a tab is worth. The first indented line decides how the whole file indents, and every other indented line has to use the same character. Comment lines and blank lines don't count, because their indentation never matters.
+
+```text
+@if $door_open:
+    mira: It's open!
+@else:
+→   mira: Still locked.
+```
+
+The first indented line uses spaces, so the tab (shown as `→`) on the last line is reported. Re-indent the file with one character: most editors have a command for converting tabs to spaces, or spaces to tabs. Until it's fixed, a line indented with the other character still counts by its width, with a tab counting as one character.
+
+### PIB1002
+
+**A line that steps back out of a block has to line up with a block it's stepping back to.**
+
+```text
+@if $door_open:
+        mira: It's open!
+    mira: Hm.
+```
+
+`mira: Hm.` is indented less than the line above, so it leaves the `@if` block, but four spaces lines up with no block above it: the `@if` is at zero and its block is at eight. Pibbles treats the line as part of the outer block, the one at zero. Indent it to match the block it belongs to: zero to come after the `@if`, or eight to be part of it.
+
+### PIB1005
+
+**`///` is reserved for notes to translators, which arrive with localization.** Until then, a line starting with `///` is an error, so stories written now can't already be using it for something else. A line starting with four or more slashes, such as a `////////` banner, is an ordinary comment.
+
+```text
+/// Mira is joking here.
+mira: I live in the walls.
+```
+
+Write it as an ordinary comment for now: `// Mira is joking here.`
+
 ## With extensions
 
 Codes that arrive with the [grammar extensions](language/design.md#grammar-extensions) and later tiers ([roadmap](roadmap.md#feature-tiers)).

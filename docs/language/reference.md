@@ -443,7 +443,7 @@ W3C EBNF, the notation of the XML specification. `::=` defines a production, `|`
 ### Lines
 
 ```ebnf
-source          ::= #xFEFF? line (newline line)*                          /* Q1 */
+source          ::= #xFEFF? line (newline line)*
 newline         ::= #xD #xA | #xA | #xD
 line            ::= indent content
 indent          ::= ws*
@@ -456,7 +456,7 @@ Each line is classified by how its `content` starts, checked in this order:
 | `content` starts with | Class |
 | --- | --- |
 | nothing | BLANK |
-| `///` | NOTE (Q2) |
+| `///`, not followed by another `/` | NOTE |
 | `//` | COMMENT |
 | `==` | HEADER |
 | `@` | AT |
@@ -469,7 +469,7 @@ The parser reads two classes by context, which the classifier doesn't know:
 - **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
 - **TEXT** inside an `@actor` block is an actor property.
 
-v1 reports every NOTE line as an error.
+A byte-order mark at the start of the file is skipped. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error.
 
 **Indentation** turns widths into tokens:
 
@@ -667,8 +667,6 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |
-| 1 | `source` | Is a byte-order mark allowed? Some Windows editors write one. | Allowed and skipped; an error |
-| 2 | NOTE class | Which lines are notes? "Starts with `///`" also catches `////` comment banners. | Any line starting with `///`; `///` followed by `ws` or the end of the line, with longer runs of slashes being comments |
 | 5 | `NUMBER` | Which number forms are allowed? | Also `.5` (safe, since a NAME can't start with a dot then a digit); also `1.`; exponents; digit separators |
 | 6 | `TAG` | Which characters can a tag name hold? | Identifier characters only; also `-` |
 | 11 | `ESCAPE` | Which characters can follow `\`? What about a `\` at the end of a line? A letter or digit after `\` must be an error ([extension compatibility](#extension-compatibility)). | Punctuation only, with anything else an error; anything but letters and digits; an unknown escape is literal text |
@@ -684,8 +682,8 @@ Characters and tokens are defined first, from the bottom up, because every later
 
 | # | Productions | Questions |
 | --- | --- | --- |
-| 1 | `source`, `newline`, `line`, `indent`, `ws`, `content` | Q1 |
-| 2 | Line classification | Q2 |
+| 1 | `source`, `newline`, `line`, `indent`, `ws`, `content` | |
+| 2 | Line classification | |
 | 3 | Indentation: INDENT, DEDENT, EOL | |
 | 4 | `letter`, `mark`, `digit`, `ident` | |
 | 5 | `NAME`, `VARIABLE` | |

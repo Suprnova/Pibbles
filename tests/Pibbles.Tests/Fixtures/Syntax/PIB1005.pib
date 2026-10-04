@@ -1,0 +1,16 @@
+/// A note.
+// PIB1005
+///Even without a space.
+// PIB1005
+== fixture.notes
+@if true:
+    /// An indented note.
+//  ^^^ PIB1005
+    ///
+//  ^^^ PIB1005
+
+// Must not trigger
+
+//// A comment banner.
+// A comment.
+    // An indented comment.

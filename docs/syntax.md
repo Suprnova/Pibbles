@@ -6,7 +6,7 @@ The front end turns `.pib` source into syntax trees and syntax diagnostics. It i
 
 Parsing happens in two levels, following the line-oriented principle:
 
-1. **Line classifier.** It splits the source into lines, measures indentation, emits INDENT and DEDENT, and classifies each line by its leading marker ([reference](language/reference.md#line-classification)). Indentation errors are reported here.
+1. **Line classifier.** It splits the source into lines, measures indentation, emits INDENT and DEDENT, and classifies each line by its leading marker ([reference](language/reference.md#line-classification)). Its output is a token stream of lines, indents and dedents, ending with an end-of-file line. Blank, comment and note lines don't appear in it. Indentation errors are reported here. A line indented with the wrong character still indents by its width, so a region pasted with tabs keeps its structure and reports only that it mixes them.
 2. **Statement parser.** A hand-written recursive-descent parser for each line kind. Expressions use precedence climbing.
 3. **Inline parser.** A separate small parser for inline text. It runs on text-line bodies and option text, and also on translation strings, where it's the same parser.
 

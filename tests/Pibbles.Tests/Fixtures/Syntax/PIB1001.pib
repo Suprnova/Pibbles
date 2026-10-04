@@ -1,0 +1,20 @@
+// The first indented line decides how a file indents: here, with spaces.
+
+== fixture.mixed
+@if true:
+    Indented with spaces.
+@if true:
+	Indented with a tab.
+// PIB1001
+@if true:
+  	Indented with spaces, then a tab.
+// PIB1001
+
+// Must not trigger
+
+@if true:
+    Back to spaces.
+	// A comment's indentation doesn't count, so it can use a tab.
+	
+    The line above holds only a tab, so it's blank.
+Text can have a tab	inside it.
