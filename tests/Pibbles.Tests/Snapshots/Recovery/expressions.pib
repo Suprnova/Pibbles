@@ -1,0 +1,10 @@
+// Broken expressions still leave a complete tree.
+
+== snapshot.recovery
+@set $x = 1 +
+@if has_item("key":
+    @end
+@set $y = (2 * 3
+@if $a < $b < $c:
+    @end
+@set $z = 1e5

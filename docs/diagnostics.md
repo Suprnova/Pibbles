@@ -60,10 +60,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, like `kitchen_door`. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
-| PIB1051 | Error | I read `has_item ("key")` as two separate things, because of the space before `(`. | To call `has_item`, remove the space: `has_item("key")`. |
+| PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
 | PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or change her pose with `mira (happy):`. If this is narration, escape the colon: `mira\:`. |
+| PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
@@ -125,6 +126,17 @@ The first indented line uses spaces, so the tab (shown as `→`) on the last lin
 
 Remove the indentation, or put the lines under a line that opens a block.
 
+### PIB1004
+
+**A line ending in `:` opens a block, so it needs indented lines under it.** That covers `@if`, `@elif`, `@else` and the other block openers. A comment or a `///` line on its own doesn't count, since it doesn't run.
+
+```text
+@if $door_open:
+mira: It's open!
+```
+
+Indent the lines the opener controls. If it has nothing to do yet, put a placeholder line under it, or remove the opener.
+
 ### PIB1005
 
 **`///` is reserved for notes to translators, which arrive with localization.** Until then, a line starting with `///` is an error, so stories written now can't already be using it for something else. A line starting with four or more slashes, such as a `////////` banner, is an ordinary comment.
@@ -184,6 +196,31 @@ mira: Locked.
 
 To keep nodes under two group names, split the file in two, each with its own `@prefix`. A node can also use its full name (`== cellar.stairs`) in a file whose prefix is something else.
 
+### PIB1030
+
+**`@elif` and `@else` continue an `@if`, so they come right after its block, at the same indentation.** Comments between them are fine. Anything else in between ends the `@if`, and so does an earlier `@else`. The statements under a stray `@elif` or `@else` are still read, as part of the block around it.
+
+```text
+@if $door_open:
+    mira: It's open!
+mira: Hm.
+@else:
+    mira: Still locked.
+```
+
+Move the clause up to just after the `@if` block, or indent it to match the `@if` it belongs to.
+
+### PIB1033
+
+**`@if`, `@elif` and `@else` end with a `:`,** which says a block follows. The block under the line still belongs to it, so this is the only problem reported.
+
+```text
+@if $door_open
+    mira: It's open!
+```
+
+Add the `:`: `@if $door_open:`.
+
 ### PIB1040
 
 **A line has something I can't read where it is.** This is the general code, for leftovers that no more specific code describes: an extra word after a statement, a node header indented inside a block, and so on.
@@ -234,6 +271,26 @@ Write `#show_disabled`, and declare it that way with `@tag`.
 
 Write the missing part: `@jump kitchen.leave`.
 
+### PIB1050
+
+**A command's unnamed arguments come first, in order, then its named ones (`name=value`), then `wait` or `nowait`.** Named arguments can go in any order among themselves.
+
+```text
+@show at=left mira
+```
+
+Write `@show mira at=left`.
+
+### PIB1051
+
+**A call's `(` touches its name:** `has_item("key")`. With a space, I read the name and the brackets as two separate things. Where only a call makes sense, as in a condition or an `@set`, the space is reported. In a command's arguments, a space really does separate two arguments: `@give item ("key")` passes `item` and `"key"`.
+
+```text
+@if has_item ("key"):
+```
+
+Remove the space: `@if has_item("key"):`.
+
 ### PIB1053
 
 **Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names. The host never reads a node header, so other tags would have no effect there.
@@ -243,6 +300,36 @@ Write the missing part: `@jump kitchen.leave`.
 ```
 
 Put the tag on the line inside the node that it belongs to.
+
+### PIB1055
+
+**A command's arguments are separated by spaces, so an operator inside one needs brackets, and so does a minus sign.** Without them, `@shake_screen -1` could also be read as two things.
+
+```text
+@shake_screen -1
+```
+
+Write `@shake_screen (-1)`. A negative value elsewhere, as in `@set $x = -1`, needs no brackets.
+
+### PIB1060
+
+**Every `(` needs a `)` on the same line.** The message points at the `(` that's still open.
+
+```text
+@if has_item("key":
+```
+
+Add the `)` where the brackets should close: `@if has_item("key"):`.
+
+### PIB1061
+
+**Comparisons don't chain.** In some languages `$a < $b < $c` means "`$b` is between `$a` and `$c`", and in others it quietly compares `true` or `false` with `$c`. Pibbles asks you to say which you mean.
+
+```text
+@if 0 < $bravery < 3:
+```
+
+Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3:`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c:`.
 
 ## With extensions
 

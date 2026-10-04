@@ -1,4 +1,4 @@
-// Some lines need a name after their keyword.
+// Some lines need a name or a value after their keyword.
 
 == fixture.missing #was:
 //                      ^ PIB1046
@@ -8,6 +8,23 @@
 //   ^ PIB1046
 @prefix
 // PIB1020
+@set $x = 1 +
+//           ^ PIB1046
+@set
+//  ^ PIB1046
+@set $x
+//     ^ PIB1046
+@set $x =
+//       ^ PIB1046
+@wait
+//   ^ PIB1046
+@if :
+// ^ PIB1046
+    @end
+@show mira at=
+//            ^ PIB1046
+@set $x = f(1,)
+//            ^ PIB1046
 ==
 //^ PIB1046
 == fixture.alias #was
@@ -20,3 +37,4 @@
 == fixture.renamed #was:fixture.old #was:.older
 @jump fixture.renamed
 @call .relative #id:k7qp2x
+@set $x = f()

@@ -11,7 +11,7 @@ namespace Pibbles.Syntax;
 /// diagnostic from the parser. An indented block where none is allowed is reported once, and its lines join the block
 /// around it.
 /// </remarks>
-internal sealed class Parser
+internal sealed partial class Parser
 {
     private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
 
@@ -27,6 +27,7 @@ internal sealed class Parser
     private CodeLexer lexer = null!;
     private Token token;
     private int previousEnd;
+    private TextSpan previousSpan;
     private bool lineFailed;
 
     private Parser(SourceText source)
@@ -184,60 +185,13 @@ internal sealed class Parser
                 index++;
                 SkipBlock();
             }
-            else if (ParseStatement() is { } statement)
+            else
             {
-                statements.Add(statement);
+                ParseStatement(statements);
             }
         }
 
         return statements;
-    }
-
-    private StatementSyntax? ParseStatement()
-    {
-        SourceLine line = Current.Line;
-        if (line.Kind is not LineKind.At)
-            return ParseUnparsedStatement(line);
-
-        StartLine(line.Content);
-        switch (TextOf(token.Span))
-        {
-            case "@jump":
-                Advance();
-                NameSyntax destination = ExpectName("a node name", "@jump");
-                return FinishStatement(new JumpStatementSyntax(destination) { Span = SpanFrom(line.Content.Start) });
-
-            case "@call":
-                Advance();
-                NameSyntax target = ExpectName("a node name", "@call");
-                List<TagSyntax> tags = [];
-                while (token.Kind is TokenKind.Tag && !lineFailed)
-                    tags.Add(ReadTag());
-
-                return FinishStatement(new CallStatementSyntax(target, tags) { Span = SpanFrom(line.Content.Start) });
-
-            case "@return":
-                Advance();
-                return FinishStatement(new ReturnStatementSyntax { Span = SpanFrom(line.Content.Start) });
-
-            case "@end":
-                Advance();
-                return FinishStatement(new EndStatementSyntax { Span = SpanFrom(line.Content.Start) });
-
-            case "@prefix":
-                ReportMisplacedPrefix();
-                return null;
-
-            default:
-                SkipRestOfLine();
-                return ParseUnparsedStatement(line);
-        }
-    }
-
-    private StatementSyntax FinishStatement(StatementSyntax statement)
-    {
-        FinishLine();
-        return statement;
     }
 
     /// <summary>Consumes a line the parser doesn't read yet, and parses the block under it as its body.</summary>
@@ -297,11 +251,13 @@ internal sealed class Parser
         lexer = new(source, content, diagnostics);
         lineFailed = false;
         previousEnd = content.Start;
+        previousSpan = new(content.Start, 0);
         token = lexer.Next();
     }
 
     private void Advance()
     {
+        previousSpan = token.Span;
         previousEnd = token.Span.End;
         token = lexer.Next();
     }

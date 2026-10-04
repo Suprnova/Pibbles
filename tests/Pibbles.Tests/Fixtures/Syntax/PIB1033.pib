@@ -1,0 +1,17 @@
+// @if, @elif and @else lines end with `:`.
+
+== fixture.colons
+@if $door_open
+//            ^ PIB1033
+    The block still belongs to the @if.
+@elif has_item("crowbar")
+//                       ^ PIB1033
+    @end
+@else
+//   ^ PIB1033
+    @end
+
+// Must not trigger
+
+@if $door_open: // A comment after the colon.
+    @end

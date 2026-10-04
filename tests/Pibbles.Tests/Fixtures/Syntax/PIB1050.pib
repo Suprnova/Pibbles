@@ -1,0 +1,12 @@
+// Unnamed arguments come first, then named ones.
+
+== fixture.arguments
+@show at=left mira
+//            ^^^^ PIB1050
+@enter_room on_exit=.leave kitchen
+//                         ^^^^^^^ PIB1050
+
+// Must not trigger
+
+@show mira at=left
+@enter_room kitchen on_exit=.leave nowait

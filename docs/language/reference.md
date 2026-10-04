@@ -273,7 +273,7 @@ Each block has an **entry count** `n` in the state: how many times execution has
 ```
 
 - `@name` followed by positional arguments, then named arguments (`name=value`), then optionally `wait` or `nowait`.
-- **Positional arguments** are simple expressions: literals, variables, bare identifiers, dotted names (including relative node names) and function calls. Anything with operators goes in parentheses.
+- **Positional arguments** are simple expressions: literals, variables, bare identifiers, dotted names (including relative node names) and function calls. Anything with operators goes in parentheses, and so does a negative number: `@shake_screen (-1)`.
 - **A call's `(` touches its name.** `@foo bar(x)` passes one argument, the result of calling `bar`. `@foo bar (x)` passes two: `bar` and `x`. The same holds everywhere a function is called, in expressions and in `{fn(args)}`.
 - **Bare names** are read against the parameter's type: enum members, actors and node names ([bare names](#bare-names)). Strings are always quoted.
 - **Inline use is opt-in.** Only commands declared `inline` can appear inside text as `{@name …}`. Every other command can only be used on its own `@` line, where it runs exactly once. Loading a save made during a line shows that line again from the start, and its inline commands fire again ([runtime design](../runtime.md#saving-mid-dialogue)). So `inline` is for presentational commands that are harmless to repeat, and the analyzer rejects any other command in text.
@@ -285,6 +285,7 @@ Each block has an **entry count** `n` in the state: how many times execution has
 - **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error.
 - **References:** `$variable`, `function(args)`, and [bare names](#bare-names) for enum members, actors and nodes.
 - **Operators,** from lowest to highest precedence: `or`; `and`; `not`; `== !=`; `< <= > >=`; `+ -`; `* / %`; unary `-`; then parentheses. `+` also joins strings.
+- **Comparisons don't chain.** `$a < $b < $c` and `$a == $b == $c` are errors: write `$a < $b and $b < $c`. Comparisons at different levels combine as usual, so `$a == $b < $c` means `$a == ($b < $c)`.
 - **Built-in functions:** `visits(node) -> number`.
 - **Static typing:** every expression has a type the analyzer knows. Types are never converted implicitly, except that a number can stand in for a duration ([operator types](#operator-types)).
 
@@ -567,7 +568,7 @@ tag_entry       ::= NAME (":" type "?"?)?
 name_list       ::= NAME ("," NAME)*
 var_decl        ::= "@var" VARIABLE (":" type)? "=" constant EOL
 type            ::= NAME                             /* a single identifier */
-constant        ::= literal | NAME                                        /* Q13 */
+constant        ::= literal | "-" (NUMBER | DURATION) | NAME
 literal         ::= NUMBER | DURATION | STRING | "true" | "false"
 command_decl    ::= "@command" NAME "(" params? ")" command_flag* EOL
 command_flag    ::= "inline" | "waits"
@@ -636,15 +637,15 @@ expr            ::= or_expr
 or_expr         ::= and_expr ("or" and_expr)*
 and_expr        ::= not_expr ("and" not_expr)*
 not_expr        ::= "not" not_expr | eq_expr
-eq_expr         ::= rel_expr (("==" | "!=") rel_expr)*                    /* Q17 */
-rel_expr        ::= add_expr (("<" | "<=" | ">" | ">=") add_expr)*        /* Q17 */
+eq_expr         ::= rel_expr (("==" | "!=") rel_expr)?
+rel_expr        ::= add_expr (("<" | "<=" | ">" | ">=") add_expr)?
 add_expr        ::= mul_expr (("+" | "-") mul_expr)*
 mul_expr        ::= unary (("*" | "/" | "%") unary)*
 unary           ::= "-" unary | primary
 primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 ```
 
-`or`, `and`, `+`, `-`, `*`, `/` and `%` are left-associative. An expression ends at the first token that can't continue it, such as `:`, `}`, a tag, `@once` or the end of the line.
+`or`, `and`, `+`, `-`, `*`, `/` and `%` are left-associative. Comparisons are non-associative: one comparison operator per level, so a second one in a row is an error rather than a different grouping. An expression ends at the first token that can't continue it, such as `:`, `}`, a tag, `@once` or the end of the line.
 
 ### Checks
 
@@ -669,10 +670,8 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |
 | 12 | `name_prop`, `RAW` | What can a display name hold? `[`, `{` and `\` in it must be errors ([extension compatibility](#extension-compatibility)). | Plain text, trimmed; inline text with markup, which makes it inline mode instead of raw |
-| 13 | `constant`, `arg` | Can a constant or positional argument be negative (`@var $x = -1`, `@foo -1`)? This belongs in the syntax: a negative NUMBER token would break `$a-1`. | `"-"? NUMBER` in `constant`, with arguments needing parentheses; `"-"? NUMBER` in both |
 | 14 | `text_line` | What does `mira:`, with neither pose nor text, do? | An error; shows an empty line; nothing |
 | 15 | `alternative` | Which statements can follow `- `? `- @if $x:` opens a block that would also be the alternative's continuation. | Single-line statements only (text lines, `@set`, flow, `@wait` and commands); any statement, with a block opener's block serving as the continuation |
-| 17 | `eq_expr`, `rel_expr` | What do `a == b == c` and `a < b < c` mean? | Left-associative, so `(a == b) == c` type-checks and `a < b < c` doesn't; non-associative, so both are syntax errors; chained, as in Python |
 
 ### Definition order
 
@@ -698,7 +697,7 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 16 | `declaration` | |
 | 17 | `actor_decl`, `actor_prop`, `name_prop`, `poses_prop` | Q12 |
 | 18 | `enum_decl`, `icon_decl`, `tag_decl`, `tag_entry`, `name_list` | |
-| 19 | `var_decl`, `type`, `constant`, `literal` | Q13 |
+| 19 | `var_decl`, `type`, `constant`, `literal` | |
 | 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` | |
 | 21 | `statement` | |
 | 22 | `text_line` | Q14 |
@@ -706,12 +705,12 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 24 | `if_stmt`, `elif_clause`, `else_clause` | |
 | 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` | |
 | 26 | `variation`, `alternative`, `alternative_line` | Q15 |
-| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` | Q13 |
+| 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` | |
 | 28 | `inline_text`, `inline_item` | |
 | 29 | `span` | |
 | 30 | `point`, `point_body` | |
 | 31 | `cond` | |
-| 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` | Q17 |
+| 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` | |
 
 ### Extension compatibility
 

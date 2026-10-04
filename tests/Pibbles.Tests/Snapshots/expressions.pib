@@ -1,0 +1,17 @@
+// Every kind of expression, and how operators group.
+
+== snapshot.expressions
+@set $literals = 3 + 0.5 + .5 + 1.
+@set $durations = 0.5s + 300ms
+@set $text = "A \"quoted\" word" + ""
+@set $precedence = 1 + 2 * 3 - 4 / 5 % 6
+@set $grouping = (1 + 2) * -3 - -$x
+@set $calls = f(g(1, 2), "x") + rolled()
+@if true and not false or $flag:
+    @end
+@if $a == $b < $c:
+    @end
+@if has_item("key") and visits(kitchen.door) >= 2 and visits(.door) != 0:
+    @end
+@if $where == left or $who == mira:
+    @end

@@ -32,7 +32,7 @@ internal static class SyntaxDump
 
         builder.Append(type.Name.Replace("Syntax", "", StringComparison.Ordinal)).Append(' ').Append(Format(source, node.Span));
         foreach (PropertyInfo field in fields.Where(field => !IsChildren(field.PropertyType)))
-            builder.Append(' ').Append(field.Name).Append('=').Append(Format(field.GetValue(node)));
+            builder.Append(' ').Append(field.Name).Append('=').Append(Format(source, field.GetValue(node)));
 
         builder.Append('\n');
 
@@ -63,9 +63,10 @@ internal static class SyntaxDump
         return $"{start.Line + 1}:{start.Column + 1}-{end.Line + 1}:{end.Column + 1}";
     }
 
-    private static string Format(object? value) => value switch
+    private static string Format(SourceText source, object? value) => value switch
     {
         null => "null",
+        TextSpan span => Format(source, span),
         string text => $"\"{text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"",
         double number => number.ToString("R", CultureInfo.InvariantCulture),
         bool flag => flag ? "true" : "false",

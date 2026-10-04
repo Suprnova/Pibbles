@@ -21,3 +21,67 @@ public sealed record EndStatementSyntax : StatementSyntax;
 /// <summary>A statement the parser doesn't read yet, and the statements in the block under it.</summary>
 /// <param name="Body">The statements in the indented block under the line, if any.</param>
 public sealed record UnparsedStatementSyntax(IReadOnlyList<StatementSyntax> Body) : StatementSyntax;
+
+/// <summary><c>@if condition:</c> and its block, with any <c>@elif</c> and <c>@else</c> clauses after it.</summary>
+/// <param name="Condition">The condition.</param>
+/// <param name="Body">The statements that run when the condition is true.</param>
+/// <param name="ElseIfs">The <c>@elif</c> clauses, in order.</param>
+/// <param name="Else">The <c>@else</c> clause, or <see langword="null"/>.</param>
+public sealed record IfStatementSyntax(ExpressionSyntax Condition, IReadOnlyList<StatementSyntax> Body, IReadOnlyList<ElseIfClauseSyntax> ElseIfs, ElseClauseSyntax? Else) : StatementSyntax;
+
+/// <summary>An <c>@elif condition:</c> clause and its block.</summary>
+/// <param name="Condition">The condition.</param>
+/// <param name="Body">The statements that run when no earlier condition was true and this one is.</param>
+public sealed record ElseIfClauseSyntax(ExpressionSyntax Condition, IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
+
+/// <summary>An <c>@else:</c> clause and its block.</summary>
+/// <param name="Body">The statements that run when no condition was true.</param>
+public sealed record ElseClauseSyntax(IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
+
+/// <summary><c>@set $variable = value</c>, or <c>+=</c> or <c>-=</c>.</summary>
+/// <param name="Variable">The variable that changes.</param>
+/// <param name="Operator">How it changes.</param>
+/// <param name="OperatorSpan">Where the operator is written.</param>
+/// <param name="Value">The value assigned, added or subtracted.</param>
+public sealed record SetStatementSyntax(VariableExpressionSyntax Variable, AssignmentOperator Operator, TextSpan OperatorSpan, ExpressionSyntax Value) : StatementSyntax;
+
+/// <summary><c>@wait duration</c>: pauses the story without showing text.</summary>
+/// <param name="Duration">How long to wait.</param>
+public sealed record WaitStatementSyntax(ExpressionSyntax Duration) : StatementSyntax;
+
+/// <summary>A command on its own line, such as <c>@show mira left</c> or <c>@move mira offscreen nowait</c>.</summary>
+/// <param name="Command">The command's name, without the <c>@</c>.</param>
+/// <param name="Arguments">The arguments: positional ones first, then named ones.</param>
+/// <param name="Wait">Whether the line overrides the command's declared waiting.</param>
+public sealed record CommandStatementSyntax(NameSyntax Command, IReadOnlyList<ArgumentSyntax> Arguments, CommandWait Wait) : StatementSyntax;
+
+/// <summary>An argument to a command or markup: a value, with a name when it's written <c>name=value</c>.</summary>
+/// <param name="Name">The parameter's name, or <see langword="null"/> for a positional argument.</param>
+/// <param name="Value">The value.</param>
+public sealed record ArgumentSyntax(NameSyntax? Name, ExpressionSyntax Value) : SyntaxNode;
+
+/// <summary>How <c>@set</c> changes its variable.</summary>
+public enum AssignmentOperator
+{
+    /// <summary><c>=</c>: replaces the value.</summary>
+    Assign,
+
+    /// <summary><c>+=</c>: adds to the value.</summary>
+    Add,
+
+    /// <summary><c>-=</c>: subtracts from the value.</summary>
+    Subtract,
+}
+
+/// <summary>Whether a command line overrides the command's declared waiting.</summary>
+public enum CommandWait
+{
+    /// <summary>No override: the command waits if it's declared <c>waits</c>.</summary>
+    Default,
+
+    /// <summary><c>wait</c>: the story waits for the command to finish.</summary>
+    Wait,
+
+    /// <summary><c>nowait</c>: the story carries on at once.</summary>
+    NoWait,
+}

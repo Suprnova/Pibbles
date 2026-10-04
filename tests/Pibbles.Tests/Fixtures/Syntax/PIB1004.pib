@@ -1,0 +1,22 @@
+// A line ending in `:` needs indented lines under it.
+
+== fixture.blocks
+@if $door_open:
+// PIB1004
+@jump fixture.next
+@if $a:
+    @end
+@elif $b:
+// PIB1004
+@else:
+// PIB1004
+
+// Must not trigger
+
+@if $door_open:
+    // A comment line alone isn't a block, but this line is.
+    @end
+@if $a
+//    ^ PIB1033
+
+// A missing `:` is reported, and the block check is left out for that line.

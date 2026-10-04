@@ -1,0 +1,23 @@
+// Statements that hold expressions, and command arguments.
+
+== snapshot.statements
+@if $door_open:
+    @jump kitchen.leave
+@elif has_item("crowbar"):
+    @set $plan = "b"
+@elif $bravery > 2:
+    @end
+@else:
+    @set $bravery += 1
+    @set $bravery -= 1
+@wait 1s
+@wait ($delay * 2)
+@hide
+@show mira left
+@show mira at=left
+@show mira (left)
+@move mira offscreen nowait
+@camera hallway wait
+@enter_room kitchen on_exit=.leave
+@shake_screen ($bravery * 0.5) strength=(1 + 1)
+@give has_item("x") visits(kitchen.door)

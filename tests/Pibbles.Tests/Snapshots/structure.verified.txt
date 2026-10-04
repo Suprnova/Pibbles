@@ -11,7 +11,8 @@ File 1:1-24:1
         Name 9:15-9:26 Text=".front_door"
         Name 9:32-9:48 Text="kitchen.entrance"
       Body:
-        UnparsedStatement 10:1-12:24
+        IfStatement 10:1-12:24
+          Condition: VariableExpression 10:5-10:15 Name="door_open"
           Body:
             JumpStatement 11:5-11:17
               Target: Name 11:11-11:17 Text=".leave"

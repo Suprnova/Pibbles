@@ -1,0 +1,40 @@
+File 1:1-11:1
+  Nodes:
+    Node 3:1-10:14
+      Name: Name 3:4-3:21 Text="snapshot.recovery"
+      Body:
+        SetStatement 4:1-4:14 Operator=Assign OperatorSpan=4:9-4:10
+          Variable: VariableExpression 4:6-4:8 Name="x"
+          Value: BinaryExpression 4:11-4:14 Operator=Add OperatorSpan=4:13-4:14
+            Left: NumberLiteral 4:11-4:12 Value=1
+            Right: ErrorExpression 4:14-4:14
+        IfStatement 5:1-6:9
+          Condition: CallExpression 5:5-5:19
+            Function: Name 5:5-5:13 Text="has_item"
+            Arguments:
+              StringLiteral 5:14-5:19 Value="key"
+          Body:
+            EndStatement 6:5-6:9
+        SetStatement 7:1-7:17 Operator=Assign OperatorSpan=7:9-7:10
+          Variable: VariableExpression 7:6-7:8 Name="y"
+          Value: ParenthesizedExpression 7:11-7:17
+            Expression: BinaryExpression 7:12-7:17 Operator=Multiply OperatorSpan=7:14-7:15
+              Left: NumberLiteral 7:12-7:13 Value=2
+              Right: NumberLiteral 7:16-7:17 Value=3
+        IfStatement 8:1-9:9
+          Condition: BinaryExpression 8:5-8:17 Operator=Less OperatorSpan=8:13-8:14
+            Left: BinaryExpression 8:5-8:12 Operator=Less OperatorSpan=8:8-8:9
+              Left: VariableExpression 8:5-8:7 Name="a"
+              Right: VariableExpression 8:10-8:12 Name="b"
+            Right: VariableExpression 8:15-8:17 Name="c"
+          Body:
+            EndStatement 9:5-9:9
+        SetStatement 10:1-10:14 Operator=Assign OperatorSpan=10:9-10:10
+          Variable: VariableExpression 10:6-10:8 Name="z"
+          Value: ErrorExpression 10:11-10:14
+Diagnostics:
+  PIB1046 4:14 I expected a value after `+`.
+  PIB1060 5:13 I can't find the `)` that closes this `(`.
+  PIB1060 7:11 I can't find the `)` that closes this `(`.
+  PIB1061 8:5 I can't compare three things at once: `$a < $b < $c`.
+  PIB1042 10:11 `1e5` isn't a number I can read.

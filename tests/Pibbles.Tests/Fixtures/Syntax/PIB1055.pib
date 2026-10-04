@@ -1,0 +1,16 @@
+// A negative number in a command argument goes in brackets.
+
+== fixture.negative
+@shake_screen -1
+//            ^^ PIB1055
+@shake_screen strength=-0.5
+//                     ^^^^ PIB1055
+@move_by -$distance
+//       ^^^^^^^^^^ PIB1055
+
+// Must not trigger
+
+@shake_screen (-1)
+@shake_screen strength=(-0.5)
+@set $x = -1
+@wait -1s - -2s
