@@ -1,7 +1,8 @@
 name: Release
 
-# Builds every Pibbles artifact at one version and attaches them to a GitHub pre-release. Push a tag such as v0.2.0, or
-# run it by hand with the version. The version comes from here alone: the files in the repository aren't bumped.
+# Builds every Pibbles artifact at one version and attaches them to a draft GitHub release, which is published by hand
+# once it's been checked. Push a tag such as v0.2.0, or run it by hand with the version. The version comes from here
+# alone: the files in the repository aren't bumped.
 on:
   push:
     tags: ['v*']
@@ -54,12 +55,12 @@ jobs:
           npm run package
           mv "pibbles-$VERSION.vsix" ../../artifacts/
 
-      - name: Attach to a pre-release
+      - name: Attach to a draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v$VERSION" artifacts/Pibbles.Cli.$VERSION.nupkg artifacts/pibbles-$VERSION.vsix \
-            --prerelease --title "Pibbles $VERSION" --target "$GITHUB_SHA" --notes-file - <<EOF
+            --draft --title "Pibbles $VERSION" --target "$GITHUB_SHA" --notes-file - <<EOF
           Install the pibbles CLI from the folder holding the .nupkg:
 
               dotnet tool install --global Pibbles.Cli --add-source <folder>

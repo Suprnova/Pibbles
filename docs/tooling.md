@@ -150,7 +150,7 @@ Each threshold belongs to one of the [style rules](semantics.md#style-rules). Dr
 
 Every artifact ships in one release at one version: the CLI's `.nupkg` and the VS Code extension's `.vsix`, and later the Godot addon. The pieces change together, since a language change touches the parser and the grammar at once, so a writer always gets a CLI and an editor that agree on the language.
 
-`release.yml` runs on a `v*` tag (`v0.2.0`), or by hand with a version. The version comes from the tag alone: it's passed to `dotnet pack` and `npm version`, so no file in the repository is bumped, and `pibbles --version` reports exactly that version. The workflow runs the .NET tests and the grammar tests, packs both artifacts, and attaches them to a GitHub pre-release named `Pibbles <version>`. Nothing is published to NuGet or the VS Code Marketplace.
+`release.yml` runs on a `v*` tag (`v0.2.0`), or by hand with a version. The version comes from the tag alone: it's passed to `dotnet pack` and `npm version`, so no file in the repository is bumped, and `pibbles --version` reports exactly that version. The workflow runs the .NET tests and the grammar tests, packs both artifacts, and attaches them to a draft GitHub release named `Pibbles <version>`, which is published by hand once it's been checked. Nothing is published to NuGet or the VS Code Marketplace.
 
 Between releases, every CI run uploads the same artifacts with a prerelease version.
 

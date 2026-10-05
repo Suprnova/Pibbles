@@ -9,7 +9,7 @@ Syntax highlighting and snippets for `.pib` files, the stories written in [Pibbl
 
 ## Install
 
-The extension isn't on the Marketplace. Download the `.vsix` from a [pre-release](https://github.com/Suprnova/Pibbles/releases), or build it, then:
+The extension isn't on the Marketplace. Download the `.vsix` from a [release](https://github.com/Suprnova/Pibbles/releases), or build it, then:
 
 ```text
 code --install-extension pibbles-<version>.vsix
