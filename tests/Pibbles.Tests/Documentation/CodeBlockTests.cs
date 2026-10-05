@@ -8,21 +8,17 @@ public partial class CodeBlockTests
 {
     private const string FragmentHeader = "== doc.example\n";
 
-    private static readonly string LanguageFolder = Path.Combine(RepositoryRoot.Path, "docs", "language");
+    private static readonly Dictionary<string, CodeBlock> Blocks = CodeBlock.All.ToDictionary(block => block.Name);
 
-    private static readonly string[] Documents = ["reference.md", "guide.md"];
+    public static TheoryData<string> LanguageDocuments { get; } = [.. CodeBlock.Documents];
 
-    private static readonly Dictionary<string, CodeBlock> Blocks = Documents.SelectMany(Extract).ToDictionary(block => block.Name);
-
-    public static TheoryData<string> LanguageDocuments { get; } = [.. Documents];
-
-    public static TheoryData<string> PibblesBlocks { get; } = [.. Blocks.Values.Where(block => block.Info.StartsWith("pib", StringComparison.Ordinal) && HasValidInfo(block)).Select(block => block.Name)];
+    public static TheoryData<string> PibblesBlocks { get; } = [.. CodeBlock.All.Where(block => block.Info.StartsWith("pib", StringComparison.Ordinal) && HasValidInfo(block)).Select(block => block.Name)];
 
     [Theory]
     [MemberData(nameof(LanguageDocuments))]
     public void CodeBlocks_InLanguageDocument_HaveValidInfoStrings(string document)
     {
-        string[] invalid = [.. Blocks.Values.Where(block => block.Document == document && !HasValidInfo(block)).Select(block => $"line {block.Line}: `{block.Info}`")];
+        string[] invalid = [.. CodeBlock.All.Where(block => block.Document == document && !HasValidInfo(block)).Select(block => $"line {block.Line}: `{block.Info}`")];
 
         Assert.Empty(invalid);
     }
@@ -43,16 +39,9 @@ public partial class CodeBlockTests
     [Fact]
     public void Parse_DocumentationPrelude_ReportsNothing()
     {
-        var source = new SourceText("examples.pib", File.ReadAllText(Path.Combine(LanguageFolder, "examples.pib")));
+        var source = new SourceText("examples.pib", File.ReadAllText(Path.Combine(CodeBlock.Folder, "examples.pib")));
 
         Assert.Empty(SyntaxTree.Parse(source).Diagnostics);
-    }
-
-    private static IEnumerable<CodeBlock> Extract(string document)
-    {
-        string text = File.ReadAllText(Path.Combine(LanguageFolder, document));
-
-        return Fence().Matches(text).Select(match => new CodeBlock(document, LineOf(text, match.Index), match.Groups["info"].Value, match.Groups["body"].Value));
     }
 
     private static bool HasValidInfo(CodeBlock block) => block.Info.Split(' ') switch
@@ -74,17 +63,6 @@ public partial class CodeBlockTests
 
     private static string Describe(CodeBlock block, int headerLines, Diagnostic diagnostic) =>
         $"{block.Document}:{block.Line + 1 + diagnostic.Location.Start.Line - headerLines}: {diagnostic.Code} {diagnostic.Message}";
-
-    private static int LineOf(string text, int index) => text.AsSpan(0, index).Count('\n') + 1;
-
-    private sealed record CodeBlock(string Document, int Line, string Info, string Text)
-    {
-        public string Name => $"{Document}:{Line}";
-    }
-
-    // Pairs each fence with its closer, so only opening fences carry an info string.
-    [GeneratedRegex(@"^```(?<info>[^\r\n]*)\r?\n(?<body>(?s:.*?))^```\r?$", RegexOptions.Multiline)]
-    private static partial Regex Fence();
 
     [GeneratedRegex(@"^PIB\d{4}$")]
     private static partial Regex Code();

@@ -1,5 +1,8 @@
 // Some lines need a name or a value after their keyword.
 
+@actor mira
+    name: 
+//       ^ PIB1046
 == fixture.missing #was:
 //                      ^ PIB1046
 @jump

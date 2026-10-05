@@ -14,7 +14,7 @@ internal sealed partial class Parser
     private TextLineSyntax ParseTextLine(SourceLine line)
     {
         lineFailed = false;
-        inlineEnd = line.Content.End;
+        inlineEnd = TrimmedEnd(line);
         int start = line.Content.Start;
         textOwner = "the text";
         textLineStart = start;
@@ -30,7 +30,7 @@ internal sealed partial class Parser
             textStart = match.End;
         }
 
-        List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), line.Content.End, option: false);
+        List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), inlineEnd, option: false);
         List<TagSyntax> tags = ParseTrailingTags();
 
         if (speaker is not null && pose is null && content.Count == 0)
@@ -102,12 +102,12 @@ internal sealed partial class Parser
     private OptionSyntax ParseOption(SourceLine line)
     {
         lineFailed = false;
-        inlineEnd = line.Content.End;
+        inlineEnd = TrimmedEnd(line);
         int start = line.Content.Start;
         textOwner = "the option's text";
         textLineStart = start;
 
-        List<InlineSyntax> text = ParseInlineText(SkipWhitespace(start + 2), line.Content.End, option: true);
+        List<InlineSyntax> text = ParseInlineText(SkipWhitespace(start + 2), inlineEnd, option: true);
         ExpressionSyntax? condition = null;
         bool isOnce = false;
         List<TagSyntax> tags;

@@ -64,11 +64,29 @@ internal sealed partial class Parser
                 sawContent = true;
                 nodes.Add(ParseNode());
             }
+            else if (nodes.Count > 0)
+            {
+                ContinueLastNode();
+            }
             else
             {
                 ParseTopLevelLine(Current.Line);
             }
         }
+    }
+
+    /// <summary>
+    /// Adds the lines after a node's body to that node. A body only ends before the next header when its header was
+    /// indented and the lines below it aren't, and those lines still come after the node.
+    /// </summary>
+    private void ContinueLastNode()
+    {
+        List<StatementSyntax> statements = ParseStatements(nodeLevel: true);
+        if (statements.Count == 0)
+            return;
+
+        NodeSyntax node = nodes[^1];
+        nodes[^1] = node with { Body = [.. node.Body, .. statements], Span = new(node.Span.Start, statements[^1].Span.End - node.Span.Start) };
     }
 
     private void ParseTopLevelLine(SourceLine line)

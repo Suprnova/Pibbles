@@ -1,0 +1,16 @@
+File 1:1-8:1
+  Declarations:
+    VariableDeclaration 4:1-4:14
+      Variable: VariableExpression 4:6-4:11 Name="typo"
+      Value: ErrorExpression 4:12-4:14
+  Nodes:
+    Node 5:5-6:42
+      Name: Name 5:8-5:25 Text="snapshot.indented"
+      Body:
+        TextLine 6:1-6:42
+          Content:
+            TextRun 6:1-6:42 Text="Narration that still belongs to the node."
+Diagnostics:
+  PIB1046 4:11 I expected `=` after `$typo`.
+  PIB1003 5:1 This line is indented, but the line above it doesn't open a block.
+  PIB1021 7:1 Declarations have to come before the file's first node.

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Pibbles.Syntax;
+using Pibbles.Tests.Syntax;
 
 namespace Pibbles.Tests.Snapshots;
 
@@ -13,30 +14,38 @@ namespace Pibbles.Tests.Snapshots;
 /// <remarks>A node's fields are its record's constructor parameters, in order, so the dump follows each node's own shape.</remarks>
 internal static class SyntaxDump
 {
-    public static string Write(SyntaxTree tree, ISet<Type>? kinds = null)
+    public static string Write(SyntaxTree tree, ISet<Type>? kinds = null) => Write(tree.Source, tree.Root, kinds);
+
+    /// <summary>Writes a tree without its spans, so a tree built in code compares equal to the same tree parsed from source.</summary>
+    public static string WriteShape(SyntaxNode root, ISet<Type>? kinds = null) => Write(source: null, root, kinds);
+
+    private static string Write(SourceText? source, SyntaxNode root, ISet<Type>? kinds)
     {
         var builder = new StringBuilder();
-        Write(builder, tree.Source, tree.Root, label: null, depth: 0, kinds);
+        Write(builder, source, root, label: null, depth: 0, kinds);
         return builder.ToString();
     }
 
-    private static void Write(StringBuilder builder, SourceText source, SyntaxNode node, string? label, int depth, ISet<Type>? kinds)
+    private static void Write(StringBuilder builder, SourceText? source, SyntaxNode node, string? label, int depth, ISet<Type>? kinds)
     {
         Type type = node.GetType();
         kinds?.Add(type);
-        PropertyInfo[] fields = [.. type.GetConstructors().Single().GetParameters().Select(parameter => type.GetProperty(parameter.Name!)!)];
+        PropertyInfo[] fields = NodeFields.Of(type);
 
         builder.Append(' ', depth * 2);
         if (label is not null)
             builder.Append(label).Append(": ");
 
-        builder.Append(type.Name.Replace("Syntax", "", StringComparison.Ordinal)).Append(' ').Append(Format(source, node.Span));
-        foreach (PropertyInfo field in fields.Where(field => !IsChildren(field.PropertyType)))
+        builder.Append(type.Name.Replace("Syntax", "", StringComparison.Ordinal));
+        if (source is not null)
+            builder.Append(' ').Append(Format(source, node.Span));
+
+        foreach (PropertyInfo field in fields.Where(field => !NodeFields.HoldsChildren(field) && (source is not null || !IsSpan(field.PropertyType))))
             builder.Append(' ').Append(field.Name).Append('=').Append(Format(source, field.GetValue(node)));
 
         builder.Append('\n');
 
-        foreach (PropertyInfo field in fields.Where(field => IsChildren(field.PropertyType)))
+        foreach (PropertyInfo field in fields.Where(NodeFields.HoldsChildren))
         {
             switch (field.GetValue(node))
             {
@@ -53,8 +62,7 @@ internal static class SyntaxDump
         }
     }
 
-    private static bool IsChildren(Type type) =>
-        typeof(SyntaxNode).IsAssignableFrom(type) || typeof(IEnumerable<SyntaxNode>).IsAssignableFrom(type);
+    private static bool IsSpan(Type type) => type == typeof(TextSpan) || type == typeof(TextSpan?);
 
     private static string Format(SourceText source, TextSpan span)
     {
@@ -63,10 +71,10 @@ internal static class SyntaxDump
         return $"{start.Line + 1}:{start.Column + 1}-{end.Line + 1}:{end.Column + 1}";
     }
 
-    private static string Format(SourceText source, object? value) => value switch
+    private static string Format(SourceText? source, object? value) => value switch
     {
         null => "null",
-        TextSpan span => Format(source, span),
+        TextSpan span => Format(source!, span),
         string text => $"\"{text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"",
         double number => number.ToString("R", CultureInfo.InvariantCulture),
         bool flag => flag ? "true" : "false",

@@ -95,22 +95,32 @@ Adding a node kind, diagnostic or step without a test then fails CI. That's the 
 
 ### 3. Property-based tests
 
-Some guarantees are too combinatorial for examples. These run as ordinary tests with a property-testing library (CsCheck, which is C#-first and shrinks failing cases to minimal ones), using a fixed seed and iteration count in CI:
+Some guarantees are too combinatorial for examples. These run as ordinary tests with a property-testing library (CsCheck, which is C#-first and shrinks failing cases to minimal ones). Every run, local or in CI, checks the same fixed sequence of cases, so the suite is deterministic. When a case fails, CsCheck shrinks it and the failure names its seed.
 
 | Property | Guards |
 | --- | --- |
-| **Round-trip:** generate a random valid syntax tree, print it to source, parse it back, get the same tree with no diagnostics | Grammar coverage, operator precedence, escaping (the printer must escape `[`, `{`, `#` in text) |
-| **Totality:** for any input, parsing and binding finish, never throw, and produce spans that lie inside the file and nest properly | Error tolerance, which the language server depends on, since it sees half-typed text on every keystroke |
-| **Line independence:** replacing one line with garbage that keeps the line's indentation, and doesn't start with `==`, `->`, `- ` or a block opener's keyword (`@if`, `@once` and the like), doesn't change the parse of any other line. Garbage that forms a header, option, alternative or block opener changes structure by design, and is covered by the totality property instead. | The line-oriented principle ([language design](language/design.md#design-principles)) |
+| **Round-trip:** generate a random valid syntax tree, print it to source, parse it back, get the same tree with no diagnostics | Grammar coverage, operator precedence, escaping (the printer escapes `\`, `[`, `{` and `#` in text, `@` in option text, and `:` and a leading `-`, `/`, `=` or `@` in narration) |
+| **Totality:** for any input, parsing and binding finish, never throw, and produce spans that lie inside the file and nest properly: each node's children lie inside it, in order | Error tolerance, which the language server depends on, since it sees half-typed text on every keystroke |
+| **Line independence:** replacing one line of a valid file with garbage at the same indentation doesn't change the parse of any other line: the diagnostics that start on it, and the nodes that start on it, with their kinds, columns, values and the kinds of the nodes above them. The replaced line has no deeper-indented line under it, and the garbage doesn't start with `==`, `->`, `- `, `//`, `@elif` or `@else`. Replacing a block's opener, or writing a header, option, alternative, comment or clause, changes structure by design, and is covered by the totality property instead. | The line-oriented principle ([language design](language/design.md#design-principles)) |
 | **Determinism:** the same story, choices and function stubs always give the same transcript | Variation selection, conditions |
 | **Save anywhere:** play a random path, request a save at a random step, restore, and finish. The transcript matches an uninterrupted run, except for the replayed line. | Mid-dialogue saves and fast-forwarding, the riskiest runtime feature |
 | **Skip equivalence:** skipping a reveal at any point fires the same effect markers, in the same order, as revealing it fully | Reveal skip semantics |
 
-The round-trip property needs a syntax tree printer. That's a small piece of test code, and it could later become the basis of the formatter.
+The round-trip property needs a syntax tree printer. That's a small piece of test code, and it could later become the basis of the formatter. A test checks that the tree generator produces every node kind except the error node, so no part of the grammar drops out of the round-trip unnoticed.
+
+**Longer and random runs.** Setting one of CsCheck's environment variables switches the properties from the fixed sequence to CsCheck's own random search:
+
+```text
+CsCheck_Iter=100000 dotnet test -- --filter-namespace Pibbles.Tests.Properties    (more cases, from random seeds)
+CsCheck_Time=300 dotnet test -- --filter-namespace Pibbles.Tests.Properties       (five minutes per property)
+CsCheck_Seed=<seed> dotnet test -- --filter-method "*<test name>"                 (replay and shrink a reported failure)
+```
+
+A bug found this way gets a fixture or a recovery snapshot when it's fixed, so the fixed sequence doesn't need to find it again.
 
 ### 4. Mutation fuzzing
 
-The totality property also runs on *mutated real input*: `samples/kitchen`, every fixture, and every documentation example, with random characters and lines deleted, duplicated, swapped or replaced with Pibbles punctuation (`@ -> == [ ] { } $ # \ :` and indentation). This finds crashes in near-miss input, the kind writers actually produce, much faster than purely random strings. It runs as part of the normal test suite, with a fixed budget.
+The totality property also runs on *mutated real input*: `samples/kitchen`, the starter story, every fixture and snapshot input, and every documentation example, with random characters and lines deleted, duplicated, swapped or replaced with Pibbles punctuation (`@ -> == [ ] { } $ # \ :` and indentation). This finds crashes in near-miss input, the kind writers actually produce, much faster than purely random strings. It runs as part of the normal test suite, with a fixed budget.
 
 **Coverage-guided fuzzing** (SharpFuzz with libFuzzer) is a stretch goal. Scripts are trusted content, not attacker input, so the security case for it is weak. It's worth an occasional long run only if the property and mutation tests keep turning up crashes.
 

@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsCheck" Version="4.9.1" />
     <PackageReference Include="Verify.XunitV3" Version="33.2.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
   </ItemGroup>

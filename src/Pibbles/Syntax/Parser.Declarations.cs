@@ -79,7 +79,7 @@ internal sealed partial class Parser
     private void ParseActorProperty(SourceLine line, ref string? displayName, ref TextSpan? displayNameSpan, List<NameSyntax> poses)
     {
         lineFailed = false;
-        inlineEnd = line.Content.End;
+        inlineEnd = TrimmedEnd(line);
         int start = line.Content.Start;
         int wordEnd = SkipIdentifier(start);
         string word = source.Text[start..wordEnd];
@@ -105,7 +105,7 @@ internal sealed partial class Parser
         }
 
         int valueStart = SkipWhitespace(colon + 1);
-        var value = new TextSpan(valueStart, TrimmedEnd(line) - valueStart);
+        var value = new TextSpan(valueStart, inlineEnd - valueStart);
         if (value.Length == 0)
             Fail(DiagnosticCatalog.Missing, new(colon + 1, 0), "a display name", "name:");
         else if (TextOf(value).AsSpan().IndexOfAny("[{\\") >= 0)
@@ -277,7 +277,9 @@ internal sealed partial class Parser
                 return MissingValue();
 
             Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
-            return new ErrorExpressionSyntax { Span = token.Span };
+            var error = new ErrorExpressionSyntax { Span = token.Span };
+            Advance();
+            return error;
         }
 
         Token name = token;

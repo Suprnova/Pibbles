@@ -30,4 +30,17 @@ public class ParserTests
         string tag = line[line.IndexOf('#', StringComparison.Ordinal)..].Split(' ')[0];
         Assert.Equal($"If `{tag}` is part of {owner}, put a backslash before the `#`:\n{fixedLine}", diagnostic.Help);
     }
+
+    [Theory]
+    [InlineData("mira: [b]unclosed")]
+    [InlineData("mira: {$unclosed")]
+    [InlineData("-> [b]unclosed")]
+    public void Parse_UnclosedAtEndOfLineWithTrailingWhitespace_StaysInsideTheLine(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}  \t\n");
+
+        StatementSyntax statement = SyntaxTree.Parse(source).Root.Nodes[0].Body[0];
+
+        Assert.All(NodeFields.DescendantsAndSelf(statement), node => Assert.True(node.Span.End <= statement.Span.End, $"{node.GetType().Name} at {node.Span} ends after its line."));
+    }
 }
