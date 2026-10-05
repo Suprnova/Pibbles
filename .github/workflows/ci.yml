@@ -33,3 +33,30 @@ jobs:
         run: |
           echo "::add-matcher::.github/pibbles-problem-matcher.json"
           dotnet run --project src/Pibbles.Cli --configuration Release --no-build -- check samples/kitchen --release --warnaserror --format msbuild
+
+  vscode-extension:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+
+      - run: npm ci
+
+      - name: Test the grammar
+        run: npm test
+
+      - name: Package
+        run: npm run package
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pibbles-vsix
+          path: editors/vscode/*.vsix

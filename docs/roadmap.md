@@ -64,7 +64,7 @@ Each phase ends with something usable and a clear exit check.
 
 - Prelude, declaration pass, binder, type checking, flow and content checks, "did you mean" suggestions.
 - `pibbles check` runs the full analysis. `pibbles ids`.
-- The VS Code extension's line ID handling: **End**, arrow keys and clicks skip a line's trailing `#id:` ([tooling design](tooling.md#vs-code-extension)).
+- The VS Code extension's editing aids: **End**, arrow keys and clicks skip a line's trailing `#id:`, Enter continues or leaves a variation's alternatives, and `[/` closes the open span ([tooling design](tooling.md#vs-code-extension)).
 
 **Exit:** a fixture for every semantic diagnostic, and the sample story checks cleanly. **Writers can start real content here**, since the analyzer catches their mistakes even before the story can run.
 

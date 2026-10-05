@@ -38,7 +38,7 @@ tests/
   Pibbles.Tests/
   Pibbles.Benchmarks/          BenchmarkDotNet (Phase 3)
 samples/kitchen/               the sample story. It must always check cleanly, and its transcripts are tests.
-editors/vscode/                TextMate grammar, snippets, LSP client (Phase 1, Phase 6)
+editors/vscode/                TextMate grammar, snippets, line ID handling, LSP client (Phases 1, 2, 6)
 docs/                          design documents, the language reference and the writer's guide
 ```
 

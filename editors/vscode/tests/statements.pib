@@ -1,0 +1,75 @@
+// SYNTAX TEST "source.pibbles" "statements, expressions and variations"
+
+== statements
+@if $door_open and not has_item("crowbar")
+// <--- meta.statement.pibbles keyword.control.pibbles
+//  ^^^^^^^^^^ variable.other.pibbles
+//             ^^^ keyword.operator.logical.pibbles
+//                 ^^^ keyword.operator.logical.pibbles
+//                     ^^^^^^^^ entity.name.function.pibbles
+//                              ^^^^^^^^^ string.quoted.double.pibbles
+    mira: It's open!
+@elif $bravery >= 2.5 // Brave enough.
+// <----- keyword.control.pibbles
+//             ^^ keyword.operator.pibbles
+//                ^^^ constant.numeric.pibbles
+//                    ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+    @end
+@else
+// <----- keyword.control.pibbles
+    @return
+
+@set $bravery += 1
+// <---- keyword.control.pibbles
+//   ^^^^^^^^ variable.other.pibbles
+//            ^^ keyword.operator.pibbles
+//               ^ constant.numeric.pibbles
+@set $found = false
+//            ^^^^^ constant.language.boolean.pibbles
+@set $name = "Say \"hi\""
+//           ^^^^ string.quoted.double.pibbles
+//                ^^ constant.character.escape.pibbles
+
+@jump .leave
+// <----- keyword.control.pibbles
+//    ^^^^^^ entity.name.section.node.pibbles
+@call common.stuck #id:r4hc6v
+// <----- keyword.control.pibbles
+//    ^^^^^^^^^^^^ entity.name.section.node.pibbles
+//                 ^^^^^^^^^^ comment.other.line-id.pibbles
+@wait 300ms
+//    ^^^^^ constant.numeric.duration.pibbles
+@wait .5s
+//    ^^^ constant.numeric.duration.pibbles
+
+@move mira offscreen speed=(-1) nowait
+// <----- entity.name.function.command.pibbles
+//                   ^^^^^ variable.parameter.pibbles
+//                        ^ keyword.operator.pibbles
+//                          ^ keyword.operator.pibbles
+//                              ^^^^^^ keyword.other.wait.pibbles
+@jolt mira wait
+//         ^^^^ keyword.other.wait.pibbles
+
+@sequence #id:c9wq2a
+// <--------- keyword.control.pibbles
+//        ^^^^^^^^^^ comment.other.line-id.pibbles
+    - mira: It's a fridge.
+//  ^ keyword.control.alternative.pibbles
+//    ^^^^ entity.name.type.speaker.pibbles
+    - @set $bravery -= 1
+//  ^ keyword.control.alternative.pibbles
+//    ^^^^ meta.statement.pibbles keyword.control.pibbles
+    -
+//  ^ keyword.control.alternative.pibbles
+        @if $has_key
+            mira: I could use the key.
+    - // A comment after the dash.
+//    ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+        Narration in the dash's block.
+@cycle
+// <------ keyword.control.pibbles
+    - rex: Hm.
+@once
+// <----- keyword.control.pibbles
+    mira: Whoa.

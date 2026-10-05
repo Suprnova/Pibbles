@@ -1,0 +1,42 @@
+{
+  "Node": {
+    "prefix": "==",
+    "body": ["== ${1:name}", "$0"],
+    "description": "A node header"
+  },
+  "If": {
+    "prefix": "@if",
+    "body": ["@if ${1:condition}", "\t$0"],
+    "description": "Lines that run when a condition is true"
+  },
+  "If else": {
+    "prefix": "@ifelse",
+    "body": ["@if ${1:condition}", "\t${2}", "@else", "\t$0"],
+    "description": "Lines for when a condition is true, and lines for when it isn't"
+  },
+  "Choice": {
+    "prefix": "->",
+    "body": ["-> ${1:First option}", "\t${2}", "-> ${3:Second option}", "\t$0"],
+    "description": "A choice with two options"
+  },
+  "Sequence": {
+    "prefix": "@sequence",
+    "body": ["@sequence", "\t- ${1:First time}", "\t- ${0:Every time after}"],
+    "description": "The next line each time, then the last one from then on"
+  },
+  "Cycle": {
+    "prefix": "@cycle",
+    "body": ["@cycle", "\t- ${1:First}", "\t- ${0:Second}"],
+    "description": "The next line each time, starting over after the last"
+  },
+  "Once": {
+    "prefix": "@once",
+    "body": ["@once", "\t$0"],
+    "description": "Lines that run only the first time"
+  },
+  "Actor": {
+    "prefix": "@actor",
+    "body": ["@actor ${1:id}", "\tname: ${2:Name}", "\tposes: ${0:neutral}"],
+    "description": "A character in the cast list"
+  }
+}

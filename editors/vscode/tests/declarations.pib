@@ -1,0 +1,61 @@
+// SYNTAX TEST "source.pibbles" "the prefix and declarations"
+
+@prefix kitchen
+// <------- storage.type.declaration.pibbles
+//      ^^^^^^^ entity.name.section.node.pibbles
+
+@actor mira
+// <------ meta.actor.pibbles storage.type.declaration.pibbles
+//     ^^^^ entity.name.type.pibbles
+    name: Mira the Brave
+//  ^^^^ meta.actor.pibbles support.type.property-name.pibbles
+//      ^ punctuation.separator.key-value.pibbles
+//        ^^^^^^^^^^^^^^ string.unquoted.display-name.pibbles
+// A comment inside the block doesn't end it.
+    poses: neutral, happy // The first is the default.
+//  ^^^^^ support.type.property-name.pibbles
+//         ^^^^^^^ variable.parameter.pose.pibbles
+//                  ^^^^^ variable.parameter.pose.pibbles
+//                        ^^ comment.line.double-slash.pibbles
+name: Narration once the block has ended.
+// <---- entity.name.type.speaker.pibbles - meta.actor.pibbles
+
+@enum position: left, center
+// <----- storage.type.declaration.pibbles
+//    ^^^^^^^^ entity.name.type.pibbles
+//              ^^^^ constant.other.enum-member.pibbles
+//                    ^^^^^^ constant.other.enum-member.pibbles
+
+@var $bravery: number = -1
+// <---- storage.type.declaration.pibbles
+//   ^^^^^^^^ variable.other.pibbles
+//           ^ punctuation.separator.type.pibbles
+//             ^^^^^^ entity.name.type.pibbles
+//                      ^ keyword.operator.pibbles
+//                       ^ constant.numeric.pibbles
+
+@command move(who: actor, to: position = center) waits inline
+// <-------- storage.type.declaration.pibbles
+//       ^^^^ entity.name.function.pibbles
+//            ^^^ variable.parameter.pibbles
+//                 ^^^^^ entity.name.type.pibbles
+//                                               ^^^^^ keyword.other.flag.pibbles
+//                                                     ^^^^^^ keyword.other.flag.pibbles
+
+@markup wave(amplitude: number = 1)
+// <------- storage.type.declaration.pibbles
+//      ^^^^ entity.name.function.pibbles
+
+@icon interact, inventory
+// <----- storage.type.declaration.pibbles
+
+@tag thought, box: string?
+// <---- storage.type.declaration.pibbles
+//                 ^^^^^^ entity.name.type.pibbles
+//                       ^ keyword.operator.optional.pibbles
+
+@function has_item(id: string) -> bool
+// <--------- storage.type.declaration.pibbles
+//        ^^^^^^^^ entity.name.function.pibbles
+//                             ^^ punctuation.separator.type.pibbles
+//                                ^^^^ entity.name.type.pibbles

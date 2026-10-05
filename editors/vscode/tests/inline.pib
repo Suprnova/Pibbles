@@ -1,0 +1,42 @@
+// SYNTAX TEST "source.pibbles" "choices, markup and points"
+
+== inline
+-> Use the key  @if $has_key @once #show_disabled #id:m3xw9a
+// <-- meta.option.pibbles keyword.control.option.pibbles
+//              ^^^ keyword.control.modifier.pibbles
+//                  ^^^^^^^^ variable.other.pibbles
+//                           ^^^^^ keyword.control.modifier.pibbles
+//                                 ^^^^^^^^^^^^^^ meta.tag.pibbles entity.name.tag.pibbles
+//                                                ^^^^^^^^^^ comment.other.line-id.pibbles
+    mira: Got it!
+-> Email me \@ home, or @ the office
+//          ^^ constant.character.escape.pibbles
+//                      ^ - keyword.control.modifier.pibbles
+
+mira: That's [b]not[/b] a [wave amplitude=2 frequency=$speed]key[/wave].
+//           ^ meta.markup.pibbles punctuation.definition.markup.pibbles
+//            ^ entity.name.tag.markup.pibbles
+//             ^ punctuation.definition.markup.pibbles
+//                 ^^ punctuation.definition.markup.pibbles
+//                              ^^^^^^^^^ variable.parameter.pibbles
+//                                        ^ constant.numeric.pibbles
+//                                                    ^^^^^^ variable.other.pibbles
+mira: Hi, {$player_name}. You have {item_name("key")}.{w}{w 0.5}{p}{br}
+//        ^ meta.point.pibbles punctuation.definition.point.pibbles
+//         ^^^^^^^^^^^^ variable.other.pibbles
+//                     ^ punctuation.definition.point.pibbles
+//                                  ^^^^^^^^^ entity.name.function.pibbles
+//                                                     ^ keyword.other.point.pibbles
+//                                                        ^ keyword.other.point.pibbles
+//                                                               ^ keyword.other.point.pibbles
+//                                                                  ^^ keyword.other.point.pibbles
+mira: Press {icon interact}.{@jolt mira wait}
+//           ^^^^ keyword.other.point.pibbles
+//                ^^^^^^^^ constant.other.icon.pibbles
+//                           ^^^^^ entity.name.function.command.pibbles
+//                                      ^^^^ keyword.other.wait.pibbles
+rex: You {if $bravery > 2}hit it{elif $bravery > 0}touched it{else}didn't{/if}.
+//        ^^ keyword.control.conditional.pibbles
+//                               ^^^^ keyword.control.conditional.pibbles
+//                                                            ^^^^ keyword.control.conditional.pibbles
+//                                                                        ^^^ keyword.control.conditional.pibbles

@@ -1,0 +1,57 @@
+// SYNTAX TEST "source.pibbles" "comments, notes, headers, text lines and tags"
+
+// A comment line.
+// <-- comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+//   ^^^^^^^ comment.line.double-slash.pibbles
+
+/// A note, reserved for localization.
+// <------ comment.line.note.pibbles
+
+//// A banner is a comment.
+// <---- comment.line.double-slash.pibbles - comment.line.note.pibbles
+
+== kitchen.fridge #was:kitchen.icebox // The old name still works.
+// <-- meta.header.pibbles keyword.control.header.pibbles
+// ^^^^^^^^^^^^^^ entity.name.section.node.pibbles
+//                ^^^^ meta.tag.pibbles entity.name.tag.pibbles
+//                    ^ punctuation.separator.key-value.pibbles
+//                     ^^^^^^^^^^^^^^ entity.name.section.node.pibbles
+//                                    ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+
+== .door
+// ^^^^^ entity.name.section.node.pibbles
+
+The kitchen smells of old coffee. #thought
+// <---------------------------------- - entity.name.type.speaker.pibbles
+//                                ^^^^^^^^ meta.tag.pibbles entity.name.tag.pibbles
+
+mira: Hello there. #box:phone #id:k7qp2x
+// <---- entity.name.type.speaker.pibbles
+//  ^ punctuation.separator.speaker.pibbles
+//                 ^^^^ meta.tag.pibbles entity.name.tag.pibbles
+//                     ^ punctuation.separator.key-value.pibbles
+//                      ^^^^^ string.unquoted.tag-value.pibbles
+//                            ^^^^^^^^^^ comment.other.line-id.pibbles
+
+mira (smug): I knew you'd come.
+// <---- entity.name.type.speaker.pibbles
+//   ^ punctuation.definition.pose.pibbles
+//    ^^^^ variable.parameter.pose.pibbles
+//        ^ punctuation.definition.pose.pibbles
+//         ^ punctuation.separator.speaker.pibbles
+
+mira (sad):
+//    ^^^ variable.parameter.pose.pibbles
+
+Note\: the door is locked. Not \#winning, but my #1 fan.
+// <---- - entity.name.type.speaker.pibbles
+//  ^^ constant.character.escape.pibbles
+//                             ^^ constant.character.escape.pibbles
+//                                               ^^ - meta.tag.pibbles
+
+If you say so.
+// <-- - keyword.control.pibbles
+
+#idea is a tag, but #identity isn't an ID.
+// <----- meta.tag.pibbles - comment.other.line-id.pibbles
+//                  ^^^^^^^^^ meta.tag.pibbles - comment.other.line-id.pibbles

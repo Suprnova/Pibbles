@@ -12,6 +12,7 @@ src/Pibbles/                 the core: net8.0 + net10.0, BCL only
 src/Pibbles.Cli/             the `pibbles` .NET tool
 tests/Pibbles.Tests/         xUnit v3 tests for the core, the CLI and the docs
 samples/kitchen/             the sample story
+editors/vscode/              the VS Code extension: the TextMate grammar (YAML) and its tests, built with Node
 docs/                        the living documentation: design docs, the language reference and guide
 ```
 
@@ -24,6 +25,7 @@ dotnet build
 dotnet test
 dotnet test -p:TestAllTargets=true                                                             (net8.0 too, as CI does)
 dotnet run --project src/Pibbles.Cli -- check samples/kitchen                                  (Phase 1)
+npm test --prefix editors/vscode                                                                (the grammar; npm ci there first)
 dotnet run --project src/Pibbles.Cli -- play samples/kitchen --start kitchen.door --script <file>  (Phase 3)
 ```
 

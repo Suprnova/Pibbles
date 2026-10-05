@@ -1,0 +1,89 @@
+{
+  "name": "pibbles",
+  "displayName": "Pibbles",
+  "description": "Syntax highlighting and snippets for Pibbles, a narrative scripting language for visual novels.",
+  "version": "0.1.5",
+  "publisher": "pibbles",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Suprnova/Pibbles.git",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "npm run build && vscode-tmgrammar-test \"tests/*.pib\" && node scripts/check-scopes.js",
+    "package": "npm run build && vsce package"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "pibbles",
+        "aliases": [
+          "Pibbles"
+        ],
+        "extensions": [
+          ".pib"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pibbles",
+        "scopeName": "source.pibbles",
+        "path": "./syntaxes/pibbles.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "pibbles",
+        "path": "./snippets/pibbles.json"
+      }
+    ],
+    "configurationDefaults": {
+      "cSpell.enabledFileTypes": {
+        "pibbles": true
+      },
+      "cSpell.customDictionaries": {
+        "pibbles-words": {
+          "name": "pibbles-words",
+          "path": "${workspaceFolder}/story/words.txt",
+          "addWords": true,
+          "scope": "workspace"
+        }
+      },
+      "cSpell.languageSettings": [
+        {
+          "languageId": "pibbles",
+          "dictionaries": [
+            "pibbles-words"
+          ],
+          "ignoreRegExpList": [
+            "/^[ \\t]*@.*$/gm",
+            "/^[ \\t]*==.*$/gm",
+            "/\\/\\/.*$/gm",
+            "/^[ \\t]*[\\p{L}_][\\p{L}\\p{M}\\p{Nd}_]*[ \\t]*(\\([^)]*\\))?[ \\t]*:(?=[ \\t]|$)/gmu",
+            "/#\\p{L}\\S*/gu",
+            "/\\[[^\\]]*\\]/g",
+            "/\\{[^}]*\\}/g",
+            "/(?<=->.*)@\\p{L}.*$/gmu"
+          ]
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.0.0",
+    "js-yaml": "^5.4.2",
+    "vscode-tmgrammar-test": "^0.1.3"
+  }
+}

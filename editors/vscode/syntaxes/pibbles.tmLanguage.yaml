@@ -1,0 +1,284 @@
+# The TextMate grammar for Pibbles. `npm run build` compiles it to pibbles.tmLanguage.json, which VS Code reads.
+#
+# Pibbles is line-oriented, so the top-level rules follow the reference's line classification: each one starts at
+# the beginning of a line and ends with it. An alternative's `- ` is followed by a line of its own, so the rules a
+# dash can hold start at `\G` too, which is just after the dash.
+#
+# Identifiers are [\p{L}_][\p{L}\p{M}\p{N}_]*, and node names add dots and an optional leading dot. YAML can't
+# build strings from parts, so both are written out in full where they're used.
+
+name: Pibbles
+scopeName: source.pibbles
+fileTypes: [pib]
+
+patterns:
+  - include: '#note'
+  - include: '#comment-line'
+  - include: '#header'
+  - include: '#actor'
+  - include: '#enum'
+  - include: '#at-line'
+  - include: '#option'
+  - include: '#alternative'
+  - include: '#text-line'
+
+repository:
+  note:
+    match: '^[ \t]*///(?!/).*$'
+    name: comment.line.note.pibbles
+
+  comment-line:
+    match: '^[ \t]*(//).*$'
+    name: comment.line.double-slash.pibbles
+    captures:
+      '1': { name: punctuation.definition.comment.pibbles }
+
+  comment:
+    match: '(//).*$'
+    name: comment.line.double-slash.pibbles
+    captures:
+      '1': { name: punctuation.definition.comment.pibbles }
+
+  header:
+    begin: '^[ \t]*(==)[ \t]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
+    beginCaptures:
+      '1': { name: keyword.control.header.pibbles }
+      '2': { name: entity.name.section.node.pibbles }
+    end: '$'
+    name: meta.header.pibbles
+    patterns:
+      - include: '#comment'
+      - include: '#tags'
+
+  actor:
+    begin: '^([ \t]*)(@actor)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    beginCaptures:
+      '2': { name: storage.type.declaration.pibbles }
+      '3': { name: entity.name.type.pibbles }
+    # The block ends at the first line that isn't indented further than `@actor`, apart from comments.
+    end: '^(?!\1[ \t]+\S|[ \t]*//)(?=[ \t]*\S)'
+    name: meta.actor.pibbles
+    patterns:
+      - include: '#comment'
+      - match: '^[ \t]+(name)[ \t]*(:)[ \t]*(.*?)[ \t]*$'
+        captures:
+          '1': { name: support.type.property-name.pibbles }
+          '2': { name: punctuation.separator.key-value.pibbles }
+          '3': { name: string.unquoted.display-name.pibbles }
+      - begin: '^[ \t]+(poses)[ \t]*(:)'
+        beginCaptures:
+          '1': { name: support.type.property-name.pibbles }
+          '2': { name: punctuation.separator.key-value.pibbles }
+        end: '$'
+        patterns:
+          - include: '#comment'
+          - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*'
+            name: variable.parameter.pose.pibbles
+
+  enum:
+    begin: '(?:^|\G)[ \t]*(@enum)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    beginCaptures:
+      '1': { name: storage.type.declaration.pibbles }
+      '2': { name: entity.name.type.pibbles }
+    end: '$'
+    name: meta.statement.pibbles
+    patterns:
+      - include: '#comment'
+      - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*'
+        name: constant.other.enum-member.pibbles
+
+  at-line:
+    begin: '(?:^|\G)[ \t]*(?=@)'
+    end: '$'
+    name: meta.statement.pibbles
+    patterns:
+      - match: '\G(@prefix)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
+        captures:
+          '1': { name: storage.type.declaration.pibbles }
+          '2': { name: entity.name.section.node.pibbles }
+      - match: '\G(@(?:command|markup|function))(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+        captures:
+          '1': { name: storage.type.declaration.pibbles }
+          '2': { name: entity.name.function.pibbles }
+      - match: '\G@(?:var|icon|tag)(?![\p{L}\p{M}\p{N}_])'
+        name: storage.type.declaration.pibbles
+      - match: '\G(@(?:jump|call))(?![\p{L}\p{M}\p{N}_])(?:[ \t]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
+        captures:
+          '1': { name: keyword.control.pibbles }
+          '2': { name: entity.name.section.node.pibbles }
+      - match: '\G@(?:if|elif|else|set|return|end|wait|sequence|cycle|once)(?![\p{L}\p{M}\p{N}_])'
+        name: keyword.control.pibbles
+      - match: '\G@[\p{L}_][\p{L}\p{M}\p{N}_]*'
+        name: entity.name.function.command.pibbles
+      - include: '#comment'
+      - match: '(?<![\p{L}\p{M}\p{N}_])(inline|waits)(?![\p{L}\p{M}\p{N}_])'
+        name: keyword.other.flag.pibbles
+      - match: '([\p{L}_][\p{L}\p{M}\p{N}_]*)(?=[ \t]*:)'
+        name: variable.parameter.pibbles
+      - match: '(:|->)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)(\?)?'
+        captures:
+          '1': { name: punctuation.separator.type.pibbles }
+          '2': { name: entity.name.type.pibbles }
+          '3': { name: keyword.operator.optional.pibbles }
+      - include: '#code'
+
+  option:
+    begin: '(?:^|\G)[ \t]*(->)'
+    beginCaptures:
+      '1': { name: keyword.control.option.pibbles }
+    end: '$'
+    name: meta.option.pibbles
+    patterns:
+      - include: '#escape'
+      - include: '#tags'
+      - include: '#modifiers'
+      - include: '#inline'
+
+  # In option text, an `@` followed by a letter ends the text and starts the modifiers.
+  modifiers:
+    begin: '(?=@[\p{L}_])'
+    end: '$'
+    patterns:
+      - match: '@(?:if|once)(?![\p{L}\p{M}\p{N}_])'
+        name: keyword.control.modifier.pibbles
+      - include: '#code'
+
+  alternative:
+    begin: '^[ \t]*(-)(?=[ \t]|$)'
+    beginCaptures:
+      '1': { name: keyword.control.alternative.pibbles }
+    end: '$'
+    patterns:
+      - match: '\G[ \t]*(//).*$'
+        name: comment.line.double-slash.pibbles
+        captures:
+          '1': { name: punctuation.definition.comment.pibbles }
+      - include: '#at-line'
+      - include: '#option'
+      - include: '#text-line'
+
+  text-line:
+    begin: '(?:^|\G)[ \t]*(?=\S)'
+    end: '$'
+    patterns:
+      - include: '#speaker'
+      - include: '#escape'
+      - include: '#tags'
+      - include: '#inline'
+
+  speaker:
+    match: '\G([\p{L}_][\p{L}\p{M}\p{N}_]*)[ \t]*(?:(\()[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)[ \t]*(\)))?[ \t]*(:)(?=[ \t]|$)'
+    captures:
+      '1': { name: entity.name.type.speaker.pibbles }
+      '2': { name: punctuation.definition.pose.pibbles }
+      '3': { name: variable.parameter.pose.pibbles }
+      '4': { name: punctuation.definition.pose.pibbles }
+      '5': { name: punctuation.separator.speaker.pibbles }
+
+  # Inline text: what follows a speaker, and an option's text.
+  inline:
+    patterns:
+      - include: '#escape'
+      - include: '#markup-close'
+      - include: '#markup'
+      - include: '#point'
+
+  escape:
+    match: '\\[!-/:-@\[-`{-~]'
+    name: constant.character.escape.pibbles
+
+  markup-close:
+    match: '(\[)[ \t]*(/)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?[ \t]*(\])'
+    name: meta.markup.pibbles
+    captures:
+      '1': { name: punctuation.definition.markup.pibbles }
+      '2': { name: punctuation.definition.markup.pibbles }
+      '3': { name: entity.name.tag.markup.pibbles }
+      '4': { name: punctuation.definition.markup.pibbles }
+
+  markup:
+    begin: '(\[)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?'
+    beginCaptures:
+      '1': { name: punctuation.definition.markup.pibbles }
+      '2': { name: entity.name.tag.markup.pibbles }
+    end: '(\])|$'
+    endCaptures:
+      '1': { name: punctuation.definition.markup.pibbles }
+    name: meta.markup.pibbles
+    patterns:
+      - include: '#code'
+
+  point:
+    begin: '\{'
+    beginCaptures:
+      '0': { name: punctuation.definition.point.pibbles }
+    end: '(\})|$'
+    endCaptures:
+      '1': { name: punctuation.definition.point.pibbles }
+    name: meta.point.pibbles
+    patterns:
+      - match: '\G[ \t]*(/[ \t]*if|if|elif|else)(?![\p{L}\p{M}\p{N}_])'
+        captures:
+          '1': { name: keyword.control.conditional.pibbles }
+      - match: '\G[ \t]*(icon)[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*)'
+        captures:
+          '1': { name: keyword.other.point.pibbles }
+          '2': { name: constant.other.icon.pibbles }
+      - match: '\G[ \t]*(w|p|br)(?![\p{L}\p{M}\p{N}_])'
+        captures:
+          '1': { name: keyword.other.point.pibbles }
+      - match: '\G[ \t]*(@[\p{L}_][\p{L}\p{M}\p{N}_]*)'
+        captures:
+          '1': { name: entity.name.function.command.pibbles }
+      - include: '#code'
+
+  # A tag's `#name` is one entity.name.tag token: themes give that scope a color of its own, where
+  # entity.other.attribute-name and punctuation.definition.tag are often as muted as comments.
+  tags:
+    patterns:
+      # Line IDs get a comment scope, so every theme shows them faded.
+      - match: '#id(?![\p{L}\p{M}\p{N}_])(?::\S*)?'
+        name: comment.other.line-id.pibbles
+      - match: '(#was)(:)(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)'
+        name: meta.tag.pibbles
+        captures:
+          '1': { name: entity.name.tag.pibbles }
+          '2': { name: punctuation.separator.key-value.pibbles }
+          '3': { name: entity.name.section.node.pibbles }
+      - match: '(#\p{L}[\p{L}\p{M}\p{N}_]*)(?:(:)(\S*))?'
+        name: meta.tag.pibbles
+        captures:
+          '1': { name: entity.name.tag.pibbles }
+          '2': { name: punctuation.separator.key-value.pibbles }
+          '3': { name: string.unquoted.tag-value.pibbles }
+
+  # Code mode: `@` lines after their keyword, option modifiers, and the inside of `[…]` and `{…}`.
+  code:
+    patterns:
+      - include: '#string'
+      - include: '#tags'
+      - match: '(?<![\p{L}\p{M}\p{N}_.])(?:\d+(?:\.\d*)?|\.\d+)(?:ms|s)(?![\p{L}\p{M}\p{N}_.])'
+        name: constant.numeric.duration.pibbles
+      - match: '(?<![\p{L}\p{M}\p{N}_.])(?:\d+(?:\.\d*)?|\.\d+)(?![\p{L}\p{M}\p{N}_.])'
+        name: constant.numeric.pibbles
+      - match: '\$[\p{L}_][\p{L}\p{M}\p{N}_]*'
+        name: variable.other.pibbles
+      - match: '(?<![\p{L}\p{M}\p{N}_.])(true|false)(?![\p{L}\p{M}\p{N}_])'
+        name: constant.language.boolean.pibbles
+      - match: '(?<![\p{L}\p{M}\p{N}_.])(and|or|not)(?![\p{L}\p{M}\p{N}_])'
+        name: keyword.operator.logical.pibbles
+      - match: '(?<![\p{L}\p{M}\p{N}_.])(wait|nowait)(?![\p{L}\p{M}\p{N}_])'
+        name: keyword.other.wait.pibbles
+      - match: '\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*(?=\()'
+        name: entity.name.function.pibbles
+      - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*(?=[ \t]*=(?!=))'
+        name: variable.parameter.pibbles
+      - match: '==|!=|<=|>=|\+=|-=|->|[<>=+\-*/%]'
+        name: keyword.operator.pibbles
+
+  string:
+    begin: '"'
+    end: '"|$'
+    name: string.quoted.double.pibbles
+    patterns:
+      - include: '#escape'
