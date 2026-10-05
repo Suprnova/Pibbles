@@ -290,6 +290,12 @@ Each block has an **entry count** `n` in the state: how many times execution has
 - **Wait semantics:** a command declared with `waits` makes the story wait until the host reports it done. `nowait` overrides that for one call. `wait` does the opposite for a command without `waits`.
 - The analyzer checks the command's name, argument count, types, named arguments and required parameters.
 
+Where only a call can follow a name, such as inside `{…}`, a space before its `(` is an error:
+
+```pib-error PIB1051
+mira: You found {item_name ("key")}.
+```
+
 ## Expressions
 
 - **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error.
@@ -298,6 +304,13 @@ Each block has an **entry count** `n` in the state: how many times execution has
 - **Comparisons don't chain.** `$a < $b < $c` and `$a == $b == $c` are errors: write `$a < $b and $b < $c`. Comparisons at different levels combine as usual, so `$a == $b < $c` means `$a == ($b < $c)`.
 - **Built-in functions:** `visits(node) -> number`.
 - **Static typing:** every expression has a type the analyzer knows. Types are never converted implicitly, except that a number can stand in for a duration ([operator types](#operator-types)).
+
+A chained comparison is reported, never guessed at:
+
+```pib-error PIB1061
+@if 0 < $bravery < 3:
+    mira: Not too brave, not too scared.
+```
 
 ### Operator types
 

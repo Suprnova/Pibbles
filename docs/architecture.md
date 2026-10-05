@@ -86,10 +86,10 @@ Example tests only prove the cases someone thought to write. These tests fail wh
   | --- | --- |
   | `pib` | Compiled together with the documentation prelude, `docs/language/examples.pib`, which declares every actor, variable, command, tag and node the examples use without declaring them. A block with no node header and no declaration is a fragment, and is wrapped in a node first. It must produce no errors and no warnings, except missing line IDs (PIB3010), since examples leave IDs out. |
   | `pib-standalone` | The same, but compiled without the prelude, for a block that declares its own cast, such as a sample cast list. |
-  | `pib-error PIB2003 …` | Must produce exactly the listed diagnostics. |
+  | `pib-error PIB2003 …` | Wrapped and compiled like `pib`, and must produce exactly the listed codes, in order. |
   | Anything else (`text`, `json`, `ini`) | Not checked: folder trees, settings files, PO entries. |
 
-  An untagged block fails the gate, so nothing is skipped by accident. When an example needs a new name, the prelude declares it in the same change.
+  An untagged block fails the gate, and so does any other info string starting with `pib`, so nothing is skipped by accident or by a typo. When an example needs a new name, the prelude declares it in the same change.
 
 Adding a node kind, diagnostic or step without a test then fails CI. That's the check agents need most, because they tend to consider a feature finished once it works.
 
