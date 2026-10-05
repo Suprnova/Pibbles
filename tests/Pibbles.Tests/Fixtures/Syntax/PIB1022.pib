@@ -11,7 +11,7 @@ A line of narration before any node.
 // Must not trigger
 
 @var $x = 1
-@actor mira:
+@actor mira
     name: Mira
 == fixture.lines
 Narration inside a node.

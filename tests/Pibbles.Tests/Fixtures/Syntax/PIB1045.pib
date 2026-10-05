@@ -2,7 +2,7 @@
 
 @enum rooms.kitchen: a, b
 //    ^^^^^^^^^^^^^ PIB1045
-@actor .mira:
+@actor .mira
 //     ^^^^^ PIB1045
     name: Mira
 @command show(who.ever: actor)

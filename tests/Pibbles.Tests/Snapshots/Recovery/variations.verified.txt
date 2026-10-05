@@ -56,7 +56,7 @@ File 1:1-18:1
               Tags:
                 Tag 17:7-17:14 Name="id" Value="BAD"
 Diagnostics:
-  PIB1033 3:12 I expected a `:` at the end of this `@actor` line.
+  PIB1033 3:12 I didn't expect a `:` on this `@actor` line.
   PIB1044 4:11 A display name can't contain `[`, `{` or `\`.
   PIB1045 5:7 `rooms.kitchen` has a dot, but only node names can.
   PIB1031 8:5 A `@cycle:` block can only hold alternatives.

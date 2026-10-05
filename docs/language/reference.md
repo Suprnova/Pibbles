@@ -8,7 +8,7 @@ The [language design](design.md) explains why the language is shaped this way, a
 
 ```pib
 == kitchen.door
-@if $door_open:
+@if $door_open
     @jump kitchen.leave
 
 mira (worried): Locked.{w} Of course it's locked.
@@ -54,7 +54,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 ## Lexical basics
 
-- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens after a statement or declaration ending in `:`, which tags and a comment may follow (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor`), or after a `->` option or `-` alternative.
+- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
 - **Comments:** `//` starts a comment on a line of its own, or after the content of an `@` line or a node header. A line with text in it can't have a trailing comment, because `//` shows up in normal prose and URLs: text lines, options and an actor's `name:` all count. Comment lines don't take part in indentation, so a comment can sit at any indentation.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
@@ -63,14 +63,14 @@ The parser classifies each line by how it starts, before looking at the rest of 
 - **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
 - **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
-- **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once: #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
+- **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
 
 ## Declarations
 
 Declarations make up the contract between the story and the host ([boundaries](../boundaries.md#the-contract-goes-both-ways)). They are global, order doesn't matter, and they may only appear before a file's first node.
 
 ```pib-standalone
-@actor mira:
+@actor mira
     name: Mira
     poses: neutral, happy, sad, smug, worried, angry
 
@@ -97,7 +97,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 | Declaration | Meaning |
 | --- | --- |
-| `@actor id:` | A character. `name:` is the display name, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
+| `@actor id` | A character. `name:` is the display name, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
 | `@enum name: a, b, c` | A closed set of values. Use it for positions, rooms, sound IDs, anything that should be typo-proof. |
 | `@var $name [: type] = literal` | A variable, saved with the game. The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
 | `@command name(params) [inline] [waits]` | A host instruction. `inline` allows it inside a line's text ([below](#commands)). `waits` means the story waits for it to finish by default. |
@@ -138,7 +138,7 @@ A file that keeps its nodes under one group name can declare it once:
 @prefix kitchen
 
 == .door
-@if $door_open:
+@if $door_open
     @jump .exit
 @call common.stuck
 
@@ -204,11 +204,11 @@ mira (sad):
 ### Conditionals
 
 ```pib
-@if $door_open:
+@if $door_open
     mira: It's open!
-@elif has_item("crowbar"):
+@elif has_item("crowbar")
     mira: Time for plan B.
-@else:
+@else
     mira: Still locked.
 ```
 
@@ -235,16 +235,16 @@ The value's type must match the variable's declared type.
 ### Variations
 
 ```pib
-@sequence:
+@sequence
     - mira: It's a fridge.
     - mira (smug): Still a fridge.
     - mira: I refuse to look at this fridge again.
 
-@cycle:
+@cycle
     - rex: Hm.
     - rex: Huh.
 
-@once: #id:b8k2qd
+@once #id:b8k2qd
     mira: Whoa, a secret panel!
     @set $found_panel = true
 ```
@@ -252,9 +252,9 @@ The value's type must match the variable's declared type.
 An alternative starts with `- ` followed by a single-line statement: a text line, `@set`, `@jump`, `@call`, `@return`, `@end`, `@wait` or a command. Lines indented more deeply below it continue the same alternative. A `-` on its own line starts an alternative that is entirely the indented block below it, so an alternative can begin with a block opener such as `@if`:
 
 ```pib
-@cycle:
+@cycle
     -
-        @if $has_key:
+        @if $has_key
             mira: I could use the key.
         mira: Or not.
     - mira: Nope.
@@ -264,9 +264,9 @@ Each block has an **entry count** `n` in the state: how many times execution has
 
 | Block | Runs |
 | --- | --- |
-| `@sequence:` | Alternative `min(n, count − 1)`: the next one each time, then stays on the last |
-| `@cycle:` | Alternative `n mod count`: the next one each time, starting over after the last |
-| `@once:` | Its body if `n` is 0; after that it's skipped |
+| `@sequence` | Alternative `min(n, count − 1)`: the next one each time, then stays on the last |
+| `@cycle` | Alternative `n mod count`: the next one each time, starting over after the last |
+| `@once` | Its body if `n` is 0; after that it's skipped |
 
 - **The count goes up on entry, before the pick runs.** An alternative that ends in `@jump` or `@end` still counts. Restoring a save inside an alternative resumes there without entering the block again.
 - **A block that isn't reached doesn't count.** A block in an `@if` branch that isn't taken keeps its count.
@@ -308,7 +308,7 @@ mira: You found {item_name ("key")}.
 A chained comparison is reported, never guessed at:
 
 ```pib-error PIB1061
-@if 0 < $bravery < 3:
+@if 0 < $bravery < 3
     mira: Not too brave, not too scared.
 ```
 
@@ -328,7 +328,7 @@ A chained comparison is reported, never guessed at:
 | unary `-` | A number or a duration | The operand's type |
 
 - **A number is read as seconds wherever a duration is expected:** a duration parameter or variable, and the other side of `+`, `-`, `==`, `!=`, `<`, `<=`, `>` and `>=` when one side is a duration. So `0.5s + 1` is 1.5 seconds, and `$delay > 2` compares against 2 seconds. In `*` and `/` a number is a factor, never a time.
-- **Conditions are bool.** `@if`, `@elif`, option `@if` and `{if}` take a bool, with no truthiness: `@if $attempts:` is an error that suggests `$attempts > 0`.
+- **Conditions are bool.** `@if`, `@elif`, option `@if` and `{if}` take a bool, with no truthiness: `@if $attempts` is an error that suggests `$attempts > 0`.
 - **`$x += v` means `$x = $x + v`,** and likewise for `-=`. The result must have `$x`'s type, so `+=` works on numbers, durations and strings.
 - **Strings compare by exact characters,** case-sensitive and independent of the locale: `"Sam" == "sam"` is false.
 
@@ -351,7 +351,7 @@ The expected type comes from:
 - **The variable,** for `@set`, and for `@var` when its type is written out. A `@var` whose initial value is a name must write its type (`@var $where: position = left`), so declaring a new enum member, actor or node can never change an existing variable's type.
 - **The other operand,** for `==` and `!=`. Comparing two bare names (`left == right`) is an error.
 
-A bare name anywhere else, such as a whole condition (`@if has_key:`) or an operand of `+`, `<` or `and`, is an error. A dotted name is always a node name.
+A bare name anywhere else, such as a whole condition (`@if has_key`) or an operand of `+`, `<` or `and`, is an error. A dotted name is always a node name.
 
 ## Inline text
 
@@ -580,7 +580,7 @@ block           ::= INDENT statement+ DEDENT
 ```ebnf
 declaration     ::= actor_decl | enum_decl | var_decl | command_decl
                   | markup_decl | icon_decl | tag_decl | function_decl
-actor_decl      ::= "@actor" NAME ":" EOL INDENT actor_prop+ DEDENT
+actor_decl      ::= "@actor" NAME EOL INDENT actor_prop+ DEDENT
 actor_prop      ::= name_prop | poses_prop
 name_prop       ::= "name" ":" RAW EOL
 poses_prop      ::= "poses" ":" name_list EOL
@@ -610,15 +610,15 @@ text_line       ::= SPEAKER? inline_text TAG* EOL
 choice          ::= option+                          /* greedy: consecutive options are one choice */
 option          ::= "->" inline_text option_modifier* TAG* EOL block?
 option_modifier ::= "@if" expr | "@once"
-if_stmt         ::= "@if" expr ":" EOL block elif_clause* else_clause?
-elif_clause     ::= "@elif" expr ":" EOL block
-else_clause     ::= "@else" ":" EOL block
+if_stmt         ::= "@if" expr EOL block elif_clause* else_clause?
+elif_clause     ::= "@elif" expr EOL block
+else_clause     ::= "@else" EOL block
 set_stmt        ::= "@set" VARIABLE assign_op expr EOL
 assign_op       ::= "=" | "+=" | "-="
 flow_stmt       ::= "@jump" NAME EOL | "@call" NAME TAG* EOL | "@return" EOL | "@end" EOL
 wait_stmt       ::= "@wait" expr EOL
-variation       ::= ("@sequence" | "@cycle") ":" TAG* EOL INDENT alternative+ DEDENT
-                  | "@once" ":" TAG* EOL block
+variation       ::= ("@sequence" | "@cycle") TAG* EOL INDENT alternative+ DEDENT
+                  | "@once" TAG* EOL block
 alternative     ::= "-" (alternative_line block? | EOL block)
 alternative_line ::= text_line | set_stmt | flow_stmt | wait_stmt | command_stmt
 command_stmt    ::= AT_WORD arg* wait_flag? EOL
@@ -668,7 +668,7 @@ unary           ::= "-" unary | primary
 primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 ```
 
-`or`, `and`, `+`, `-`, `*`, `/` and `%` are left-associative. Comparisons are non-associative: one comparison operator per level, so a second one in a row is an error rather than a different grouping. An expression ends at the first token that can't continue it, such as `:`, `}`, a tag, `@once` or the end of the line.
+`or`, `and`, `+`, `-`, `*`, `/` and `%` are left-associative. Comparisons are non-associative: one comparison operator per level, so a second one in a row is an error rather than a different grouping. An expression ends at the first token that can't continue it, such as `}`, a tag, `@once` or the end of the line.
 
 ### Checks
 

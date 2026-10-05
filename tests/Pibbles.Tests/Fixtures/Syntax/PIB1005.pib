@@ -3,7 +3,7 @@
 ///Even without a space.
 // PIB1005
 == fixture.notes
-@if true:
+@if true
     /// An indented note.
 //  ^^^ PIB1005
     ///

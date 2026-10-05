@@ -1,7 +1,7 @@
 // Outside a command's arguments, a call's `(` touches its name.
 
 == fixture.calls
-@if has_item ("key"):
+@if has_item ("key")
 //          ^ PIB1051
     @end
 @set $n = visits  (fixture.calls)
@@ -9,7 +9,7 @@
 
 // Must not trigger
 
-@if has_item("key"):
+@if has_item("key")
     @end
 @give item ("key")
 @give item("key")

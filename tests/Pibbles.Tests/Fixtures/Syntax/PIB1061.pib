@@ -1,7 +1,7 @@
 // Comparisons don't chain.
 
 == fixture.comparisons
-@if $a < $b < $c:
+@if $a < $b < $c
 //  ^^^^^^^^^^^^ PIB1061
     @end
 @set $same = $a == $b == $c
@@ -11,7 +11,7 @@
 
 // Must not trigger
 
-@if $a < $b and $b < $c:
+@if $a < $b and $b < $c
     @end
 @set $both = $a == $b < $c
 @set $grouped = ($a < $b) == ($b < $c)

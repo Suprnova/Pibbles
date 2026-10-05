@@ -40,10 +40,7 @@ internal sealed partial class Parser
     private ActorDeclarationSyntax ParseActor(int start, TextSpan keyword)
     {
         NameSyntax name = ExpectDeclaredName("an actor name", "@actor");
-        if (token.Kind is TokenKind.Colon)
-            Advance();
-        else
-            Fail(DiagnosticCatalog.MissingColon, new(previousEnd, 0), "@actor", TextOf(new(start, previousEnd - start)));
+        RejectColon("@actor", start);
 
         bool failed = lineFailed;
         int end = previousEnd;

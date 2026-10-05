@@ -1,29 +1,29 @@
 // @elif and @else belong to the @if directly above them.
 
 == fixture.clauses
-@else:
+@else
 // PIB1030
     The statements under it still count.
-@if $a:
+@if $a
     @end
-@else:
+@else
     @end
-@elif $b:
+@elif $b
 // PIB1030
     @end
-@if $a:
+@if $a
     @end
 A line in between.
-@else:
+@else
 // PIB1030
     @end
 
 // Must not trigger
 
-@if $a:
+@if $a
     @end
 // A comment between clauses is fine.
-@elif $b:
+@elif $b
     @end
-@else:
+@else
     @end

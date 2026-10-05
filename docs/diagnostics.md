@@ -33,8 +33,8 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | --- | --- | --- | --- |
 | PIB1001 | Error | This file indents with both tabs and spaces, so I can't tell which block this line belongs to. | Use only spaces or only tabs in a file. Most editors can convert the whole file for you. |
 | PIB1002 | Error | I can't tell which block this line belongs to: its indentation doesn't line up with any block above it. | Indent it to match the block it belongs to. |
-| PIB1003 | Error | This line is indented, but the line above it doesn't open a block. | Only a line ending in `:`, an option (`->`) or an alternative (`- `) can have indented lines under it. |
-| PIB1004 | Error | I expected indented lines under `@if $door_open:`. | Put the lines it controls below it, indented. |
+| PIB1003 | Error | This line is indented, but the line above it doesn't open a block. | Only a block opener such as `@if`, an option (`->`) or an alternative (`- `) can have indented lines under it. |
+| PIB1004 | Error | I expected indented lines under `@if $door_open`. | Put the lines it controls below it, indented. |
 | PIB1005 | Error | `///` notes aren't supported yet. | For a comment, use `//`. |
 | PIB1010 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
 | PIB1011 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
@@ -49,9 +49,9 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
 | PIB1023 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
 | PIB1030 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
-| PIB1031 | Error | A `@cycle:` block can only hold alternatives. | Start each alternative with `- `. |
+| PIB1031 | Error | A `@cycle` block can only hold alternatives. | Start each alternative with `- `. |
 | PIB1032 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
-| PIB1033 | Error | I expected a `:` at the end of this `@if` line. | Add it: `@if $door_open:`. |
+| PIB1033 | Error | I didn't expect a `:` on this `@if` line. | Remove it: `@if $door_open`. |
 | PIB1040 | Error | I didn't expect `extra` here. | — |
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
@@ -95,9 +95,9 @@ One section per implemented code, headed `### PIB1001`. The CLI embeds this file
 **Indentation decides which lines belong to an `@if`, an option or a variation, so a file has to indent the same way throughout.** A tab and a space look different widths in different editors, so Pibbles doesn't guess how many spaces a tab is worth. The first indented line decides how the whole file indents, and every other indented line has to use the same character. Comment lines and blank lines don't count, because their indentation never matters.
 
 ```text
-@if $door_open:
+@if $door_open
     mira: It's open!
-@else:
+@else
 →   mira: Still locked.
 ```
 
@@ -108,7 +108,7 @@ The first indented line uses spaces, so the tab (shown as `→`) on the last lin
 **A line that steps back out of a block has to line up with a block it's stepping back to.**
 
 ```text
-@if $door_open:
+@if $door_open
         mira: It's open!
     mira: Hm.
 ```
@@ -117,7 +117,7 @@ The first indented line uses spaces, so the tab (shown as `→`) on the last lin
 
 ### PIB1003
 
-**Only some lines can have indented lines under them:** a line ending in `:` (`@if`, `@else`, `@once:` and the other block openers), an option (`->`) and an alternative (`- `). An indented line anywhere else is reported once, on the first line of the block, and the block's lines are read as if they weren't indented.
+**Only some lines can have indented lines under them:** a block opener (`@if`, `@else`, `@once` and the others), an option (`->`) and an alternative (`- `). An indented line anywhere else is reported once, on the first line of the block, and the block's lines are read as if they weren't indented.
 
 ```text
 @jump kitchen.leave
@@ -128,10 +128,10 @@ Remove the indentation, or put the lines under a line that opens a block.
 
 ### PIB1004
 
-**A line ending in `:` opens a block, so it needs indented lines under it.** That covers `@if`, `@elif`, `@else` and the other block openers. A comment or a `///` line on its own doesn't count, since it doesn't run.
+**A block opener needs indented lines under it.** That covers `@if`, `@elif`, `@else`, the variations and `@actor`. A comment or a `///` line on its own doesn't count, since it doesn't run.
 
 ```text
-@if $door_open:
+@if $door_open
 mira: It's open!
 ```
 
@@ -287,10 +287,10 @@ To keep nodes under two group names, split the file in two, each with its own `@
 **`@elif` and `@else` continue an `@if`, so they come right after its block, at the same indentation.** Comments between them are fine. Anything else in between ends the `@if`, and so does an earlier `@else`. The statements under a stray `@elif` or `@else` are still read, as part of the block around it.
 
 ```text
-@if $door_open:
+@if $door_open
     mira: It's open!
 mira: Hm.
-@else:
+@else
     mira: Still locked.
 ```
 
@@ -298,10 +298,10 @@ Move the clause up to just after the `@if` block, or indent it to match the `@if
 
 ### PIB1031
 
-**A `@sequence:` or `@cycle:` block holds only alternatives, each starting with `- `.** The block picks one alternative each time it's reached, so a line without a `- ` has no alternative to belong to. It's reported once per block, and each such line is read as an alternative of its own. `@once:` is different: it holds ordinary lines.
+**A `@sequence` or `@cycle` block holds only alternatives, each starting with `- `.** The block picks one alternative each time it's reached, so a line without a `- ` has no alternative to belong to. It's reported once per block, and each such line is read as an alternative of its own. `@once` is different: it holds ordinary lines.
 
 ```text
-@cycle:
+@cycle
     mira: Hm.
     mira: Huh.
 ```
@@ -313,30 +313,30 @@ Start each alternative with `- `: `- mira: Hm.`
 **After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@wait` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
 
 ```text
-@cycle:
-    - @if $has_key:
+@cycle
+    - @if $has_key
         mira: I could use the key.
 ```
 
 Put the `-` on its own line, and the opener on the indented line below it:
 
 ```text
-@cycle:
+@cycle
     -
-        @if $has_key:
+        @if $has_key
             mira: I could use the key.
 ```
 
 ### PIB1033
 
-**`@if`, `@elif` and `@else` end with a `:`,** which says a block follows. The block under the line still belongs to it, so this is the only problem reported.
+**A block opener has no `:`.** The keyword (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`) already says a block follows. The block under the line still belongs to it, so this is the only problem reported.
 
 ```text
-@if $door_open
+@if $door_open:
     mira: It's open!
 ```
 
-Add the `:`: `@if $door_open:`.
+Remove the `:`: `@if $door_open`.
 
 ### PIB1040
 
@@ -383,7 +383,7 @@ Write `#show_disabled`, and declare it that way with `@tag`.
 **An actor's display name, after `name:`, is plain text.** `[`, `{` and `\` are reserved there, so that display names can hold markup in a later version without changing any story. Everything else, including `#`, `//` and quotes, is part of the name.
 
 ```text
-@actor mira:
+@actor mira
     name: Mira [the brave]
 ```
 
@@ -424,10 +424,10 @@ Write `@show mira at=left`.
 **A call's `(` touches its name:** `has_item("key")`. With a space, I read the name and the brackets as two separate things. Where only a call makes sense, as in a condition or an `@set`, the space is reported. In a command's arguments, a space really does separate two arguments: `@give item ("key")` passes `item` and `"key"`.
 
 ```text
-@if has_item ("key"):
+@if has_item ("key")
 ```
 
-Remove the space: `@if has_item("key"):`.
+Remove the space: `@if has_item("key")`.
 
 ### PIB1052
 
@@ -441,7 +441,7 @@ Fix the ID by hand, or delete the tag and run `pibbles ids` to make a new one.
 
 ### PIB1053
 
-**Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names, and `#was:` goes nowhere else. A variation block (`@sequence:`, `@cycle:`, `@once:`) only takes `#id:`. A line takes one `#id:` at most, and a line that only changes a pose takes none, since a save never stops on it.
+**Some lines only take certain tags.** A node header only takes `#was:`, which records the node's old names, and `#was:` goes nowhere else. A variation block (`@sequence`, `@cycle`, `@once`) only takes `#id:`. A line takes one `#id:` at most, and a line that only changes a pose takes none, since a save never stops on it.
 
 ```text
 == kitchen.fridge #thought
@@ -474,17 +474,17 @@ Write `@shake_screen (-1)`. A negative value elsewhere, as in `@set $x = -1`, ne
 **Every `(` needs a `)` on the same line.** The message points at the `(` that's still open.
 
 ```text
-@if has_item("key":
+@if has_item("key"
 ```
 
-Add the `)` where the brackets should close: `@if has_item("key"):`.
+Add the `)` where the brackets should close: `@if has_item("key")`.
 
 ### PIB1061
 
 **Comparisons don't chain.** In some languages `$a < $b < $c` means "`$b` is between `$a` and `$c`", and in others it quietly compares `true` or `false` with `$c`. Pibbles asks you to say which you mean.
 
 ```text
-@if 0 < $bravery < 3:
+@if 0 < $bravery < 3
 ```
 
 Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3:`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c:`.

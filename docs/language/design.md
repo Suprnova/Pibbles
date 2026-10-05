@@ -95,7 +95,7 @@ Each extension below is fully designed, and joins the language when its trigger 
 | Extension | Trigger |
 | --- | --- |
 | [`@shuffle`, `@shuffle once`, `random()`](#shuffle-shuffle-once-and-random) and the seeded generator | The first need for randomness |
-| [`@else` after `@once:` and `@shuffle once:`](#else-after-once-and-shuffle-once) | A "first time X, afterwards Y" pattern that `visits()` handles awkwardly |
+| [`@else` after `@once` and `@shuffle once`](#else-after-once-and-shuffle-once) | A "first time X, afterwards Y" pattern that `visits()` handles awkwardly |
 | [Inline `{sequence}`, `{cycle}`, `{shuffle}`, `{once}`](#inline-variations) | Block forms feel too heavy for varying a few words |
 | [Pose changes partway through a line](#pose-changes-partway-through-a-line) (`{(pose)}`, `{actor (pose)}`) | A pose change that must land mid-line |
 | [`{auto}`](#auto) | Interrupted speech |
@@ -114,7 +114,7 @@ The full grammar is the [v1 grammar](reference.md#appendix-grammar) plus the cha
 | Extension | Kind | Changes |
 | --- | --- | --- |
 | `@shuffle`, `@shuffle once`, `random()` | Additive | `variation` |
-| `@else` after `@once:` and `@shuffle once:` | Additive: v1 reports a stray `@else` | `variation` |
+| `@else` after `@once` and `@shuffle once` | Additive: v1 reports a stray `@else` | `variation` |
 | Inline variations | Additive, with lexer changes | `inline_item`; new `ivariation`, `alternatives`, `alternative_text`; four more fused `{` tokens; `\|` becomes a token |
 | Pose changes partway through a line | Additive: v1 rejects `{name (…)}` | `point_body` |
 | `{auto}` | Additive | `point_body` |
@@ -134,11 +134,11 @@ Two more variation blocks join `@sequence`, `@cycle` and `@once`, with their row
 
 | Block | Runs |
 | --- | --- |
-| `@shuffle:` | A random alternative, using each one once per round. Round `n div count`, position `n mod count` in that round's order ([Q21](#open-questions)) |
-| `@shuffle once:` | Like `@shuffle` while `n < count`; after the first round it's skipped |
+| `@shuffle` | A random alternative, using each one once per round. Round `n div count`, position `n mod count` in that round's order ([Q21](#open-questions)) |
+| `@shuffle once` | Like `@shuffle` while `n < count`; after the first round it's skipped |
 
 ```
-@shuffle:
+@shuffle
     - mira: Dusty.
     - mira: Very dusty.
         @sfx sneeze
@@ -152,18 +152,18 @@ Two more variation blocks join `@sequence`, `@cycle` and `@once`, with their row
 **Grammar:**
 
 ```
-variation       ::= ("@sequence" | "@cycle" | "@shuffle" "once"?) ":" TAG* EOL INDENT alternative+ DEDENT
-                  | "@once" ":" TAG* EOL block
+variation       ::= ("@sequence" | "@cycle" | "@shuffle" "once"?) TAG* EOL INDENT alternative+ DEDENT
+                  | "@once" TAG* EOL block
 ```
 
-The token after `@shuffle` tells `@shuffle:` from `@shuffle once:`. `random()` is an ordinary call. Allowing it only in statements that run once is a check.
+The token after `@shuffle` tells `@shuffle` from `@shuffle once`. `random()` is an ordinary call. Allowing it only in statements that run once is a check.
 
 **Guide text:**
 
 > | Block | Behavior |
 > | --- | --- |
-> | `@shuffle:` | Picks at random, using each option once before any repeats |
-> | `@shuffle once:` | Picks at random, using each option once, then is skipped |
+> | `@shuffle` | Picks at random, using each option once before any repeats |
+> | `@shuffle once` | Picks at random, using each option once, then is skipped |
 >
 > #### Randomness
 >
@@ -172,7 +172,7 @@ The token after `@shuffle` tells `@shuffle:` from `@shuffle once:`. `random()` i
 > ```
 > @set $roll = random(1, 6)
 > The roll was {$roll}.
-> @if random(1, 100) <= 25:
+> @if random(1, 100) <= 25
 >     This line appears about a quarter of the time.
 > ```
 >
@@ -180,36 +180,36 @@ The token after `@shuffle` tells `@shuffle:` from `@shuffle once:`. `random()` i
 >
 > `random` works in `@set` and `@if`, but not inside a line's text. To show a random number, store it in a variable first, as above.
 
-### `@else` after `@once:` and `@shuffle once:`
+### `@else` after `@once` and `@shuffle once`
 
-`@once:` and `@shuffle once:` can be followed by an optional `@else:`, which runs each time once the block has nothing left. Without it, a used-up block shows nothing. Like `@if`, the `@else` belongs to the block directly above it at the same indentation. `@sequence`, `@cycle` and `@shuffle` never run out, so an `@else` after them is an error.
+`@once` and `@shuffle once` can be followed by an optional `@else`, which runs each time once the block has nothing left. Without it, a used-up block shows nothing. Like `@if`, the `@else` belongs to the block directly above it at the same indentation. `@sequence`, `@cycle` and `@shuffle` never run out, so an `@else` after them is an error.
 
 ```
-@shuffle once:
+@shuffle once
     - mira: Spoons.
     - mira: More spoons.
-@else:
+@else
     mira: Still just spoons.
 ```
 
 **Grammar:**
 
 ```
-variation       ::= ("@sequence" | "@cycle" | "@shuffle" "once"?) ":" TAG* EOL INDENT alternative+ DEDENT else_clause?
-                  | "@once" ":" TAG* EOL block else_clause?
+variation       ::= ("@sequence" | "@cycle" | "@shuffle" "once"?) TAG* EOL INDENT alternative+ DEDENT else_clause?
+                  | "@once" TAG* EOL block else_clause?
 ```
 
 `@else` starts no statement, so the parser can't mistake it for whatever follows the block. The grammar accepts it after every variation, and rejecting it after `@sequence`, `@cycle` and `@shuffle` is a check, which gives that error its own diagnostic.
 
 **Guide text:**
 
-> To say something else once `@once:` or `@shuffle once:` has run out, add `@else:` directly below it:
+> To say something else once `@once` or `@shuffle once` has run out, add `@else` directly below it:
 >
 > ```
-> @shuffle once:
+> @shuffle once
 >     - This line is picked at random.
 >     - So is this one.
-> @else:
+> @else
 >     This line is shown every time after both have been used.
 > ```
 
@@ -302,10 +302,10 @@ point_body      ::= … | "auto"
 A persona is an alternate presentation of an actor that turns on automatically from story state. Use one for a mystery character before they're introduced, or for a disguise.
 
 ```
-@actor rex:
+@actor rex
     name: Rex
     poses: neutral, grumpy, surprised
-    persona stranger if not $met_rex:
+    persona stranger if not $met_rex
         name: ???
 ```
 
@@ -322,10 +322,10 @@ Personas cover the "derived actor" need (the same poses, and the same voice-file
 
 ```
 actor_prop      ::= … | persona_prop
-persona_prop    ::= "persona" NAME ("if" expr)? ":" EOL INDENT name_prop DEDENT     /* Q19 */
+persona_prop    ::= "persona" NAME ("if" expr)? EOL INDENT name_prop DEDENT     /* Q19 */
 ```
 
-`if` is the bare keyword here, not `@if`, and `:` ends the expression.
+`if` is the bare keyword here, not `@if`, and the expression runs to the end of the line.
 
 **Guide text:**
 
@@ -334,10 +334,10 @@ persona_prop    ::= "persona" NAME ("if" expr)? ":" EOL INDENT name_prop DEDENT 
 > A persona changes how a character is presented while something is true. Use one for a character the player hasn't met yet, or someone in disguise. The persona is set up once in the cast list:
 >
 > ```
-> @actor rex:
+> @actor rex
 >     name: Rex
 >     poses: neutral, grumpy, surprised
->     persona stranger if not $met_rex:
+>     persona stranger if not $met_rex
 >         name: ???
 > ```
 >
@@ -545,7 +545,7 @@ Each is decided when its extension is implemented, preferring to reject a form o
 | Q | Production | Question | Options |
 | --- | --- | --- | --- |
 | 18 | `alternative_text` | Is a `\|` inside a construct nested in a variation (`{cycle}a{if $x}b\|c{/if}{/cycle}`) text, or an error? And a `\|` directly inside `{once}`, which has only one alternative? | Text, since a separator can't cross the nested construct's boundary; an error that suggests escaping with `\\|` |
-| 19 | `persona_prop` | Can a persona override nothing? A persona that only changes host presentation, like sprites, has no `name:` to set. | The `:` and block become optional; the block stays required, and can be empty |
+| 19 | `persona_prop` | Can a persona override nothing? A persona that only changes host presentation, like sprites, has no `name:` to set. | The block becomes optional; the block stays required, and can be empty |
 | 20 | `claim` | What is a `version`? | Runs to the next `,`; follows the `pibbles.json` version format |
 | 21 | `variation` (`@shuffle`) | Where does each round's order come from? | A shuffle bag drawn from the state's random generator, saved per block; a permutation derived from the seed, the block's ID and the round number, as `{shuffle}` does, so nothing beyond the entry count is saved and a block never draws from the generator |
 

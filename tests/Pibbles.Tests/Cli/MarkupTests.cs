@@ -5,7 +5,7 @@ namespace Pibbles.Tests.Cli;
 public class MarkupTests
 {
     [Theory]
-    [InlineData("Add it: `@if $x:`.", "Add it: `@if $x:`.")]
+    [InlineData("Remove it: `@if $x`.", "Remove it: `@if $x`.")]
     [InlineData("**Spans close first.** Then more.", "Spans close first. Then more.")]
     [InlineData("A lone ` backtick stays.", "A lone ` backtick stays.")]
     [InlineData("**Bold with `code` inside.**", "Bold with `code` inside.")]
@@ -17,7 +17,7 @@ public class MarkupTests
     }
 
     [Theory]
-    [InlineData("Add it: `@if $x:`.", "Add it: \e[36m@if $x:\e[39m.")]
+    [InlineData("Remove it: `@if $x`.", "Remove it: \e[36m@if $x\e[39m.")]
     [InlineData("**Bold.** Plain.", "\e[1mBold.\e[22m Plain.")]
     public void Render_WithColor_PaintsCodeAndBold(string text, string expected)
     {

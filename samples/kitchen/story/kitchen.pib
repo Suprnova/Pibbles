@@ -7,7 +7,7 @@
 == .enter
 @show mira left
 @show rex right
-@if visits(.enter) > 1:
+@if visits(.enter) > 1
     rex: Back in the kitchen. Thrilling.
     @enter_room kitchen on_exit=.leave
     @end
@@ -20,13 +20,13 @@ mira: Let's look around. Press {icon interact} to inspect things.
 @enter_room kitchen on_exit=.leave
 
 == .fridge
-@sequence:
+@sequence
     - mira: It's a fridge.{@sfx fridge_hum} It hums. [wave]Ominously.[/wave]
     - mira (smug): Still a fridge.
     - mira: I refuse to look at this fridge again.
 
 == .drawer
-@once:
+@once
     mira: Spoons, spoons, more spoons, and...{w} [clue]a small brass key[/clue]!
     @set $has_key = true
     mira (happy): Press {icon inventory} to check your items.
@@ -34,10 +34,10 @@ mira: Let's look around. Press {icon interact} to inspect things.
 mira: Just spoons now.
 
 == .window
-@if has_item("crowbar"):
+@if has_item("crowbar")
     mira: I could pry it open... but the door's right there.
     @end
-@cycle:
+@cycle
     - mira: Dusty.
     - mira: Very dusty.
         @wait 0.5s
@@ -47,7 +47,7 @@ mira: Just spoons now.
     - rex: You two stare at everything, don't you?
 
 == .door #was:.front_door
-@if $door_open:
+@if $door_open
     @jump .leave
 
 // Deadpan. She's said this about every door so far.
@@ -80,7 +80,7 @@ rex (surprised): Wait for m—
 @camera hallway
 
 == common.stuck
-@cycle:
+@cycle
     - mira (sad): Nope.
     - mira (sad): Not that.
     - mira (sad): That's not it either.

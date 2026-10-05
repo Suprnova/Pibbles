@@ -1,17 +1,28 @@
-// @if, @elif and @else lines end with `:`.
+// Block openers have no `:`.
+
+@actor mira:
+//         ^ PIB1033
+    name: Mira
 
 == fixture.colons
-@if $door_open
+@if $door_open:
 //            ^ PIB1033
     The block still belongs to the @if.
-@elif has_item("crowbar")
+@elif has_item("crowbar"):
 //                       ^ PIB1033
     @end
-@else
+@else:
 //   ^ PIB1033
     @end
+@cycle: #id:b8k2qd
+//    ^ PIB1033
+    - The tag after it is still read.
+@once:
+//   ^ PIB1033
 
 // Must not trigger
 
-@if $door_open: // A comment after the colon.
-    @end
+@if $door_open // A comment: with a colon.
+    mira: A speaker's colon is fine.
+@once #id:c4m9xt
+    @set $a = 1

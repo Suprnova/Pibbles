@@ -1,9 +1,9 @@
 // Every kind of declaration.
 
-@actor mira:
+@actor mira
     name: Mira Okafor
     poses: neutral, happy, sad
-@actor rex:
+@actor rex
     poses: neutral
 @enum position: left, center, right, offscreen
 @var $has_key = false

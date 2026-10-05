@@ -24,10 +24,10 @@ public static class DiagnosticCatalog
         "PIB1003",
         DiagnosticSeverity.Error,
         "This line is indented, but the line above it doesn't open a block.",
-        help: "Only a line ending in `:`, an option (`->`) or an alternative (`- `) can have indented lines under it.");
+        help: "Only a block opener such as `@if`, an option (`->`) or an alternative (`- `) can have indented lines under it.");
 
     /// <summary>PIB1004: a block opener with no indented lines under it.</summary>
-    /// <remarks>Argument: the opener's line, such as <c>@if $door_open:</c>.</remarks>
+    /// <remarks>Argument: the opener's line, such as <c>@if $door_open</c>.</remarks>
     public static DiagnosticDescriptor MissingBlock { get; } = new(
         "PIB1004",
         DiagnosticSeverity.Error,
@@ -162,13 +162,13 @@ public static class DiagnosticCatalog
         "`{0}` can't start an alternative.",
         help: "Put `-` on its own line, and the `{0}` on the line below it, indented.");
 
-    /// <summary>PIB1033: a block opener without its <c>:</c>.</summary>
-    /// <remarks>Arguments: the keyword, and the line as written.</remarks>
-    public static DiagnosticDescriptor MissingColon { get; } = new(
+    /// <summary>PIB1033: a block opener with a <c>:</c> after it.</summary>
+    /// <remarks>Arguments: the keyword, and the line up to the <c>:</c>.</remarks>
+    public static DiagnosticDescriptor OpenerColon { get; } = new(
         "PIB1033",
         DiagnosticSeverity.Error,
-        "I expected a `:` at the end of this `{0}` line.",
-        help: "Add it: `{1}:`.");
+        "I didn't expect a `:` on this `{0}` line.",
+        help: "Remove it: `{1}`.");
 
     /// <summary>PIB1040: something the grammar doesn't allow where it appears, when no more specific code applies.</summary>
     /// <remarks>Argument: what was found, such as <c>`extra`</c> or <c>a node header</c>.</remarks>
@@ -307,7 +307,7 @@ public static class DiagnosticCatalog
         StrayClause,
         NotAlternative,
         OpenerInAlternative,
-        MissingColon,
+        OpenerColon,
         Unexpected,
         UnterminatedString,
         MalformedNumber,

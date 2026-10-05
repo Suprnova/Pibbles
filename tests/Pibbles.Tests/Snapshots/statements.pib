@@ -1,13 +1,13 @@
 // Statements that hold expressions, and command arguments.
 
 == snapshot.statements
-@if $door_open:
+@if $door_open
     @jump kitchen.leave
-@elif has_item("crowbar"):
+@elif has_item("crowbar")
     @set $plan = "b"
-@elif $bravery > 2:
+@elif $bravery > 2
     @end
-@else:
+@else
     @set $bravery += 1
     @set $bravery -= 1
 @wait 1s

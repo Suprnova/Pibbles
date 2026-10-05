@@ -55,10 +55,10 @@ Non-compliant:
 
 ```
 -> First option
-    @if $a:
-        @if $b:
+    @if $a
+        @if $b
             -> Nested option
-                @if $c:
+                @if $c
                     This line is four blocks deep.
 ```
 
@@ -66,13 +66,13 @@ Compliant, with the inner part moved into its own node:
 
 ```
 -> First option
-    @if $a:
-        @if $b:
+    @if $a
+        @if $b
             @call example.inner_choice
 
 == example.inner_choice
 -> Nested option
-    @if $c:
+    @if $c
         This line is now two blocks deep.
 ```
 
@@ -82,9 +82,9 @@ Alternative, combining the conditions:
 
 ```
 -> First option
-    @if $a and $b:
+    @if $a and $b
         -> Nested option
-            @if $c:
+            @if $c
                 This line is three blocks deep.
 ```
 
@@ -272,9 +272,9 @@ Non-compliant:
 ```
 This line says {if $a}the same thing{else}the same thing{/if}.
 
-@if $a:
+@if $a
     This line appears either way.
-@else:
+@else
     This line appears either way.
 ```
 
@@ -319,15 +319,15 @@ This line is shared.
 Non-compliant:
 
 ```
-@if $has_key == true:
-@if $has_key == false:
+@if $has_key == true
+@if $has_key == false
 ```
 
 Compliant:
 
 ```
-@if $has_key:
-@if not $has_key:
+@if $has_key
+@if not $has_key
 ```
 
 #### PIB5021 – Use `+=` and `-=` ⚡
@@ -388,7 +388,7 @@ Flags names that aren't `snake_case`. That covers nodes (each dot-separated part
 Non-compliant:
 
 ```
-@actor Mira:
+@actor Mira
 @var $HasKey = false
 == Kitchen.FrontDoor
 ```
@@ -396,7 +396,7 @@ Non-compliant:
 Compliant:
 
 ```
-@actor mira:
+@actor mira
 @var $has_key = false
 == kitchen.front_door
 ```
@@ -416,18 +416,18 @@ Flags a file that mixes indentation widths, for example two spaces in one block 
 Non-compliant:
 
 ```
-@if $a:
+@if $a
   This block is indented two spaces.
-@if $b:
+@if $b
     This block is indented four.
 ```
 
 Compliant:
 
 ```
-@if $a:
+@if $a
     Every block is indented four spaces.
-@if $b:
+@if $b
     Every block is indented four spaces.
 ```
 

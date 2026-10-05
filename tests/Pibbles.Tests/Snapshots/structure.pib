@@ -2,12 +2,12 @@
 
 @prefix kitchen
 
-@actor mira:
+@actor mira
     name: Mira
 @var $door_open = false
 
 == .door #was:.front_door #was:kitchen.entrance
-@if $door_open:
+@if $door_open
     @jump .leave
     mira: Already open.
 mira: Locked.
@@ -17,7 +17,7 @@ mira: Locked.
 @end
 
 == .leave
-@once:
+@once
     mira: Only the first time.
 @end // A comment after a statement.
 

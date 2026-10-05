@@ -7,7 +7,7 @@ public class LineClassifierTests
 {
     [Theory]
     [InlineData("== kitchen.door", nameof(LineKind.Header))]
-    [InlineData("@if $door_open:", nameof(LineKind.At))]
+    [InlineData("@if $door_open", nameof(LineKind.At))]
     [InlineData("-> Rattle the handle", nameof(LineKind.Option))]
     [InlineData("- mira: Nope.", nameof(LineKind.Dash))]
     [InlineData("-\tmira: Nope.", nameof(LineKind.Dash))]
@@ -56,38 +56,38 @@ public class LineClassifierTests
     [Fact]
     public void Classify_NestedBlocks_IndentsAndDedents()
     {
-        var source = new SourceText("story.pib", "@if a:\n    @if b:\n        x\n    y\nz\n@if c:\n    w");
+        var source = new SourceText("story.pib", "@if a\n    @if b\n        x\n    y\nz\n@if c\n    w");
 
         string[] tokens = Describe(source, LineClassifier.Classify(source));
 
-        Assert.Equal(["@if a:", "Indent", "@if b:", "Indent", "x", "Dedent", "y", "Dedent", "z", "@if c:", "Indent", "w", "Dedent", "EndOfFile"], tokens);
+        Assert.Equal(["@if a", "Indent", "@if b", "Indent", "x", "Dedent", "y", "Dedent", "z", "@if c", "Indent", "w", "Dedent", "EndOfFile"], tokens);
     }
 
     [Fact]
     public void Classify_CommentBetweenBlocks_DoesNotDedent()
     {
-        var source = new SourceText("story.pib", "@if a:\n    x\n// A comment at the top.\n\n    y");
+        var source = new SourceText("story.pib", "@if a\n    x\n// A comment at the top.\n\n    y");
 
         string[] tokens = Describe(source, LineClassifier.Classify(source));
 
-        Assert.Equal(["@if a:", "Indent", "x", "y", "Dedent", "EndOfFile"], tokens);
+        Assert.Equal(["@if a", "Indent", "x", "y", "Dedent", "EndOfFile"], tokens);
     }
 
     [Fact]
     public void Classify_LineBetweenBlockWidths_JoinsOuterBlockAndReportsIt()
     {
-        var source = new SourceText("story.pib", "@if a:\n        x\n    y\nz");
+        var source = new SourceText("story.pib", "@if a\n        x\n    y\nz");
 
         ClassifiedLines classified = LineClassifier.Classify(source);
 
-        Assert.Equal(["@if a:", "Indent", "x", "Dedent", "y", "z", "EndOfFile"], Describe(source, classified));
+        Assert.Equal(["@if a", "Indent", "x", "Dedent", "y", "z", "EndOfFile"], Describe(source, classified));
         Assert.Equal([("PIB1002", 2)], Codes(classified));
     }
 
     [Theory]
-    [InlineData("@if a:\n    x\n@if b:\n\ty", "tabs", "spaces")]
-    [InlineData("@if a:\n\tx\n@if b:\n    y", "spaces", "tabs")]
-    [InlineData("@if a:\n    x\n@if b:\n \ty", "tabs and spaces", "spaces")]
+    [InlineData("@if a\n    x\n@if b\n\ty", "tabs", "spaces")]
+    [InlineData("@if a\n\tx\n@if b\n    y", "spaces", "tabs")]
+    [InlineData("@if a\n    x\n@if b\n \ty", "tabs and spaces", "spaces")]
     public void Classify_IndentWithOtherCharacter_ReportsWhatEachUses(string text, string line, string file)
     {
         var source = new SourceText("story.pib", text);
@@ -100,7 +100,7 @@ public class LineClassifierTests
     [Fact]
     public void Classify_FirstIndentMixesCharacters_ReportsIt()
     {
-        var source = new SourceText("story.pib", "@if a:\n\t x");
+        var source = new SourceText("story.pib", "@if a\n\t x");
 
         ClassifiedLines classified = LineClassifier.Classify(source);
 
@@ -110,7 +110,7 @@ public class LineClassifierTests
     [Fact]
     public void Classify_MixedLineAtNoBlockWidth_ReportsOnlyMixing()
     {
-        var source = new SourceText("story.pib", "@if a:\n    @if b:\n        x\n\t\ty");
+        var source = new SourceText("story.pib", "@if a\n    @if b\n        x\n\t\ty");
 
         ClassifiedLines classified = LineClassifier.Classify(source);
 
@@ -120,11 +120,11 @@ public class LineClassifierTests
     [Fact]
     public void Classify_TabIndentedRegionInSpacesFile_KeepsItsStructure()
     {
-        var source = new SourceText("story.pib", "@if a:\n    x\n@if b:\n\ty\n\t@if c:\n\t\tz");
+        var source = new SourceText("story.pib", "@if a\n    x\n@if b\n\ty\n\t@if c\n\t\tz");
 
         ClassifiedLines classified = LineClassifier.Classify(source);
 
-        Assert.Equal(["@if a:", "Indent", "x", "Dedent", "@if b:", "Indent", "y", "@if c:", "Indent", "z", "Dedent", "Dedent", "EndOfFile"], Describe(source, classified));
+        Assert.Equal(["@if a", "Indent", "x", "Dedent", "@if b", "Indent", "y", "@if c", "Indent", "z", "Dedent", "Dedent", "EndOfFile"], Describe(source, classified));
         Assert.Equal([("PIB1001", 3), ("PIB1001", 4), ("PIB1001", 5)], Codes(classified));
     }
 

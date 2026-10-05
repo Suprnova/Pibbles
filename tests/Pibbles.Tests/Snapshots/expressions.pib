@@ -7,11 +7,11 @@
 @set $precedence = 1 + 2 * 3 - 4 / 5 % 6
 @set $grouping = (1 + 2) * -3 - -$x
 @set $calls = f(g(1, 2), "x") + rolled()
-@if true and not false or $flag:
+@if true and not false or $flag
     @end
-@if $a == $b < $c:
+@if $a == $b < $c
     @end
-@if has_item("key") and visits(kitchen.door) >= 2 and visits(.door) != 0:
+@if has_item("key") and visits(kitchen.door) >= 2 and visits(.door) != 0
     @end
-@if $where == left or $who == mira:
+@if $where == left or $who == mira
     @end

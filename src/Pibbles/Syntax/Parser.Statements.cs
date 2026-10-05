@@ -143,21 +143,29 @@ internal sealed partial class Parser
     }
 
     /// <summary>
-    /// Reads the <c>:</c> that ends a block opener, finishes its line, and parses the block under it. A missing <c>:</c>
-    /// is reported, but the line still owns its block, so the block isn't reported again as unexpected.
-    /// Returns the block and where the statement ends: after its block, or after its line when it has none.
+    /// Finishes a block opener's line and parses the block under it. Returns the block and where the statement ends:
+    /// after its block, or after its line when it has none.
     /// </summary>
     private (List<StatementSyntax> Body, int End) ParseOpenerEnd(string keyword, TextSpan keywordSpan, int start)
     {
-        if (token.Kind is TokenKind.Colon)
-            Advance();
-        else
-            Fail(DiagnosticCatalog.MissingColon, new(previousEnd, 0), keyword, TextOf(new(start, previousEnd - start)));
-
+        RejectColon(keyword, start);
         bool failed = lineFailed;
         int lineEnd = previousEnd;
         FinishLine();
         return ParseBlockUnder(keywordSpan, start, failed, lineEnd, () => ParseStatements(nodeLevel: false));
+    }
+
+    /// <summary>
+    /// Reports a <c>:</c> after a block opener and reads past it. The line still owns its block, so the block isn't
+    /// reported again as unexpected.
+    /// </summary>
+    private void RejectColon(string keyword, int start)
+    {
+        if (token.Kind is not TokenKind.Colon)
+            return;
+
+        Fail(DiagnosticCatalog.OpenerColon, token.Span, keyword, TextOf(new(start, previousEnd - start)));
+        Advance();
     }
 
     /// <summary>
@@ -181,15 +189,12 @@ internal sealed partial class Parser
         return ([], lineEnd);
     }
 
-    /// <summary>Parses <c>@sequence:</c>, <c>@cycle:</c> or <c>@once:</c>, its tags, and its block.</summary>
+    /// <summary>Parses <c>@sequence</c>, <c>@cycle</c> or <c>@once</c>, its tags, and its block.</summary>
     private StatementSyntax ParseVariation(int start, string word)
     {
         TextSpan keyword = token.Span;
         Advance();
-        if (token.Kind is TokenKind.Colon)
-            Advance();
-        else
-            Fail(DiagnosticCatalog.MissingColon, new(previousEnd, 0), word, TextOf(new(start, previousEnd - start)));
+        RejectColon(word, start);
 
         List<TagSyntax> tags = [];
         while (token.Kind is TokenKind.Tag)

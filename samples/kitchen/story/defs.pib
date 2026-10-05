@@ -1,11 +1,11 @@
 // Story-wide declarations: the contract between the writers and the game.
 // The game must implement everything declared here.
 
-@actor mira:
+@actor mira
     name: Mira
     poses: neutral, happy, sad, smug, worried, angry
 
-@actor rex:
+@actor rex
     name: Rex
     poses: neutral, grumpy, surprised
 

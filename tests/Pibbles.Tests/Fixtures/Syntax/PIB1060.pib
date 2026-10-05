@@ -3,7 +3,7 @@
 == fixture.parentheses
 @set $x = (1 + 2
 //        ^ PIB1060
-@if has_item("key":
+@if has_item("key"
 //          ^ PIB1060
     @end
 @shake_screen ($bravery * 0.5
@@ -12,5 +12,5 @@
 // Must not trigger
 
 @set $x = ((1 + 2) * 3)
-@if has_item("key"):
+@if has_item("key")
     @end

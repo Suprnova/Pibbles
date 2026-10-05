@@ -40,11 +40,11 @@ public class FixtureFileTests
     [Fact]
     public void Annotate_ZeroLengthSpan_MarksOneCaret()
     {
-        var source = new SourceText("PIB1033.pib", "@if $door_open");
+        var source = new SourceText("PIB1046.pib", "@jump");
 
-        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1033", 14, 0)]);
+        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1046", 5, 0)]);
 
-        Assert.Equal("@if $door_open\n//            ^ PIB1033", annotated);
+        Assert.Equal("@jump\n//   ^ PIB1046", annotated);
     }
 
     [Fact]

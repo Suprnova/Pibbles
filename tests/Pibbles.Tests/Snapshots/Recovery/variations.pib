@@ -1,15 +1,15 @@
 // Broken variations and declarations still leave a complete tree.
 
-@actor mira
+@actor mira:
     name: Mira [the brave]
 @enum rooms.kitchen: a, b
 == snapshot.recovery
-@cycle:
+@cycle
     mira: No dash.
     mira: Still no dash.
     - mira: A real alternative.
-@sequence:
-    - @if $x:
+@sequence
+    - @if $x
         mira: An opener after the dash.
     -
 @var $late = 1

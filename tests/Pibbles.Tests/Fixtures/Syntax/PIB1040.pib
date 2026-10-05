@@ -8,7 +8,7 @@
 //   ^^^ PIB1040
 @call fixture.other #id:k7qp2x "text"
 //                             ^^^^^^ PIB1040
-@if true:
+@if true
     == fixture.nested
 //  ^^ PIB1040
 

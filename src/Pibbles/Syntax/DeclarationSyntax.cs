@@ -3,7 +3,7 @@ namespace Pibbles.Syntax;
 /// <summary>A declaration: part of the contract between the story and the host.</summary>
 public abstract record DeclarationSyntax : SyntaxNode;
 
-/// <summary><c>@actor id:</c> and its properties: a character.</summary>
+/// <summary><c>@actor id</c> and its properties: a character.</summary>
 /// <param name="Name">The actor's ID, which lines use as their speaker.</param>
 /// <param name="DisplayName">The <c>name:</c> property: the name the player sees, or <see langword="null"/> to show the ID.</param>
 /// <param name="DisplayNameSpan">Where the display name is written, or <see langword="null"/>.</param>

@@ -127,11 +127,11 @@ Text and number variables can be shown this way, and so can a variable holding a
 `@if` runs lines only when something is true. `@elif` ("else if") tries another condition, and `@else` catches everything else. Indent the lines each one controls.
 
 ```pib
-@if $has_key:
+@if $has_key
     This line only appears if $has_key is true.
-@elif $attempts > 3:
+@elif $attempts > 3
     This line appears if there's no key but more than three attempts.
-@else:
+@else
     This line appears otherwise.
 ```
 
@@ -262,7 +262,7 @@ Lines get a short ID at the end:
 mira: This line has an ID. #id:k7qp2x
 ```
 
-Variation blocks get one too, after the colon (`@once: #id:b8k2qd`), so the story remembers how often each block has run. You don't type these. A tool adds them, and they keep saves attached to the right line. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor fades them out so they don't get in the way. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
+Variation blocks get one too, after the keyword (`@once #id:b8k2qd`), so the story remembers how often each block has run. You don't type these. A tool adds them, and they keep saves attached to the right line. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor fades them out so they don't get in the way. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
 
 ---
 
@@ -273,35 +273,35 @@ Variation blocks get one too, after the colon (`@once: #id:b8k2qd`), so the stor
 When the player inspects the same thing again, it's nicer to say something new. Variation blocks pick different lines each time the story reaches them. Each option starts with `- `, and can have more indented lines under it.
 
 ```pib
-@sequence:
+@sequence
     - This line is shown the first time.
     - This line is shown the second time.
     - This line is shown the third time and every time after.
 
-@cycle:
+@cycle
     - This line is shown the first time.
     - This line is shown the second time.
     - Then it starts over from the first line.
         @sfx sigh
         This line belongs to the same option.
 
-@once:
+@once
     This line is only shown the first time.
     @set $saw_this = true
 ```
 
 | Block | Behavior |
 | --- | --- |
-| `@sequence:` | Goes through the options in order, then stays on the last one |
-| `@cycle:` | Goes through the options in order, then loops back to the first |
-| `@once:` | Runs only the first time, then is skipped |
+| `@sequence` | Goes through the options in order, then stays on the last one |
+| `@cycle` | Goes through the options in order, then loops back to the first |
+| `@once` | Runs only the first time, then is skipped |
 
 The line after `- ` is a single line: dialogue, narration, `@set`, a jump or a command. To start an option with a condition, put the `-` on a line of its own, and the whole option on the indented lines below it:
 
 ```pib
-@cycle:
+@cycle
     -
-        @if $has_key:
+        @if $has_key
             mira: I could use the key.
         mira: Or not.
     - mira: Nope.
@@ -340,9 +340,9 @@ Option text can use styles, variables, icons and conditional wording, but not pa
 Pibbles counts how many times each node has been reached. `visits(node name)` gives that number:
 
 ```pib
-@if visits(example.room) == 1:
+@if visits(example.room) == 1
     This line only appears on the first visit.
-@elif visits(example.other_room) > 0:
+@elif visits(example.other_room) > 0
     This line appears if the other room has been visited at least once.
 ```
 
@@ -373,7 +373,7 @@ Press {icon interact} to inspect things, and {icon inventory} to open your bag.
 The game can answer questions about things Pibbles doesn't track itself, like the player's inventory. They're used like `visits`:
 
 ```pib
-@if has_item("crowbar"):
+@if has_item("crowbar")
     This line appears if the player is carrying the crowbar.
 This line mentions an item by its display name: {item_name("crowbar")}.
 ```
@@ -386,7 +386,7 @@ One or more files (usually a single file like `defs.pib`) list everything the st
 
 ```pib-standalone
 // Characters and their poses
-@actor mira:
+@actor mira
     name: Mira
     poses: neutral, happy, sad
 
@@ -514,13 +514,13 @@ This node used to be called kitchen.door.
 | `-> text` | Choice option |
 | `-> text  @if $x` | Option only available if `$x` is true |
 | `-> text  @once` | Option disappears after it's picked |
-| `@if …:` / `@elif …:` / `@else:` | Conditions |
+| `@if …` / `@elif …` / `@else` | Conditions |
 | `@set $x = value` / `+=` / `-=` | Change a variable |
 | `@jump node` | Go to another node |
 | `@call node` / `@return` | Run another node and come back |
 | `@end` | End the conversation |
 | `@wait 1s` | Pause without text |
-| `@sequence:` `@cycle:` `@once:` | Vary lines on repeat visits |
+| `@sequence` `@cycle` `@once` | Vary lines on repeat visits |
 | `@command args` | Stage direction or game event |
 | `[b]…[/b]` `[i]` `[u]` `[s]` `[color "#hex"]` | Formatting |
 | `[speed 0.5]…[/speed]` | Slower or faster typing |

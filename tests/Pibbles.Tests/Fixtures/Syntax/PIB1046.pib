@@ -18,7 +18,7 @@
 //       ^ PIB1046
 @wait
 //   ^ PIB1046
-@if :
+@if 
 // ^ PIB1046
     @end
 @show mira at=

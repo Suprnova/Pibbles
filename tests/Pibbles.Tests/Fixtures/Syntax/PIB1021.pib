@@ -4,10 +4,10 @@
 == fixture.declarations
 @var $late = 1
 // PIB1021
-@actor rex:
+@actor rex
 // PIB1021
     name: Rex
-@if true:
+@if true
     @command nope()
 //  ^^^^^^^^ PIB1021
 

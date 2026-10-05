@@ -17,5 +17,5 @@ mira: Hi. #id
 mira: Hi. #id:k7qp2x
 mira: Hi. #id:a #thought
 @call fixture.ids #id:snake_case_id
-@once: #id:b8k2qd
+@once #id:b8k2qd
     mira: Hm.

@@ -13,7 +13,7 @@
 
 // Must not trigger
 
-@if true:
+@if true
     A block under an @if.
 -> An option
     with a body.

@@ -18,7 +18,7 @@ public sealed record ReturnStatementSyntax : StatementSyntax;
 /// <summary><c>@end</c>: ends the dialogue and clears the call stack.</summary>
 public sealed record EndStatementSyntax : StatementSyntax;
 
-/// <summary><c>@sequence:</c> or <c>@cycle:</c>, and the alternatives in its block.</summary>
+/// <summary><c>@sequence</c> or <c>@cycle</c>, and the alternatives in its block.</summary>
 /// <param name="Kind">Which alternative runs on each entry.</param>
 /// <param name="Tags">The tags after the <c>:</c>, which hold the block's <c>#id</c>.</param>
 /// <param name="Alternatives">The alternatives, in order.</param>
@@ -31,24 +31,24 @@ public sealed record VariationStatementSyntax(VariationKind Kind, IReadOnlyList<
 /// <param name="Body">The alternative's statements.</param>
 public sealed record AlternativeSyntax(IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
 
-/// <summary><c>@once:</c> and its block, which runs the first time execution reaches it and is skipped after that.</summary>
+/// <summary><c>@once</c> and its block, which runs the first time execution reaches it and is skipped after that.</summary>
 /// <param name="Tags">The tags after the <c>:</c>, which hold the block's <c>#id</c>.</param>
 /// <param name="Body">The statements that run on the first entry.</param>
 public sealed record OnceStatementSyntax(IReadOnlyList<TagSyntax> Tags, IReadOnlyList<StatementSyntax> Body) : StatementSyntax;
 
-/// <summary><c>@if condition:</c> and its block, with any <c>@elif</c> and <c>@else</c> clauses after it.</summary>
+/// <summary><c>@if condition</c> and its block, with any <c>@elif</c> and <c>@else</c> clauses after it.</summary>
 /// <param name="Condition">The condition.</param>
 /// <param name="Body">The statements that run when the condition is true.</param>
 /// <param name="ElseIfs">The <c>@elif</c> clauses, in order.</param>
 /// <param name="Else">The <c>@else</c> clause, or <see langword="null"/>.</param>
 public sealed record IfStatementSyntax(ExpressionSyntax Condition, IReadOnlyList<StatementSyntax> Body, IReadOnlyList<ElseIfClauseSyntax> ElseIfs, ElseClauseSyntax? Else) : StatementSyntax;
 
-/// <summary>An <c>@elif condition:</c> clause and its block.</summary>
+/// <summary>An <c>@elif condition</c> clause and its block.</summary>
 /// <param name="Condition">The condition.</param>
 /// <param name="Body">The statements that run when no earlier condition was true and this one is.</param>
 public sealed record ElseIfClauseSyntax(ExpressionSyntax Condition, IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
 
-/// <summary>An <c>@else:</c> clause and its block.</summary>
+/// <summary>An <c>@else</c> clause and its block.</summary>
 /// <param name="Body">The statements that run when no condition was true.</param>
 public sealed record ElseClauseSyntax(IReadOnlyList<StatementSyntax> Body) : SyntaxNode;
 
@@ -123,9 +123,9 @@ public sealed record OptionSyntax(IReadOnlyList<InlineSyntax> Text, ExpressionSy
 /// <summary>Which alternative a variation runs on each entry.</summary>
 public enum VariationKind
 {
-    /// <summary><c>@sequence:</c> runs the next alternative each time, then stays on the last.</summary>
+    /// <summary><c>@sequence</c> runs the next alternative each time, then stays on the last.</summary>
     Sequence,
 
-    /// <summary><c>@cycle:</c> runs the next alternative each time, starting over after the last.</summary>
+    /// <summary><c>@cycle</c> runs the next alternative each time, starting over after the last.</summary>
     Cycle,
 }

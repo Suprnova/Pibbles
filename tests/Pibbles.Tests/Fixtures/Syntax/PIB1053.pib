@@ -21,8 +21,8 @@ mira: Hi. #was:fixture.old
 //        ^^^^^^^^^^^^^^^^ PIB1053
 @call fixture.renamed #was:x
 //                    ^^^^^^ PIB1053
-@cycle: #id:c9wq2a #thought
-//                 ^^^^^^^^ PIB1053
+@cycle #id:c9wq2a #thought
+//                ^^^^^^^^ PIB1053
     - mira: Hm.
 -> Go #was:x
 //    ^^^^^^ PIB1053

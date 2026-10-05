@@ -21,7 +21,7 @@ mira (worried): Locked.{w} Of course it's locked. #id:k7qp2x
 
 Everything below applies to the real story. [Drafts](language/design.md#drafts) need no IDs and are never extracted for translation or recording.
 
-Every text line and option, since those are what's shown, translated, voiced or saved at. Also every `@call`, because a save can be waiting inside the called node. Pose-only lines (`mira (sad):`) take no ID: they show nothing and complete at once, so a save never waits on one. Variation blocks also get an ID on their opener (`@once: #id:b8k2qd`), which keys how many times the block has run, so it survives blocks being inserted, reordered or moved. Other translatable text gets an implicit ID from its declaration: actor and persona names (`actor.mira`, `actor.rex.stranger`) and term bodies (`term.they`). IDs must be unique across the story, and a duplicate is an error.
+Every text line and option, since those are what's shown, translated, voiced or saved at. Also every `@call`, because a save can be waiting inside the called node. Pose-only lines (`mira (sad):`) take no ID: they show nothing and complete at once, so a save never waits on one. Variation blocks also get an ID on their opener (`@once #id:b8k2qd`), which keys how many times the block has run, so it survives blocks being inserted, reordered or moved. Other translatable text gets an implicit ID from its declaration: actor and persona names (`actor.mira`, `actor.rex.stranger`) and term bodies (`term.they`). IDs must be unique across the story, and a duplicate is an error.
 
 IDs are what everything else keys on:
 
