@@ -4,7 +4,7 @@ Tooling is how the "fail at edit time" principle reaches writers. There are thre
 
 ## CLI (`pibbles`)
 
-Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `pibbles` command; NuGet package IDs ignore case, so the tool can't share the core library's `Pibbles`), and also runnable from the repo with `dotnet run --project src/Pibbles.Cli`. CI packs the tool on every build as a prerelease of the next version (`0.1.0-ci.<run>`) and uploads it as the `pibbles-cli-nupkg` artifact. Install a downloaded one with `dotnet tool install --global Pibbles.Cli --add-source <folder> --prerelease`, or `update` instead of `install` to replace an earlier one. `[root]` is the [project root](language/reference.md#files-and-structure), the current directory by default.
+Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `pibbles` command; NuGet package IDs ignore case, so the tool can't share the core library's `Pibbles`), and also runnable from the repo with `dotnet run --project src/Pibbles.Cli`. CI packs the tool on every build as a prerelease of the next version (`0.1.0-ci.<run>`) and uploads it as the `pibbles-cli-nupkg` artifact. Install a downloaded one with `dotnet tool install --global Pibbles.Cli --add-source <folder> --prerelease`, or `update` instead of `install` to replace an earlier one. A [release](#releases) attaches it at its plain version, which installs the same way, without `--prerelease`. `[root]` is the [project root](language/reference.md#files-and-structure), the current directory by default.
 
 | Command | Purpose | Phase |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 
 ## VS Code extension
 
-It lives in `editors/vscode/`. CI builds it as a `.vsix`, which writers install locally and which is attached to GitHub pre-releases. It isn't published to the VS Code Marketplace. It ships in three steps:
+It lives in `editors/vscode/`. CI builds it as a `.vsix`, which writers install locally and which is attached to every [release](#releases). It isn't published to the VS Code Marketplace. It ships in three steps:
 
 1. **Syntax highlighting (Phase 1),** as a TextMate grammar, which needs no server and no extension code. It highlights headers, speakers and poses, `@` statements, options, inline `[markup]` and `{points}`, tags and comments. Snippets cover common shapes (`@if`, choices, variation blocks). `#id:` tags get a comment scope, so every theme shows them faded. Enter indents under a block opener, option or bare `-`, and Enter after an indented `@end`, `@jump` or `@return` moves out one level, since nothing after them in their block can run. Enter on a line that holds only indentation also moves out one level, since a block has no closing line, and Enter on an empty line stays at column 0 rather than returning to the last indented line's level: one Enter after an alternative stays ready for the next `- `, and a second leaves the block. This is cheap and gives writers most of the day-to-day benefit.
 2. **Editing aids (Phase 2),** as a small activation script, when `pibbles ids` starts writing line IDs:
@@ -145,6 +145,14 @@ Each threshold belongs to one of the [style rules](semantics.md#style-rules). Dr
 - **A specific code beats its category,** and later, more specific sections beat earlier ones, following the usual `.editorconfig` rules.
 - **What stays in `pibbles.json`:** project facts that aren't per file, such as the version, source locale, localization and voice. `pibbles.json` describes what the project *is*. `.editorconfig` describes how strictly each file is checked.
 - **The core stays free of I/O.** It parses `.editorconfig` text and resolves settings for a given path. The CLI, language server and adapter find the files and pass their contents in, the same way sources are passed ([architecture](architecture.md#solution-layout)).
+
+## Releases
+
+Every artifact ships in one release at one version: the CLI's `.nupkg` and the VS Code extension's `.vsix`, and later the Godot addon. The pieces change together, since a language change touches the parser and the grammar at once, so a writer always gets a CLI and an editor that agree on the language.
+
+`release.yml` runs on a `v*` tag (`v0.2.0`), or by hand with a version. The version comes from the tag alone: it's passed to `dotnet pack` and `npm version`, so no file in the repository is bumped, and `pibbles --version` reports exactly that version. The workflow runs the .NET tests and the grammar tests, packs both artifacts, and attaches them to a GitHub pre-release named `Pibbles <version>`. Nothing is published to NuGet or the VS Code Marketplace.
+
+Between releases, every CI run uploads the same artifacts with a prerelease version.
 
 ## With extensions
 

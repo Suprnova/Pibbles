@@ -1,0 +1,70 @@
+name: Release
+
+# Builds every Pibbles artifact at one version and attaches them to a GitHub pre-release. Push a tag such as v0.2.0, or
+# run it by hand with the version. The version comes from here alone: the files in the repository aren't bumped.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version to release, such as 0.2.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+
+      - name: Read the version
+        run: echo "VERSION=${VERSION#v}" >> "$GITHUB_ENV"
+
+      # `pibbles --version` reports the tag's version exactly, without the commit hash the SDK appends by default.
+      - name: Build and test the library and CLI
+        run: |
+          dotnet build --configuration Release -p:TestAllTargets=true -p:Version=$VERSION -p:IncludeSourceRevisionInInformationalVersion=false
+          dotnet test --configuration Release --no-build -p:TestAllTargets=true
+
+      - name: Pack the CLI tool
+        run: dotnet pack src/Pibbles.Cli --configuration Release --no-build -p:Version=$VERSION --output artifacts
+
+      - name: Test and package the VS Code extension
+        working-directory: editors/vscode
+        run: |
+          npm ci
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          npm test
+          npm run package
+          mv "pibbles-$VERSION.vsix" ../../artifacts/
+
+      - name: Attach to a pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" artifacts/Pibbles.Cli.$VERSION.nupkg artifacts/pibbles-$VERSION.vsix \
+            --prerelease --title "Pibbles $VERSION" --target "$GITHUB_SHA" --notes-file - <<EOF
+          Install the pibbles CLI from the folder holding the .nupkg:
+
+              dotnet tool install --global Pibbles.Cli --add-source <folder>
+
+          Install the VS Code extension:
+
+              code --install-extension pibbles-$VERSION.vsix
+          EOF
