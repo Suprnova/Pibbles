@@ -4,7 +4,7 @@ Tooling is how the "fail at edit time" principle reaches writers. There are thre
 
 ## CLI (`pibbles`)
 
-Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `pibbles` command; NuGet package IDs ignore case, so the tool can't share the core library's `Pibbles`), and also runnable from the repo with `dotnet run --project src/Pibbles.Cli`. `[root]` is the [project root](language/reference.md#files-and-structure), the current directory by default.
+Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `pibbles` command; NuGet package IDs ignore case, so the tool can't share the core library's `Pibbles`), and also runnable from the repo with `dotnet run --project src/Pibbles.Cli`. CI packs the tool on every build as a prerelease of the next version (`0.1.0-ci.<run>`) and uploads it as the `pibbles-cli-nupkg` artifact. Install a downloaded one with `dotnet tool install --global Pibbles.Cli --add-source <folder> --prerelease`, or `update` instead of `install` to replace an earlier one. `[root]` is the [project root](language/reference.md#files-and-structure), the current directory by default.
 
 | Command | Purpose | Phase |
 | --- | --- | --- |

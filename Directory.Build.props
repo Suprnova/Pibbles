@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- Local builds add a suffix, such as -dev.202610040315, so each one installs over the last. -->
     <VersionPrefix>0.1.0</VersionPrefix>
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>

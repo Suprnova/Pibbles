@@ -15,6 +15,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      # Every CI build is a prerelease of the next version, such as 0.1.0-ci.42, so each one installs over the last.
+      VersionSuffix: ci.${{ github.run_number }}
     steps:
       - uses: actions/checkout@v5
 
@@ -33,6 +36,17 @@ jobs:
         run: |
           echo "::add-matcher::.github/pibbles-problem-matcher.json"
           dotnet run --project src/Pibbles.Cli --configuration Release --no-build -- check samples/kitchen --release --warnaserror --format msbuild
+
+      # The tool targets the runtime, not an OS, so one package serves every platform.
+      - name: Pack the CLI tool
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack src/Pibbles.Cli --configuration Release --no-build --output artifacts/tool
+
+      - uses: actions/upload-artifact@v7
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: pibbles-cli-nupkg
+          path: artifacts/tool/*.nupkg
 
   vscode-extension:
     runs-on: ubuntu-latest
