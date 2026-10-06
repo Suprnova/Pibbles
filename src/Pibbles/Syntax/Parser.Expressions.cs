@@ -147,7 +147,10 @@ internal sealed partial class Parser
             return ParseCall(name);
 
         if (token.Kind is TokenKind.OpenParen && !argument)
+        {
             Fail(DiagnosticCatalog.SpaceBeforeCall, new(name.Span.End, token.Span.Start - name.Span.End), text);
+            return ParseCall(name);
+        }
 
         return new NameExpressionSyntax(text) { Span = name.Span };
     }

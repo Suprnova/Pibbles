@@ -214,6 +214,13 @@ public class BinderTests
         },
     };
 
+    [Theory]
+    [InlineData("@var $n = 0\n\n== a.b\n@if 0 < $n < 3\n    Hm.\n", "PIB1061")]
+    [InlineData("@var $n = 0\n\n== a.b\n@if $n == 1 != true\n    Hm.\n", "PIB1061")]
+    [InlineData("@function item_name(id: string) -> string\n\n== a.b\nYou found {item_name (\"key\")}.\n", "PIB1051")]
+    public void Compile_SyntaxProblemInExpression_ReportsOnlyIt(string text, string code) =>
+        Assert.Equal([code], Diagnose(text).Select(diagnostic => diagnostic.Code));
+
     [Fact]
     public void Compile_SpeakerNotDeclared_NamesSpeakerByIdInSyntaxMessage()
     {

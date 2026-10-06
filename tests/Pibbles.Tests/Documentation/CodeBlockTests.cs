@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Pibbles.Diagnostics;
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 
 namespace Pibbles.Tests.Documentation;
@@ -9,6 +10,9 @@ public partial class CodeBlockTests
     private const string FragmentHeader = "== doc.example\n";
 
     private static readonly Dictionary<string, CodeBlock> Blocks = CodeBlock.All.ToDictionary(block => block.Name);
+
+    /// <summary>The documentation prelude, which declares every name the <c>pib</c> blocks use without declaring it.</summary>
+    private static readonly SourceText Prelude = new("examples.pib", File.ReadAllText(Path.Combine(CodeBlock.Folder, "examples.pib")));
 
     public static TheoryData<string> LanguageDocuments { get; } = [.. CodeBlock.Documents];
 
@@ -23,26 +27,28 @@ public partial class CodeBlockTests
         Assert.Empty(invalid);
     }
 
+    /// <summary>
+    /// A <c>pib</c> or <c>pib-standalone</c> block has no errors or warnings. A <c>pib-error</c> block has exactly the codes
+    /// its info string lists, in order. Examples leave out line IDs, so missing ones are never counted.
+    /// </summary>
     [Theory]
     [MemberData(nameof(PibblesBlocks))]
-    public void Parse_CodeBlock_ReportsSyntaxCodesInItsInfoString(string name)
+    public void Compile_CodeBlock_ReportsCodesInItsInfoString(string name)
     {
         var block = Blocks[name];
-        string[] expected = [.. block.Info.Split(' ').Skip(1).Where(code => code.StartsWith("PIB1", StringComparison.Ordinal))];
+        bool error = block.Info.StartsWith("pib-error", StringComparison.Ordinal);
+        string[] expected = [.. block.Info.Split(' ').Skip(1)];
 
-        var (diagnostics, headerLines) = Parse(block);
+        var (diagnostics, headerLines) = Compile(block);
+        Diagnostic[] reported = [.. diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010" && (error || diagnostic.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning))];
 
-        Assert.True(diagnostics.Select(diagnostic => diagnostic.Code).SequenceEqual(expected),
-            $"Expected [{string.Join(", ", expected)}], got:\n{string.Join("\n", diagnostics.Select(diagnostic => Describe(block, headerLines, diagnostic)))}");
+        Assert.True(reported.Select(diagnostic => diagnostic.Code).SequenceEqual(expected),
+            $"Expected [{string.Join(", ", expected)}], got:\n{string.Join("\n", reported.Select(diagnostic => Describe(block, headerLines, diagnostic)))}");
     }
 
     [Fact]
-    public void Parse_DocumentationPrelude_ReportsNothing()
-    {
-        var source = new SourceText("examples.pib", File.ReadAllText(Path.Combine(CodeBlock.Folder, "examples.pib")));
-
-        Assert.Empty(SyntaxTree.Parse(source).Diagnostics);
-    }
+    public void Compile_DocumentationPrelude_ReportsOnlyMissingIds() =>
+        Assert.All(Compilation.Create([Prelude]).Diagnostics, diagnostic => Assert.Equal("PIB3010", diagnostic.Code));
 
     private static bool HasValidInfo(CodeBlock block) => block.Info.Split(' ') switch
     {
@@ -51,14 +57,17 @@ public partial class CodeBlockTests
         _ => block.Info.Length > 0 && !block.Info.StartsWith("pib", StringComparison.Ordinal),
     };
 
-    /// <summary>Parses a block, first wrapping it in a node if it's a fragment: a block with no prefix, declaration or node.</summary>
-    private static (IReadOnlyList<Diagnostic> Diagnostics, int HeaderLines) Parse(CodeBlock block)
+    /// <summary>
+    /// Compiles a block, with the documentation prelude unless it's <c>pib-standalone</c>, first wrapping it in a node if
+    /// it's a fragment: a block with no prefix, declaration or node. Returns only the block's own diagnostics.
+    /// </summary>
+    private static (IReadOnlyList<Diagnostic> Diagnostics, int HeaderLines) Compile(CodeBlock block)
     {
-        var tree = SyntaxTree.Parse(new SourceText(block.Name, block.Text));
+        bool fragment = SyntaxTree.Parse(new SourceText(block.Name, block.Text)).Root is { Prefix: null, Declarations: [], Nodes: [] };
+        var source = new SourceText(block.Name, fragment ? FragmentHeader + block.Text : block.Text);
+        SourceText[] sources = block.Info is "pib-standalone" ? [source] : [Prelude, source];
 
-        return tree.Root is { Prefix: null, Declarations: [], Nodes: [] }
-            ? (SyntaxTree.Parse(new SourceText(block.Name, FragmentHeader + block.Text)).Diagnostics, 1)
-            : (tree.Diagnostics, 0);
+        return ([.. Compilation.Create(sources).Diagnostics.Where(diagnostic => diagnostic.Location.Path == block.Name)], fragment ? 1 : 0);
     }
 
     private static string Describe(CodeBlock block, int headerLines, Diagnostic diagnostic) =>

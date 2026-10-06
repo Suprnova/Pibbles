@@ -58,7 +58,7 @@ Each phase ends with something usable and a clear exit check.
 - TextMate grammar, and Code Spell Checker defaults for `.pib` files ([tooling design](tooling.md#vs-code-extension)).
 - CI: builds both core targets, runs the tests on `net10.0` and `net8.0`, checks the sample story, and builds the VS Code extension.
 
-**Exit:** every file in `samples/kitchen` parses, the completeness gates pass for syntax (every node kind snapshotted, every syntax diagnostic has a fixture, documentation examples extracted and parsed), the round-trip, totality and line-independence properties and mutation fuzzing pass, CI runs all of it on every push, and writers get highlighting in VS Code. Until the binder exists, a `pib` example passes if it parses with no syntax diagnostics, and a `pib-error` example is checked against its PIB1xxx codes only.
+**Exit:** every file in `samples/kitchen` parses, the completeness gates pass for syntax (every node kind snapshotted, every syntax diagnostic has a fixture, documentation examples extracted and parsed), the round-trip, totality and line-independence properties and mutation fuzzing pass, CI runs all of it on every push, and writers get highlighting in VS Code.
 
 ### Phase 2: Semantics
 
@@ -66,7 +66,7 @@ Each phase ends with something usable and a clear exit check.
 - `pibbles check` runs the full analysis. `pibbles ids`.
 - The VS Code extension's editing aids: **End**, arrow keys and clicks skip a line's trailing `#id:`, Enter continues or leaves a variation's alternatives, and `[/` closes the open span ([tooling design](tooling.md#vs-code-extension)).
 
-**Exit:** a fixture for every semantic diagnostic, and the sample story checks cleanly. **Writers can start real content here**, since the analyzer catches their mistakes even before the story can run.
+**Exit:** a fixture for every semantic diagnostic, every documentation example compiles against the documentation prelude, and the sample story checks cleanly. **Writers can start real content here**, since the analyzer catches their mistakes even before the story can run.
 
 ### Phase 3: Runtime
 

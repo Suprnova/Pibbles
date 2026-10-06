@@ -593,6 +593,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private TypeSymbol BindBinary(BinaryExpressionSyntax binary)
     {
+        if (IsChainedComparison(binary))
+        {
+            Bind(binary.Left, TypeSymbol.Error);
+            Bind(binary.Right, TypeSymbol.Error);
+            return TypeSymbol.Bool;
+        }
+
         (TypeSymbol left, TypeSymbol right) = binary.Operator is BinaryOperator.Equals or BinaryOperator.NotEquals
             ? BindEqualityOperands(binary)
             : (Bind(binary.Left), Bind(binary.Right));
@@ -634,6 +641,20 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         TypeSymbol left = Bind(binary.Left);
         return (left, Bind(binary.Right, left));
     }
+
+    /// <summary>
+    /// Whether a comparison has another comparison of the same level as its left operand, with no brackets, as in
+    /// <c>$a &lt; $b &lt; $c</c>. Comparisons don't chain, and the parser has already reported it (PIB1061).
+    /// </summary>
+    private static bool IsChainedComparison(BinaryExpressionSyntax binary) =>
+        binary.Left is BinaryExpressionSyntax inner && ComparisonLevel(inner.Operator) is { } level && level == ComparisonLevel(binary.Operator);
+
+    private static int? ComparisonLevel(BinaryOperator @operator) => @operator switch
+    {
+        BinaryOperator.Equals or BinaryOperator.NotEquals => 1,
+        BinaryOperator.Less or BinaryOperator.LessOrEqual or BinaryOperator.Greater or BinaryOperator.GreaterOrEqual => 2,
+        _ => null,
+    };
 
     private static ExpressionSyntax Unwrap(ExpressionSyntax expression) =>
         expression is ParenthesizedExpressionSyntax parenthesized ? Unwrap(parenthesized.Expression) : expression;
