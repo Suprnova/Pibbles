@@ -86,8 +86,8 @@
     },
     "commands": [
       {
-        "command": "pibbles.selectLineId",
-        "title": "Select Line ID",
+        "command": "pibbles.editLineId",
+        "title": "Edit Line ID",
         "category": "Pibbles"
       }
     ],
@@ -96,21 +96,31 @@
         "command": "pibbles.cursorEnd",
         "key": "end",
         "mac": "cmd+right",
-        "when": "editorTextFocus && editorLangId == pibbles && config.pibbles.lineIds.skipWithCursor"
+        "when": "editorTextFocus && editorLangId == pibbles && (config.pibbles.lineIds.skipWithCursor || config.pibbles.lineIds.hide)"
       },
       {
         "command": "pibbles.cursorEndSelect",
         "key": "shift+end",
         "mac": "shift+cmd+right",
-        "when": "editorTextFocus && editorLangId == pibbles && config.pibbles.lineIds.skipWithCursor"
+        "when": "editorTextFocus && editorLangId == pibbles && (config.pibbles.lineIds.skipWithCursor || config.pibbles.lineIds.hide)"
       },
       {
         "command": "pibbles.cursorRight",
         "key": "right",
-        "when": "editorTextFocus && editorLangId == pibbles && config.pibbles.lineIds.skipWithCursor"
+        "when": "editorTextFocus && editorLangId == pibbles && (config.pibbles.lineIds.skipWithCursor || config.pibbles.lineIds.hide)"
       },
       {
-        "command": "pibbles.selectLineId",
+        "command": "pibbles.deleteLeft",
+        "key": "backspace",
+        "when": "editorTextFocus && editorLangId == pibbles && !editorReadonly && !editorHasMultipleSelections && (config.pibbles.lineIds.skipWithCursor || config.pibbles.lineIds.hide)"
+      },
+      {
+        "command": "pibbles.deleteRight",
+        "key": "delete",
+        "when": "editorTextFocus && editorLangId == pibbles && !editorReadonly && !editorHasMultipleSelections && (config.pibbles.lineIds.skipWithCursor || config.pibbles.lineIds.hide)"
+      },
+      {
+        "command": "pibbles.editLineId",
         "key": "ctrl+alt+i",
         "mac": "cmd+alt+i",
         "when": "editorTextFocus && editorLangId == pibbles"
@@ -129,10 +139,15 @@
     "configuration": {
       "title": "Pibbles",
       "properties": {
+        "pibbles.lineIds.hide": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Hide each line's trailing `#id:` and show the ID of the cursor's line in the status bar instead, where a click (or Ctrl+Alt+I) edits it. The cursor always skips hidden IDs, whatever #pibbles.lineIds.skipWithCursor# says."
+        },
         "pibbles.lineIds.skipWithCursor": {
           "type": "boolean",
           "default": true,
-          "description": "Move the cursor as if a line's trailing `#id:` weren't there: End, Shift+End and Right stop before it, and a click past the end of a line lands before it."
+          "markdownDescription": "Move the cursor as if a line's trailing `#id:` weren't there: End, Shift+End and Right stop before it, and a click past the end of a line lands before it. Backspace and Delete that join lines keep each ID with its line, so a deleted line takes its ID with it."
         }
       }
     }

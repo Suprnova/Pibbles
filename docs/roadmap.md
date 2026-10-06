@@ -91,7 +91,7 @@ Each phase ends with something usable and a clear exit check.
 
 ### Phase 6: Editor tooling
 
-- The language server with features 1–6 from the [tooling design](tooling.md#language-server) and [spell checking](tooling.md#spell-checking), and the VS Code client, which also hides line IDs except on the line under the cursor.
+- The language server with features 1–6 from the [tooling design](tooling.md#language-server) and [spell checking](tooling.md#spell-checking), and the VS Code client.
 
 **Exit:** writers get live diagnostics, completion and go-to-definition in VS Code.
 
