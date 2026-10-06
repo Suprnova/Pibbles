@@ -64,7 +64,8 @@ internal static class SyntaxDump
 
     private static bool IsSpan(Type type) => type == typeof(TextSpan) || type == typeof(TextSpan?);
 
-    private static string Format(SourceText source, TextSpan span)
+    /// <summary>Writes a span as 1-based <c>line:column-line:column</c>.</summary>
+    public static string Format(SourceText source, TextSpan span)
     {
         LinePosition start = source.GetLinePosition(span.Start);
         LinePosition end = source.GetLinePosition(span.End);

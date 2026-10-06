@@ -46,9 +46,10 @@ public partial class CodeBlockTests
             $"Expected [{string.Join(", ", expected)}], got:\n{string.Join("\n", reported.Select(diagnostic => Describe(block, headerLines, diagnostic)))}");
     }
 
+    /// <summary>The prelude's variables are for the blocks to use, so on its own nothing uses them.</summary>
     [Fact]
-    public void Compile_DocumentationPrelude_ReportsOnlyMissingIds() =>
-        Assert.All(Compilation.Create([Prelude]).Diagnostics, diagnostic => Assert.Equal("PIB3010", diagnostic.Code));
+    public void Compile_DocumentationPrelude_ReportsOnlyMissingIdsAndUnusedVariables() =>
+        Assert.All(Compilation.Create([Prelude]).Diagnostics, diagnostic => Assert.Contains(diagnostic.Code, (string[])["PIB3010", "PIB5040"]));
 
     private static bool HasValidInfo(CodeBlock block) => block.Info.Split(' ') switch
     {

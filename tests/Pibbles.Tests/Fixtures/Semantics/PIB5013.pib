@@ -1,0 +1,25 @@
+// A condition whose branches are all the same makes no difference. Line IDs don't count.
+
+@var $a = true
+
+== kitchen.door
+This line says {if $a}the same thing{else}the same thing{/if}.
+//             ^^^^^^^ PIB5013
+@if $a
+// PIB5013
+    This line appears either way. #id:a1b2c3
+@elif not $a
+    This line appears either way. #id:d4e5f6
+@else
+    This line appears either way. #id:g7h8i9
+
+// Must not trigger
+
+This line says {if $a}one thing{else}another{/if}.
+This line says {if $a}something{/if} or nothing.
+@if $a
+    This line appears only when it's true.
+@if $a
+    This line appears either way.
+@else
+    This line differs.

@@ -109,3 +109,5 @@ File 1:1-18:1
               Right: NameExpression 16:31-16:35 Name="mira"
           Body:
             EndStatement 17:5-17:9
+Comments:
+  1:1-1:54 "Every kind of expression, and how operators group."

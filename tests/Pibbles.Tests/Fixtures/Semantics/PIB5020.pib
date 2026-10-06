@@ -1,0 +1,24 @@
+// A condition is already true or false, so comparing it with `true` or `false` isn't needed.
+
+@var $has_key = false
+@var $attempts = 0
+
+== kitchen.door
+@if $has_key == true
+//  ^^^^^^^^^^^^^^^^ PIB5020
+    Unlocked.
+@elif $has_key == false
+//    ^^^^^^^^^^^^^^^^^ PIB5020
+    Locked.
+-> Knock @if false != $has_key
+//           ^^^^^^^^^^^^^^^^^ PIB5020
+    Knock knock.
+
+// Must not trigger
+
+@if $has_key
+    Unlocked.
+@elif not $has_key
+    Locked.
+@if $attempts == 1
+    Once.

@@ -645,6 +645,133 @@ public static class DiagnosticCatalog
         "The line ID `{0}` is also {1}.",
         help: "Delete the ID and run `pibbles ids` to give the line a new one.");
 
+    /// <summary>PIB5001: a block nested deeper than <c>pibbles_max_nesting</c>.</summary>
+    /// <remarks>Arguments: how many blocks deep the line is, and the limit.</remarks>
+    public static DiagnosticDescriptor DeepNesting { get; } = new(
+        "PIB5001",
+        DiagnosticSeverity.Hint,
+        "This line is {0} blocks deep, and more than {1} gets hard to follow.",
+        help: "Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`.");
+
+    /// <summary>PIB5002: an option whose body is longer than <c>pibbles_max_option_body</c> lines.</summary>
+    /// <remarks>Arguments: the body's length in lines, and the limit.</remarks>
+    public static DiagnosticDescriptor LongOptionBody { get; } = new(
+        "PIB5002",
+        DiagnosticSeverity.Hint,
+        "This option's body is {0} lines long, more than {1}, so the rest of the choice ends up far from it.",
+        help: "Move the body into a node of its own and `@jump` to it.");
+
+    /// <summary>PIB5003: the same speaker saying the same text in at least <c>pibbles_min_repeated_lines</c> places.</summary>
+    /// <remarks>Arguments: who says it, as a <see cref="SpeakerMention"/> or a phrase for narration, and in how many places.</remarks>
+    public static DiagnosticDescriptor RepeatedLine { get; } = new(
+        "PIB5003",
+        DiagnosticSeverity.Hint,
+        "{0} in {1} places.",
+        help: "Put it in a node of its own and `@call` that node from each place, so it's translated and recorded once.");
+
+    /// <summary>PIB5004: the same <c>[color]</c> value in at least <c>pibbles_min_repeated_colors</c> places.</summary>
+    /// <remarks>Arguments: the color, and in how many places it's used.</remarks>
+    public static DiagnosticDescriptor RepeatedColor { get; } = new(
+        "PIB5004",
+        DiagnosticSeverity.Hint,
+        "The color `{0}` is used in {1} places.",
+        help: "If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place.");
+
+    /// <summary>PIB5010: a pose change nobody sees.</summary>
+    /// <remarks>Arguments: why, as a <see cref="SpeakerMention"/>, and the fix.</remarks>
+    public static DiagnosticDescriptor RedundantPose { get; } = new(
+        "PIB5010",
+        DiagnosticSeverity.Hint,
+        "This pose change does nothing, because {0}.",
+        help: "{1}");
+
+    /// <summary>PIB5011: a pause that does nothing, or two that could be one.</summary>
+    /// <remarks>Arguments: what's wrong with the pause, and the fix.</remarks>
+    public static DiagnosticDescriptor RedundantPause { get; } = new(
+        "PIB5011",
+        DiagnosticSeverity.Hint,
+        "This pause {0}.",
+        help: "{1}");
+
+    /// <summary>PIB5012: a markup span that does nothing.</summary>
+    /// <remarks>Arguments: the markup's name, what's wrong with the span, and the fix.</remarks>
+    public static DiagnosticDescriptor RedundantMarkup { get; } = new(
+        "PIB5012",
+        DiagnosticSeverity.Hint,
+        "This `[{0}]` {1}.",
+        help: "{2}");
+
+    /// <summary>PIB5013: an <c>@if</c> or <c>{if}</c> whose branches are all the same.</summary>
+    /// <remarks>Argument: <c>@if</c> or <c>{if}</c>.</remarks>
+    public static DiagnosticDescriptor RedundantCondition { get; } = new(
+        "PIB5013",
+        DiagnosticSeverity.Hint,
+        "Every branch of this `{0}` is the same, so the condition makes no difference.",
+        help: "Keep one copy of the branch, without the condition.");
+
+    /// <summary>PIB5014: <c>@return</c> as the last statement of a node.</summary>
+    public static DiagnosticDescriptor RedundantReturn { get; } = new(
+        "PIB5014",
+        DiagnosticSeverity.Hint,
+        "This `@return` does nothing, since the end of a node returns anyway.",
+        help: "Remove it.");
+
+    /// <summary>PIB5020: a comparison with <c>true</c> or <c>false</c>.</summary>
+    /// <remarks>Arguments: the literal, and the condition without the comparison.</remarks>
+    public static DiagnosticDescriptor ComparisonWithBool { get; } = new(
+        "PIB5020",
+        DiagnosticSeverity.Hint,
+        "Comparing with `{0}` isn't needed.",
+        help: "Write `{1}`.");
+
+    /// <summary>PIB5021: <c>@set $x = $x + v</c>, which <c>+=</c> or <c>-=</c> says more briefly.</summary>
+    /// <remarks>Arguments: the operator, and the line written with it.</remarks>
+    public static DiagnosticDescriptor CompoundAssignment { get; } = new(
+        "PIB5021",
+        DiagnosticSeverity.Hint,
+        "This can be shorter with `{0}`.",
+        help: "Write `{1}`.");
+
+    /// <summary>PIB5030: a line or option longer than <c>pibbles_max_message_length</c> or <c>pibbles_max_option_length</c>.</summary>
+    /// <remarks>Arguments: <c>line</c> or <c>option</c>, its length, the limit, and the fix.</remarks>
+    public static DiagnosticDescriptor LongText { get; } = new(
+        "PIB5030",
+        DiagnosticSeverity.Hint,
+        "This {0} is {1} characters long, more than {2}.",
+        help: "{3}");
+
+    /// <summary>PIB5031: a declared name that isn't <c>snake_case</c>.</summary>
+    /// <remarks>Arguments: the name as written, and in <c>snake_case</c>.</remarks>
+    public static DiagnosticDescriptor NamingConvention { get; } = new(
+        "PIB5031",
+        DiagnosticSeverity.Hint,
+        "`{0}` isn't written in snake_case.",
+        help: "Write it as `{1}`, before anything outside the story uses the name.");
+
+    /// <summary>PIB5032: a block indented differently from the file's other blocks, or from <c>.editorconfig</c>.</summary>
+    /// <remarks>Arguments: how the block is indented, what it should match, and how to indent it.</remarks>
+    public static DiagnosticDescriptor IndentationWidth { get; } = new(
+        "PIB5032",
+        DiagnosticSeverity.Hint,
+        "This block is indented {0}, but {1}.",
+        help: "Indent it {2}.");
+
+    /// <summary>PIB5033: a speaker written with spacing other than <c>name (pose):</c>.</summary>
+    /// <remarks>Argument: the speaker written the usual way.</remarks>
+    public static DiagnosticDescriptor SpeakerSpacing { get; } = new(
+        "PIB5033",
+        DiagnosticSeverity.Hint,
+        "This speaker is spaced differently from the usual `{0}`.",
+        help: "Write `{0}`.");
+
+    /// <summary>PIB5040: a variable nothing in the story uses.</summary>
+    /// <remarks>Argument: the variable's name, without the <c>$</c>.</remarks>
+    public static DiagnosticDescriptor UnusedVariable { get; } = new(
+        "PIB5040",
+        DiagnosticSeverity.Info,
+        "Nothing in the story uses `${0}`.",
+        help: "Remove its `@var`, or use it.");
+
     /// <summary>Every registered descriptor.</summary>
     public static IReadOnlyList<DiagnosticDescriptor> All { get; } =
     [
@@ -727,5 +854,21 @@ public static class DiagnosticCatalog
         MissingLineId,
         DuplicateLineId,
         LineIdIsNodeName,
+        DeepNesting,
+        LongOptionBody,
+        RepeatedLine,
+        RepeatedColor,
+        RedundantPose,
+        RedundantPause,
+        RedundantMarkup,
+        RedundantCondition,
+        RedundantReturn,
+        ComparisonWithBool,
+        CompoundAssignment,
+        LongText,
+        NamingConvention,
+        IndentationWidth,
+        SpeakerSpacing,
+        UnusedVariable,
     ];
 }

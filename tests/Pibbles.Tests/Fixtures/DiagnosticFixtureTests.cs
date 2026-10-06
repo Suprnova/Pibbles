@@ -22,10 +22,13 @@ public class DiagnosticFixtureTests
 
     /// <summary>
     /// Syntax fixtures are only parsed, since they use names they don't declare. Every other fixture compiles as a story
-    /// of one file. Fixtures leave out line IDs, so a missing one is only reported in its own fixture.
+    /// of one file. Fixtures leave out line IDs, and each keeps to its own topic, so a missing ID or a style rule is only
+    /// reported in its own fixture.
     /// </summary>
     private static IReadOnlyList<Diagnostic> Diagnose(string fixture, SourceText source) =>
         Path.GetDirectoryName(fixture) is "Syntax"
             ? SyntaxTree.Parse(source).Diagnostics
-            : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010" || Path.GetFileName(fixture) is "PIB3010.pib")];
+            : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => !IsOwnTopic(diagnostic.Code) || Path.GetFileNameWithoutExtension(fixture) == diagnostic.Code)];
+
+    private static bool IsOwnTopic(string code) => code is "PIB3010" or ['P', 'I', 'B', '5', ..];
 }

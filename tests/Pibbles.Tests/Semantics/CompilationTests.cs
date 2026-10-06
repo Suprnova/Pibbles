@@ -59,11 +59,9 @@ public class CompilationTests
     [Fact]
     public void Create_SeveralFiles_OrdersDiagnosticsByFileThenPosition()
     {
-        var compilation = Compilation.Create(
-        [
+        var compilation = WithoutStyle.Compile(
             new("story/b.pib", "@enum room: a\n@enum room: b\n@var $x = @\n"),
-            new("story/a.pib", "@enum spot: a, a\n@tag café\n"),
-        ]);
+            new("story/a.pib", "@enum spot: a, a\n@tag café\n"));
 
         Assert.Equal(["PIB2060", "PIB1040", "PIB2061", "PIB2063"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
     }
@@ -120,5 +118,5 @@ public class CompilationTests
         Assert.Equal(("PIB2064", help), (diagnostic.Code, diagnostic.Help));
     }
 
-    private static Compilation Compile(string text) => Compilation.Create([new SourceText("story.pib", text)]);
+    private static Compilation Compile(string text) => WithoutStyle.Compile(new SourceText("story.pib", text));
 }

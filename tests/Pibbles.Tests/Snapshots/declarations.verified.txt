@@ -119,3 +119,6 @@ File 1:1-27:1
     FunctionDeclaration 26:1-26:29
       Name: Name 26:11-26:17 Text="rolled"
       ReturnType: Name 26:23-26:29 Text="number"
+Comments:
+  1:1-1:30 "Every kind of declaration."
+  19:31-19:64 "A comment after a declaration."

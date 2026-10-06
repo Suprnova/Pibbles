@@ -1,0 +1,11 @@
+// A variable that nothing in the story uses is dead weight. Setting one counts as using it, since the game may read it.
+
+@var $old_flag = false
+//   ^^^^^^^^^ PIB5040
+@var $used = false
+@var $set_only = 0
+
+== kitchen.door
+@if $used
+    Used in a condition.
+@set $set_only = 1

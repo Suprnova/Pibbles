@@ -49,6 +49,9 @@ internal static class SyntaxGenerators
     private static readonly Gen<TagSyntax> IdTag =
         Gen.Select(Gen.Char[Letters], Gen.String[Gen.Char[Letters + "0123456789_"], 0, 5], (first, rest) => new TagSyntax("id", first + rest) { Span = default });
 
+    /// <summary>Comments' text, as a comment reads back: without the whitespace around it.</summary>
+    public static Gen<string[]> Comments { get; } = Gen.String[Gen.Char["abc xyz 019é#@[{/:-"], 0, 12].Select(text => text.Trim()).Array[0, 6];
+
     public static Gen<FileSyntax> File { get; } = Gen.Select(
         Maybe(DottedName.Select(name => new PrefixSyntax(Name(name)) { Span = default })),
         Declaration().Array[0, 4],

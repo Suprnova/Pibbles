@@ -278,6 +278,9 @@ internal sealed partial class Parser
 
         if (inner.Kind is LineKind.Blank or LineKind.Comment or LineKind.Note)
         {
+            if (inner.Kind is LineKind.Comment)
+                comments.Add(Comment.Read(source.Text, content));
+
             index++;
             if (Current.Kind is LineTokenKind.Indent)
             {

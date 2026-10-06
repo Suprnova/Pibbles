@@ -56,7 +56,7 @@ public class ReservedWordsTests
     }
 
     /// <summary>Whether a one-line story reports a reserved name. Anything other than that, or nothing, fails the test.</summary>
-    private static bool IsRejected(string text) => Compilation.Create([new SourceText("story.pib", text)]).Diagnostics switch
+    private static bool IsRejected(string text) => WithoutStyle.Compile(new SourceText("story.pib", text)).Diagnostics switch
     {
         [] => false,
         [{ Code: "PIB2062" }] => true,

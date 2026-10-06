@@ -9,18 +9,41 @@ namespace Pibbles.Tests.Properties;
 /// indentation, single spaces between tokens, and an escape before every character that could be read as markup, a
 /// point, a tag, a modifier or a speaker's colon.
 /// </summary>
-internal sealed class SyntaxPrinter
+/// <remarks>
+/// Comments, when given, are mixed in where they're allowed: after the content of every other <c>@</c> line or header,
+/// and on lines of their own, at assorted indentation, after every third line. Any left over end the file.
+/// </remarks>
+internal sealed class SyntaxPrinter(IEnumerable<string> comments)
 {
     private readonly StringBuilder builder = new();
+    private readonly Queue<string> comments = new(comments);
+    private int lines;
 
-    public static string Print(FileSyntax file)
+    public static string Print(FileSyntax file) => Print(file, []);
+
+    public static string Print(FileSyntax file, IEnumerable<string> comments)
     {
-        var printer = new SyntaxPrinter();
+        var printer = new SyntaxPrinter(comments);
         printer.File(file);
+        while (printer.comments.Count > 0)
+            printer.CommentLine();
+
         return printer.builder.ToString();
     }
 
-    private void Line(int depth, string text) => builder.Append(' ', depth * 4).Append(text).Append('\n');
+    private void Line(int depth, string text)
+    {
+        lines++;
+        builder.Append(' ', depth * 4).Append(text);
+        if (lines % 2 == 0 && text is ['@', ..] or ['=', '=', ..] && comments.TryDequeue(out string? trailing))
+            builder.Append(" // ").Append(trailing);
+
+        builder.Append('\n');
+        if (lines % 3 == 0 && comments.Count > 0)
+            CommentLine();
+    }
+
+    private void CommentLine() => builder.Append(' ', lines % 5).Append("// ").Append(comments.Dequeue()).Append('\n');
 
     private void File(FileSyntax file)
     {

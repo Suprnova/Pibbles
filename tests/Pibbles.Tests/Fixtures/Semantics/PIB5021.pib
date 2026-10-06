@@ -1,0 +1,19 @@
+// `+=` and `-=` say "change this by" more briefly.
+
+@var $attempts = 0
+@var $other = 0
+@var $name = "Sam"
+
+== kitchen.door
+@set $attempts = $attempts + 1
+// PIB5021
+@set $attempts = $attempts - 1
+// PIB5021
+@set $name = $name + "!"
+// PIB5021
+
+// Must not trigger
+
+@set $attempts += 1
+@set $attempts = $other + 1
+@set $attempts = $attempts * 2

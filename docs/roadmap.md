@@ -63,8 +63,9 @@ Each phase ends with something usable and a clear exit check.
 ### Phase 2: Semantics
 
 - Prelude, declaration pass, binder, type checking, flow and content checks, "did you mean" suggestions.
+- The style rules, with their `.editorconfig` thresholds and `// pibbles-ignore` ([semantics design](semantics.md#style-rules)).
 - `pibbles check` runs the full analysis. `pibbles ids`.
-- The VS Code extension's editing aids: **End**, arrow keys and clicks skip a line's trailing `#id:`, Enter continues or leaves a variation's alternatives, and `[/` closes the open span ([tooling design](tooling.md#vs-code-extension)).
+- The VS Code extension's editing aids: line IDs are hidden, with the cursor line's ID in the status bar, and the cursor and deletions keep each ID with its line; Enter continues or leaves a variation's alternatives; and `[/` closes the open span ([tooling design](tooling.md#vs-code-extension)).
 
 **Exit:** a fixture for every semantic diagnostic, every documentation example compiles against the documentation prelude, and the sample story checks cleanly. **Writers can start real content here**, since the analyzer catches their mistakes even before the story can run.
 

@@ -55,6 +55,8 @@ File 1:1-18:1
                 TextRun 17:4-17:6 Text="Go"
               Tags:
                 Tag 17:7-17:14 Name="id" Value="BAD"
+Comments:
+  1:1-1:67 "Broken variations and declarations still leave a complete tree."
 Diagnostics:
   PIB1033 3:12 I didn't expect a `:` on this `@actor` line.
   PIB1044 4:11 A display name can't contain `[`, `{` or `\`.

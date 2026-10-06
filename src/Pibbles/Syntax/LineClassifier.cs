@@ -2,15 +2,16 @@ using Pibbles.Diagnostics;
 
 namespace Pibbles.Syntax;
 
-/// <summary>The lines layer's output: the token stream the parser reads, and the problems found on the way.</summary>
-internal sealed record ClassifiedLines(IReadOnlyList<LineToken> Tokens, IReadOnlyList<Diagnostic> Diagnostics);
+/// <summary>The lines layer's output: the token stream the parser reads, the comment lines, and the problems found on the way.</summary>
+internal sealed record ClassifiedLines(IReadOnlyList<LineToken> Tokens, IReadOnlyList<Comment> Comments, IReadOnlyList<Diagnostic> Diagnostics);
 
 /// <summary>
 /// Splits a source file into lines, classifies each one by how it starts, and turns indentation into
 /// indent and dedent tokens, following the lines layer of the grammar in <c>docs/language/reference.md</c>.
 /// </summary>
 /// <remarks>
-/// Blank, comment and note lines don't take part in indentation, and don't appear in the token stream.
+/// Blank, comment and note lines don't take part in indentation, and don't appear in the token stream. Comment lines are
+/// kept apart, for tools that read them.
 /// </remarks>
 internal sealed class LineClassifier
 {
@@ -18,6 +19,7 @@ internal sealed class LineClassifier
 
     private readonly SourceText source;
     private readonly List<LineToken> tokens = [];
+    private readonly List<Comment> comments = [];
     private readonly List<Diagnostic> diagnostics = [];
     private readonly Stack<int> widths = new([0]);
     private char? indentCharacter;
@@ -36,7 +38,7 @@ internal sealed class LineClassifier
             tokens.Add(new(LineTokenKind.Dedent, end));
 
         tokens.Add(new(LineTokenKind.Line, end));
-        return new(tokens, diagnostics);
+        return new(tokens, comments, diagnostics);
     }
 
     private void Read(int number)
@@ -51,6 +53,9 @@ internal sealed class LineClassifier
 
         if (line.Kind is LineKind.Note)
             Report(DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
+
+        if (line.Kind is LineKind.Comment)
+            comments.Add(Comment.Read(source.Text, line.Content));
 
         if (line.Kind is LineKind.Blank or LineKind.Comment or LineKind.Note)
             return;

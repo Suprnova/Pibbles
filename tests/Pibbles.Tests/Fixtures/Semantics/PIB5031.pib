@@ -1,0 +1,22 @@
+// Names are written in snake_case. A display name is what the player sees, so it's written any way.
+
+@actor Mira
+//     ^^^^ PIB5031
+    name: Mira Rivers
+    poses: neutral, VeryHappy
+//                  ^^^^^^^^^ PIB5031
+@var $HasKey = false
+//   ^^^^^^^ PIB5031
+@enum Room: Kitchen, cellar
+//    ^^^^ PIB5031
+//          ^^^^^^^ PIB5031
+
+== Kitchen.FrontDoor
+// ^^^^^^^^^^^^^^^^^ PIB5031
+@if $HasKey
+    Narration.
+
+// Must not trigger
+
+== kitchen.front_door
+Narration.

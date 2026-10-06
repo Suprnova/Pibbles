@@ -1,0 +1,25 @@
+// The same speaker saying the same text in three places is translated and recorded three times.
+
+@actor mira
+    name: Mira
+@actor rex
+    name: Rex
+
+== room.a
+mira: This exact line appears in several nodes.
+//    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5003
+
+== room.b
+mira: This exact line appears in several nodes.
+//    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5003
+
+== room.c
+mira: This exact line appears in several nodes.
+//    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5003
+
+// Must not trigger
+
+== room.d
+rex: This exact line appears in several nodes.
+mira: This line appears twice.
+mira: This line appears twice.

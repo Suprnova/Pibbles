@@ -32,6 +32,8 @@ File 1:1-11:1
         SetStatement 10:1-10:14 Operator=Assign OperatorSpan=10:9-10:10
           Variable: VariableExpression 10:6-10:8 Name="z"
           Value: ErrorExpression 10:11-10:14
+Comments:
+  1:1-1:51 "Broken expressions still leave a complete tree."
 Diagnostics:
   PIB1046 4:14 I expected a value after `+`.
   PIB1060 5:13 I can't find the `)` that closes this `(`.

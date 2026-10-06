@@ -49,7 +49,7 @@ public class FileSettingsTests
         var mixed = new SourceText("story.pib", "== a.b\n@if true\n    One. #id:a1b2c3\n@if true\n\tTwo. #id:d4e5f6\n");
         var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["story.pib"] = Settings([property]) });
 
-        Diagnostic diagnostic = Assert.Single(Compilation.Create([mixed], options).Diagnostics);
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([mixed], options).Diagnostics, diagnostic => diagnostic.Code is "PIB1001");
 
         Assert.Equal(("PIB1001", help), (diagnostic.Code, diagnostic.Help));
     }
@@ -60,6 +60,8 @@ public class FileSettingsTests
         "pibbles_diagnostic.category-flavor.severity=none",
         "pibbles_diagnostic.PIB3010=none",
         "pibbles_diagnostic.PIB3010.severity=loud",
+        "pibbles_max_nesting=deep",
+        "pibbles_max_option_length=0",
     ];
 
     [Theory]
@@ -73,7 +75,7 @@ public class FileSettingsTests
     }
 
     [Fact]
-    public void From_OtherToolsSettings_KeepsThemAsWritten()
+    public void From_OtherToolsSettingsAndThresholds_KeepsThemAsWritten()
     {
         FileSettings settings = Settings(["Indent_Style=Space", "pibbles_max_nesting=4"]);
 

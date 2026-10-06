@@ -248,7 +248,7 @@ public class BinderTests
         Assert.Equal(["PIB2030", "PIB2030"], diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
-    /// <summary>Compiles a story of one file, leaving out missing line IDs, which these stories don't write.</summary>
+    /// <summary>Compiles a story of one file, leaving out style and missing line IDs, which these stories don't write.</summary>
     private static Diagnostic[] Diagnose(string text) =>
-        [.. Compilation.Create([new SourceText("story.pib", text)]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010")];
+        [.. WithoutStyle.Compile(new SourceText("story.pib", text)).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010")];
 }

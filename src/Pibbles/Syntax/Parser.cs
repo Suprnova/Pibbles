@@ -16,6 +16,7 @@ internal sealed partial class Parser
     private readonly SourceText source;
     private readonly IReadOnlyList<LineToken> lines;
     private readonly List<Diagnostic> diagnostics;
+    private readonly List<Comment> comments;
     private readonly List<DeclarationSyntax> declarations = [];
     private readonly List<NodeSyntax> nodes = [];
     private PrefixSyntax? prefix;
@@ -33,6 +34,7 @@ internal sealed partial class Parser
         this.source = source;
         ClassifiedLines classified = LineClassifier.Classify(source);
         lines = classified.Tokens;
+        comments = [.. classified.Comments];
         diagnostics = [.. classified.Diagnostics];
     }
 
@@ -46,7 +48,7 @@ internal sealed partial class Parser
     {
         ParseTopLevel();
         var root = new FileSyntax(prefix, declarations, nodes) { Span = new(0, source.Text.Length) };
-        return new(source, root, diagnostics);
+        return new(source, root, [.. comments.DistinctBy(comment => comment.Span).OrderBy(comment => comment.Span.Start)], diagnostics);
     }
 
     private void ParseTopLevel()
@@ -251,7 +253,7 @@ internal sealed partial class Parser
 
     private void StartLine(TextSpan content)
     {
-        lexer = new(source, content, diagnostics);
+        lexer = new(source, content, diagnostics, comments);
         lineFailed = false;
         previousEnd = content.Start;
         previousSpan = new(content.Start, 0);

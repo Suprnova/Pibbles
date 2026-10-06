@@ -89,3 +89,6 @@ File 1:1-26:1
           Pose: Name 25:7-25:10 Text="sad"
           Tags:
             Tag 25:13-25:21 Name="thought" Value=null
+Comments:
+  1:1-1:44 "Variation blocks and their alternatives."
+  18:7-18:50 "A comment after the dash is a bare dash."

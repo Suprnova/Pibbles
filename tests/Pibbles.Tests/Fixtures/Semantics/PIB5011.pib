@@ -1,0 +1,16 @@
+// A pause that does nothing, or two that could be one.
+
+== kitchen.door
+This line waits for a click that happens anyway.{w}
+//                                              ^^^ PIB5011
+This line waits twice here.{w}{p}New page.
+//                         ^^^ PIB5011
+This line pauses{w 0.2}{w 0.3} in two steps.
+//              ^^^^^^^^^^^^^^ PIB5011
+
+// Must not trigger
+
+This line ends with a timed pause, which still counts in auto mode.{w 0.5}
+This line waits{w} and continues.
+This line waits once.{p}New page.
+This line pauses{w 0.2} twice{w 0.3} with text between.

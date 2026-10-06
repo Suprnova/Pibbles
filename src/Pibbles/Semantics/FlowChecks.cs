@@ -34,7 +34,7 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
 
         foreach (StatementSyntax statement in block)
         {
-            foreach (IReadOnlyList<StatementSyntax> inner in BlocksOf(statement))
+            foreach (IReadOnlyList<StatementSyntax> inner in SyntaxWalk.BlocksOf(statement))
                 CheckBlock(inner);
 
             if (statement is ChoiceSyntax choice)
@@ -55,8 +55,7 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
             _ => ("every branch of the `@if` above it ends with `@jump`, `@end` or `@return`", "@if"),
         };
 
-        TextSpan line = Tree.Source.GetLineSpan(Tree.Source.GetLinePosition(statement.Span.Start).Line);
-        Report(DiagnosticCatalog.NeverRuns, new(statement.Span.Start, Math.Min(statement.Span.End, line.End) - statement.Span.Start), because, keyword);
+        Report(DiagnosticCatalog.NeverRuns, FirstLine(statement), because, keyword);
     }
 
     private static bool AlwaysLeaves(StatementSyntax statement) => statement switch
@@ -67,13 +66,4 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
     };
 
     private static bool Leaves(IReadOnlyList<StatementSyntax> block) => block.Any(AlwaysLeaves);
-
-    private static IEnumerable<IReadOnlyList<StatementSyntax>> BlocksOf(StatementSyntax statement) => statement switch
-    {
-        IfStatementSyntax @if => [@if.Body, .. @if.ElseIfs.Select(elseIf => elseIf.Body), .. @if.Else is { } @else ? [@else.Body] : Array.Empty<IReadOnlyList<StatementSyntax>>()],
-        ChoiceSyntax choice => choice.Options.Select(option => option.Body),
-        VariationStatementSyntax variation => variation.Alternatives.Select(alternative => alternative.Body),
-        OnceStatementSyntax once => [once.Body],
-        _ => [],
-    };
 }

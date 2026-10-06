@@ -4,8 +4,9 @@ using static VerifyXunit.Verifier;
 namespace Pibbles.Tests.Snapshots;
 
 /// <summary>
-/// Syntax snapshots: each <c>.pib</c> input's tree, compared with its <c>.verified.txt</c>. Inputs in <c>Recovery/</c>
-/// have mistakes on purpose, and their snapshots also list the diagnostics, pinning down the tree a broken file leaves.
+/// Syntax snapshots: each <c>.pib</c> input's tree, then its comments, compared with its <c>.verified.txt</c>. Inputs in
+/// <c>Recovery/</c> have mistakes on purpose, and their snapshots also list the diagnostics, pinning down the tree a
+/// broken file leaves.
 /// </summary>
 public class SnapshotTests
 {
@@ -53,6 +54,9 @@ public class SnapshotTests
     private static string Describe(SyntaxTree tree)
     {
         string dump = SyntaxDump.Write(tree);
+        if (tree.Comments.Count > 0)
+            dump += "Comments:\n" + string.Concat(tree.Comments.Select(comment => $"  {SyntaxDump.Format(tree.Source, comment.Span)} \"{comment.Text}\"\n"));
+
         if (tree.Diagnostics.Count == 0)
             return dump;
 

@@ -10,6 +10,9 @@ File 1:1-8:1
         TextLine 6:1-6:42
           Content:
             TextRun 6:1-6:42 Text="Narration that still belongs to the node."
+Comments:
+  1:1-1:115 "A broken declaration keeps its value inside its span, and the lines after an indented first header still belong"
+  2:1-2:17 "to that node."
 Diagnostics:
   PIB1046 4:11 I expected `=` after `$typo`.
   PIB1003 5:1 This line is indented, but the line above it doesn't open a block.

@@ -1,0 +1,20 @@
+// A line or option too long to read comfortably at once.
+
+@actor mira
+    name: Mira
+
+== kitchen.door
+mira: This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going. This line keeps going.
+//    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5030
+-> This option says far too much. This option says far too much. This option says far too much.
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5030
+    Picked.
+-> Leave
+
+// Must not trigger
+
+mira: This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine.{p}This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine. This page is fine.
+-> xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    Picked.
+-> Stay
+mira: [b]yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy[/b]

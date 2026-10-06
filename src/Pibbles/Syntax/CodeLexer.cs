@@ -12,7 +12,7 @@ namespace Pibbles.Syntax;
 /// Whitespace between tokens is skipped, except that a <c>(</c> touching the name before it is a
 /// <see cref="TokenKind.CallOpen"/>. Malformed strings, numbers and tags are reported and still produce one token each.
 /// </remarks>
-internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnostic> diagnostics)
+internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnostic> diagnostics, List<Comment>? comments = null)
 {
     private readonly string text = source.Text;
     private TokenKind? previous;
@@ -109,6 +109,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private TokenKind ReadComment()
     {
+        comments?.Add(Comment.Read(text, new(Position, span.End - Position)));
         Position = span.End;
         return TokenKind.Comment;
     }

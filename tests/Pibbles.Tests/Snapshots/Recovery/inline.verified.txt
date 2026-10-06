@@ -56,6 +56,8 @@ File 1:1-13:1
                 TextRun 11:14-11:26 Text="never closed"
         TextLine 12:1-12:6
           Speaker: Name 12:1-12:5 Text="mira"
+Comments:
+  1:1-1:52 "Broken inline text still leaves a complete tree."
 Diagnostics:
   PIB1010 4:7 I can't find the end of this `[clue]`.
   PIB1011 5:21 I expected `[/i]` here, because `[i]` was opened last.

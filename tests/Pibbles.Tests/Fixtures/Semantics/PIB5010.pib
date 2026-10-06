@@ -1,0 +1,27 @@
+// A pose change nobody sees: the actor already has the pose, or it changes again before a line shows.
+
+@actor mira
+    name: Mira
+    poses: neutral, happy, sad
+
+== kitchen.door
+mira (happy): This line sets the pose.
+mira (happy): The pose on this line changes nothing.
+//    ^^^^^ PIB5010
+mira (sad):
+// PIB5010
+mira (happy): The silent pose change above is never seen.
+
+// Must not trigger
+
+== kitchen.cellar
+mira (happy): This line sets the pose.
+@call kitchen.door
+mira (happy): After a call, the pose may have changed.
+mira (sad):
+@wait 1s
+mira (happy): The sad pose showed during the wait.
+mira (sad):
+mira: Someone speaks, so the sad pose shows.
+-> Look around
+    mira (sad): Inside an option, the pose isn't known.

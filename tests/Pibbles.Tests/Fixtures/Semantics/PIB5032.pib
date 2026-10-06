@@ -1,0 +1,19 @@
+// Every block in a file indents by the same width.
+
+@var $a = true
+
+== kitchen.door
+@if $a
+    This block is indented four spaces.
+@if $a
+  This block is indented two.
+// PIB5032
+
+// Must not trigger
+
+@if $a
+    @if $a
+        Each block indents four more than the one it's in.
+   // A comment's indentation doesn't count.
+@if $a
+    Back to four.

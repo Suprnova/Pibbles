@@ -110,8 +110,24 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
 | PIB3011 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
 | PIB3012 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
+| PIB5001 | Hint | This line is 4 blocks deep, and more than 3 gets hard to follow. | Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`. |
+| PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
+| PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place, so it's translated and recorded once. |
+| PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
+| PIB5010 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
+| PIB5011 | Hint | This pause does nothing, because the end of the line already waits for a click. | Remove it. |
+| PIB5012 | Hint | This `[b]` is empty. | Remove it. |
+| PIB5013 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
+| PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
+| PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
+| PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
+| PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
+| PIB5031 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
+| PIB5032 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
+| PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
+| PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 
-The style rules, PIB5001 to PIB5040, are documented with examples in the [semantics design](semantics.md#style-rules).
+The style rules (PIB5xxx) are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
 
 ## Explanations
 
@@ -1012,6 +1028,194 @@ mira: Hi. #id:intro
 ```
 
 Delete the ID and run `pibbles ids` to give the line a new one, or write a different ID by hand.
+
+### PIB5001
+
+**Lines nested more than three blocks deep are hard to follow,** and a choice deep inside other blocks gets lost. `@if`, options and variation blocks each count as a block. Only the first line of each block past the limit is reported. `pibbles_max_nesting` in `.editorconfig` sets the limit.
+
+```text
+-> Open the door
+    @if $a
+        @if $b
+            -> Look closer
+                This line is four blocks deep.
+```
+
+Move the inner part into a node of its own and `@call` it, or combine the conditions: `@if $a and $b`.
+
+### PIB5002
+
+**An option whose body runs longer than fifteen lines pushes the choice's other options out of sight,** so the choice can't be read as a whole. Blank lines and comments don't count. `pibbles_max_option_body` in `.editorconfig` sets the limit.
+
+```text
+-> Listen at the door
+    (sixteen lines of story)
+-> Leave
+```
+
+Move the body into a node of its own, and `@jump` to it from the option.
+
+### PIB5003
+
+**The same speaker saying the same text in three places is translated, and maybe recorded, three times.** A node with the line in it is translated and recorded once. Narration counts too. `pibbles_min_repeated_lines` in `.editorconfig` sets how many places it takes.
+
+```text
+== room.a
+mira: This exact line appears in several nodes.
+
+== room.b
+mira: This exact line appears in several nodes.
+
+== room.c
+mira: This exact line appears in several nodes.
+```
+
+Put the line in a node of its own, such as `common.shared_line`, and `@call` it from each place.
+
+### PIB5004
+
+**A raw color used in two places usually means something,** such as a clue or a thought. A named markup says what it means, and the game can restyle it in one place. Colors that differ only in capital letters count as the same. `pibbles_min_repeated_colors` in `.editorconfig` sets how many places it takes.
+
+```text
+This line marks [color "#ff8800"]a phrase[/color] in orange.
+This line marks [color "#ff8800"]another phrase[/color] the same way.
+```
+
+Declare a markup that says what the color means, such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]…[/clue]` in each place.
+
+### PIB5010
+
+**A pose change nobody sees does nothing:** the actor already has the pose, or a pose-only line's pose changes again before any line shows. It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+
+```text
+mira (happy): This line sets the pose.
+mira (happy): The pose on this line changes nothing.
+```
+
+Leave the pose out, `mira: …`, or remove the pose-only line nobody sees.
+
+### PIB5011
+
+**A pause that does nothing, or two that could be one:** `{w}` at the very end of a line, where the line already waits for a click; `{w}` just before `{p}`, which already waits; and two timed pauses side by side. A timed pause at the end of a line is fine, since it still delays auto mode.
+
+```text
+This line waits for a click that happens anyway.{w}
+This line pauses{w 0.2}{w 0.3} in two steps.
+```
+
+Remove the extra `{w}`, or write one pause: `{w 0.5}`.
+
+### PIB5012
+
+**Markup that does nothing:** an empty span, a span inside one just like it, and two like spans side by side, which could be one. Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't reported.
+
+```text
+This line is [b]split into[/b][b] two spans[/b].
+```
+
+Remove the empty or inner span, or join the two: `[b]one span[/b]`.
+
+### PIB5013
+
+**An `@if` or `{if}` whose branches are all the same makes no difference,** so the condition is only noise. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Indentation, line IDs, blank lines and comments don't count as differences.
+
+```text
+@if $a
+    This line appears either way.
+@else
+    This line appears either way.
+```
+
+Keep one copy of the branch, without the condition.
+
+### PIB5014
+
+**Reaching the end of a node returns,** so `@return` as its last line does nothing. An `@return` earlier in a node, such as inside an `@if`, is fine.
+
+```text
+== common.shared
+This line is shared.
+@return
+```
+
+Remove the `@return`.
+
+### PIB5020
+
+**A condition is already true or false,** so comparing it with `true` or `false` only makes it longer.
+
+```text
+@if $has_key == true
+@if $has_key == false
+```
+
+Write `@if $has_key` and `@if not $has_key`.
+
+### PIB5021
+
+**`+=` and `-=` say "change this by"** more briefly than writing the variable twice. They work on numbers, durations and text.
+
+```text
+@set $attempts = $attempts + 1
+```
+
+Write `@set $attempts += 1`.
+
+### PIB5030
+
+**A line or option too long to read in one go** tires the player, and long options crowd the choice. Markup and pacing don't count, conditional text counts its longest branch, and a value shown with `{…}` counts nothing, since its length isn't known. A line counts its longest page, so `{p}` splits it. `pibbles_max_message_length` (300) and `pibbles_max_option_length` (80) in `.editorconfig` set the limits.
+
+```text
+-> This option is written as a full sentence that explains everything that will happen if it's picked
+```
+
+Split a long line into two lines, or into pages with `{p}`, which keeps one message and one voice clip. Shorten an option to what the player picks, and let the lines after it say the rest.
+
+### PIB5031
+
+**Names are written in `snake_case`:** nodes, actors, poses, variables, enums and their members, commands, markup, icons and functions. A display name such as `name: Mira` is what the player sees, so it's written any way. Only the place a name is declared is reported.
+
+```text
+@actor Mira
+@var $HasKey = false
+== Kitchen.FrontDoor
+```
+
+Rename it now, before saves, scenes or the game's code depend on it: `mira`, `$has_key`, `kitchen.front_door`. A name the game's code already uses needs care, since the code has to change with it.
+
+### PIB5032
+
+**Every block in a file indents by the same width,** so the structure reads the same everywhere. When `.editorconfig` sets `indent_size`, blocks indented with spaces follow it; otherwise the file's first block sets the width. A file indented with a different character than `indent_style` asks for is reported once. Mixing tabs and spaces in one file is a mistake of its own (PIB1001).
+
+```text
+@if $a
+    This block is indented four spaces.
+@if $b
+  This block is indented two.
+```
+
+Indent the block like the rest of the file. Most editors can re-indent a selection for you.
+
+### PIB5033
+
+**Speakers are written `name (pose):`,** with one space before the pose, none inside the parentheses and none before the colon. Any spacing works, but one form keeps a script easy to scan.
+
+```text
+mira(happy): This line has no space before the pose.
+mira : This line has a space before the colon.
+```
+
+Write `mira (happy):` and `mira:`.
+
+### PIB5040
+
+**A variable nothing in the story uses is dead weight.** Setting it counts as using it, since the game's code may read it. The game's vocabulary, such as commands, markup and actors, isn't checked: some of a toolbox going unused is normal.
+
+```text
+@var $old_flag = false
+```
+
+Remove the `@var`, or use the variable.
 
 ## With extensions
 

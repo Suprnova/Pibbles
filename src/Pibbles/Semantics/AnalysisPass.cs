@@ -14,6 +14,13 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
 
     protected string TextOf(TextSpan span) => Tree.Source.Text.Substring(span.Start, span.Length);
 
+    /// <summary>The part of a node on its first line, such as a block opener without its block.</summary>
+    protected TextSpan FirstLine(SyntaxNode node)
+    {
+        TextSpan line = Tree.Source.GetLineSpan(Tree.Source.GetLinePosition(node.Span.Start).Line);
+        return new(node.Span.Start, Math.Min(node.Span.End, line.End) - node.Span.Start);
+    }
+
     /// <summary>
     /// Expands a node name with its file's prefix, or returns <see langword="null"/> if it can't be: the name is
     /// missing, or it's relative in a file with no prefix, which is reported.
@@ -46,7 +53,11 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
     protected void Refers(TextSpan span, Symbol symbol) => references.Add(Tree.Source.GetLocation(span), symbol, isDeclaration: false);
 
     protected void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
-        diagnostics.Add(descriptor.Create(Tree.Source.GetLocation(span), arguments));
+        ReportAt(descriptor, Tree.Source.GetLocation(span), arguments);
+
+    /// <summary>Reports a diagnostic at a location in any file, for checks that look across the story.</summary>
+    protected void ReportAt(DiagnosticDescriptor descriptor, SourceLocation location, params object?[] arguments) =>
+        diagnostics.Add(descriptor.Create(location, arguments));
 
     /// <summary>
     /// Reports a diagnostic whose help only has something to say sometimes, such as a suggestion. Its last argument

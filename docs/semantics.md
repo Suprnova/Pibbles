@@ -20,6 +20,9 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
 3. **Flow and content checks.** Statements that never run, options with no text, and missing or duplicate line IDs. What option text may contain is a [syntax check](syntax.md#syntax-checks).
    - **Statements that never run (PIB3001).** A statement always leaves its block when it's `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose every branch always leaves. The first statement after one in the same block is reported, once per block. It's decided from the statements alone: conditions are never evaluated and values never tracked, so `@if false` is like any other condition. Choices and variations never count as leaving, since a choice is skipped when no option is available and a variation's block can be skipped too.
    - **Options with no text (PIB3002)** are information, not errors. The story runs, and the host decides what an empty option looks like, so a game that wants one turns the code off.
+4. **Style checks.** The [style rules](#style-rules), over the syntax trees, with the symbol table for actors and the recorded references for unused variables. Each file's thresholds come from its settings. Most rules look at one file; repeated lines (PIB5003) and repeated colors (PIB5004) count across the story, and each place is reported when the count reaches its own file's threshold.
+
+Once every pass has run, each diagnostic gets the severity its file's settings give it, or is dropped when they turn it off, and then [`// pibbles-ignore`](#levels-and-visibility) comments silence what they cover.
 
 ### The semantic model
 
@@ -49,7 +52,7 @@ Style rules introduce a fourth severity below the existing three:
 - Style rules use the `PIB5xxx` range. Most are hints. Maintenance rules are info.
 - `--warnaserror` never promotes hints or info, so style never blocks a build.
 - **Configuration** lives in `.editorconfig`, covered in the [tooling design](tooling.md#configuration). Any rule can be turned off or given a different level, and thresholds are settings.
-- **Suppressing one instance:** a `// pibbles-ignore PIB5003` comment on its own line directly above the flagged line. At the top of a file, before any node, it applies to the whole file.
+- **Suppressing one instance:** a `// pibbles-ignore PIB5003` comment on its own line directly above the flagged line, with only other comments between them. It can list several codes. Above a file's first node, it applies to the whole file. Only style and spelling can be silenced this way, since a mistake gets fixed rather than hidden.
 - **Quick fixes:** every rule whose fix is mechanical offers one in VS Code. Those rules are marked ⚡.
 
 ### What makes a good style rule
@@ -70,7 +73,7 @@ Rules that failed these tests are listed [at the end](#considered-and-left-out).
 
 **Level:** hint · **Setting:** `pibbles_max_nesting` (default 3)
 
-Flags a statement nested more than three blocks deep. Blocks are `@if`, options, and variation blocks. Deeply nested scripts are hard to follow, and the choice lists inside them get lost.
+Flags a statement nested more than three blocks deep. Blocks are `@if`, options, and variation blocks. Deeply nested scripts are hard to follow, and the choice lists inside them get lost. Only the first line of each block past the limit is flagged, not every line in it or deeper.
 
 Non-compliant:
 
@@ -79,8 +82,7 @@ Non-compliant:
     @if $a
         @if $b
             -> Nested option
-                @if $c
-                    This line is four blocks deep.
+                This line is four blocks deep.
 ```
 
 Compliant, with the inner part moved into its own node:
@@ -93,8 +95,7 @@ Compliant, with the inner part moved into its own node:
 
 == example.inner_choice
 -> Nested option
-    @if $c
-        This line is now two blocks deep.
+    This line is now one block deep.
 ```
 
 The quick fix is **Extract to node** (below), applied to the outermost block that brings the nesting back under the limit.
@@ -105,15 +106,14 @@ Alternative, combining the conditions:
 -> First option
     @if $a and $b
         -> Nested option
-            @if $c
-                This line is three blocks deep.
+            This line is three blocks deep.
 ```
 
 #### PIB5002 – Long option body ⚡
 
 **Level:** hint · **Setting:** `pibbles_max_option_body` (default 15 lines)
 
-Flags a choice option whose body is longer than 15 lines. With long bodies, the options of one choice end up screens apart and the choice can't be read as a whole.
+Flags a choice option whose body is longer than 15 lines, not counting blank lines and comments. With long bodies, the options of one choice end up screens apart and the choice can't be read as a whole.
 
 Non-compliant:
 
@@ -152,7 +152,7 @@ A refactoring that PIB5001 and PIB5002 offer as a quick fix, and that works on a
 
 **Level:** hint · **Setting:** `pibbles_min_repeated_lines` (default 3)
 
-Flags the same speaker saying the same text in three or more places. Every copy has its own ID, so each one is translated, and possibly recorded, separately. A shared node gets translated and recorded once.
+Flags the same speaker saying the same text in three or more places, narration included. Every copy has its own ID, so each one is translated, and possibly recorded, separately. A shared node gets translated and recorded once.
 
 Non-compliant:
 
@@ -181,7 +181,7 @@ mira: This exact line appears in several nodes.
 
 **Level:** hint · **Setting:** `pibbles_min_repeated_colors` (default 2)
 
-Flags the same `[color …]` value used in two or more places. A repeated color usually means something, such as a clue, a warning or a thought. A named markup says what it means, and can be restyled in one place.
+Flags the same `[color …]` value used in two or more places, ignoring capital letters. A repeated color usually means something, such as a clue, a warning or a thought. A named markup says what it means, and can be restyled in one place.
 
 Non-compliant:
 
@@ -209,7 +209,7 @@ There's no quick fix. A new markup only looks right once the game implements its
 
 **Level:** hint
 
-Flags a pose change that has no visible effect, either because the actor already has that pose or because another change overrides it before any line shows. It only fires when that's certain: in straight-line flow, with no `@call`, choice or jump in between.
+Flags a pose change that has no visible effect, either because the actor already has that pose or because another change overrides it before any line shows. It only fires when that's certain: in straight-line flow, with nothing but lines, `@set` and `@wait` in between. A command, `@call`, choice, jump or block might change a pose or skip ahead, so after one nothing is known. A `@wait` shows the pose, so a pose-only line before one is seen.
 
 Non-compliant:
 
@@ -263,8 +263,10 @@ This line pauses{w 0.5} in one step.
 
 Flags markup that does nothing:
 - empty spans
-- a span nested inside the same kind of span
-- two identical spans side by side, which could be one
+- a span nested inside one just like it
+- two like spans side by side, which could be one
+
+Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't flagged.
 
 Non-compliant:
 
@@ -286,7 +288,7 @@ This line is [b]one span[/b].
 
 **Level:** hint
 
-Flags `@if` blocks and `{if}` text whose branches are all identical, so the condition makes no difference.
+Flags `@if` blocks and `{if}` text whose branches are all identical, so the condition makes no difference. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Branches compare by their text, apart from indentation, line IDs, blank lines and comments, which never change what runs.
 
 Non-compliant:
 
@@ -377,7 +379,7 @@ Compliant:
 
 **Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters), `pibbles_max_option_length` (default 80)
 
-Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length. For conditional text, the longest branch counts. Long options also crowd the choice menu.
+Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length, an icon counts as one character, and a value shown with `{…}` counts nothing, since its length isn't known. For conditional text, the longest branch counts. A line counts its longest page, since `{p}` starts a new one. Long options also crowd the choice menu.
 
 Non-compliant:
 
@@ -404,7 +406,7 @@ mira: This line makes its point.{p}The rest appears on the next page.
 
 **Level:** hint
 
-Flags names that aren't `snake_case`. That covers nodes (each dot-separated part), actors, poses, personas, variables, enums and their members, commands, markup, icons, terms and functions. Display names like `name: Mira` aren't affected.
+Flags names that aren't `snake_case`, where they're declared. That covers nodes (each dot-separated part) and the file's prefix, actors, poses, personas, variables, enums and their members, commands, markup, icons, terms and functions. Display names like `name: Mira` aren't affected.
 
 Non-compliant:
 
@@ -432,7 +434,7 @@ Deliberate renames use the editor's **Rename**:
 
 **Level:** hint
 
-Flags a file that mixes indentation widths, for example two spaces in one block and four in another. Mixing tabs and spaces is already an error (PIB1001).
+Flags a file that mixes indentation widths, for example two spaces in one block and four in another. Each block is measured from the block it's in. With `indent_size` in `.editorconfig`, blocks indented with spaces follow it, and otherwise the file's first block sets the width. A file indented with a different character than `indent_style` asks for is flagged once, at its first indented line. Mixing tabs and spaces is already an error (PIB1001).
 
 Non-compliant:
 
@@ -481,7 +483,7 @@ mira: So does this one.
 
 **Level:** info
 
-Flags a variable that nothing in the story ever references. The story owns these, so an unused one is dead weight. A variable that only the game's code uses belongs in the game's own state, not the story's.
+Flags a variable that nothing in the story ever references. Setting it counts as a reference. The story owns these, so an unused one is dead weight. A variable that only the game's code uses belongs in the game's own state, not the story's.
 
 The game's vocabulary isn't checked: commands, markup, icons, tags, functions, actors, poses and enum members. The game offers those as a toolbox, and it's normal for part of a toolbox to go unused.
 

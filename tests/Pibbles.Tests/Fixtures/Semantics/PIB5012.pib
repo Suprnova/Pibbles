@@ -1,0 +1,15 @@
+// Markup that does nothing: an empty span, a span inside one just like it, and two like spans side by side.
+
+== kitchen.door
+This line has an empty span: [b][/b]
+//                           ^^^ PIB5012
+This line is [b]bold and [b]still just bold[/b][/b].
+//                       ^^^ PIB5012
+This line is [b]split into[/b][b] two spans[/b].
+//                            ^^^ PIB5012
+
+// Must not trigger
+
+This line is [b]bold and [i]italic[/i][/b].
+This line is [color "#ff0000"]red and [color "#0000ff"]blue[/color][/color].
+This line is [b]bold[/b] and then [b]bold again[/b].

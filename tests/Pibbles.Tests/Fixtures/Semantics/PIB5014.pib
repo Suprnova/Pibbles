@@ -1,0 +1,20 @@
+// Reaching the end of a node returns anyway.
+
+@var $a = true
+
+== common.shared
+This line is shared.
+@return
+// PIB5014
+
+// Must not trigger
+
+== common.early
+@if $a
+    @return
+This line runs when the condition is false.
+
+== common.kept
+This line is shared.
+// pibbles-ignore PIB5014
+@return

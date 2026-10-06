@@ -1,0 +1,25 @@
+// A line more than three blocks deep is hard to follow. Only the first line of each block past the limit is reported.
+
+@var $a = true
+@var $b = true
+@var $c = true
+
+== kitchen.door
+-> Open the door
+    @if $a
+        @if $b
+            -> Look closer
+                This line is four blocks deep.
+//              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5001
+                So is this one.
+                @if $c
+                    This deeper block is inside one already reported.
+-> Leave
+
+// Must not trigger
+
+== kitchen.cellar
+-> Open the door
+    @if $a and $b
+        -> Look closer
+            This line is three blocks deep.

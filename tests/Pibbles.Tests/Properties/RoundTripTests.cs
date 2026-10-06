@@ -7,15 +7,17 @@ namespace Pibbles.Tests.Properties;
 public class RoundTripTests
 {
     [Fact]
-    public void Parse_PrintedTree_GivesBackTheTree() => PropertyCheck.Run(SyntaxGenerators.File, file =>
+    public void Parse_PrintedTreeWithComments_GivesBackTheTreeAndComments() => PropertyCheck.Run(Gen.Select(SyntaxGenerators.File, SyntaxGenerators.Comments), input =>
     {
-        var source = new SourceText("printed.pib", SyntaxPrinter.Print(file));
+        (FileSyntax file, string[] comments) = input;
+        var source = new SourceText("printed.pib", SyntaxPrinter.Print(file, comments));
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
         Assert.Empty(tree.Diagnostics);
         Assert.Equal(SyntaxDump.WriteShape(file), SyntaxDump.WriteShape(tree.Root));
-    }, iterations: 500, print: SyntaxPrinter.Print);
+        Assert.Equal(comments, tree.Comments.Select(comment => comment.Text));
+    }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
 
     [Fact]
     public void Generator_CoversEveryNodeKindButErrors()

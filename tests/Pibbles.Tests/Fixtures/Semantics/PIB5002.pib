@@ -1,0 +1,45 @@
+// An option's body longer than fifteen lines pushes the rest of the choice out of sight.
+
+== kitchen.door
+-> Listen at the door
+// PIB5002
+    Line 1 of the body.
+    Line 2 of the body.
+    Line 3 of the body.
+    Line 4 of the body.
+    Line 5 of the body.
+    Line 6 of the body.
+    Line 7 of the body.
+    Line 8 of the body.
+    Line 9 of the body.
+    Line 10 of the body.
+    Line 11 of the body.
+    Line 12 of the body.
+    Line 13 of the body.
+    Line 14 of the body.
+    Line 15 of the body.
+    Line 16 of the body.
+-> Leave
+
+// Must not trigger
+
+== kitchen.cellar
+-> Listen at the door
+    Line 1 of the body.
+    Line 2 of the body.
+    Line 3 of the body.
+    Line 4 of the body.
+    Line 5 of the body.
+    Line 6 of the body.
+    Line 7 of the body.
+    Line 8 of the body.
+    Line 9 of the body.
+    Line 10 of the body.
+    Line 11 of the body.
+    Line 12 of the body.
+    Line 13 of the body.
+    Line 14 of the body.
+
+    // Blank lines and comments don't count.
+    Line 15 of the body.
+-> Leave

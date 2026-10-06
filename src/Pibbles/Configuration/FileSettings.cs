@@ -13,6 +13,17 @@ public sealed class FileSettings
 
     private static readonly string[] Severities = ["error", "warning", "info", "hint", "none"];
 
+    /// <summary>The style rules' thresholds, with their defaults.</summary>
+    private static readonly Dictionary<string, int> Thresholds = new()
+    {
+        ["pibbles_max_nesting"] = 3,
+        ["pibbles_max_option_body"] = 15,
+        ["pibbles_min_repeated_lines"] = 3,
+        ["pibbles_min_repeated_colors"] = 2,
+        ["pibbles_max_message_length"] = 300,
+        ["pibbles_max_option_length"] = 80,
+    };
+
     private FileSettings(IReadOnlyDictionary<string, string> properties, IReadOnlyList<string> problems)
     {
         Properties = properties;
@@ -26,8 +37,9 @@ public sealed class FileSettings
     public IReadOnlyDictionary<string, string> Properties { get; }
 
     /// <summary>
-    /// What's wrong with the file's <c>pibbles_diagnostic</c> settings: ones that name no diagnostic or category, or give
-    /// a severity that doesn't exist. Those settings are ignored.
+    /// What's wrong with the file's own settings: a <c>pibbles_diagnostic</c> setting that names no diagnostic or
+    /// category, or gives a severity that doesn't exist, and a threshold that isn't a whole number above 0. Those settings
+    /// are ignored.
     /// </summary>
     public IReadOnlyList<string> Problems { get; }
 
@@ -75,17 +87,29 @@ public sealed class FileSettings
         };
     }
 
+    /// <summary>A style rule's threshold, such as <c>pibbles_max_nesting</c>: the file's setting, or the rule's default.</summary>
+    internal int Threshold(string name) => int.TryParse(Properties.GetValueOrDefault(name), out int value) ? value : Thresholds[name];
+
+    /// <summary>How many spaces <c>indent_size</c> asks each level to indent, or <see langword="null"/> if it doesn't say.</summary>
+    internal int? IndentSize => int.TryParse(Properties.GetValueOrDefault("indent_size"), out int size) && size > 0 ? size : null;
+
     /// <summary>What <c>indent_style</c> asks a file to indent with, <c>spaces</c> or <c>tabs</c>, or <see langword="null"/> if it isn't set.</summary>
-    private string? IndentWith() => Properties.GetValueOrDefault("indent_style")?.ToLowerInvariant() switch
+    internal string? IndentWith() => Properties.GetValueOrDefault("indent_style")?.ToLowerInvariant() switch
     {
         "space" => "spaces",
         "tab" => "tabs",
         _ => null,
     };
 
-    /// <summary>Checks a <c>pibbles_diagnostic</c> setting: <c>pibbles_diagnostic.&lt;code or category-name&gt;.severity</c>.</summary>
+    /// <summary>
+    /// Checks a threshold, which is a whole number above 0, and a <c>pibbles_diagnostic</c> setting:
+    /// <c>pibbles_diagnostic.&lt;code or category-name&gt;.severity</c>.
+    /// </summary>
     private static string? Check(string key, string value)
     {
+        if (Thresholds.ContainsKey(key))
+            return int.TryParse(value, out int threshold) && threshold > 0 ? null : $"`{key} = {value}`: the value has to be a whole number above 0, such as `{Thresholds[key]}`.";
+
         if (!key.StartsWith("pibbles_diagnostic.", StringComparison.Ordinal))
             return null;
 

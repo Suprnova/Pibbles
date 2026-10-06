@@ -46,14 +46,17 @@ public sealed class Compilation
         Binder.Run(trees, symbols, found, references);
         FlowChecks.Run(trees, found);
         LineIdChecks.Run(trees, symbols, found);
+        StyleChecks.Run(trees, symbols, references, options, found);
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
+        Dictionary<string, Suppressions> suppressions = trees.DistinctBy(tree => tree.Source.Path).ToDictionary(tree => tree.Source.Path, Suppressions.Of);
         return new(trees, symbols, new SemanticModel(symbols, references),
         [
             .. found
                 .Select(diagnostic => diagnostic.NameSpeakers(speaker => symbols.Actors.GetValueOrDefault(speaker)?.DisplayName))
                 .Select(diagnostic => options.Settings.GetValueOrDefault(diagnostic.Location.Path, FileSettings.None).Configure(diagnostic))
                 .OfType<Diagnostic>()
+                .Where(diagnostic => !suppressions[diagnostic.Location.Path].Silences(diagnostic))
                 .OrderBy(diagnostic => fileOrder[diagnostic.Location.Path])
                 .ThenBy(diagnostic => diagnostic.Location.Span.Start),
         ]);

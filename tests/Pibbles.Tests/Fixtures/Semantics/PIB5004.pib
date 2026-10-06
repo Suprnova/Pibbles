@@ -1,0 +1,11 @@
+// A raw color used in more than one place usually means something, which a named markup says better.
+
+== kitchen.door
+This line marks [color "#ff8800"]a phrase[/color] in orange.
+//                     ^^^^^^^^^ PIB5004
+This line marks [color "#FF8800"]another phrase[/color] the same way.
+//                     ^^^^^^^^^ PIB5004
+
+// Must not trigger
+
+This line is [color "#00aa00"]green[/color], once.

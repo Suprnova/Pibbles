@@ -262,7 +262,7 @@ Lines get a short ID at the end:
 mira: This line has an ID. #id:k7qp2x
 ```
 
-Options, `@call` lines and variation blocks get one too, after the keyword (`@once #id:b8k2qd`), so the story remembers how often each block has run. You don't type these: run `pibbles ids` and it adds one to every line that needs one, at the end of the line. They keep saves and translations attached to the right line. Until a line has one, `pibbles check` reminds you with a warning, and the story still plays. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor fades them out so they don't get in the way. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
+Options, `@call` lines and variation blocks get one too, after the keyword (`@once #id:b8k2qd`), so the story remembers how often each block has run. You don't type these: run `pibbles ids` and it adds one to every line that needs one, at the end of the line. They keep saves and translations attached to the right line. Until a line has one, `pibbles check` reminds you with a warning, and the story still plays. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor hides them so they don't get in the way, and shows the current line's ID at the bottom of the window. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
 
 ---
 
@@ -496,6 +496,7 @@ This node used to be called kitchen.door.
 ## Checking your work
 
 - **`pibbles check`** checks the whole story at once and lists every problem with its file and line: unknown characters or poses, misspelled variables or commands, missing node names, unclosed styles.
+- **`pibbles check --style`** also shows style hints: places that work, but could read better or be easier to translate, such as a line said word for word in three places, or a pose that's already set. They're only suggestions. To silence one you mean to keep, put `// pibbles-ignore` and its code on the line above it, such as `// pibbles-ignore PIB5003`.
 - **`pibbles play`** plays the story as text in a terminal, with numbered choices and effects shown in place, so you can test a branch without launching the game.
 
 ---

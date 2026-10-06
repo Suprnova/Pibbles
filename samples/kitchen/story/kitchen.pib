@@ -13,7 +13,7 @@
 
 mira (worried): This kitchen gives me the creeps. #id:mfzuit
 rex (grumpy): It's a kitchen.{w 0.4} Relax. #id:aesok7
-mira (worried): Who said that? #id:lh35ik
+mira: Who said that? #id:lh35ik
 rex: Rex. I live in the walls.{w} Kidding. I'm behind the fridge. #id:er911h
 mira: Let's look around. Press {icon interact} to inspect things. #id:ob3a3g
 @enter_room kitchen on_exit=.leave

@@ -111,3 +111,5 @@ File 1:1-24:1
                 Function: Name 23:21-23:27 Text="visits"
                 Arguments:
                   NameExpression 23:28-23:40 Name="kitchen.door"
+Comments:
+  1:1-1:60 "Statements that hold expressions, and command arguments."
