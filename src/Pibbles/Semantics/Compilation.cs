@@ -1,3 +1,4 @@
+using Pibbles.Configuration;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 
@@ -34,8 +35,10 @@ public sealed class Compilation
 
     /// <summary>Compiles a story.</summary>
     /// <param name="sources">Every source file in the story. Each path should be unique, since diagnostics refer to files by path.</param>
-    public static Compilation Create(IEnumerable<SourceText> sources)
+    /// <param name="options">How to compile it, such as each file's diagnostic severities, or <see langword="null"/> for the defaults.</param>
+    public static Compilation Create(IEnumerable<SourceText> sources, CompilationOptions? options = null)
     {
+        options ??= CompilationOptions.Default;
         SyntaxTree[] trees = [.. sources.Select(SyntaxTree.Parse)];
         List<Diagnostic> found = [.. trees.SelectMany(tree => tree.Diagnostics)];
         var references = new ReferenceIndex();
@@ -49,6 +52,8 @@ public sealed class Compilation
         [
             .. found
                 .Select(diagnostic => diagnostic.NameSpeakers(speaker => symbols.Actors.GetValueOrDefault(speaker)?.DisplayName))
+                .Select(diagnostic => options.Settings.GetValueOrDefault(diagnostic.Location.Path, FileSettings.None).Configure(diagnostic))
+                .OfType<Diagnostic>()
                 .OrderBy(diagnostic => fileOrder[diagnostic.Location.Path])
                 .ThenBy(diagnostic => diagnostic.Location.Span.Start),
         ]);

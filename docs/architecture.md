@@ -27,6 +27,7 @@ src/
     Syntax/                    line classifier, parser, inline parser, syntax tree
     Semantics/                 symbols, types, binder, flow checks
     Diagnostics/               Diagnostic, severity, the diagnostic catalog
+    Configuration/             a file's .editorconfig settings and the severities they set
     Compilation/               IR, compiler, Story
     Runtime/                   DialogueRunner, StoryState, values, steps, host functions
     Text/                      Line, spans, markers, template rendering, LineReveal

@@ -43,12 +43,17 @@ internal static class Check
     /// </summary>
     private const int MissingIdsListed = 5;
 
-    public static int Run(IReadOnlyList<SourceText> sources, CheckOptions options, TextWriter output)
+    /// <summary>Compiles the story and prints what it finds.</summary>
+    /// <param name="sources">The story's sources.</param>
+    /// <param name="options">How to print.</param>
+    /// <param name="output">Where to print.</param>
+    /// <param name="compilation">Each file's <c>.editorconfig</c> settings, or <see langword="null"/> for none.</param>
+    public static int Run(IReadOnlyList<SourceText> sources, CheckOptions options, TextWriter output, CompilationOptions? compilation = null)
     {
         Dictionary<string, SourceText> byPath = sources.ToDictionary(source => source.Path);
         List<(SourceText Source, Diagnostic Diagnostic)> found =
         [
-            .. Compilation.Create(sources).Diagnostics
+            .. Compilation.Create(sources, compilation).Diagnostics
                 .Where(diagnostic => options.Style || diagnostic.Severity is not DiagnosticSeverity.Hint)
                 .Select(diagnostic => (byPath[diagnostic.Location.Path], diagnostic)),
         ];

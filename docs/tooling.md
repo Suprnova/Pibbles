@@ -134,7 +134,7 @@ Translations aren't checked yet. The same check can later run on each `<locale>.
 
 ## Configuration
 
-Diagnostics are configured in `.editorconfig`, the way Roslyn analyzers are in .NET. Settings go in a `[*.pib]` section. They can live in the repository's existing `.editorconfig`, or in one under `story/`, and nested files override them per folder:
+Diagnostics are configured in `.editorconfig`, the way Roslyn analyzers are in .NET. Settings go in a `[*.pib]` section. They can live in the repository's existing `.editorconfig`, or in one under `story/`, and nested files override them per folder. A source file's settings come from the `.editorconfig` files in its folder and every folder above it, up to one with `root = true`, the way editors find them, so a repository's file applies even when the Pibbles project is a folder inside it:
 
 ```ini
 [*.pib]
@@ -163,10 +163,11 @@ pibbles_diagnostic.category-style.severity = none
 
 Each threshold belongs to one of the [style rules](semantics.md#style-rules). Drafts don't need this for IDs, localization or voice, since those exemptions come with [draft status](language/design.md#drafts). The section above only silences style hints while a draft is rough.
 
-- **Standard keys are respected.** `indent_style` and `indent_size` are what PIB1001 and PIB5032 check against. Without them, PIB5032 only checks that a file is consistent with itself.
-- **A specific code beats its category,** and later, more specific sections beat earlier ones, following the usual `.editorconfig` rules.
+- **Standard keys are respected.** `indent_style` and `indent_size` are what PIB5032 checks against. Without them, PIB5032 only checks that a file is consistent with itself. PIB1001 is about a file mixing tabs and spaces, whatever the setting, and `indent_style` only decides which one its help says to use.
+- **A specific code beats its category,** wherever each is set, so a code's setting in a repository's root file still beats a category's setting in a folder's file, as in Roslyn. Otherwise a nearer file beats a farther one, and a later section beats an earlier one, following the usual `.editorconfig` rules.
+- **A `pibbles_diagnostic` setting that names no code or category, or gives a severity that doesn't exist,** is reported once and ignored, so a typo is never silently dropped. Other settings belong to other tools, so they're kept and ignored.
 - **What stays in `pibbles.json`:** project facts that aren't per file, such as the version, source locale, localization and voice. `pibbles.json` describes what the project *is*. `.editorconfig` describes how strictly each file is checked.
-- **The core stays free of I/O.** It parses `.editorconfig` text and resolves settings for a given path. The CLI, language server and adapter find the files and pass their contents in, the same way sources are passed ([architecture](architecture.md#solution-layout)).
+- **The core stays free of I/O and of packages.** It doesn't read or parse `.editorconfig` files: each host resolves a source file's properties with an `.editorconfig` library and passes them in as `FileSettings`, in `CompilationOptions`, the same way sources are passed ([architecture](architecture.md#solution-layout)). The CLI uses [editorconfig-core-net](https://github.com/editorconfig/editorconfig-core-net) (`EditorConfig.Core`), the reference .NET implementation, and the language server can give it unsaved files through its `IFileSystem`.
 
 ## Releases
 

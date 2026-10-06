@@ -128,7 +128,7 @@ One section per implemented code, headed `### PIB1001`. The CLI embeds this file
 →   mira: Still locked.
 ```
 
-The first indented line uses spaces, so the tab (shown as `→`) on the last line is reported. Re-indent the file with one character: most editors have a command for converting tabs to spaces, or spaces to tabs. Until it's fixed, a line indented with the other character still counts by its width, with a tab counting as one character.
+The first indented line uses spaces, so the tab (shown as `→`) on the last line is reported. Re-indent the file with one character: most editors have a command for converting tabs to spaces, or spaces to tabs. When `indent_style` in `.editorconfig` says which one the project uses, the help names it. The setting never makes a file that's consistent with itself an error; a style hint (PIB5032) covers that. Until it's fixed, a line indented with the other character still counts by its width, with a tab counting as one character.
 
 ### PIB1002
 

@@ -4,6 +4,7 @@ using System.Text;
 using Pibbles.Cli.Commands;
 using Pibbles.Cli.Output;
 using Pibbles.Cli.Projects;
+using Pibbles.Semantics;
 
 // Stories and messages hold any character, and Windows consoles otherwise use an old code page that mangles them.
 Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -35,7 +36,8 @@ check.SetAction(result =>
     if (StoryFolder.Load(result.GetValue(root) ?? ".", Directory.GetCurrentDirectory(), errors) is not { } sources)
         return Check.CouldNotRun;
 
-    return Check.Run(sources, new(result.GetValue(format), result.GetValue(warnAsError), result.GetValue(style), outputColor), Console.Out);
+    CompilationOptions settings = EditorConfigSettings.Load(sources, Directory.GetCurrentDirectory(), errors);
+    return Check.Run(sources, new(result.GetValue(format), result.GetValue(warnAsError), result.GetValue(style), outputColor), Console.Out, settings);
 });
 
 var folder = new Argument<string?>("folder")

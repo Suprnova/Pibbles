@@ -12,6 +12,11 @@ public static class DiagnosticCatalog
         "this line indents with {0}, but the file indents with {1}",
         "Use only spaces or only tabs in a file. Most editors can convert the whole file for you.");
 
+    /// <summary>PIB1001's help when <c>indent_style</c> in <c>.editorconfig</c> says what the project indents with.</summary>
+    /// <param name="indent"><c>spaces</c> or <c>tabs</c>.</param>
+    internal static string MixedIndentationHelpWithStyle(string indent) =>
+        $"Use only {indent} in this file, since `indent_style` in `.editorconfig` asks for {indent}. Most editors can convert the whole file for you.";
+
     /// <summary>PIB1002: a line is indented less than the line above it, but not as far back as any block it could belong to.</summary>
     public static DiagnosticDescriptor InconsistentIndentation { get; } = new(
         "PIB1002",
