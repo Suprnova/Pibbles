@@ -1,19 +1,19 @@
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 
 namespace Pibbles.Tests.Samples;
 
 public class KitchenTests
 {
-    public static TheoryData<string> Files { get; } =
-        [.. Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Path, "samples", "kitchen"), "*.pib", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(RepositoryRoot.Path, path))];
-
-    [Theory]
-    [MemberData(nameof(Files))]
-    public void Parse_KitchenFile_ReportsNothing(string file)
+    [Fact]
+    public void Compile_KitchenStory_ReportsNothing()
     {
-        var source = new SourceText(file, File.ReadAllText(Path.Combine(RepositoryRoot.Path, file)));
+        SourceText[] sources =
+        [
+            .. Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Path, "samples", "kitchen"), "*.pib", SearchOption.AllDirectories)
+                .Select(path => new SourceText(Path.GetRelativePath(RepositoryRoot.Path, path), File.ReadAllText(path))),
+        ];
 
-        Assert.Empty(SyntaxTree.Parse(source).Diagnostics);
+        Assert.Empty(Compilation.Create(sources).Diagnostics);
     }
 }

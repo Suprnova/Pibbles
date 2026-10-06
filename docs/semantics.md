@@ -4,7 +4,12 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
 
 ## Passes
 
-1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, and reports duplicates and reserved-word clashes. [Relative node names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
+`Compilation.Create` takes a story's sources, as `(path, text)` pairs, parses each file and runs the passes below over all of them together. It never throws on bad input. Its diagnostics, from parsing and analysis alike, are grouped by file in the order the files were given, then ordered by position.
+
+1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, one namespace per kind of name, and reports PIB2021, PIB2022 and PIB2060–PIB2067. [Relative node names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
+   - **The prelude** is Pibbles source built into the core, parsed like any other file: `@markup b`, `i`, `u`, `s` and `color(value: string)`. Its names are [reserved](language/reference.md#reserved-words), so a story can't declare them again, and its symbols have no source location.
+   - **Order:** enums are declared first and variables last, across every file, so declaration order never matters. Every type is known before a parameter, function or tag uses it, and a variable whose initial value is a name can be told which type that name belongs to.
+   - **One problem, one diagnostic.** A name that's reserved or not ASCII is reported and still declared, so the places that use it don't report it again. A duplicate is reported at the later declaration, which names where the earlier one is, and the earlier one is the one the story uses. A type that doesn't exist is reported once, and whatever has it gets the error type, which nothing reports on.
 2. **Binding pass.** Resolves each node body against the symbol table: actors, poses for a given actor, variables, commands and their arguments, markup, icons, tags, functions, node references, and enum members resolved by expected type. It type-checks expressions and produces a bound tree.
 3. **Flow and content checks.** Unreachable statements after `@jump`/`@end`/`@return`, empty choices, missing or duplicate line IDs, and nodes never referenced (reported as information only, because the host starts nodes by name). What option text may contain is a [syntax check](syntax.md#syntax-checks).
 

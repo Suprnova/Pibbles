@@ -9,7 +9,7 @@ public sealed class CheckTests : IDisposable
 {
     private readonly StringWriter output = new();
     private readonly SourceText clean = new("story/clean.pib", "== kitchen.door\nmira: Locked.\n");
-    private readonly SourceText broken = new("story/broken.pib", "== kitchen.door\nmira: I'm #winning today.\n@jump\n");
+    private readonly SourceText broken = new("story/broken.pib", "== kitchen.fridge\nmira: I'm #winning today.\n@jump\n");
 
     public void Dispose() => output.Dispose();
 

@@ -1,0 +1,29 @@
+// A name can't be a word Pibbles already uses where that name appears.
+
+@command if()
+//       ^^ PIB2062
+@command term()
+//       ^^^^ PIB2062
+@markup speed
+//      ^^^^^ PIB2062
+@actor true
+//     ^^^^ PIB2062
+    name: True
+@enum bool: yes, no
+//    ^^^^ PIB2062
+@enum answer: yes, no, wait
+//                     ^^^^ PIB2062
+@function visits(n: node) -> number
+//        ^^^^^^ PIB2062
+@tag id
+//   ^^ PIB2062
+@command shake(nowait: bool)
+//             ^^^^^^ PIB2062
+
+== wait
+// ^^^^ PIB2062
+
+// Must not trigger
+
+== if
+== kitchen.wait #was:kitchen.true

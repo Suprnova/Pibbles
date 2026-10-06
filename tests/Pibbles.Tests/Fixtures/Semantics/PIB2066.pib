@@ -1,0 +1,11 @@
+// A tag's value reaches the game as text: any text, or one of an enum's members.
+
+@tag count: number
+//          ^^^^^^ PIB2066
+@tag who: actor?
+//        ^^^^^ PIB2066
+
+// Must not trigger
+
+@enum box_style: phone, letter
+@tag box: box_style, label: string?

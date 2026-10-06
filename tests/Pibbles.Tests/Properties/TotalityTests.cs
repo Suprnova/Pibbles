@@ -1,11 +1,12 @@
 using CsCheck;
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 using Pibbles.Tests.Syntax;
 
 namespace Pibbles.Tests.Properties;
 
 /// <summary>
-/// Totality: any input parses without throwing, into a tree whose spans lie inside the file, with each node's children
+/// Totality: any input compiles without throwing, into a tree whose spans lie inside the file, with each node's children
 /// inside it and in order. The input is random lines, or a real file with random mutations.
 /// </summary>
 public class TotalityTests
@@ -37,21 +38,22 @@ public class TotalityTests
         (index, mutations) => (Corpus.Files[index].Path, mutations.Aggregate(Corpus.Files[index].Text, (text, mutation) => mutation.Apply(text))));
 
     [Fact]
-    public void Parse_RandomInput_IsTotal() =>
+    public void Compile_RandomInput_IsTotal() =>
         PropertyCheck.Run(RandomInput, AssertTotal, iterations: 3000, print: Visible);
 
     [Fact]
-    public void Parse_MutatedFile_IsTotal() =>
+    public void Compile_MutatedFile_IsTotal() =>
         PropertyCheck.Run(MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     private static void AssertTotal(string text)
     {
         var source = new SourceText("input.pib", text);
 
-        SyntaxTree tree = SyntaxTree.Parse(source);
+        var compilation = Compilation.Create([source]);
+        SyntaxTree tree = Assert.Single(compilation.SyntaxTrees);
 
         AssertNested(tree.Root, new TextSpan(0, text.Length));
-        Assert.All(tree.Diagnostics, diagnostic => Assert.True(Contains(tree.Root.Span, diagnostic.Location.Span), $"{diagnostic.Code} at {diagnostic.Location.Span} lies outside the file."));
+        Assert.All(compilation.Diagnostics, diagnostic => Assert.True(Contains(tree.Root.Span, diagnostic.Location.Span), $"{diagnostic.Code} at {diagnostic.Location.Span} lies outside the file."));
     }
 
     /// <summary>Checks that <paramref name="node"/> lies inside <paramref name="parent"/>, and that its children lie inside it, in order, without overlapping.</summary>

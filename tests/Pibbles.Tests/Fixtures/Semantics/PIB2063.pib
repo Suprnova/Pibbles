@@ -1,0 +1,16 @@
+// Names use English letters, so they work everywhere the game uses them.
+
+@actor zoë
+//     ^^^ PIB2063
+    name: Zoë
+@var $café = false
+//   ^^^^^ PIB2063
+@enum mood: calm, 快乐
+//                ^^ PIB2063
+
+== kitchen.café
+// ^^^^^^^^^^^^ PIB2063
+
+// Must not trigger
+
+== kitchen.cafe

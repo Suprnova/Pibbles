@@ -15,7 +15,7 @@ The catalog of every diagnostic code. Each code has one entry here and one in `D
 
 Severities are error, warning, info and hint. `.editorconfig` can override any of them ([configuration](tooling.md#configuration)).
 
-"Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to.
+"Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). Ties go to the name declared first. When nothing is close enough, the help is left out.
 
 ## Writing messages
 
@@ -76,10 +76,19 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
 | PIB2020 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
 | PIB2021 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
+| PIB2022 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
 | PIB2030 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
 | PIB2045 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB2046 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
 | PIB2047 | Error | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name. |
+| PIB2060 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
+| PIB2061 | Error | `happy` is already one of Mira's poses. | Remove the second `happy`, or give it another name. |
+| PIB2062 | Error | `if` can't name a command, because Pibbles uses that word after `@`. | Choose another name. |
+| PIB2063 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
+| PIB2064 | Error | I don't know a type called `postion`. | Did you mean `position`? |
+| PIB2065 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
+| PIB2066 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
+| PIB2067 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
 | PIB3011 | Error | The line ID `k7qp2x` is also used at rooms/cellar.pib:40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
@@ -487,7 +496,118 @@ Add the `)` where the brackets should close: `@if has_item("key")`.
 @if 0 < $bravery < 3
 ```
 
-Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3:`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c:`.
+Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
+
+### PIB2021
+
+**A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave`. In a file with no prefix, there's nothing for it to be relative to.
+
+```text
+== .leave
+mira: Onward!
+```
+
+Write the full name, `== kitchen.leave`, or add `@prefix kitchen` at the top of the file, above everything but comments.
+
+### PIB2022
+
+**Every node name is unique across the story, and so is every old name a node keeps in `#was:`.** The game starts nodes by name, and saves remember them, so one name can only ever mean one node. The second use is reported, with where the first one is.
+
+```text
+== kitchen.door
+mira: Locked.
+
+== kitchen.fridge #was:kitchen.door
+mira: It hums.
+```
+
+`kitchen.door` names the first node, so it can't also be an old name of the second. Rename one of them. If a node was renamed and another node now has its old name, the old name has to go: keep `#was:` for names no node uses any more.
+
+### PIB2060
+
+**Each kind of name has one namespace, so each name is declared once per kind.** Two kinds can share a name, such as `@enum sfx` and `@command sfx`, because they're never used in the same place. The second declaration is reported, with where the first one is, and the first one is the one the story uses.
+
+```text
+@enum room: kitchen, cellar
+@enum room: attic
+```
+
+Merge the two into one declaration (`@enum room: kitchen, cellar, attic`), or give one of them another name.
+
+### PIB2061
+
+**The poses of one actor, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported.
+
+```text
+@actor mira
+    name: Mira
+    poses: happy, sad, happy
+```
+
+Remove the second `happy`. If it was meant to be another pose, give it that name.
+
+### PIB2062
+
+**A name can't be a word Pibbles already uses where that name appears,** since the story couldn't tell the two apart. A command is written after `@`, so it can't be `if`; an actor can stand in a condition, so it can't be `true`. Each kind of name only avoids the words used in its own places, so `if` is fine as an icon or a pose. The [reserved words](language/reference.md#reserved-words) list them all, including a few kept for planned features.
+
+```text
+@command if()
+```
+
+Choose another name, such as `@command check_door()`.
+
+### PIB2063
+
+**The names you declare use only English letters (a to z, in either case), digits and `_`.** The game's code, file names and save files all handle those the same way everywhere. Display names and text are different: they can hold any character.
+
+```text
+@actor zoë
+    name: Zoë
+```
+
+Replace the letter with one from a to z, as in `@actor zoe`, and keep `name: Zoë` for what the player sees.
+
+### PIB2064
+
+**A type is one of `bool`, `number`, `string`, `duration`, `node` and `actor`, or an enum declared with `@enum`.** Types go after a `:` in variables, parameters and tags, and after `->` in functions. The help suggests the closest type, if one is close.
+
+```text
+@enum position: left, right
+@command show(at: postion)
+```
+
+Fix the spelling, `@command show(at: position)`, or declare the enum the type names.
+
+### PIB2065
+
+**Parameters with a default come after the ones without,** so the arguments without names always fill the required parameters, in order.
+
+```text
+@command shake(strength: number = 1, duration: duration)
+```
+
+Move the parameters that have defaults to the end: `@command shake(duration: duration, strength: number = 1)`.
+
+### PIB2066
+
+**A tag's value reaches the game as text,** so a tag that takes a value is either `string`, which accepts any value, or an enum, which accepts only its members. A `?` after the type also allows an empty value.
+
+```text
+@tag count: number
+```
+
+Use `@tag count: string`, or declare an enum with the values the tag can take and use that.
+
+### PIB2067
+
+**A variable that starts as a name has its type written out,** as in `@var $where: position = left`. A name like `left` could be a member of any enum, an actor or a node, and if the type came from the name, declaring a new name somewhere else could quietly change what the variable holds. When the name belongs to exactly one type, the help writes the declaration out with it.
+
+```text
+@enum position: left, right
+@var $where = left
+```
+
+Write the type after the variable: `@var $where: position = left`.
 
 ## With extensions
 

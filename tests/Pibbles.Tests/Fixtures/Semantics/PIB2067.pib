@@ -1,0 +1,19 @@
+// A variable that starts as a name has its type written, so declaring a new name never changes it.
+
+@enum position: left, right
+@enum side: left, right
+@actor mira
+    name: Mira
+@var $where = right
+//            ^^^^^ PIB2067
+@var $speaker = mira
+//              ^^^^ PIB2067
+@var $next = kitchen.door
+//           ^^^^^^^^^^^^ PIB2067
+
+// Must not trigger
+
+@var $there: position = left
+@var $count = -1
+
+== kitchen.door

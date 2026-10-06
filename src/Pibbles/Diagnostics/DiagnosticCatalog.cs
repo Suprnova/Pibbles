@@ -284,6 +284,89 @@ public static class DiagnosticCatalog
         "I can't compare three things at once: `{0}`.",
         help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
 
+    /// <summary>PIB2021: a relative node name in a file with no <c>@prefix</c>.</summary>
+    /// <remarks>Argument: the name as written, such as <c>.leave</c>.</remarks>
+    public static DiagnosticDescriptor RelativeWithoutPrefix { get; } = new(
+        "PIB2021",
+        DiagnosticSeverity.Error,
+        "`{0}` is relative, but this file has no `@prefix`.",
+        help: "Write the full name, or add a `@prefix` at the top of the file.");
+
+    /// <summary>PIB2022: a node name or <c>#was:</c> name that another node, or the same one, already uses.</summary>
+    /// <remarks>Arguments: the full name, and where it's already used, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor DuplicateNode { get; } = new(
+        "PIB2022",
+        DiagnosticSeverity.Error,
+        "There's already a node called `{0}`, {1}.",
+        help: "A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them.");
+
+    /// <summary>PIB2060: a declared name that another declaration of the same kind already uses.</summary>
+    /// <remarks>Arguments: the kind with its article, such as <c>an enum</c>; the name; and where the first one is, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor DuplicateDeclaration { get; } = new(
+        "PIB2060",
+        DiagnosticSeverity.Error,
+        "There's already {0} called `{1}`, {2}.",
+        help: "Give one of them another name, or remove one.");
+
+    /// <summary>PIB2061: a pose, enum member or parameter listed twice in one declaration.</summary>
+    /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's poses</c>.</remarks>
+    public static DiagnosticDescriptor RepeatedName { get; } = new(
+        "PIB2061",
+        DiagnosticSeverity.Error,
+        "`{0}` is already one of {1}.",
+        help: "Remove the second `{0}`, or give it another name.");
+
+    /// <summary>PIB2062: a declared name that's a reserved word for its kind.</summary>
+    /// <remarks>Arguments: the name; the kind with its article, such as <c>a command</c>; and where Pibbles uses the word, such as <c>after `@`</c>.</remarks>
+    public static DiagnosticDescriptor ReservedName { get; } = new(
+        "PIB2062",
+        DiagnosticSeverity.Error,
+        "`{0}` can't name {1}, because Pibbles uses that word {2}.",
+        help: "Choose another name.");
+
+    /// <summary>PIB2063: a declared name with a character outside ASCII.</summary>
+    /// <remarks>Arguments: the name, and its first character outside ASCII.</remarks>
+    public static DiagnosticDescriptor NonAsciiName { get; } = new(
+        "PIB2063",
+        DiagnosticSeverity.Error,
+        "`{0}` has `{1}` in it, but a name can only use English letters, digits and `_`.",
+        help: "Replace `{1}` with a letter from a to z.");
+
+    /// <summary>PIB2064: a type that's neither built in nor a declared enum.</summary>
+    /// <remarks>Arguments: the type as written, and the closest type, which the help suggests. The help is left out when nothing is close.</remarks>
+    public static DiagnosticDescriptor UnknownType { get; } = new(
+        "PIB2064",
+        DiagnosticSeverity.Error,
+        "I don't know a type called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2065: a parameter with no default after one that has a default.</summary>
+    /// <remarks>Argument: the parameter's name.</remarks>
+    public static DiagnosticDescriptor RequiredAfterOptional { get; } = new(
+        "PIB2065",
+        DiagnosticSeverity.Error,
+        "`{0}` has no default, but it comes after a parameter that has one.",
+        help: "Put the parameters that have defaults last.");
+
+    /// <summary>PIB2066: a tag whose value type is neither <c>string</c> nor an enum.</summary>
+    /// <remarks>Argument: the type.</remarks>
+    public static DiagnosticDescriptor TagValueType { get; } = new(
+        "PIB2066",
+        DiagnosticSeverity.Error,
+        "A tag's value is text, so it can't be `{0}`.",
+        help: "Use `string`, or an enum to allow only certain values.");
+
+    /// <summary>PIB2067: a variable whose initial value is a name, with no type written.</summary>
+    /// <remarks>
+    /// Arguments: the variable, with its <c>$</c>; the initial value; and the declaration with its type written out. The
+    /// help is left out when the value names no enum member, actor or node, or more than one kind of them.
+    /// </remarks>
+    public static DiagnosticDescriptor UntypedVariable { get; } = new(
+        "PIB2067",
+        DiagnosticSeverity.Error,
+        "`{0}` starts as `{1}`, so I need its type written out.",
+        help: "Write the type after the variable: `{2}`.");
+
     /// <summary>Every registered descriptor.</summary>
     public static IReadOnlyList<DiagnosticDescriptor> All { get; } =
     [
@@ -323,5 +406,15 @@ public static class DiagnosticCatalog
         NegativeArgument,
         UnclosedParenthesis,
         ChainedComparison,
+        RelativeWithoutPrefix,
+        DuplicateNode,
+        DuplicateDeclaration,
+        RepeatedName,
+        ReservedName,
+        NonAsciiName,
+        UnknownType,
+        RequiredAfterOptional,
+        TagValueType,
+        UntypedVariable,
     ];
 }

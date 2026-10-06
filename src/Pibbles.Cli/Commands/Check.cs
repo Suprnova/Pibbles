@@ -1,5 +1,6 @@
 using Pibbles.Cli.Output;
 using Pibbles.Diagnostics;
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 
 namespace Pibbles.Cli.Commands;
@@ -24,7 +25,7 @@ internal enum OutputFormat
 /// <param name="Color">Whether the readable format uses color.</param>
 internal sealed record CheckOptions(OutputFormat Format, bool WarnAsError = false, bool Style = false, bool Color = false);
 
-/// <summary><c>pibbles check</c>: parses every source file, prints what it finds, and returns the exit code.</summary>
+/// <summary><c>pibbles check</c>: compiles the story, prints what it finds, and returns the exit code.</summary>
 internal static class Check
 {
     /// <summary>Everything was checked, and nothing failed the check.</summary>
@@ -38,12 +39,12 @@ internal static class Check
 
     public static int Run(IReadOnlyList<SourceText> sources, CheckOptions options, TextWriter output)
     {
+        Dictionary<string, SourceText> byPath = sources.ToDictionary(source => source.Path);
         List<(SourceText Source, Diagnostic Diagnostic)> found =
         [
-            .. sources.SelectMany(source => SyntaxTree.Parse(source).Diagnostics
+            .. Compilation.Create(sources).Diagnostics
                 .Where(diagnostic => options.Style || diagnostic.Severity is not DiagnosticSeverity.Hint)
-                .OrderBy(diagnostic => diagnostic.Location.Span.Start)
-                .Select(diagnostic => (source, diagnostic))),
+                .Select(diagnostic => (byPath[diagnostic.Location.Path], diagnostic)),
         ];
 
         switch (options.Format)

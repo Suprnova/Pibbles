@@ -1,0 +1,10 @@
+// A relative node name needs a `@prefix` to be relative to.
+
+== .door
+// ^^^^^ PIB2021
+== kitchen.cellar #was:.old_cellar
+//                     ^^^^^^^^^^^ PIB2021
+
+// Must not trigger
+
+== kitchen.leave #was:kitchen.exit

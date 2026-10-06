@@ -1,0 +1,11 @@
+// Parameters with defaults come last, so the ones without can be given in order.
+
+@command shake(strength: number = 1, duration: duration)
+//                                   ^^^^^^^^^^^^^^^^^^ PIB2065
+@function pick(a: number = 1, b: number, c: number) -> number
+//                            ^^^^^^^^^ PIB2065
+//                                       ^^^^^^^^^ PIB2065
+
+// Must not trigger
+
+@command show(who: actor, at: number = 1)

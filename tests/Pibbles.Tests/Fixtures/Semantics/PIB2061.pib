@@ -1,0 +1,15 @@
+// The names in one list are all different.
+
+@actor mira
+    name: Mira
+    poses: happy, sad, happy
+//                     ^^^^^ PIB2061
+@enum position: left, right, left
+//                           ^^^^ PIB2061
+@command show(who: actor, who: actor)
+//                        ^^^ PIB2061
+
+// Must not trigger
+
+@enum side: left, right
+@markup wave(amplitude: number = 1, frequency: number = 5)

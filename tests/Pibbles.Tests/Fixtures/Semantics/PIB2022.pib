@@ -1,0 +1,15 @@
+// A node's name, and each of its old names, can only be used once in a story.
+
+== kitchen.door
+== kitchen.door
+// ^^^^^^^^^^^^ PIB2022
+== kitchen.fridge #was:kitchen.door
+//                     ^^^^^^^^^^^^ PIB2022
+== kitchen.icebox #was:kitchen.cooler
+== kitchen.cooler
+// ^^^^^^^^^^^^^^ PIB2022
+
+// Must not trigger
+
+== cellar.door
+== kitchen.sink #was:kitchen.basin
