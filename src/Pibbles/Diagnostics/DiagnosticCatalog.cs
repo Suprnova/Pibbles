@@ -284,6 +284,50 @@ public static class DiagnosticCatalog
         "I can't compare three things at once: `{0}`.",
         help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
 
+    /// <summary>PIB2011: an argument whose type isn't the type of its parameter.</summary>
+    /// <remarks>
+    /// Arguments: what takes the argument, such as <c>@show</c> or <c>has_item()</c>; the parameter's type with its
+    /// article; the parameter; the argument's type with its article; and what values to use instead, or
+    /// <see langword="null"/> to leave out the help.
+    /// </remarks>
+    public static DiagnosticDescriptor ArgumentType { get; } = new(
+        "PIB2011",
+        DiagnosticSeverity.Error,
+        "`{0}` expects {1} for `{2}`, but this is {3}.",
+        help: "{4}");
+
+    /// <summary>PIB2013: more arguments than parameters.</summary>
+    /// <remarks>Arguments: what takes the arguments, such as <c>has_item()</c>, and how many it takes, such as <c>only 1 argument</c>.</remarks>
+    public static DiagnosticDescriptor TooManyArguments { get; } = new(
+        "PIB2013",
+        DiagnosticSeverity.Error,
+        "`{0}` takes {1}.",
+        help: "Remove the extra ones.");
+
+    /// <summary>PIB2015: a parameter with no default and no argument.</summary>
+    /// <remarks>Arguments: what takes the arguments; the missing parameters, such as <c>a value for `to`</c>; and how to add them.</remarks>
+    public static DiagnosticDescriptor MissingArgument { get; } = new(
+        "PIB2015",
+        DiagnosticSeverity.Error,
+        "`{0}` needs {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2019: a call to a function that isn't declared.</summary>
+    /// <remarks>Arguments: the function's name, and the closest function, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownFunction { get; } = new(
+        "PIB2019",
+        DiagnosticSeverity.Error,
+        "I don't know a function called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2020: a node name that names no node.</summary>
+    /// <remarks>Arguments: the name as written, and the closest node, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownNode { get; } = new(
+        "PIB2020",
+        DiagnosticSeverity.Error,
+        "I can't find a node called `{0}`.",
+        help: "Did you mean `{1}`?");
+
     /// <summary>PIB2021: a relative node name in a file with no <c>@prefix</c>.</summary>
     /// <remarks>Argument: the name as written, such as <c>.leave</c>.</remarks>
     public static DiagnosticDescriptor RelativeWithoutPrefix { get; } = new(
@@ -299,6 +343,81 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "There's already a node called `{0}`, {1}.",
         help: "A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them.");
+
+    /// <summary>PIB2023: a <c>@prefix</c> that starts with a dot, which does nothing.</summary>
+    /// <remarks>Arguments: the prefix as written, and without its dot.</remarks>
+    public static DiagnosticDescriptor RelativePrefix { get; } = new(
+        "PIB2023",
+        DiagnosticSeverity.Info,
+        "`@prefix {0}` doesn't need its dot.",
+        help: "Remove it: `@prefix {1}`.");
+
+    /// <summary>PIB2030: a variable that isn't declared.</summary>
+    /// <remarks>Arguments: the variable, with its <c>$</c>, and the closest variable, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownVariable { get; } = new(
+        "PIB2030",
+        DiagnosticSeverity.Error,
+        "I don't know a variable called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2031: a value whose type isn't the type where it's used: a variable's value, a default, or <c>@wait</c>'s time.</summary>
+    /// <remarks>
+    /// Arguments: what the value is for, such as <c>`$has_key` holds a `bool`</c>; the value's type with its article; and
+    /// what values to use instead, or <see langword="null"/> to leave out the help.
+    /// </remarks>
+    public static DiagnosticDescriptor ValueType { get; } = new(
+        "PIB2031",
+        DiagnosticSeverity.Error,
+        "{0}, but this is {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2032: a condition that isn't a <c>bool</c>.</summary>
+    /// <remarks>Arguments: the condition as written; its type with its article; and a condition that's probably meant, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor NotCondition { get; } = new(
+        "PIB2032",
+        DiagnosticSeverity.Error,
+        "`{0}` is {1}, but a condition has to be true or false.",
+        help: "{2}");
+
+    /// <summary>PIB2033: an operator used on types it doesn't work on.</summary>
+    /// <remarks>Arguments: the operator; the operands' types, such as <c>a `string` and a `number`</c>; and what the operator works on.</remarks>
+    public static DiagnosticDescriptor OperatorTypes { get; } = new(
+        "PIB2033",
+        DiagnosticSeverity.Error,
+        "I can't use `{0}` with {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2034: a bare name where no name can go, such as a whole condition or an operand of <c>+</c>.</summary>
+    /// <remarks>Arguments: the name, and what was probably meant, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor NameNotAllowed { get; } = new(
+        "PIB2034",
+        DiagnosticSeverity.Error,
+        "I don't know what `{0}` means here.",
+        help: "{1}");
+
+    /// <summary>PIB2036: a bare name that isn't a value of the type expected where it appears.</summary>
+    /// <remarks>Arguments: the name; the type with its article; and a suggestion, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor NotValueOfType { get; } = new(
+        "PIB2036",
+        DiagnosticSeverity.Error,
+        "`{0}` isn't {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2037: <c>==</c> or <c>!=</c> between two bare names, which have no type to be read against.</summary>
+    /// <remarks>Argument: the comparison as written.</remarks>
+    public static DiagnosticDescriptor TwoNames { get; } = new(
+        "PIB2037",
+        DiagnosticSeverity.Error,
+        "I can't compare two names: `{0}`.",
+        help: "Compare a variable with a name instead, like `$where == left`.");
+
+    /// <summary>PIB2047: a reference to a node by one of its old names.</summary>
+    /// <remarks>Arguments: the old name, and the current name, both as the story would write them.</remarks>
+    public static DiagnosticDescriptor OldNodeName { get; } = new(
+        "PIB2047",
+        DiagnosticSeverity.Warning,
+        "`{0}` is an old name of `{1}`.",
+        help: "Use the current name: `{1}`.");
 
     /// <summary>PIB2060: a declared name that another declaration of the same kind already uses.</summary>
     /// <remarks>Arguments: the kind with its article, such as <c>an enum</c>; the name; and where the first one is, such as <c>on line 3</c>.</remarks>
@@ -406,8 +525,22 @@ public static class DiagnosticCatalog
         NegativeArgument,
         UnclosedParenthesis,
         ChainedComparison,
+        ArgumentType,
+        TooManyArguments,
+        MissingArgument,
+        UnknownFunction,
+        UnknownNode,
         RelativeWithoutPrefix,
         DuplicateNode,
+        RelativePrefix,
+        UnknownVariable,
+        ValueType,
+        NotCondition,
+        OperatorTypes,
+        NameNotAllowed,
+        NotValueOfType,
+        TwoNames,
+        OldNodeName,
         DuplicateDeclaration,
         RepeatedName,
         ReservedName,

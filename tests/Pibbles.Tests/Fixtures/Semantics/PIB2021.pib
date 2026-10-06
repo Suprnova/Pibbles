@@ -4,6 +4,9 @@
 // ^^^^^ PIB2021
 == kitchen.cellar #was:.old_cellar
 //                     ^^^^^^^^^^^ PIB2021
+@if visits(.cellar) > 0
+//         ^^^^^^^ PIB2021
+    Back in the cellar.
 
 // Must not trigger
 

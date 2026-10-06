@@ -1,0 +1,10 @@
+// A prefix is a full name, so it doesn't need a dot.
+
+@prefix .kitchen
+//      ^^^^^^^^ PIB2023
+
+// Must not trigger
+
+== .door
+@if visits(kitchen.door) > 0
+    The prefix still works without its dot.

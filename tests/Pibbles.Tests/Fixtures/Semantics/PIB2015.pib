@@ -1,0 +1,17 @@
+// A parameter without a default needs an argument.
+
+@function has_item(id: string) -> bool
+@function near(who: string, where: string, distance: number = 1) -> bool
+
+== kitchen.door
+@if has_item()
+//  ^^^^^^^^^^ PIB2015
+    Which item?
+@if near("mira")
+//  ^^^^^^^^^^^^ PIB2015
+    Near what?
+
+// Must not trigger
+
+@if near("mira", "door")
+    The distance has a default.

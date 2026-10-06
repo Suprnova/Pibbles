@@ -1,0 +1,21 @@
+// A condition is true or false.
+
+@enum position: left, right
+@var $attempts = 0
+@var $name = "Sam"
+@var $where: position = left
+
+== kitchen.door
+@if $attempts
+//  ^^^^^^^^^ PIB2032
+    It's a number.
+@if $name
+//  ^^^^^ PIB2032
+    It's text.
+-> Wave  @if $where
+//           ^^^^^^ PIB2032
+
+// Must not trigger
+
+@if $attempts > 0
+    It's a comparison.

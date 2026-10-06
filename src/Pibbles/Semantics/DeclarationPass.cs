@@ -13,11 +13,10 @@ namespace Pibbles.Semantics;
 /// missing type can be suggested from every other name. A name with a problem is still declared, so the places that
 /// use it don't report it again; a duplicate isn't, and the first declaration wins.
 /// </remarks>
-internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
+internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPass(diagnostics)
 {
     private readonly SymbolTable symbols = new();
     private readonly Dictionary<string, SourceLocation> nodeNames = [];
-    private SyntaxTree tree = null!;
     private bool builtIn;
 
     public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics)
@@ -33,7 +32,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
     {
         foreach (SyntaxTree file in (IEnumerable<SyntaxTree>)[Prelude.Tree, .. trees])
         {
-            tree = file;
+            Tree = file;
             builtIn = file == Prelude.Tree;
             declare(file.Root);
         }
@@ -51,6 +50,9 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
 
     private void DeclareOthers(FileSyntax file)
     {
+        if (file.Prefix is { Name: { Text: ['.', ..] } name })
+            Report(DiagnosticCatalog.RelativePrefix, name.Span, name.Text, name.Text[1..]);
+
         foreach (DeclarationSyntax declaration in file.Declarations)
         {
             switch (declaration)
@@ -150,7 +152,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
 
     private void DeclareNode(NodeSyntax node)
     {
-        if (FullName(node.Name) is not { } name || !DeclareNodeName(name, node.Name))
+        if (FullName(node.Name.Text, node.Name.Span) is not { } name || !DeclareNodeName(name, node.Name))
             return;
 
         List<string> aliases = [];
@@ -159,7 +161,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
 
         foreach (NameSyntax alias in node.Aliases)
         {
-            if (FullName(alias) is { } old && DeclareNodeName(old, alias))
+            if (FullName(alias.Text, alias.Span) is { } old && DeclareNodeName(old, alias))
             {
                 aliases.Add(old);
                 symbols.Aliases.Add(old, symbol);
@@ -179,26 +181,8 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
             return false;
         }
 
-        nodeNames.Add(fullName, tree.Source.GetLocation(written.Span));
+        nodeNames.Add(fullName, Tree.Source.GetLocation(written.Span));
         return true;
-    }
-
-    /// <summary>Expands a node name with its file's prefix, or returns <see langword="null"/> if it can't be.</summary>
-    private string? FullName(NameSyntax name)
-    {
-        if (name.IsMissing)
-            return null;
-
-        if (!name.Text.StartsWith('.'))
-            return name.Text;
-
-        if (tree.Root.Prefix is not { } prefix)
-        {
-            Report(DiagnosticCatalog.RelativeWithoutPrefix, name.Span, name.Text);
-            return null;
-        }
-
-        return prefix.Name.IsMissing ? null : prefix.Name.Text + name.Text;
     }
 
     private void Declare<T>(Dictionary<string, T> table, T symbol, NameSyntax name, SymbolKind kind, string? shown = null)
@@ -240,11 +224,11 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
         if (name.IsMissing)
             return TypeSymbol.Error;
 
-        if ((TypeSymbol.BuiltIn.FirstOrDefault(type => type.Name == name.Text) ?? symbols.Enums.GetValueOrDefault(name.Text)) is { } found)
+        if (symbols.FindType(name.Text) is { } found)
             return found;
 
         string? suggestion = Suggestions.Closest(name.Text, [.. TypeSymbol.BuiltIn.Select(type => type.Name), .. symbols.Enums.Keys]);
-        ReportSuggesting(DiagnosticCatalog.UnknownType, name.Span, suggestion, name.Text);
+        ReportWithOptionalHelp(DiagnosticCatalog.UnknownType, name.Span, name.Text, suggestion);
         return TypeSymbol.Error;
     }
 
@@ -256,7 +240,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
             case NameExpressionSyntax name:
                 string[] types = [.. TypesOfName(name.Name).Distinct()];
                 string? written = types is [var type] ? $"@var ${declaration.Variable.Name}: {type} = {name.Name}" : null;
-                ReportSuggesting(DiagnosticCatalog.UntypedVariable, name.Span, written, $"${declaration.Variable.Name}", name.Name);
+                ReportWithOptionalHelp(DiagnosticCatalog.UntypedVariable, name.Span, $"${declaration.Variable.Name}", name.Name, written);
                 return TypeSymbol.Error;
 
             case UnaryExpressionSyntax { Operand: var operand }:
@@ -286,19 +270,5 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics)
         return [.. enums, .. symbols.Actors.ContainsKey(name) ? ["actor"] : Array.Empty<string>(), .. nodeNames.ContainsKey(name) ? ["node"] : Array.Empty<string>()];
     }
 
-    private SourceLocation? Location(TextSpan span) => builtIn ? null : tree.Source.GetLocation(span);
-
-    /// <summary>Says where <paramref name="location"/> is, from the file being declared: <c>on line 3</c>, or <c>in story/cast.pib on line 3</c>.</summary>
-    private string Where(SourceLocation location) =>
-        location.Path == tree.Source.Path ? $"on line {location.Start.Line + 1}" : $"in {location.Path} on line {location.Start.Line + 1}";
-
-    private void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
-        diagnostics.Add(descriptor.Create(tree.Source.GetLocation(span), arguments));
-
-    /// <summary>Reports a diagnostic whose last argument is a suggestion for its help, leaving the help out when there's no suggestion.</summary>
-    private void ReportSuggesting(DiagnosticDescriptor descriptor, TextSpan span, string? suggestion, params object?[] arguments)
-    {
-        Diagnostic diagnostic = descriptor.Create(tree.Source.GetLocation(span), [.. arguments, suggestion]);
-        diagnostics.Add(suggestion is null ? diagnostic with { Help = null } : diagnostic);
-    }
+    private SourceLocation? Location(TextSpan span) => builtIn ? null : Tree.Source.GetLocation(span);
 }

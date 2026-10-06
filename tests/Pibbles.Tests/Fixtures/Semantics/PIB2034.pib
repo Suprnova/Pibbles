@@ -1,0 +1,20 @@
+// A bare name is a member of an enum, an actor or a node, and only goes where one is expected.
+
+@var $has_key = false
+@function has_item(id: string) -> bool
+
+== kitchen.door
+@if has_key
+//  ^^^^^^^ PIB2034
+    Did it mean the variable?
+@if has_item(crowbar)
+//           ^^^^^^^ PIB2034
+    Did it mean text?
+@if $has_key and ready
+//               ^^^^^ PIB2034
+    Neither.
+
+// Must not trigger
+
+@if $has_key and has_item("crowbar")
+    Both written out.

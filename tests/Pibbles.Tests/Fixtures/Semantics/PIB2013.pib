@@ -1,0 +1,17 @@
+// A function takes as many arguments as it has parameters.
+
+@function has_item(id: string) -> bool
+@function is_night() -> bool
+
+== kitchen.door
+@if has_item("key", "lamp")
+//                  ^^^^^^ PIB2013
+    One item at a time.
+@if is_night(1, 2)
+//           ^^^^ PIB2013
+    No arguments at all.
+
+// Must not trigger
+
+@if has_item("key") and is_night()
+    Just right.

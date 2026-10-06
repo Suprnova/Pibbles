@@ -1,0 +1,14 @@
+// A variable is declared before a story uses it.
+
+@var $has_key = false
+
+== kitchen.door
+@if $has_kye
+//  ^^^^^^^^ PIB2030
+    A typo.
+@set $bravery += 1
+//   ^^^^^^^^ PIB2030
+
+// Must not trigger
+
+@set $has_key = true

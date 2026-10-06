@@ -128,7 +128,7 @@ A node header gives a globally unique name, full or [relative](#prefixes), and o
 - A node's **visit count** goes up each time it's entered, whether by the host, `@jump` or `@call`. `visits(kitchen.fridge)` reads it.
 - Reaching the end of a node returns to the caller after an `@call`. Otherwise it ends the dialogue.
 - **`#was:old.name`** records a former name after a rename. Node names held outside the story still find the node through it: names in the game's code and scenes, saved visit counts, and continuations a save holds, like an `on_exit=` argument. A node can list several, full or relative. Aliases are unique across the story like names are.
-- **The story itself always uses current names.** A `@jump`, `@call`, `visits()` or `node` argument that names an alias is an error that suggests the current name, so aliases never pile up in the source.
+- **The story itself always uses current names.** A `@jump`, `@call`, `visits()` or `node` argument that names an alias still reaches its node, but it's a warning that suggests the current name, so aliases never pile up in the source.
 
 ## Prefixes
 
@@ -149,7 +149,7 @@ mira: Onward!
 mira (sad): Nope.
 ```
 
-- **`@prefix name`** comes before everything else in the file except comments, at most once. The name is a node name, so it may contain dots (`@prefix rooms.kitchen`).
+- **`@prefix name`** comes before everything else in the file except comments, at most once. The name is a node name, so it may contain dots (`@prefix rooms.kitchen`). It's always a full name: a dot at its start does nothing, so `@prefix .kitchen` means `@prefix kitchen`, and the analyzer points the dot out.
 - **A name starting with a dot is relative:** in the file above, `.door` means `kitchen.door`. Relative names work anywhere a node name does: headers, `@jump`, `@call`, `visits()`, `node` arguments (`on_exit=.leave`) and `#was:`.
 - **A name without a leading dot is always the full name,** in every file.
 - **There is no lookup order.** A relative name never falls back to a global one, and a full name is never tried under the prefix. Adding a node can't change what an existing reference points to.

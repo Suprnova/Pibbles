@@ -1,0 +1,23 @@
+// A bare name is one of the values of the type expected where it appears.
+
+@enum position: left, right
+@actor mira
+    name: Mira
+@var $where: position = lfet
+//                      ^^^^ PIB2036
+@var $who: actor = rexx
+//                 ^^^^ PIB2036
+@function is_at(where: position) -> bool
+
+== kitchen.door
+@if is_at(center)
+//        ^^^^^^ PIB2036
+    Not a position.
+@if $where == middle
+//            ^^^^^^ PIB2036
+    Not one either.
+
+// Must not trigger
+
+@if $where == left or right == $where
+    Either side works.

@@ -35,6 +35,7 @@ public sealed class Compilation
         SyntaxTree[] trees = [.. sources.Select(SyntaxTree.Parse)];
         List<Diagnostic> found = [.. trees.SelectMany(tree => tree.Diagnostics)];
         SymbolTable symbols = DeclarationPass.Run(trees, found);
+        Binder.Run(trees, symbols, found);
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
         return new(trees, symbols, [.. found.OrderBy(diagnostic => fileOrder[diagnostic.Location.Path]).ThenBy(diagnostic => diagnostic.Location.Span.Start)]);

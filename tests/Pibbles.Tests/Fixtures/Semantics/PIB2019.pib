@@ -1,0 +1,16 @@
+// A function is declared before a story calls it.
+
+@function has_item(id: string) -> bool
+
+== kitchen.door
+@if has_iten("key")
+//  ^^^^^^^^ PIB2019
+    A typo.
+@if lucky()
+//  ^^^^^ PIB2019
+    Never declared.
+
+// Must not trigger
+
+@if has_item("key")
+    Declared.

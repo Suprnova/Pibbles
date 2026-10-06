@@ -1,0 +1,14 @@
+// A comparison needs a side with a type, so a bare name has something to be read against.
+
+@enum position: left, right
+@var $where: position = left
+
+== kitchen.door
+@if left == right
+//  ^^^^^^^^^^^^^ PIB2037
+    Two names.
+
+// Must not trigger
+
+@if $where != left
+    A variable and a name.

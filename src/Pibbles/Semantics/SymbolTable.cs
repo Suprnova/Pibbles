@@ -24,4 +24,7 @@ internal sealed class SymbolTable
 
     /// <summary>Nodes by each of their former full names.</summary>
     public Dictionary<string, NodeSymbol> Aliases { get; } = [];
+
+    /// <summary>Finds a built-in type or a declared enum by name.</summary>
+    public TypeSymbol? FindType(string name) => TypeSymbol.BuiltIn.FirstOrDefault(type => type.Name == name) ?? Enums.GetValueOrDefault(name);
 }

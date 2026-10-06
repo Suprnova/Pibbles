@@ -1,0 +1,19 @@
+// An argument has the type of its parameter.
+
+@enum room: kitchen, cellar
+@function has_item(id: string) -> bool
+@function is_in(where: room) -> bool
+@function after(time: duration) -> bool
+
+== kitchen.door
+@if has_item(3)
+//           ^ PIB2011
+    It's not an item.
+@if is_in("kitchen")
+//        ^^^^^^^^^ PIB2011
+    Rooms aren't quoted.
+
+// Must not trigger
+
+@if has_item("key") and is_in(cellar) and after(2)
+    A number stands in for a duration.

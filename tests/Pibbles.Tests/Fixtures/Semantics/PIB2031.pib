@@ -1,0 +1,21 @@
+// A value has the type of the variable, parameter or statement it's for.
+
+@enum position: left, right
+@var $has_key = false
+@var $count: number = "none"
+//                    ^^^^^^ PIB2031
+@command show(at: position = 1)
+//                           ^ PIB2031
+
+== kitchen.door
+@set $has_key = 3
+//              ^ PIB2031
+@wait "soon"
+//    ^^^^^^ PIB2031
+@set $count += 1s
+//             ^^ PIB2031
+
+// Must not trigger
+
+@wait 1
+@set $count += 2

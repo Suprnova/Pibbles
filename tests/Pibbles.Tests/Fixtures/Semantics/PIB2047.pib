@@ -1,0 +1,16 @@
+// The story uses each node's current name. Old names are for saves and the game's code.
+
+@prefix kitchen
+
+== .door #was:.front_door
+@if visits(.front_door) > 0
+//         ^^^^^^^^^^^ PIB2047
+    The old name, relative.
+@if visits(kitchen.front_door) > 0
+//         ^^^^^^^^^^^^^^^^^^ PIB2047
+    The old name, in full.
+
+// Must not trigger
+
+@if visits(.door) > 0
+    The current name.

@@ -35,7 +35,7 @@ public partial class DiagnosticCatalogTests
     {
         SourceLocation location = new SourceText("story.pib", "").GetLocation(new(0, 0));
 
-        Assert.All(DiagnosticCatalog.All, descriptor => descriptor.Create(location, "first", "second", "third"));
+        Assert.All(DiagnosticCatalog.All, descriptor => descriptor.Create(location, "first", "second", "third", "fourth", "fifth"));
     }
 
     [Fact]

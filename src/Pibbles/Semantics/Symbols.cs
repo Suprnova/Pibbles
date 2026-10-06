@@ -35,6 +35,9 @@ internal abstract class TypeSymbol(string name, SourceLocation? location) : Symb
 
     public static IReadOnlyList<TypeSymbol> BuiltIn { get; } = [Bool, Number, String, Duration, Node, Actor];
 
+    /// <summary>The type as messages write it, with its article: <c>a `number`</c>, <c>an `actor`</c>.</summary>
+    public string Describe() => $"{(Name[0] is 'a' or 'e' or 'i' or 'o' or 'u' ? "an" : "a")} `{Name}`";
+
     private sealed class BuiltInType(string name) : TypeSymbol(name, null);
 }
 

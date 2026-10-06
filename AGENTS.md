@@ -62,7 +62,7 @@ These checklists are where work tends to stop too early. Finish every step.
 
 **Adding a CLI command**
 
-1. Document it in `docs/tooling/design.md`.
+1. Document it in `docs/tooling.md`.
 2. Test it through the command's handler, not by spawning a process.
 
 ## Testing

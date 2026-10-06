@@ -74,13 +74,23 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2010 | Error | I don't know a command called `@shak`. | Did you mean `@shake_screen`? |
 | PIB2011 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
+| PIB2013 | Error | `has_item()` takes only 1 argument. | Remove the extra ones. |
+| PIB2015 | Error | `near()` needs a value for `where`. | Add it in the brackets, in order. |
+| PIB2019 | Error | I don't know a function called `has_iten`. | Did you mean `has_item`? |
 | PIB2020 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
 | PIB2021 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
 | PIB2022 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
+| PIB2023 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB2030 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
+| PIB2031 | Error | `$has_key` holds a `bool`, but this is a `number`. | Use `true` or `false`. |
+| PIB2032 | Error | `$attempts` is a `number`, but a condition has to be true or false. | Did you mean `$attempts > 0`? |
+| PIB2033 | Error | I can't use `<` with a `string` and a `string`. | `<`, `<=`, `>` and `>=` compare two numbers or two durations. |
+| PIB2034 | Error | I don't know what `has_key` means here. | Did you mean `$has_key`? |
+| PIB2036 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
+| PIB2037 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB2045 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB2046 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
-| PIB2047 | Error | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name. |
+| PIB2047 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
 | PIB2060 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
 | PIB2061 | Error | `happy` is already one of Mira's poses. | Remove the second `happy`, or give it another name. |
 | PIB2062 | Error | `if` can't name a command, because Pibbles uses that word after `@`. | Choose another name. |
@@ -498,6 +508,66 @@ Add the `)` where the brackets should close: `@if has_item("key")`.
 
 Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
 
+### PIB2011
+
+**An argument has the type of the parameter it's for.** Arguments fill the parameters in order, and each one is read against its parameter's type, so a bare name like `cellar` is looked up among that type's values. A number also works where a duration is expected, as seconds.
+
+```text
+@function has_item(id: string) -> bool
+
+@if has_item(3)
+```
+
+Use a value of the parameter's type. Here `id` is text, so quote it: `has_item("3")`. The help lists what the type takes.
+
+### PIB2013
+
+**A call has at most as many arguments as the function has parameters.** The extra arguments are marked.
+
+```text
+@function has_item(id: string) -> bool
+
+@if has_item("key", "lamp")
+```
+
+Remove the extra arguments. To check two items, call the function twice: `has_item("key") and has_item("lamp")`.
+
+### PIB2015
+
+**Every parameter without a default needs an argument.** A parameter with a default (`distance: number = 1`) can be left out.
+
+```text
+@function near(who: string, where: string, distance: number = 1) -> bool
+
+@if near("mira")
+```
+
+Add the missing arguments in order: `near("mira", "door")`.
+
+### PIB2019
+
+**A function is declared with `@function` before the story calls it,** since the game has to provide every function the story uses. `visits()` is the one function built into Pibbles.
+
+```text
+@function has_item(id: string) -> bool
+
+@if has_iten("key")
+```
+
+Fix the spelling, or declare the function, so the game knows to provide it.
+
+### PIB2020
+
+**A node name in a `@jump`, a `@call`, `visits()` or a `node` argument names a node in the story,** in full or relative to the file's `@prefix`.
+
+```text
+@prefix kitchen
+
+@if visits(.dor) > 0
+```
+
+Fix the spelling: `visits(.door)`. The help suggests the closest node, written relative if the name was.
+
 ### PIB2021
 
 **A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave`. In a file with no prefix, there's nothing for it to be relative to.
@@ -522,6 +592,112 @@ mira: It hums.
 ```
 
 `kitchen.door` names the first node, so it can't also be an old name of the second. Rename one of them. If a node was renamed and another node now has its old name, the old name has to go: keep `#was:` for names no node uses any more.
+
+### PIB2023
+
+**A prefix is a full node name, so a dot at its start does nothing.** `@prefix .kitchen` works just like `@prefix kitchen`: `.door` still means `kitchen.door`. It's reported so the file reads the way it works, but it's never an error.
+
+```text
+@prefix .kitchen
+```
+
+Remove the dot: `@prefix kitchen`.
+
+### PIB2030
+
+**A variable is declared with `@var` before the story uses it.** Variables hold what the story decides, and saves keep them, so every one is declared once, with its starting value.
+
+```text
+@var $has_key = false
+
+@if $has_kye
+```
+
+Fix the spelling, or declare the variable.
+
+### PIB2031
+
+**A value has the type of what it's for:** a variable keeps the type it's declared with, a parameter's default has the parameter's type, and `@wait` takes a duration. A number works where a duration is expected, as seconds.
+
+```text
+@var $has_key = false
+
+@set $has_key = 3
+```
+
+Use a value of the right type: `@set $has_key = true`. `+=` and `-=` keep the variable's type too, so `@set $count += 1s` is reported when `$count` is a number.
+
+### PIB2032
+
+**A condition is `true` or `false`.** There's no "truthy" value: `0`, empty text and every other value are neither, so the story says which question it's asking.
+
+```text
+@var $attempts = 0
+
+@if $attempts
+```
+
+Write the comparison: `@if $attempts > 0`.
+
+### PIB2033
+
+**Each operator works on certain types,** and values never change type to fit one. `<` compares numbers or durations, `+` adds numbers or durations, or joins text, and `and`, `or` and `not` take `true` or `false`. The [operator types](language/reference.md#operator-types) list every combination.
+
+```text
+@var $name = "Sam"
+
+@if $name < "Tom"
+```
+
+Text isn't ordered, so compare it with `==` or `!=`. To show a number in text, put it in the line as `{$count}` rather than adding it to text with `+`.
+
+### PIB2034
+
+**A bare name is a member of an enum, an actor or a node, so it only goes where one of those is expected:** an argument, a variable's value, or the other side of `==` or `!=`. Anywhere else, such as a whole condition or next to `+` or `and`, it has no type to be read against.
+
+```text
+@var $has_key = false
+
+@if has_key
+```
+
+Variables start with `$`: `@if $has_key`. Text goes in quotes: `has_item("crowbar")`.
+
+### PIB2036
+
+**A bare name is one of the values of the type expected where it appears:** a member of the enum, a declared actor, or a node. The help suggests the closest value, or lists the enum's members.
+
+```text
+@enum position: left, right
+
+@var $where: position = lfet
+```
+
+Fix the spelling, `left`, or add the member to the enum.
+
+### PIB2037
+
+**A bare name is read against the type on the other side of `==` or `!=`,** so two bare names have no type between them, and `left` could be a member of any enum.
+
+```text
+@if left == right
+```
+
+Compare a variable, a function or another value with the name: `@if $where == left`.
+
+### PIB2047
+
+**The story always uses a node's current name.** Old names in `#was:` are for what's outside the story, such as saves and the game's code, so `@jump`, `@call`, `visits()` and `node` arguments use the current one, and old names never pile up in the script. An old name still reaches its node, so the story runs while a rename is half done, and `--warnaserror` keeps old names out of a release.
+
+```text
+@prefix kitchen
+
+== .door #was:.front_door
+
+@if visits(.front_door) > 0
+```
+
+Use the current name: `visits(.door)`.
 
 ### PIB2060
 

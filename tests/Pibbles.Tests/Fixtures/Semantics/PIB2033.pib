@@ -1,0 +1,25 @@
+// Each operator works on certain types.
+
+@var $name = "Sam"
+@var $count = 0
+@var $ready = true
+
+== kitchen.door
+@if $name < "Tom"
+//  ^^^^^^^^^^^^^ PIB2033
+    Text isn't ordered.
+@set $count = $count + "1"
+//            ^^^^^^^^^^^^ PIB2033
+@if not $count
+//  ^^^^^^^^^^ PIB2033
+    A number isn't true or false.
+@set $ready += true
+//   ^^^^^^^^^^^^^^ PIB2033
+
+// Must not trigger
+
+@if $name == "Tom" and $count >= 2
+    Comparisons.
+@set $count = $count * 2 % 3
+@set $name += "!"
+@wait 0.5s * 2

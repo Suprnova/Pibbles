@@ -1,0 +1,16 @@
+// A node name names a node.
+
+@prefix kitchen
+
+== .door
+@if visits(kitchen.dor) > 0
+//         ^^^^^^^^^^^ PIB2020
+    A typo.
+@if visits(.fridge) > 1
+//         ^^^^^^^ PIB2020
+    No such node.
+
+// Must not trigger
+
+@if visits(.door) > 0 and visits(kitchen.door) > 0
+    Both name this node.
