@@ -13,11 +13,11 @@ namespace Pibbles.Semantics;
 /// expected enum, an actor or a node. Anything whose type can't be known gets <see cref="TypeSymbol.Error"/>, which
 /// converts to and from every type, so each problem is reported once.
 /// </remarks>
-internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) : AnalysisPass(diagnostics)
+internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references) : AnalysisPass(diagnostics, references)
 {
-    public static void Run(IReadOnlyList<SyntaxTree> trees, SymbolTable symbols, List<Diagnostic> diagnostics)
+    public static void Run(IReadOnlyList<SyntaxTree> trees, SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references)
     {
-        var binder = new Binder(symbols, diagnostics);
+        var binder = new Binder(symbols, diagnostics, references);
         foreach (SyntaxTree tree in trees)
         {
             binder.Tree = tree;
@@ -141,8 +141,15 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
             return;
         }
 
-        if (line.Pose is not { } pose || actor.Poses.Any(known => known.Name == pose.Text))
+        Refers(speaker.Span, actor);
+        if (line.Pose is not { } pose)
             return;
+
+        if (actor.Poses.FirstOrDefault(known => known.Name == pose.Text) is { } posed)
+        {
+            Refers(pose.Span, posed);
+            return;
+        }
 
         string[] poses = [.. actor.Poses.Select(known => known.Name)];
         string help = Suggestions.Closest(pose.Text, poses) is { } suggestion ? $"Did you mean `{suggestion}`?"
@@ -203,7 +210,11 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
                     BindValue(duration, TypeSymbol.Duration, "`{w}` takes a `duration`");
                     break;
 
-                case IconSyntax icon when !icon.Name.IsMissing && !symbols.Icons.ContainsKey(icon.Name.Text):
+                case IconSyntax icon when symbols.Icons.TryGetValue(icon.Name.Text, out IconSymbol? symbol):
+                    Refers(icon.Name.Span, symbol);
+                    break;
+
+                case IconSyntax icon when !icon.Name.IsMissing:
                     ReportWithOptionalHelp(DiagnosticCatalog.UnknownIcon, icon.Name.Span, icon.Name.Text, Suggestions.Closest(icon.Name.Text, symbols.Icons.Keys));
                     break;
 
@@ -226,6 +237,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
     {
         if (symbols.Markup.TryGetValue(markup.Name.Text, out MarkupSymbol? symbol))
         {
+            Refers(markup.Name.Span, symbol);
             BindArguments($"[{symbol.Name}]", symbol.Parameters, markup.Arguments, markup.Name.Span, named: true);
         }
         else
@@ -264,6 +276,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
             return;
         }
 
+        Refers(name.Span, command);
         if (inline && !command.IsInline)
             Report(DiagnosticCatalog.NotInline, name.Span, name.Text);
 
@@ -279,23 +292,44 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
                 string meant = Suggestions.Closest(tag.Name, symbols.Tags.Keys) is { } closest ? $"Did you mean `#{closest}`? " : "";
                 Report(DiagnosticCatalog.UnknownTag, tag.Span, tag.Name, meant);
             }
-            else if (symbol.ValueType is not { } type)
+            else
             {
-                if (tag.Value is not null)
-                    Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "doesn't take a value", $"Write `#{tag.Name}` on its own.");
-            }
-            else if (tag.Value is null || (tag.Value.Length == 0 && !symbol.AllowsEmpty))
-            {
-                string example = type is EnumSymbol @enum ? @enum.Members[0].Name : "value";
-                Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "needs a value", $"Write a value after the colon: `#{tag.Name}:{example}`.");
-            }
-            else if (type is EnumSymbol @enum && tag.Value.Length > 0 && @enum.Members.All(member => member.Name != tag.Value))
-            {
-                string[] members = [.. @enum.Members.Select(member => member.Name)];
-                string help = Suggestions.Closest(tag.Value, members) is { } closest ? $"Did you mean `#{tag.Name}:{closest}`?" : $"Use one of {Phrase.Or(members)}.";
-                Report(DiagnosticCatalog.TagValueNotMember, tag.Span, tag.Value, @enum.Describe(), tag.Name, help);
+                Refers(new(tag.Span.Start + 1, tag.Name.Length), symbol);
+                BindTagValue(tag, symbol);
             }
         }
+    }
+
+    /// <summary>Checks a declared tag's value: none for a flag, one for a tag with a type, and a member if that type is an enum.</summary>
+    private void BindTagValue(TagSyntax tag, TagSymbol symbol)
+    {
+        if (symbol.ValueType is not { } type)
+        {
+            if (tag.Value is not null)
+                Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "doesn't take a value", $"Write `#{tag.Name}` on its own.");
+
+            return;
+        }
+
+        if (tag.Value is null || (tag.Value.Length == 0 && !symbol.AllowsEmpty))
+        {
+            string example = type is EnumSymbol @enum ? @enum.Members[0].Name : "value";
+            Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "needs a value", $"Write a value after the colon: `#{tag.Name}:{example}`.");
+            return;
+        }
+
+        if (type is not EnumSymbol values || tag.Value.Length == 0)
+            return;
+
+        if (values.Members.FirstOrDefault(member => member.Name == tag.Value) is { } value)
+        {
+            Refers(new(tag.Span.End - tag.Value.Length, tag.Value.Length), value);
+            return;
+        }
+
+        string[] members = [.. values.Members.Select(member => member.Name)];
+        string help = Suggestions.Closest(tag.Value, members) is { } closest ? $"Did you mean `#{tag.Name}:{closest}`?" : $"Use one of {Phrase.Or(members)}.";
+        Report(DiagnosticCatalog.TagValueNotMember, tag.Span, tag.Value, values.Describe(), tag.Name, help);
     }
 
     private void BindSet(SetStatementSyntax set)
@@ -363,7 +397,10 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
             return TypeSymbol.Error;
 
         if (symbols.Variables.TryGetValue(variable.Name, out VariableSymbol? symbol))
+        {
+            Refers(variable.Span, symbol);
             return symbol.Type;
+        }
 
         string? closest = Suggestions.Closest(variable.Name, symbols.Variables.Keys);
         ReportWithOptionalHelp(DiagnosticCatalog.UnknownVariable, variable.Span, $"${variable.Name}", closest is null ? null : $"${closest}");
@@ -381,13 +418,21 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
 
         if (expected is EnumSymbol @enum)
         {
-            return @enum.Members.Any(member => member.Name == name.Name)
-                ? @enum
-                : NotValueOf(name, @enum, @enum.Members.Select(member => member.Name), $"Use one of {Phrase.Or(@enum.Members.Select(member => member.Name))}.");
+            if (@enum.Members.FirstOrDefault(member => member.Name == name.Name) is not { } member)
+                return NotValueOf(name, @enum, @enum.Members.Select(member => member.Name), $"Use one of {Phrase.Or(@enum.Members.Select(member => member.Name))}.");
+
+            Refers(name.Span, member);
+            return @enum;
         }
 
         if (expected == TypeSymbol.Actor)
-            return symbols.Actors.ContainsKey(name.Name) ? TypeSymbol.Actor : NotValueOf(name, TypeSymbol.Actor, symbols.Actors.Keys, null);
+        {
+            if (!symbols.Actors.TryGetValue(name.Name, out ActorSymbol? actor))
+                return NotValueOf(name, TypeSymbol.Actor, symbols.Actors.Keys, null);
+
+            Refers(name.Span, actor);
+            return TypeSymbol.Actor;
+        }
 
         string? meant = symbols.Variables.ContainsKey(name.Name) ? $"Did you mean `${name.Name}`?"
             : expected == TypeSymbol.String ? $"If it's text, put it in quotes: `\"{name.Name}\"`."
@@ -408,11 +453,15 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
         if (FullName(written, span) is not { } name)
             return TypeSymbol.Error;
 
-        if (symbols.Nodes.ContainsKey(name))
+        if (symbols.Nodes.TryGetValue(name, out NodeSymbol? node))
+        {
+            Refers(span, node);
             return TypeSymbol.Node;
+        }
 
         if (symbols.Aliases.TryGetValue(name, out NodeSymbol? current))
         {
+            Refers(span, current);
             Report(DiagnosticCatalog.OldNodeName, span, written, AsWritten(current.Name, written));
             return TypeSymbol.Node;
         }
@@ -441,6 +490,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
             return TypeSymbol.Error;
         }
 
+        Refers(call.Function.Span, function);
         ArgumentSyntax[] arguments = [.. call.Arguments.Select(argument => new ArgumentSyntax(null, argument) { Span = argument.Span })];
         BindArguments($"{function.Name}()", function.Parameters, arguments, call.Span, named: false);
         return function.ReturnType;
@@ -479,10 +529,14 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
                     misnamed = true;
                     ReportWithOptionalHelp(DiagnosticCatalog.UnknownParameter, name.Span, owner, name.Text, Suggestions.Closest(name.Text, parameters.Select(candidate => candidate.Name)));
                 }
-                else if (given.Contains(parameter))
+                else
                 {
-                    Report(DiagnosticCatalog.RepeatedArgument, argument.Span, owner, parameter.Name);
-                    parameter = null;
+                    Refers(name.Span, parameter);
+                    if (given.Contains(parameter))
+                    {
+                        Report(DiagnosticCatalog.RepeatedArgument, argument.Span, owner, parameter.Name);
+                        parameter = null;
+                    }
                 }
             }
 

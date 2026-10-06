@@ -13,15 +13,15 @@ namespace Pibbles.Semantics;
 /// missing type can be suggested from every other name. A name with a problem is still declared, so the places that
 /// use it don't report it again; a duplicate isn't, and the first declaration wins.
 /// </remarks>
-internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPass(diagnostics)
+internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceIndex references) : AnalysisPass(diagnostics, references)
 {
     private readonly SymbolTable symbols = new();
     private readonly Dictionary<string, SourceLocation> nodeNames = [];
     private bool builtIn;
 
-    public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics)
+    public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics, ReferenceIndex references)
     {
-        var pass = new DeclarationPass(diagnostics);
+        var pass = new DeclarationPass(diagnostics, references);
         pass.ForEachFile(trees, pass.DeclareEnums);
         pass.ForEachFile(trees, pass.DeclareOthers);
         pass.ForEachFile(trees, pass.DeclareVariables);
@@ -142,7 +142,11 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
 
             bool valid = CheckName(name, kind);
             if (declared.All(symbol => symbol.Name != name.Text))
-                declared.Add(create(item));
+            {
+                T symbol = create(item);
+                declared.Add(symbol);
+                DeclaresIfWritten(name.Span, symbol);
+            }
             else if (valid)
                 Report(DiagnosticCatalog.RepeatedName, name.Span, name.Text, listName);
         }
@@ -158,6 +162,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
         List<string> aliases = [];
         var symbol = new NodeSymbol(name, Location(node.Name.Span), aliases);
         symbols.Nodes.Add(name, symbol);
+        Declares(node.Name.Span, symbol);
 
         foreach (NameSyntax alias in node.Aliases)
         {
@@ -165,6 +170,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
             {
                 aliases.Add(old);
                 symbols.Aliases.Add(old, symbol);
+                Declares(alias.Span, symbol);
             }
         }
     }
@@ -193,7 +199,10 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
 
         bool valid = CheckName(name, kind, shown);
         if (!table.TryGetValue(name.Text, out T? first))
+        {
             table.Add(name.Text, symbol);
+            DeclaresIfWritten(name.Span, symbol);
+        }
         else if (valid)
             Report(DiagnosticCatalog.DuplicateDeclaration, name.Span, kind.Describe(), shown ?? name.Text, first.Location is { } location ? Where(location) : "built into Pibbles");
     }
@@ -225,7 +234,12 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
             return TypeSymbol.Error;
 
         if (symbols.FindType(name.Text) is { } found)
+        {
+            if (found is EnumSymbol && !builtIn)
+                Refers(name.Span, found);
+
             return found;
+        }
 
         string? suggestion = Suggestions.Closest(name.Text, [.. TypeSymbol.BuiltIn.Select(type => type.Name), .. symbols.Enums.Keys]);
         ReportWithOptionalHelp(DiagnosticCatalog.UnknownType, name.Span, name.Text, suggestion);
@@ -271,4 +285,11 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics) : AnalysisPa
     }
 
     private SourceLocation? Location(TextSpan span) => builtIn ? null : Tree.Source.GetLocation(span);
+
+    /// <summary>Records a declaration, unless it's built in, since nothing in the story writes those.</summary>
+    private void DeclaresIfWritten(TextSpan span, Symbol symbol)
+    {
+        if (!builtIn)
+            Declares(span, symbol);
+    }
 }

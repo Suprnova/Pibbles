@@ -10,10 +10,11 @@ namespace Pibbles.Semantics;
 /// </remarks>
 public sealed class Compilation
 {
-    private Compilation(IReadOnlyList<SyntaxTree> syntaxTrees, SymbolTable symbols, IReadOnlyList<Diagnostic> diagnostics)
+    private Compilation(IReadOnlyList<SyntaxTree> syntaxTrees, SymbolTable symbols, SemanticModel model, IReadOnlyList<Diagnostic> diagnostics)
     {
         SyntaxTrees = syntaxTrees;
         Symbols = symbols;
+        Model = model;
         Diagnostics = diagnostics;
     }
 
@@ -26,6 +27,9 @@ public sealed class Compilation
     /// </summary>
     public IReadOnlyList<Diagnostic> Diagnostics { get; }
 
+    /// <summary>What the story means: its symbols, and which symbol each name refers to.</summary>
+    public SemanticModel Model { get; }
+
     internal SymbolTable Symbols { get; }
 
     /// <summary>Compiles a story.</summary>
@@ -34,11 +38,13 @@ public sealed class Compilation
     {
         SyntaxTree[] trees = [.. sources.Select(SyntaxTree.Parse)];
         List<Diagnostic> found = [.. trees.SelectMany(tree => tree.Diagnostics)];
-        SymbolTable symbols = DeclarationPass.Run(trees, found);
-        Binder.Run(trees, symbols, found);
+        var references = new ReferenceIndex();
+        SymbolTable symbols = DeclarationPass.Run(trees, found, references);
+        Binder.Run(trees, symbols, found, references);
+        FlowChecks.Run(trees, found);
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
-        return new(trees, symbols,
+        return new(trees, symbols, new SemanticModel(symbols, references),
         [
             .. found
                 .Select(diagnostic => diagnostic.NameSpeakers(speaker => symbols.Actors.GetValueOrDefault(speaker)?.DisplayName))

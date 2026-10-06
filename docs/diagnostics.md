@@ -106,6 +106,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2066 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
 | PIB2067 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
+| PIB3002 | Info | This option has no text. | Write what the player picks after the `->`. |
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
 | PIB3011 | Error | The line ID `k7qp2x` is also used at rooms/cellar.pib:40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
 
@@ -956,6 +957,28 @@ Use `@tag count: string`, or declare an enum with the values the tag can take an
 ```
 
 Write the type after the variable: `@var $where: position = left`.
+
+### PIB3001
+
+**A statement that always leaves its block, `@jump`, `@end` or `@return`, means nothing after it in that block runs.** An `@if` whose every branch leaves, `@else` included, counts too. Conditions are never worked out, so the check only goes by which statements are there: a choice or a variation never counts, since a choice is skipped when no option is available. Only the first line that never runs in a block is reported.
+
+```text
+@jump kitchen.leave
+mira: Wait!
+```
+
+Remove the line, or move it above the `@jump`. If it should only run sometimes, put the `@jump` in an `@if`.
+
+### PIB3002
+
+**An option with no text shows up as an empty choice,** which is usually a forgotten line. It's information, not an error: the story runs, and the game decides what an empty option looks like, so a project that uses empty options on purpose can turn this off.
+
+```text
+->
+    mira: Hm.
+```
+
+Write what the player picks after the `->`: `-> Think about it`.
 
 ## With extensions
 

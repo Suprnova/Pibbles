@@ -197,6 +197,7 @@ mira (sad):
 - **When a choice is reached:** options removed by `@once` are left out. Every other option goes to the host with its tags, an `IsAvailable` flag, and a `WasChosen` flag. The host decides whether an unavailable option is hidden or shown greyed out, for example with a `#show_disabled` tag of its own.
 - **Availability and option text are evaluated when the choice is reached,** and again when a save restores it, so a restored choice reflects the current state.
 - **If no option is available,** the choice is skipped.
+- **An option's text may be empty** (`->` on its own, or `-> @if $has_key`). The host decides what an empty option looks like, and the analyzer points it out in case the text was forgotten.
 - **Picking an option records it as chosen** (for `WasChosen` and `@once`) before its body runs, so a save made inside the body already counts it. The host may only pick an available option.
 - **After an option's body finishes** (without `@jump` or `@end`), flow continues at the first line after the whole choice.
 - The chosen option's text is **not** repeated as a line.

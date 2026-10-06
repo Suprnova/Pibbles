@@ -3,8 +3,11 @@ using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
 
-/// <summary>What the analysis passes share: the file being analyzed, reporting in it, and expanding its relative node names.</summary>
-internal abstract class AnalysisPass(List<Diagnostic> diagnostics)
+/// <summary>
+/// What the analysis passes share: the file being analyzed, reporting in it, recording the names in it that refer to
+/// symbols, and expanding its relative node names.
+/// </summary>
+internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceIndex references)
 {
     /// <summary>The file being analyzed.</summary>
     protected SyntaxTree Tree { get; set; } = null!;
@@ -35,6 +38,12 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics)
     /// <summary>Says where <paramref name="location"/> is, from the file being analyzed: <c>on line 3</c>, or <c>in story/cast.pib on line 3</c>.</summary>
     protected string Where(SourceLocation location) =>
         location.Path == Tree.Source.Path ? $"on line {location.Start.Line + 1}" : $"in {location.Path} on line {location.Start.Line + 1}";
+
+    /// <summary>Records that the name at <paramref name="span"/> declares <paramref name="symbol"/>.</summary>
+    protected void Declares(TextSpan span, Symbol symbol) => references.Add(Tree.Source.GetLocation(span), symbol, isDeclaration: true);
+
+    /// <summary>Records that the name at <paramref name="span"/> refers to <paramref name="symbol"/>.</summary>
+    protected void Refers(TextSpan span, Symbol symbol) => references.Add(Tree.Source.GetLocation(span), symbol, isDeclaration: false);
 
     protected void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
         diagnostics.Add(descriptor.Create(Tree.Source.GetLocation(span), arguments));

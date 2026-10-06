@@ -17,9 +17,19 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
    - **Speakers.** A text line's speaker is a declared actor, and its pose one of the actor's poses. A narration line that almost looks like a speaker is reported, never quietly shown: a parenthesis that isn't a single pose (`mira (to Rex):`), and a declared actor with no space after the colon (`mira:Hi`). It reads the line with the parser's own `SpeakerScanner`, so the two never disagree on what a speaker is.
    - **Text** binds markup with its arguments, inline commands (which must be declared `inline`), icons, `{w}` durations, `{if}` conditions, and shown values, which are text, numbers or actors. Tags are declared, and take a value exactly when they're declared with a type.
    - **The error type** is what anything gets when its type can't be known, because of a problem already reported, such as an unknown variable. It converts to and from every type, and no check reports on it, so one mistake is reported once however deep it sits in an expression.
-3. **Flow and content checks.** Unreachable statements after `@jump`/`@end`/`@return`, empty choices, missing or duplicate line IDs, and nodes never referenced (reported as information only, because the host starts nodes by name). What option text may contain is a [syntax check](syntax.md#syntax-checks).
+3. **Flow and content checks.** Statements that never run, options with no text, and missing or duplicate line IDs. What option text may contain is a [syntax check](syntax.md#syntax-checks).
+   - **Statements that never run (PIB3001).** A statement always leaves its block when it's `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose every branch always leaves. The first statement after one in the same block is reported, once per block. It's decided from the statements alone: conditions are never evaluated and values never tracked, so `@if false` is like any other condition. Choices and variations never count as leaving, since a choice is skipped when no option is available and a variation's block can be skipped too.
+   - **Options with no text (PIB3002)** are information, not errors. The story runs, and the host decides what an empty option looks like, so a game that wants one turns the code off.
 
-The result is exposed as a `SemanticModel`. It answers the questions the language server asks: the symbol at a position, the references to a symbol, and the declaration of a symbol. Designing this API into the model from the start is what makes the language server a thin layer later.
+### The semantic model
+
+`Compilation.Model` is a `SemanticModel`. It answers the questions the language server asks, and designing it in from the start is what makes the language server a thin layer later:
+
+- **`GetSymbolAt(path, position)`** gives the symbol a name refers to, where it's used or where it's declared. A position just past a name's end still counts, as a cursor there does.
+- **`FindReferences(symbol)`** gives every use of a symbol, not counting its declaration, which is the symbol's `Location`. Built-in symbols have no location.
+- **`Symbols<T>()`** lists the symbols of one kind, the built-in ones included, for completion. Poses, enum members and parameters are listed along with what they belong to.
+
+The passes record every name that refers to a symbol as they resolve it: speakers, poses, commands and named parameters, markup, icons, tags and enum values in tags, functions, variables, bare names, node references, and enums named as types. A node's old names in `#was:` count as declarations of the node, and a use of an old name refers to the node itself. The symbols are public, and everything that builds them stays internal.
 
 ## Style rules
 
@@ -494,7 +504,7 @@ Compliant: remove it, or use it.
 | Long nodes | Visual novel scenes are long by nature, so the rule would mostly fire on well-written scenes |
 | A choice with a single option | Often deliberate, for pacing (`-> Continue`) |
 | Any raw color, even used once | One-off colors are legitimate. Repeats are the real signal (PIB5004). |
-| Unreferenced nodes | The host starts nodes by name, so "unreferenced" is normal. This is already an info diagnostic in the semantic checks. |
+| Unreferenced nodes | The host starts nodes by name, so "unreferenced" is normal, and only the host knows which nodes it starts. An engine-agnostic core can't learn that from one engine's adapter. If a need comes up, the host passes its entry nodes to the compilation and the check returns as a warning. Until then, Find References shows a node nothing uses. |
 | Variables that are set but never read | The game's code often reads them (achievements, UI), so there would be too many false alarms |
 | A missing `///` note on a line with conditional text | Whether a note is needed is a judgement call |
 

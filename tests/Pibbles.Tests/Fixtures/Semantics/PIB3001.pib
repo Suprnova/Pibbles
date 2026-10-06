@@ -1,0 +1,33 @@
+// A line after one that always leaves its block never runs.
+
+@var $door_open = false
+
+== kitchen.door
+@jump kitchen.leave
+The door creaks.
+// PIB3001
+
+== kitchen.cellar
+@if $door_open
+    @end
+    Unreachable inside the block.
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB3001
+@else
+    @return
+Unreachable after the whole `@if`.
+// PIB3001
+Only the first one in a block is reported.
+
+// Must not trigger
+
+== kitchen.leave
+@if $door_open
+    @jump kitchen.door
+Without an `@else`, this runs when the condition is false.
+-> Stay
+    @end
+-> Go
+    @jump kitchen.door
+After a choice, this runs if no option is available.
+@if false
+    The condition is never evaluated.

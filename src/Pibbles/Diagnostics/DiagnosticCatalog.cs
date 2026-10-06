@@ -602,6 +602,21 @@ public static class DiagnosticCatalog
         "`{0}` starts as `{1}`, so I need its type written out.",
         help: "Write the type after the variable: `{2}`.");
 
+    /// <summary>PIB3001: a statement after one that always leaves its block.</summary>
+    /// <remarks>Arguments: why it never runs, such as <c>of the `@jump` above it</c>, and the statement that leaves, such as <c>@jump</c>.</remarks>
+    public static DiagnosticDescriptor NeverRuns { get; } = new(
+        "PIB3001",
+        DiagnosticSeverity.Warning,
+        "This line never runs, because {0}.",
+        help: "Remove it, or move it above the `{1}`.");
+
+    /// <summary>PIB3002: an option with no text.</summary>
+    public static DiagnosticDescriptor EmptyOption { get; } = new(
+        "PIB3002",
+        DiagnosticSeverity.Info,
+        "This option has no text.",
+        help: "Write what the player picks after the `->`.");
+
     /// <summary>Every registered descriptor.</summary>
     public static IReadOnlyList<DiagnosticDescriptor> All { get; } =
     [
@@ -679,5 +694,7 @@ public static class DiagnosticCatalog
         RequiredAfterOptional,
         TagValueType,
         UntypedVariable,
+        NeverRuns,
+        EmptyOption,
     ];
 }

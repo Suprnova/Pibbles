@@ -1,0 +1,13 @@
+// An option has text, unless the game deliberately shows an empty one.
+
+== kitchen.door
+->
+// PIB3002
+    Nothing to read.
+-> @if true
+// PIB3002
+-> Leave
+
+// Must not trigger
+
+-> Stay

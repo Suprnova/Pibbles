@@ -9,8 +9,9 @@
 @if visits(.fridge) > 1
 //         ^^^^^^^ PIB2020
     No such node.
-@jump .fridge
-//    ^^^^^^^ PIB2020
+@if visits(.door) > 2
+    @jump .fridge
+//        ^^^^^^^ PIB2020
 @call kitchen.dor
 //    ^^^^^^^^^^^ PIB2020
 

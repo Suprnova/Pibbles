@@ -25,6 +25,20 @@ internal sealed class SymbolTable
     /// <summary>Nodes by each of their former full names.</summary>
     public Dictionary<string, NodeSymbol> Aliases { get; } = [];
 
+    /// <summary>Every symbol, with the poses, enum members and parameters that belong to them.</summary>
+    public IEnumerable<Symbol> All() =>
+    [
+        .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Poses]),
+        .. Enums.Values.SelectMany(@enum => (IEnumerable<Symbol>)[@enum, .. @enum.Members]),
+        .. Variables.Values,
+        .. Commands.Values.SelectMany(command => (IEnumerable<Symbol>)[command, .. command.Parameters]),
+        .. Markup.Values.SelectMany(markup => (IEnumerable<Symbol>)[markup, .. markup.Parameters]),
+        .. Icons.Values,
+        .. Tags.Values,
+        .. Functions.Values.SelectMany(function => (IEnumerable<Symbol>)[function, .. function.Parameters]),
+        .. Nodes.Values,
+    ];
+
     /// <summary>Finds a built-in type or a declared enum by name.</summary>
     public TypeSymbol? FindType(string name) => TypeSymbol.BuiltIn.FirstOrDefault(type => type.Name == name) ?? Enums.GetValueOrDefault(name);
 }
