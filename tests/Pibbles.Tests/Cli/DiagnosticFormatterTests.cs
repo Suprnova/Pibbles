@@ -1,5 +1,6 @@
 using Pibbles.Cli.Output;
 using Pibbles.Diagnostics;
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 
 namespace Pibbles.Tests.Cli;
@@ -15,12 +16,12 @@ public sealed class DiagnosticFormatterTests : IDisposable
     {
         string text = "== kitchen.door\n" + string.Concat(Enumerable.Repeat("Narration.\n", 10)) + "mira: I'm #winning today.\n";
         var source = new SourceText("story/kitchen.pib", text);
-        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+        var cast = new SourceText("story/cast.pib", "@actor mira\n    name: Mira\n");
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([cast, source]).Diagnostics);
 
         DiagnosticFormatter.WritePretty(output, source, diagnostic, color: false);
 
-        // The documented help names Mira by her display name, which only the binder knows. Until it exists, the help uses the ID.
-        Assert.Equal(DocumentedExample().Replace("what Mira says", "what mira says", StringComparison.Ordinal), output.ToString().ReplaceLineEndings("\n"));
+        Assert.Equal(DocumentedExample(), output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Fact]

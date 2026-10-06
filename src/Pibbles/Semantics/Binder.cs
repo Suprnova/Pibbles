@@ -4,8 +4,9 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// Resolves the names in a story against its <see cref="SymbolTable"/>, and checks the type of every expression: in
-/// variables' values, parameters' defaults, conditions, <c>@set</c> and <c>@wait</c>.
+/// Resolves the names in a story against its <see cref="SymbolTable"/>: speakers and poses, commands, markup, icons,
+/// tags, functions, variables and nodes. It checks every argument against its parameter, and the type of every
+/// expression: in variables' values, parameters' defaults, conditions, arguments, <c>@set</c>, <c>@wait</c> and text.
 /// </summary>
 /// <remarks>
 /// An expression is bound with the type expected where it appears, which is how a bare name is read: as a member of the
@@ -70,15 +71,34 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
                     BindStatements(@if.Else?.Body ?? []);
                     break;
 
+                case TextLineSyntax line:
+                    BindTextLine(line);
+                    break;
+
                 case ChoiceSyntax choice:
                     foreach (OptionSyntax option in choice.Options)
                     {
+                        BindInline(option.Text);
                         if (option.Condition is { } condition)
                             BindCondition(condition);
 
+                        BindTags(option.Tags);
                         BindStatements(option.Body);
                     }
 
+                    break;
+
+                case CommandStatementSyntax command:
+                    BindCommand(command.Command, command.Arguments, command.Span, inline: false);
+                    break;
+
+                case JumpStatementSyntax jump:
+                    BindNode(jump.Target.Text, jump.Target.Span);
+                    break;
+
+                case CallStatementSyntax call:
+                    BindNode(call.Target.Text, call.Target.Span);
+                    BindTags(call.Tags);
                     break;
 
                 case VariationStatementSyntax variation:
@@ -97,6 +117,183 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
                 case WaitStatementSyntax wait:
                     BindValue(wait.Duration, TypeSymbol.Duration, "`@wait` takes a `duration`");
                     break;
+            }
+        }
+    }
+
+    private void BindTextLine(TextLineSyntax line)
+    {
+        if (line.Speaker is { } speaker)
+            BindSpeaker(line, speaker);
+        else
+            CheckNarration(line);
+
+        BindInline(line.Content);
+        BindTags(line.Tags);
+    }
+
+    private void BindSpeaker(TextLineSyntax line, NameSyntax speaker)
+    {
+        if (!symbols.Actors.TryGetValue(speaker.Text, out ActorSymbol? actor))
+        {
+            string meant = Suggestions.Closest(speaker.Text, symbols.Actors.Keys) is { } closest ? $"Did you mean `{closest}`? " : "";
+            Report(DiagnosticCatalog.UnknownSpeaker, speaker.Span, speaker.Text, meant, BeforeColon(line));
+            return;
+        }
+
+        if (line.Pose is not { } pose || actor.Poses.Any(known => known.Name == pose.Text))
+            return;
+
+        string[] poses = [.. actor.Poses.Select(known => known.Name)];
+        string help = Suggestions.Closest(pose.Text, poses) is { } suggestion ? $"Did you mean `{suggestion}`?"
+            : poses.Length switch
+            {
+                0 => $"Give {actor.DisplayName} poses with `poses:` under `@actor {actor.Name}`.",
+                1 => $"{actor.DisplayName}'s only pose is {Phrase.And(poses)}.",
+                _ => $"{actor.DisplayName}'s poses are {Phrase.And(poses)}.",
+            };
+        Report(DiagnosticCatalog.UnknownPose, pose.Span, actor.DisplayName, pose.Text, help);
+    }
+
+    /// <summary>
+    /// Reports narration that almost looks like a speaker, so a mistake never shows as narration: a parenthesis that
+    /// isn't a single pose, or a declared actor with no space after the colon.
+    /// </summary>
+    private void CheckNarration(TextLineSyntax line)
+    {
+        if (SpeakerScanner.Scan(Tree.Source.Text, line.Span.Start, line.Span.End) is not { } prefix)
+            return;
+
+        string before = TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start));
+        if (prefix is { Parentheses: { } parentheses, Pose: null })
+        {
+            Report(DiagnosticCatalog.NotPose, parentheses, TextOf(parentheses), before);
+        }
+        else if (symbols.Actors.ContainsKey(TextOf(prefix.Name)))
+        {
+            int textEnd = line.Tags.Count > 0 ? line.Tags[0].Span.Start : line.Span.End;
+            string after = TextOf(new(prefix.Colon + 1, textEnd - prefix.Colon - 1)).TrimEnd();
+            Report(DiagnosticCatalog.NoSpaceAfterSpeaker, new(line.Span.Start, prefix.Colon + 1 - line.Span.Start), before, $"{before}\\:{after}");
+        }
+    }
+
+    /// <summary>A text line's start up to its speaker's colon, as written.</summary>
+    private string BeforeColon(TextLineSyntax line) =>
+        SpeakerScanner.Scan(Tree.Source.Text, line.Span.Start, line.Span.End) is { } prefix ? TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start)) : "";
+
+    private void BindInline(IEnumerable<InlineSyntax> content)
+    {
+        foreach (InlineSyntax item in content)
+        {
+            switch (item)
+            {
+                case MarkupSyntax markup:
+                    BindMarkup(markup);
+                    break;
+
+                case InterpolationSyntax interpolation:
+                    BindInterpolation(interpolation);
+                    break;
+
+                case InlineCommandSyntax command:
+                    BindCommand(command.Command, command.Arguments, command.Span, inline: true);
+                    break;
+
+                case PauseSyntax { Duration: { } duration }:
+                    BindValue(duration, TypeSymbol.Duration, "`{w}` takes a `duration`");
+                    break;
+
+                case IconSyntax icon when !icon.Name.IsMissing && !symbols.Icons.ContainsKey(icon.Name.Text):
+                    ReportWithOptionalHelp(DiagnosticCatalog.UnknownIcon, icon.Name.Span, icon.Name.Text, Suggestions.Closest(icon.Name.Text, symbols.Icons.Keys));
+                    break;
+
+                case ConditionalTextSyntax conditional:
+                    BindCondition(conditional.Condition);
+                    BindInline(conditional.Content);
+                    foreach (ElseIfTextSyntax elseIf in conditional.ElseIfs)
+                    {
+                        BindCondition(elseIf.Condition);
+                        BindInline(elseIf.Content);
+                    }
+
+                    BindInline(conditional.Else?.Content ?? []);
+                    break;
+            }
+        }
+    }
+
+    private void BindMarkup(MarkupSyntax markup)
+    {
+        if (symbols.Markup.TryGetValue(markup.Name.Text, out MarkupSymbol? symbol))
+        {
+            BindArguments($"[{symbol.Name}]", symbol.Parameters, markup.Arguments, markup.Name.Span, named: true);
+        }
+        else
+        {
+            if (!markup.Name.IsMissing)
+                ReportWithOptionalHelp(DiagnosticCatalog.UnknownMarkup, markup.Name.Span, markup.Name.Text, Suggestions.Closest(markup.Name.Text, symbols.Markup.Keys));
+
+            BindUnmatched(markup.Arguments);
+        }
+
+        BindInline(markup.Content);
+    }
+
+    /// <summary>A value shown in text, which is text, a number formatted for the player's language, or an actor's display name.</summary>
+    private void BindInterpolation(InterpolationSyntax interpolation)
+    {
+        TypeSymbol type = Bind(interpolation.Value);
+        if (type == TypeSymbol.Error || type == TypeSymbol.String || type == TypeSymbol.Number || type == TypeSymbol.Actor)
+            return;
+
+        string text = TextOf(interpolation.Value.Span);
+        string help = type == TypeSymbol.Bool ? $"Show text that depends on it instead: `{{if {text}}}…{{else}}…{{/if}}`."
+            : type is EnumSymbol @enum ? $"Show text that depends on it instead, like `{{if {text} == {@enum.Members[0].Name}}}…{{/if}}`."
+            : "Show text that depends on it with `{if …}…{/if}`, or call a function that returns text.";
+        Report(DiagnosticCatalog.NotShowable, interpolation.Span, text, type.Describe(), help);
+    }
+
+    private void BindCommand(NameSyntax name, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool inline)
+    {
+        if (!symbols.Commands.TryGetValue(name.Text, out CommandSymbol? command))
+        {
+            if (!name.IsMissing)
+                ReportWithOptionalHelp(DiagnosticCatalog.UnknownCommand, name.Span, name.Text, Suggestions.Closest(name.Text, symbols.Commands.Keys));
+
+            BindUnmatched(arguments);
+            return;
+        }
+
+        if (inline && !command.IsInline)
+            Report(DiagnosticCatalog.NotInline, name.Span, name.Text);
+
+        BindArguments($"@{command.Name}", command.Parameters, arguments, span, named: true);
+    }
+
+    private void BindTags(IEnumerable<TagSyntax> tags)
+    {
+        foreach (TagSyntax tag in tags.Where(tag => tag.Name is not ("id" or "was")))
+        {
+            if (!symbols.Tags.TryGetValue(tag.Name, out TagSymbol? symbol))
+            {
+                string meant = Suggestions.Closest(tag.Name, symbols.Tags.Keys) is { } closest ? $"Did you mean `#{closest}`? " : "";
+                Report(DiagnosticCatalog.UnknownTag, tag.Span, tag.Name, meant);
+            }
+            else if (symbol.ValueType is not { } type)
+            {
+                if (tag.Value is not null)
+                    Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "doesn't take a value", $"Write `#{tag.Name}` on its own.");
+            }
+            else if (tag.Value is null || (tag.Value.Length == 0 && !symbol.AllowsEmpty))
+            {
+                string example = type is EnumSymbol @enum ? @enum.Members[0].Name : "value";
+                Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "needs a value", $"Write a value after the colon: `#{tag.Name}:{example}`.");
+            }
+            else if (type is EnumSymbol @enum && tag.Value.Length > 0 && @enum.Members.All(member => member.Name != tag.Value))
+            {
+                string[] members = [.. @enum.Members.Select(member => member.Name)];
+                string help = Suggestions.Closest(tag.Value, members) is { } closest ? $"Did you mean `#{tag.Name}:{closest}`?" : $"Use one of {Phrase.Or(members)}.";
+                Report(DiagnosticCatalog.TagValueNotMember, tag.Span, tag.Value, @enum.Describe(), tag.Name, help);
             }
         }
     }
@@ -244,34 +441,85 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics) 
             return TypeSymbol.Error;
         }
 
-        BindArguments($"{function.Name}()", function.Parameters, call.Arguments, call.Span);
+        ArgumentSyntax[] arguments = [.. call.Arguments.Select(argument => new ArgumentSyntax(null, argument) { Span = argument.Span })];
+        BindArguments($"{function.Name}()", function.Parameters, arguments, call.Span, named: false);
         return function.ReturnType;
     }
 
-    /// <summary>Matches arguments to parameters in order, binding each against its parameter's type.</summary>
-    private void BindArguments(string owner, IReadOnlyList<ParameterSymbol> parameters, IReadOnlyList<ExpressionSyntax> arguments, TextSpan span)
+    /// <summary>
+    /// Matches arguments to parameters, binding each against its parameter's type: positional ones in order, then named
+    /// ones by name. Every parameter without a default needs one, unless an argument's name is unknown, since that
+    /// argument was most likely meant for it.
+    /// </summary>
+    /// <param name="owner">What takes the arguments, as messages write it: <c>@show</c>, <c>[wave]</c> or <c>has_item()</c>.</param>
+    /// <param name="parameters">The owner's parameters.</param>
+    /// <param name="arguments">The arguments, positional ones first.</param>
+    /// <param name="span">Where a missing argument is reported.</param>
+    /// <param name="named">Whether arguments can be named, which says how a missing one can be added.</param>
+    private void BindArguments(string owner, IReadOnlyList<ParameterSymbol> parameters, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool named)
     {
-        foreach ((ExpressionSyntax argument, ParameterSymbol? parameter) in arguments.Select((argument, index) => (argument, parameters.ElementAtOrDefault(index))))
+        HashSet<ParameterSymbol> given = [];
+        List<ArgumentSyntax> extra = [];
+        bool misnamed = false;
+        int next = 0;
+        foreach (ArgumentSyntax argument in arguments)
         {
-            TypeSymbol type = Bind(argument, parameter?.Type ?? TypeSymbol.Error);
+            ParameterSymbol? parameter;
+            if (argument.Name is not { } name)
+            {
+                parameter = parameters.ElementAtOrDefault(next++);
+                if (parameter is null)
+                    extra.Add(argument);
+            }
+            else
+            {
+                parameter = parameters.FirstOrDefault(candidate => candidate.Name == name.Text);
+                if (parameter is null)
+                {
+                    misnamed = true;
+                    ReportWithOptionalHelp(DiagnosticCatalog.UnknownParameter, name.Span, owner, name.Text, Suggestions.Closest(name.Text, parameters.Select(candidate => candidate.Name)));
+                }
+                else if (given.Contains(parameter))
+                {
+                    Report(DiagnosticCatalog.RepeatedArgument, argument.Span, owner, parameter.Name);
+                    parameter = null;
+                }
+            }
+
+            if (parameter is not null)
+                given.Add(parameter);
+
+            TypeSymbol type = Bind(argument.Value, parameter?.Type ?? TypeSymbol.Error);
             if (parameter is not null && !Converts(type, parameter.Type))
-                ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Span, owner, parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
+                ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Value.Span, owner, parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
         }
 
-        if (arguments.Count > parameters.Count)
+        if (extra.Count > 0)
         {
             string takes = parameters.Count switch { 0 => "no arguments", 1 => "only 1 argument", var count => $"only {count} arguments" };
-            Report(DiagnosticCatalog.TooManyArguments, new(arguments[parameters.Count].Span.Start, arguments[^1].Span.End - arguments[parameters.Count].Span.Start), owner, takes);
+            Report(DiagnosticCatalog.TooManyArguments, new(extra[0].Span.Start, extra[^1].Span.End - extra[0].Span.Start), owner, takes);
         }
 
-        string[] missing = [.. parameters.Skip(arguments.Count).Where(parameter => !parameter.IsOptional).Select(parameter => parameter.Name)];
-        if (missing.Length > 0)
+        string[] missing = [.. parameters.Where(parameter => !parameter.IsOptional && !given.Contains(parameter)).Select(parameter => parameter.Name)];
+        if (missing.Length > 0 && !misnamed)
         {
-            (string needs, string help) = missing.Length == 1
-                ? ($"a value for {Phrase.And(missing)}", "Add it in the brackets, in order.")
-                : ($"values for {Phrase.And(missing)}", "Add them in the brackets, in order.");
+            string needs = missing.Length == 1 ? $"a value for {Phrase.And(missing)}" : $"values for {Phrase.And(missing)}";
+            string help = (named, missing.Length) switch
+            {
+                (true, 1) => $"Add it after the others, or by name: `{missing[0]}=…`.",
+                (true, _) => $"Add them after the others, or by name, like `{missing[0]}=…`.",
+                (false, 1) => "Add it in the brackets, in order.",
+                (false, _) => "Add them in the brackets, in order.",
+            };
             Report(DiagnosticCatalog.MissingArgument, span, owner, needs, help);
         }
+    }
+
+    /// <summary>Binds the arguments of something that doesn't exist, so problems inside them are still reported, but not their types.</summary>
+    private void BindUnmatched(IEnumerable<ArgumentSyntax> arguments)
+    {
+        foreach (ArgumentSyntax argument in arguments)
+            Bind(argument.Value, TypeSymbol.Error);
     }
 
     private TypeSymbol BindUnary(UnaryExpressionSyntax unary)

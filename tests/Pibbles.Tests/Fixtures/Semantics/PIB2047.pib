@@ -9,8 +9,11 @@
 @if visits(kitchen.front_door) > 0
 //         ^^^^^^^^^^^^^^^^^^ PIB2047
     The old name, in full.
+@jump .front_door
+//    ^^^^^^^^^^^ PIB2047
 
 // Must not trigger
 
 @if visits(.door) > 0
     The current name.
+@jump .door

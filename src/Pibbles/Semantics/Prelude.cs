@@ -4,7 +4,7 @@ namespace Pibbles.Semantics;
 
 /// <summary>
 /// The declarations every story has without writing them, parsed like any other file. Their names are reserved, so a
-/// story can't declare them again. <c>visits</c> is declared like a host function, but the runtime answers it.
+/// story can't declare them again. <c>speed</c> and <c>visits</c> are declared like the host's markup and functions, but the core handles them.
 /// </summary>
 internal static class Prelude
 {
@@ -16,6 +16,7 @@ internal static class Prelude
         @markup u
         @markup s
         @markup color(value: string)
+        @markup speed(factor: number)
 
         @function visits(target: node) -> number
         """;

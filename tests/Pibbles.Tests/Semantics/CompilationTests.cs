@@ -10,12 +10,13 @@ public class CompilationTests
     public void Prelude_Parses_ReportsNothing() => Assert.Empty(Prelude.Tree.Diagnostics);
 
     [Fact]
-    public void Create_EmptyStory_DeclaresPreludeMarkupOnly()
+    public void Create_EmptyStory_DeclaresPreludeOnly()
     {
         var compilation = Compilation.Create([]);
 
         Assert.Empty(compilation.Diagnostics);
-        Assert.Equal(["b", "i", "u", "s", "color"], compilation.Symbols.Markup.Keys);
+        Assert.Equal(["b", "i", "u", "s", "color", "speed"], compilation.Symbols.Markup.Keys);
+        Assert.Equal(["visits"], compilation.Symbols.Functions.Keys);
         Assert.Same(TypeSymbol.String, Assert.Single(compilation.Symbols.Markup["color"].Parameters).Type);
         Assert.Null(compilation.Symbols.Markup["b"].Location);
     }

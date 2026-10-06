@@ -38,6 +38,12 @@ public sealed class Compilation
         Binder.Run(trees, symbols, found);
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
-        return new(trees, symbols, [.. found.OrderBy(diagnostic => fileOrder[diagnostic.Location.Path]).ThenBy(diagnostic => diagnostic.Location.Span.Start)]);
+        return new(trees, symbols,
+        [
+            .. found
+                .Select(diagnostic => diagnostic.NameSpeakers(speaker => symbols.Actors.GetValueOrDefault(speaker)?.DisplayName))
+                .OrderBy(diagnostic => fileOrder[diagnostic.Location.Path])
+                .ThenBy(diagnostic => diagnostic.Location.Span.Start),
+        ]);
     }
 }

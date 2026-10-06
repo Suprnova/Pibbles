@@ -1,0 +1,16 @@
+// A pose is one of the poses its actor declares.
+
+@actor mira
+    name: Mira
+    poses: neutral, smug
+
+== kitchen.door
+mira (smirk): I knew it.
+//    ^^^^^ PIB2002
+mira (happy):
+//    ^^^^^ PIB2002
+
+// Must not trigger
+
+mira (smug): I knew it.
+mira (neutral):

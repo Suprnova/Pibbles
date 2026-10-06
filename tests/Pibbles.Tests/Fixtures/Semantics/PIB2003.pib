@@ -1,0 +1,16 @@
+// A pose is a single name. How a line is said goes in a comment.
+
+@actor mira
+    name: Mira
+
+== kitchen.door
+mira (to Rex): Fine.
+//   ^^^^^^^^ PIB2003
+Breakfast (served daily): eggs.
+//        ^^^^^^^^^^^^^^ PIB2003
+
+// Must not trigger
+
+Breakfast (served daily)\: eggs.
+// To Rex.
+mira: Fine.

@@ -152,7 +152,77 @@ public class BinderTests
             "`$count` holds a `number`, but this is a `duration`.",
             "Write a number, like `1` or `0.5`."
         },
+        {
+            $"{Cast}mria: Hi.\n",
+            "I don't know an actor called `mria`.",
+            "Did you mean `mira`? If this line is narration, escape the colon: `mria\\:`."
+        },
+        {
+            $"{Cast}mira (smirk): Hi.\n",
+            "Mira has no pose called `smirk`.",
+            "Mira's poses are `neutral` and `smug`."
+        },
+        {
+            "@actor rex\n    name: Rex\n\n== a.b\nrex (happy): Hi.\n",
+            "Rex has no pose called `happy`.",
+            "Give Rex poses with `poses:` under `@actor rex`."
+        },
+        {
+            $"{Cast}mira (to Rex): Fine.\n",
+            "`(to Rex)` isn't a pose: a pose is a single name.",
+            "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\\:`."
+        },
+        {
+            $"{Cast}mira:Hi there. #id:k7qp2x\n",
+            "There's no space after `mira:`.",
+            "Add one, or escape the colon if this is narration: `mira\\:Hi there.`."
+        },
+        {
+            $"{Cast}mira:\n",
+            "`mira:` has nothing after it.",
+            "Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`."
+        },
+        {
+            "@enum position: left, right\n@command show(at: position)\n\n== a.b\n@show att=left\n",
+            "`@show` has no parameter called `att`.",
+            "Did you mean `at`?"
+        },
+        {
+            "@command move(who: string, to: string)\n\n== a.b\n@move \"mira\"\n",
+            "`@move` needs a value for `to`.",
+            "Add it after the others, or by name: `to=…`."
+        },
+        {
+            "@var $has_key = false\n\n== a.b\nKey {$has_key}.\n",
+            "I can't show `$has_key` in text, because it's a `bool`.",
+            "Show text that depends on it instead: `{if $has_key}…{else}…{/if}`."
+        },
+        {
+            "@tag thought\n\n== a.b\nHm. #thougth\n",
+            "I don't know a tag called `#thougth`.",
+            "Did you mean `#thought`? If this is text, escape it: `\\#thougth`."
+        },
+        {
+            "@enum box_style: phone, letter\n@tag box: box_style\n\n== a.b\nHi. #box\n",
+            "`#box` needs a value.",
+            "Write a value after the colon: `#box:phone`."
+        },
+        {
+            "@enum box_style: phone, letter\n@tag box: box_style\n\n== a.b\nHi. #box:phon\n",
+            "`phon` isn't a `box_style`, which `#box` takes.",
+            "Did you mean `#box:phone`?"
+        },
     };
+
+    [Fact]
+    public void Compile_SpeakerNotDeclared_NamesSpeakerByIdInSyntaxMessage()
+    {
+        Diagnostic diagnostic = Assert.Single(Compile("== a.b\nmira:\n").Diagnostics, diagnostic => diagnostic.Code == "PIB1054");
+
+        Assert.StartsWith("Write what mira says", diagnostic.Help);
+    }
+
+    private const string Cast = "@actor mira\n    name: Mira\n    poses: neutral, smug\n\n== a.b\n";
 
     [Theory]
     [MemberData(nameof(Messages))]

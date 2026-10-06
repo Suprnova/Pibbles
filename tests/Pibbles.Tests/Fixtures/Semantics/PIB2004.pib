@@ -1,0 +1,17 @@
+// A speaker's colon has a space after it.
+
+@actor mira
+    name: Mira
+    poses: smug
+
+== kitchen.door
+mira:Hi.
+// PIB2004
+mira (smug):Told you.
+// PIB2004
+
+// Must not trigger
+
+Time:3pm, by the clock.
+mira\:Hi.
+mira: Hi.

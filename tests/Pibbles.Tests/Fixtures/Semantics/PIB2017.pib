@@ -1,0 +1,11 @@
+// Markup is built in, or declared with `@markup`.
+
+@markup clue
+
+== kitchen.door
+That's [clu]the key[/clu].
+//      ^^^ PIB2017
+
+// Must not trigger
+
+That's [clue]the key[/clue], [b]really[/b], [speed 0.5]slowly[/speed].

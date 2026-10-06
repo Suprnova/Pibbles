@@ -9,8 +9,14 @@
 @if visits(.fridge) > 1
 //         ^^^^^^^ PIB2020
     No such node.
+@jump .fridge
+//    ^^^^^^^ PIB2020
+@call kitchen.dor
+//    ^^^^^^^^^^^ PIB2020
 
 // Must not trigger
 
 @if visits(.door) > 0 and visits(kitchen.door) > 0
     Both name this node.
+@call .door
+@jump kitchen.door

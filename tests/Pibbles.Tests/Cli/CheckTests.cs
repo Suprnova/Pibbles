@@ -8,8 +8,8 @@ namespace Pibbles.Tests.Cli;
 public sealed class CheckTests : IDisposable
 {
     private readonly StringWriter output = new();
-    private readonly SourceText clean = new("story/clean.pib", "== kitchen.door\nmira: Locked.\n");
-    private readonly SourceText broken = new("story/broken.pib", "== kitchen.fridge\nmira: I'm #winning today.\n@jump\n");
+    private readonly SourceText clean = new("story/clean.pib", "@actor mira\n    name: Mira\n\n== kitchen.door\nmira: Locked.\n");
+    private readonly SourceText broken = new("story/broken.pib", "== kitchen.fridge\nI'm #winning today.\n@jump\n");
 
     public void Dispose() => output.Dispose();
 
@@ -36,7 +36,7 @@ public sealed class CheckTests : IDisposable
         Check.Run([broken], new(OutputFormat.MSBuild), output);
 
         Assert.Equal(
-            "story/broken.pib(2,11): error PIB1015: This text comes after a tag, but tags go at the end of the line.\n" +
+            "story/broken.pib(2,5): error PIB1015: This text comes after a tag, but tags go at the end of the line.\n" +
             "story/broken.pib(3,6): error PIB1046: I expected a node name after `@jump`.\n",
             output.ToString().ReplaceLineEndings("\n"));
     }
@@ -48,7 +48,7 @@ public sealed class CheckTests : IDisposable
 
         JsonElement first = JsonDocument.Parse(output.ToString()).RootElement[0];
         Assert.Equal(
-            ("story/broken.pib", 2, 11, 2, 19, "error", "PIB1015", "this starts a tag"),
+            ("story/broken.pib", 2, 5, 2, 13, "error", "PIB1015", "this starts a tag"),
             (first.GetProperty("path").GetString(), first.GetProperty("line").GetInt32(), first.GetProperty("column").GetInt32(),
              first.GetProperty("endLine").GetInt32(), first.GetProperty("endColumn").GetInt32(), first.GetProperty("severity").GetString(),
              first.GetProperty("code").GetString(), first.GetProperty("label").GetString()));

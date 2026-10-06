@@ -14,7 +14,7 @@ The statement and inline parsers read tokens from a lexer with three modes, code
 
 Why hand-written, with no parser generator: the grammar is small, error recovery and messages matter more than grammar brevity, and the result is ordinary C# that any agent or contributor can step through.
 
-**Error tolerance:** a line that fails to parse becomes an error node with one diagnostic, and parsing carries on with the next line. A bad indent is reported once, and the line is attached to the closest sensible block. Unclosed inline markup is reported at its opening bracket, and the span is treated as running to the end of the line.
+**Error tolerance:** a line that fails to parse becomes an error node with one diagnostic, and parsing carries on with the next line. A bad indent is reported once, and the line is attached to the closest sensible block. Unclosed inline markup is reported at its opening bracket, and the span is treated as running to the end of the line. Text after a tag means the tag was probably meant as text, so the line keeps no tags, and the analyzer never reports them as well.
 
 ## Syntax checks
 
@@ -57,4 +57,4 @@ error[PIB1015]: This text comes after a tag, but tags go at the end of the line.
            mira: I'm \#winning today.
 ```
 
-The **message** is the headline, the **label** sits under the marked span, and the **help** says how to fix it, often with the corrected line on a line of its own. The label and help are optional. Messages talk about the writer's story in the writer's terms: a speaker is named by their display name from `@actor`, as "Mira" here, wherever the analyzer knows it, and by their ID as written otherwise. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.
+The **message** is the headline, the **label** sits under the marked span, and the **help** says how to fix it, often with the corrected line on a line of its own. The label and help are optional. Messages talk about the writer's story in the writer's terms: a speaker is named by their display name from `@actor`, as "Mira" here, wherever the analyzer knows it, and by their ID as written otherwise. The parser doesn't know display names, so a `Diagnostic` keeps its descriptor and arguments, and a message that names a speaker in its prose passes the speaker as an argument of its own; the compilation writes such a diagnostic again once it knows the actors. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.

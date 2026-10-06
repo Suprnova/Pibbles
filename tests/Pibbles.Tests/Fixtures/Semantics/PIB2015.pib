@@ -1,7 +1,10 @@
 // A parameter without a default needs an argument.
 
+@actor mira
+    name: Mira
 @function has_item(id: string) -> bool
 @function near(who: string, where: string, distance: number = 1) -> bool
+@command move(who: actor, to: string, speed: number = 1)
 
 == kitchen.door
 @if has_item()
@@ -10,8 +13,11 @@
 @if near("mira")
 //  ^^^^^^^^^^^^ PIB2015
     Near what?
+@move mira
+// PIB2015
 
 // Must not trigger
 
 @if near("mira", "door")
     The distance has a default.
+@move mira to="door"

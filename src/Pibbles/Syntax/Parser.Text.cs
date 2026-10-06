@@ -5,8 +5,11 @@ namespace Pibbles.Syntax;
 /// <summary>Text lines, choices and options: the lines whose content is mostly inline text.</summary>
 internal sealed partial class Parser
 {
-    /// <summary>Whose text the line being parsed holds, for messages: <c>what mira says</c>, <c>the text</c> or <c>the option's text</c>.</summary>
-    private string textOwner = "the text";
+    /// <summary>
+    /// Whose text the line being parsed holds, for messages: <c>the text</c>, <c>the option's text</c>, or a
+    /// <see cref="SpeakerMention"/> that reads <c>what Mira says</c> once the speaker's display name is known.
+    /// </summary>
+    private object textOwner = "the text";
 
     /// <summary>Where the content of the line being parsed starts, for messages that rewrite the line.</summary>
     private int textLineStart;
@@ -22,58 +25,24 @@ internal sealed partial class Parser
         NameSyntax? speaker = null;
         NameSyntax? pose = null;
         int textStart = start;
-        if (MatchSpeaker(start) is { } match)
+        if (SpeakerScanner.Scan(source.Text, start, inlineEnd) is { IsSpeaker: true } match)
         {
-            speaker = new(TextOf(match.Speaker)) { Span = match.Speaker };
-            textOwner = $"what {speaker.Text} says";
+            speaker = new(TextOf(match.Name)) { Span = match.Name };
+            textOwner = new SpeakerMention(speaker.Text, "what {0} says");
             pose = match.Pose is { } poseSpan ? new(TextOf(poseSpan)) { Span = poseSpan } : null;
-            textStart = match.End;
+            textStart = match.Colon + 1;
         }
 
         List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), inlineEnd, option: false);
         List<TagSyntax> tags = ParseTrailingTags();
 
         if (speaker is not null && pose is null && content.Count == 0)
-            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Text);
+            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Text, new SpeakerMention(speaker.Text));
 
         CheckTags(tags, pose is not null && content.Count == 0 ? TagPlace.PoseChange : TagPlace.TextLine);
 
         index++;
         return new(speaker, pose, content, tags) { Span = new(start, TrimmedEnd(line) - start) };
-    }
-
-    /// <summary>
-    /// Matches a speaker at the start of a text line: <c>name:</c> or <c>name (pose):</c>, with any spacing, followed by
-    /// whitespace or the end of the line. Anything else makes the whole line narration.
-    /// </summary>
-    private (TextSpan Speaker, TextSpan? Pose, int End)? MatchSpeaker(int start)
-    {
-        int speakerEnd = SkipIdentifier(start);
-        if (speakerEnd == start)
-            return null;
-
-        int position = SkipWhitespace(speakerEnd);
-        TextSpan? pose = null;
-        if (position < inlineEnd && source.Text[position] is '(')
-        {
-            int poseStart = SkipWhitespace(position + 1);
-            int poseEnd = SkipIdentifier(poseStart);
-            position = SkipWhitespace(poseEnd);
-            if (poseEnd == poseStart || position >= inlineEnd || source.Text[position] is not ')')
-                return null;
-
-            pose = new TextSpan(poseStart, poseEnd - poseStart);
-            position = SkipWhitespace(position + 1);
-        }
-
-        if (position >= inlineEnd || source.Text[position] is not ':')
-            return null;
-
-        position++;
-        if (position < inlineEnd && source.Text[position] is not (' ' or '\t'))
-            return null;
-
-        return (new(start, speakerEnd - start), pose, position);
     }
 
     private int SkipIdentifier(int start)
@@ -141,9 +110,14 @@ internal sealed partial class Parser
             if (token.Kind is not TokenKind.EndOfLine)
             {
                 if (tags.Count > 0)
+                {
                     ReportTextAfterTag(tags[0]);
+                    tags = [];
+                }
                 else
+                {
                     Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+                }
             }
         }
         else

@@ -1,0 +1,12 @@
+// A tag that takes an enum takes one of its members.
+
+@enum box_style: phone, letter
+@tag box: box_style
+
+== kitchen.door
+Hi. #box:fone
+//  ^^^^^^^^^ PIB2048
+
+// Must not trigger
+
+Hi. #box:phone

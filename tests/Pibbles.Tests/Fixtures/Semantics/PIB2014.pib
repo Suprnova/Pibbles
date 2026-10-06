@@ -1,0 +1,18 @@
+// A named argument names one of the parameters.
+
+@enum position: left, right
+@actor mira
+    name: Mira
+@command show(who: actor, at: position = left)
+@markup wave(amplitude: number = 1)
+
+== kitchen.door
+@show mira att=left
+//         ^^^ PIB2014
+[wave height=2]Spooky.[/wave]
+//    ^^^^^^ PIB2014
+
+// Must not trigger
+
+@show mira at=right
+[wave amplitude=2]Spooky.[/wave]

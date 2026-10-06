@@ -63,7 +63,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
-| PIB1054 | Error | `mira:` has nothing after it. | Write what mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`. |
+| PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`. |
 | PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
@@ -75,7 +75,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2011 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
 | PIB2013 | Error | `has_item()` takes only 1 argument. | Remove the extra ones. |
+| PIB2014 | Error | `@show` has no parameter called `att`. | Did you mean `at`? |
 | PIB2015 | Error | `near()` needs a value for `where`. | Add it in the brackets, in order. |
+| PIB2016 | Error | `@show` already has a value for `who`. | Remove one of them. |
+| PIB2017 | Error | I don't know markup called `clu`. | Did you mean `clue`? |
+| PIB2018 | Error | I don't know an icon called `interct`. | Did you mean `interact`? |
 | PIB2019 | Error | I don't know a function called `has_iten`. | Did you mean `has_item`? |
 | PIB2020 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
 | PIB2021 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
@@ -88,9 +92,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2034 | Error | I don't know what `has_key` means here. | Did you mean `$has_key`? |
 | PIB2036 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
 | PIB2037 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
+| PIB2038 | Error | I can't show `$has_key` in text, because it's a `bool`. | Show text that depends on it instead: `{if $has_key}…{else}…{/if}`. |
 | PIB2045 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB2046 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
 | PIB2047 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
+| PIB2048 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
 | PIB2060 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
 | PIB2061 | Error | `happy` is already one of Mira's poses. | Remove the second `happy`, or give it another name. |
 | PIB2062 | Error | `if` can't name a command, because Pibbles uses that word after `@`. | Choose another name. |
@@ -508,9 +514,65 @@ Add the `)` where the brackets should close: `@if has_item("key")`.
 
 Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
 
+### PIB2001
+
+**A line that starts with a name and a colon is spoken by that name,** so the name has to be an actor declared with `@actor`. A line that only happens to look like that, such as narration starting with `Note:`, needs its colon escaped, so it's never quietly shown as narration when a speaker was meant, or the other way round.
+
+```text
+Note: the door is locked.
+```
+
+If it's narration, escape the colon: `Note\: the door is locked.` If it's a speaker, fix the spelling, or declare the actor. The help suggests the closest actor, if one is close.
+
+### PIB2002
+
+**A pose is one of the poses its actor lists in `poses:`.** The help suggests the closest one, or lists them all.
+
+```text
+@actor mira
+    name: Mira
+    poses: neutral, smug
+
+mira (smirk): I knew it.
+```
+
+Use one of the actor's poses, `mira (smug):`, or add the pose to the actor's `poses:`.
+
+### PIB2003
+
+**A pose is a single name,** so a parenthesis that holds anything else, before a colon, is reported rather than shown as narration. Directions for how a line is said, such as who it's said to, belong in a `//` comment above it.
+
+```text
+mira (to Rex): Fine.
+```
+
+Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If the line is narration, escape the colon: `Breakfast (served daily)\: eggs.`
+
+### PIB2004
+
+**A speaker's colon has a space after it.** Without one, the line is narration, which is rarely what's meant after an actor's name, so it's reported as a warning.
+
+```text
+mira:Hi.
+```
+
+Add the space, `mira: Hi.`, or escape the colon if the line really is narration: `mira\:Hi.` Names that aren't actors, as in `Time:3pm`, are never reported.
+
+### PIB2010
+
+**A command is declared with `@command` before the story uses it,** since the game has to carry out every command the story uses. The help suggests the closest command.
+
+```text
+@command shake_screen(strength: number = 1)
+
+@shak
+```
+
+Fix the spelling, or declare the command.
+
 ### PIB2011
 
-**An argument has the type of the parameter it's for.** Arguments fill the parameters in order, and each one is read against its parameter's type, so a bare name like `cellar` is looked up among that type's values. A number also works where a duration is expected, as seconds.
+**An argument has the type of the parameter it's for.** Arguments without a name fill the parameters in order, and named ones (`at=left`) fill the parameter they name. Each is read against its parameter's type, so a bare name like `cellar` is looked up among that type's values. A number also works where a duration is expected, as seconds.
 
 ```text
 @function has_item(id: string) -> bool
@@ -520,9 +582,21 @@ Write each comparison out and join them with `and`: `@if 0 < $bravery and $brave
 
 Use a value of the parameter's type. Here `id` is text, so quote it: `has_item("3")`. The help lists what the type takes.
 
+### PIB2012
+
+**Only commands declared `inline` can go inside a line's text.** Loading a save made during a line shows the line again from the start, so its inline commands run again. `inline` marks the commands that are harmless to repeat, like a screen shake or a sound. Anything else runs once, on its own `@` line.
+
+```text
+@command give_item(name: string)
+
+Here you go.{@give_item "key"}
+```
+
+Put the command on its own line, before or after the text: `@give_item "key"`. If repeating it really is harmless, declare it `inline`.
+
 ### PIB2013
 
-**A call has at most as many arguments as the function has parameters.** The extra arguments are marked.
+**A call or command has at most as many arguments without a name as it has parameters.** The extra arguments are marked.
 
 ```text
 @function has_item(id: string) -> bool
@@ -532,9 +606,21 @@ Use a value of the parameter's type. Here `id` is text, so quote it: `has_item("
 
 Remove the extra arguments. To check two items, call the function twice: `has_item("key") and has_item("lamp")`.
 
+### PIB2014
+
+**A named argument names one of the parameters** of the command or markup it's given to. The help suggests the closest parameter.
+
+```text
+@command show(who: actor, at: position = left)
+
+@show mira att=left
+```
+
+Fix the name: `@show mira at=left`.
+
 ### PIB2015
 
-**Every parameter without a default needs an argument.** A parameter with a default (`distance: number = 1`) can be left out.
+**Every parameter without a default needs an argument,** in order or by name. A parameter with a default (`distance: number = 1`) can be left out.
 
 ```text
 @function near(who: string, where: string, distance: number = 1) -> bool
@@ -542,7 +628,43 @@ Remove the extra arguments. To check two items, call the function twice: `has_it
 @if near("mira")
 ```
 
-Add the missing arguments in order: `near("mira", "door")`.
+Add the missing arguments in order: `near("mira", "door")`. For a command or markup, they can also be given by name: `@move mira to="door"`.
+
+### PIB2016
+
+**Each parameter gets one value.** An argument without a name fills the next parameter, so naming that parameter again gives it a second value.
+
+```text
+@command show(who: actor, at: position = left)
+
+@show mira who=rex
+```
+
+Remove one of them: `@show rex`.
+
+### PIB2017
+
+**Markup is built in (`b`, `i`, `u`, `s`, `color` and `speed`) or declared with `@markup`,** since the game styles every span the story uses. The help suggests the closest markup.
+
+```text
+@markup clue
+
+That's [clu]the key[/clu].
+```
+
+Fix the spelling, `[clue]…[/clue]`, or declare the markup.
+
+### PIB2018
+
+**An icon is declared with `@icon`,** since the game draws every icon the story uses. The help suggests the closest icon.
+
+```text
+@icon interact
+
+Press {icon interct}.
+```
+
+Fix the spelling, `{icon interact}`, or declare the icon.
 
 ### PIB2019
 
@@ -685,6 +807,43 @@ Fix the spelling, `left`, or add the member to the enum.
 
 Compare a variable, a function or another value with the name: `@if $where == left`.
 
+### PIB2038
+
+**Text shows text, numbers and actors' names.** A number is formatted for the player's language, and an actor shows their display name. Other values, such as `true` and `false`, enum members, nodes and durations, aren't words a player should see, so text that depends on them chooses its words with `{if}`.
+
+```text
+@var $has_key = false
+
+You have the key {$has_key}.
+```
+
+Write the words for each case: `You {if $has_key}have{else}don't have{/if} the key.` A function that returns text works too.
+
+### PIB2045
+
+**A tag is reserved (`#id`, `#was`) or declared with `@tag`,** so the game knows to read it. A `#` followed by a letter always starts a tag, so a `#` that's part of the text is escaped. The help suggests the closest tag.
+
+```text
+@tag thought
+
+Hm. #thougth
+```
+
+Fix the spelling, `#thought`, or declare the tag. If the `#` is part of the text, write `\#`.
+
+### PIB2046
+
+**A tag declared on its own (`@tag thought`) is a flag, which takes no value. A tag declared with a type (`@tag box: string`) needs one,** after a colon. A value may be empty (`#box:`) only if the type ends in `?`.
+
+```text
+@tag thought, box: string
+
+Hm. #thought:deep
+Hi. #box
+```
+
+Write `#thought` on its own, and give `#box` a value: `#box:phone`.
+
 ### PIB2047
 
 **The story always uses a node's current name.** Old names in `#was:` are for what's outside the story, such as saves and the game's code, so `@jump`, `@call`, `visits()` and `node` arguments use the current one, and old names never pile up in the script. An old name still reaches its node, so the story runs while a rename is half done, and `--warnaserror` keeps old names out of a release.
@@ -698,6 +857,19 @@ Compare a variable, a function or another value with the name: `@if $where == le
 ```
 
 Use the current name: `visits(.door)`.
+
+### PIB2048
+
+**A tag that takes an enum takes one of its members,** so the game only ever receives values it knows.
+
+```text
+@enum box_style: phone, letter
+@tag box: box_style
+
+Hi. #box:fone
+```
+
+Use one of the members, `#box:phone`, or add the value to the enum.
 
 ### PIB2060
 

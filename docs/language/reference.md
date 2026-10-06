@@ -112,7 +112,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 **Types:** `bool`, `number` (a 64-bit float), `string`, `duration`, `node`, `actor`, and any declared enum.
 
-**The prelude:** Pibbles ships a small built-in declaration file with `@markup b`, `i`, `u`, `s` and `color(value: string)`. The host can't redeclare these names. `speed` is a built-in markup with core semantics, not a prelude declaration.
+**The prelude:** Pibbles ships a small built-in declaration file with `@markup b`, `i`, `u`, `s` and `color(value: string)`, which the host renders like its own markup. It also declares `@markup speed(factor: number)` and `@function visits(target: node) -> number`, which have core semantics: Pibbles handles them, not the host. The host can't redeclare any of these names.
 
 Declared names share one namespace per kind, and each kind avoids the [reserved words](#reserved-words) that could be read in its positions.
 

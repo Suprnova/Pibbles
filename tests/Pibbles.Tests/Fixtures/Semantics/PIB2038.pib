@@ -1,0 +1,21 @@
+// Text shows text, numbers and actors' names. Other values choose text with `{if}`.
+
+@enum position: left, right
+@actor mira
+    name: Mira
+@var $has_key = false
+@var $where: position = left
+@var $count = 0
+@var $name = "Sam"
+@var $who: actor = mira
+
+== kitchen.door
+You have the key {$has_key}.
+//               ^^^^^^^^^^ PIB2038
+You're on the {$where}.
+//            ^^^^^^^^ PIB2038
+
+// Must not trigger
+
+{$name} has {$count} keys, says {$who}.
+You {if $has_key}have{else}don't have{/if} the key.

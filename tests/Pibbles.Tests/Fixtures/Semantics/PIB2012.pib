@@ -1,0 +1,13 @@
+// Only a command declared `inline` can go inside a line.
+
+@command give_item(name: string)
+@command jolt() inline
+
+== kitchen.door
+Here you go.{@give_item "key"}
+//            ^^^^^^^^^ PIB2012
+
+// Must not trigger
+
+@give_item "key"
+Whoa.{@jolt}

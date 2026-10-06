@@ -1,0 +1,13 @@
+// A tag is declared with `@tag`, so the game knows to read it.
+
+@tag thought
+
+== kitchen.door
+Hm. #thougth
+//  ^^^^^^^^ PIB2045
+-> Wait #hidden
+//      ^^^^^^^ PIB2045
+
+// Must not trigger
+
+Hm. #thought

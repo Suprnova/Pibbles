@@ -83,7 +83,8 @@ public static class DiagnosticCatalog
 
     /// <summary>PIB1015: text after a tag, which ends the line's text.</summary>
     /// <remarks>
-    /// Arguments: the tag the text comes after; whose text it is, such as <c>what mira says</c> or <c>the text</c>; and
+    /// Arguments: the tag the text comes after; whose text it is, such as <c>the text</c>, or a <see cref="SpeakerMention"/>
+    /// that reads <c>what Mira says</c>; and
     /// the line with the tag escaped, which the help shows on a line of its own.
     /// </remarks>
     public static DiagnosticDescriptor TextAfterTag { get; } = new(
@@ -254,12 +255,12 @@ public static class DiagnosticCatalog
         help: "{2}");
 
     /// <summary>PIB1054: a speaker with neither a pose nor text.</summary>
-    /// <remarks>Argument: the speaker's name as written.</remarks>
+    /// <remarks>Arguments: the speaker's name as written, and a <see cref="SpeakerMention"/> of it for the help's prose.</remarks>
     public static DiagnosticDescriptor EmptyLine { get; } = new(
         "PIB1054",
         DiagnosticSeverity.Error,
         "`{0}:` has nothing after it.",
-        help: "Write what {0} says after the colon, or write `{0}: {{w}}` for a box with only their name. To change their pose without a line, write `{0} (pose):`.");
+        help: "Write what {1} says after the colon, or write `{0}: {{w}}` for a box with only their name. To change their pose without a line, write `{0} (pose):`.");
 
     /// <summary>PIB1055: a negative number as a command argument, without parentheses.</summary>
     /// <remarks>Argument: the negative value as written, such as <c>-1</c>.</remarks>
@@ -284,6 +285,49 @@ public static class DiagnosticCatalog
         "I can't compare three things at once: `{0}`.",
         help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
 
+    /// <summary>PIB2001: a speaker that isn't a declared actor.</summary>
+    /// <remarks>
+    /// Arguments: the speaker as written; a suggestion, such as <c>Did you mean `mira`? </c>, or nothing; and the line's
+    /// start up to its colon, which the help escapes.
+    /// </remarks>
+    public static DiagnosticDescriptor UnknownSpeaker { get; } = new(
+        "PIB2001",
+        DiagnosticSeverity.Error,
+        "I don't know an actor called `{0}`.",
+        help: "{1}If this line is narration, escape the colon: `{2}\\:`.");
+
+    /// <summary>PIB2002: a pose the speaker doesn't have.</summary>
+    /// <remarks>Arguments: the actor's display name; the pose; and a suggestion or the actor's poses, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownPose { get; } = new(
+        "PIB2002",
+        DiagnosticSeverity.Error,
+        "{0} has no pose called `{1}`.",
+        help: "{2}");
+
+    /// <summary>PIB2003: a parenthesis after a name, before a colon, that doesn't hold a single name, as in <c>mira (to Rex):</c>.</summary>
+    /// <remarks>Arguments: the parenthesis, and the line's start up to its colon, which the help escapes.</remarks>
+    public static DiagnosticDescriptor NotPose { get; } = new(
+        "PIB2003",
+        DiagnosticSeverity.Error,
+        "`{0}` isn't a pose: a pose is a single name.",
+        help: "For how a line is said, use a `//` comment. If this is narration, escape the colon: `{1}\\:`.");
+
+    /// <summary>PIB2004: a declared actor and a colon with no space after it, as in <c>mira:Hi</c>.</summary>
+    /// <remarks>Arguments: the line's start up to its colon, and the line with its colon escaped.</remarks>
+    public static DiagnosticDescriptor NoSpaceAfterSpeaker { get; } = new(
+        "PIB2004",
+        DiagnosticSeverity.Warning,
+        "There's no space after `{0}:`.",
+        help: "Add one, or escape the colon if this is narration: `{1}`.");
+
+    /// <summary>PIB2010: a command that isn't declared.</summary>
+    /// <remarks>Arguments: the command's name, without its <c>@</c>, and the closest command, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownCommand { get; } = new(
+        "PIB2010",
+        DiagnosticSeverity.Error,
+        "I don't know a command called `@{0}`.",
+        help: "Did you mean `@{1}`?");
+
     /// <summary>PIB2011: an argument whose type isn't the type of its parameter.</summary>
     /// <remarks>
     /// Arguments: what takes the argument, such as <c>@show</c> or <c>has_item()</c>; the parameter's type with its
@@ -296,6 +340,14 @@ public static class DiagnosticCatalog
         "`{0}` expects {1} for `{2}`, but this is {3}.",
         help: "{4}");
 
+    /// <summary>PIB2012: a command inside a line that isn't declared <c>inline</c>.</summary>
+    /// <remarks>Argument: the command's name, without its <c>@</c>.</remarks>
+    public static DiagnosticDescriptor NotInline { get; } = new(
+        "PIB2012",
+        DiagnosticSeverity.Error,
+        "`@{0}` can't be used inside a line, because it isn't declared `inline`.",
+        help: "Put it on its own `@` line.");
+
     /// <summary>PIB2013: more arguments than parameters.</summary>
     /// <remarks>Arguments: what takes the arguments, such as <c>has_item()</c>, and how many it takes, such as <c>only 1 argument</c>.</remarks>
     public static DiagnosticDescriptor TooManyArguments { get; } = new(
@@ -304,6 +356,14 @@ public static class DiagnosticCatalog
         "`{0}` takes {1}.",
         help: "Remove the extra ones.");
 
+    /// <summary>PIB2014: a named argument for a parameter that doesn't exist.</summary>
+    /// <remarks>Arguments: what takes the arguments, such as <c>@show</c>; the name; and the closest parameter, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownParameter { get; } = new(
+        "PIB2014",
+        DiagnosticSeverity.Error,
+        "`{0}` has no parameter called `{1}`.",
+        help: "Did you mean `{2}`?");
+
     /// <summary>PIB2015: a parameter with no default and no argument.</summary>
     /// <remarks>Arguments: what takes the arguments; the missing parameters, such as <c>a value for `to`</c>; and how to add them.</remarks>
     public static DiagnosticDescriptor MissingArgument { get; } = new(
@@ -311,6 +371,30 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "`{0}` needs {1}.",
         help: "{2}");
+
+    /// <summary>PIB2016: a named argument for a parameter that already has one.</summary>
+    /// <remarks>Arguments: what takes the arguments, and the parameter.</remarks>
+    public static DiagnosticDescriptor RepeatedArgument { get; } = new(
+        "PIB2016",
+        DiagnosticSeverity.Error,
+        "`{0}` already has a value for `{1}`.",
+        help: "Remove one of them.");
+
+    /// <summary>PIB2017: markup that isn't declared or built in.</summary>
+    /// <remarks>Arguments: the markup's name, and the closest markup, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownMarkup { get; } = new(
+        "PIB2017",
+        DiagnosticSeverity.Error,
+        "I don't know markup called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2018: an icon that isn't declared.</summary>
+    /// <remarks>Arguments: the icon's name, and the closest icon, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownIcon { get; } = new(
+        "PIB2018",
+        DiagnosticSeverity.Error,
+        "I don't know an icon called `{0}`.",
+        help: "Did you mean `{1}`?");
 
     /// <summary>PIB2019: a call to a function that isn't declared.</summary>
     /// <remarks>Arguments: the function's name, and the closest function, or <see langword="null"/> to leave out the help.</remarks>
@@ -411,6 +495,30 @@ public static class DiagnosticCatalog
         "I can't compare two names: `{0}`.",
         help: "Compare a variable with a name instead, like `$where == left`.");
 
+    /// <summary>PIB2038: a value shown in text whose type isn't text, a number or an actor.</summary>
+    /// <remarks>Arguments: the value as written; its type with its article; and how to show text that depends on it.</remarks>
+    public static DiagnosticDescriptor NotShowable { get; } = new(
+        "PIB2038",
+        DiagnosticSeverity.Error,
+        "I can't show `{0}` in text, because it's {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2045: a tag that's neither reserved nor declared.</summary>
+    /// <remarks>Arguments: the tag's name, and a suggestion, such as <c>Did you mean `#thought`? </c>, or nothing.</remarks>
+    public static DiagnosticDescriptor UnknownTag { get; } = new(
+        "PIB2045",
+        DiagnosticSeverity.Error,
+        "I don't know a tag called `#{0}`.",
+        help: "{1}If this is text, escape it: `\\#{0}`.");
+
+    /// <summary>PIB2046: a value on a tag that takes none, or none on a tag that needs one.</summary>
+    /// <remarks>Arguments: the tag's name; <c>doesn't take a value</c> or <c>needs a value</c>; and the tag written the right way.</remarks>
+    public static DiagnosticDescriptor TagValuePresence { get; } = new(
+        "PIB2046",
+        DiagnosticSeverity.Error,
+        "`#{0}` {1}.",
+        help: "{2}");
+
     /// <summary>PIB2047: a reference to a node by one of its old names.</summary>
     /// <remarks>Arguments: the old name, and the current name, both as the story would write them.</remarks>
     public static DiagnosticDescriptor OldNodeName { get; } = new(
@@ -418,6 +526,14 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Warning,
         "`{0}` is an old name of `{1}`.",
         help: "Use the current name: `{1}`.");
+
+    /// <summary>PIB2048: a tag's value that isn't a member of the enum the tag takes.</summary>
+    /// <remarks>Arguments: the value; the enum with its article; the tag's name; and a suggestion or the enum's members, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor TagValueNotMember { get; } = new(
+        "PIB2048",
+        DiagnosticSeverity.Error,
+        "`{0}` isn't {1}, which `#{2}` takes.",
+        help: "{3}");
 
     /// <summary>PIB2060: a declared name that another declaration of the same kind already uses.</summary>
     /// <remarks>Arguments: the kind with its article, such as <c>an enum</c>; the name; and where the first one is, such as <c>on line 3</c>.</remarks>
@@ -525,9 +641,19 @@ public static class DiagnosticCatalog
         NegativeArgument,
         UnclosedParenthesis,
         ChainedComparison,
+        UnknownSpeaker,
+        UnknownPose,
+        NotPose,
+        NoSpaceAfterSpeaker,
+        UnknownCommand,
         ArgumentType,
+        NotInline,
         TooManyArguments,
+        UnknownParameter,
         MissingArgument,
+        RepeatedArgument,
+        UnknownMarkup,
+        UnknownIcon,
         UnknownFunction,
         UnknownNode,
         RelativeWithoutPrefix,
@@ -540,7 +666,11 @@ public static class DiagnosticCatalog
         NameNotAllowed,
         NotValueOfType,
         TwoNames,
+        NotShowable,
+        UnknownTag,
+        TagValuePresence,
         OldNodeName,
+        TagValueNotMember,
         DuplicateDeclaration,
         RepeatedName,
         ReservedName,

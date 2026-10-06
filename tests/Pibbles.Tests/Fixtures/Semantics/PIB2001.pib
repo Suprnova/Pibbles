@@ -1,0 +1,15 @@
+// A speaker is an actor declared with `@actor`.
+
+@actor mira
+    name: Mira
+
+== kitchen.door
+Note: the door is locked.
+// PIB2001
+mria: Hello?
+// PIB2001
+
+// Must not trigger
+
+Note\: the door is locked.
+mira: Hello?

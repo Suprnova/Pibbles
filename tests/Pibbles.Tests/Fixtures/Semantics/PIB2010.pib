@@ -1,0 +1,14 @@
+// A command is declared with `@command` before the story uses it.
+
+@command shake_screen(strength: number = 1) inline
+
+== kitchen.door
+@shake_scren
+// PIB2010
+The room shakes.{@quake}
+//                ^^^^^ PIB2010
+
+// Must not trigger
+
+@shake_screen
+The room shakes.{@shake_screen 2}

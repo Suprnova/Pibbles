@@ -1,0 +1,19 @@
+// Each parameter gets one value.
+
+@enum position: left, right
+@actor mira
+    name: Mira
+@actor rex
+    name: Rex
+@command show(who: actor, at: position = left)
+
+== kitchen.door
+@show mira who=rex
+//         ^^^^^^^ PIB2016
+@show mira at=left at=right
+//                 ^^^^^^^^ PIB2016
+
+// Must not trigger
+
+@show mira at=right
+@show who=rex at=left

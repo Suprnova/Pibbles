@@ -1,0 +1,11 @@
+// An icon is declared with `@icon`.
+
+@icon interact
+
+== kitchen.door
+Press {icon interct}.
+//          ^^^^^^^ PIB2018
+
+// Must not trigger
+
+Press {icon interact}.

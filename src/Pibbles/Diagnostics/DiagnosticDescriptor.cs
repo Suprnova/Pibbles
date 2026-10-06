@@ -29,7 +29,11 @@ public sealed class DiagnosticDescriptor(string code, DiagnosticSeverity default
     public string? Help { get; } = help;
 
     internal Diagnostic Create(SourceLocation location, params object?[] arguments) =>
-        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Label, arguments), Format(Help, arguments));
+        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Label, arguments), Format(Help, arguments))
+        {
+            Descriptor = this,
+            Arguments = arguments,
+        };
 
     private static string? Format(string? template, object?[] arguments) =>
         template is null ? null : string.Format(CultureInfo.InvariantCulture, template, arguments);

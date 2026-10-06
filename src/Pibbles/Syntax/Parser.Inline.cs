@@ -314,7 +314,10 @@ internal sealed partial class Parser
         return content;
     }
 
-    /// <summary>Reads the tags that end a line, from the inline position. Anything after them is reported.</summary>
+    /// <summary>
+    /// Reads the tags that end a line, from the inline position. Anything after them is reported. Text after a tag means
+    /// the tag was probably meant as text, so the line then has no tags.
+    /// </summary>
     private List<TagSyntax> ParseTrailingTags()
     {
         List<TagSyntax> tags = [];
@@ -324,12 +327,14 @@ internal sealed partial class Parser
             if (!AtTagStart())
             {
                 var rest = new TextSpan(position, inlineEnd - position);
-                if (tags.Count > 0)
-                    ReportTextAfterTag(tags[0]);
-                else
+                if (tags.Count == 0)
+                {
                     Fail(DiagnosticCatalog.Unexpected, rest, $"`{TextOf(rest).TrimEnd()}`");
+                    break;
+                }
 
-                break;
+                ReportTextAfterTag(tags[0]);
+                return [];
             }
 
             Token tag = new CodeLexer(source, new(position, inlineEnd - position), diagnostics).Next();

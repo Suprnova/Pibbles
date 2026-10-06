@@ -40,8 +40,6 @@ File 1:1-13:1
           Speaker: Name 9:1-9:5 Text="mira"
           Content:
             TextRun 9:7-9:10 Text="I'm"
-          Tags:
-            Tag 9:11-9:19 Name="winning" Value=null
         Choice 10:1-10:17
           Options:
             Option 10:1-10:17 IsOnce=false

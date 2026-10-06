@@ -1,7 +1,12 @@
-// A function takes as many arguments as it has parameters.
+// A function or command takes as many arguments as it has parameters.
 
+@actor mira
+    name: Mira
+@actor rex
+    name: Rex
 @function has_item(id: string) -> bool
 @function is_night() -> bool
+@command hide(who: actor)
 
 == kitchen.door
 @if has_item("key", "lamp")
@@ -10,8 +15,11 @@
 @if is_night(1, 2)
 //           ^^^^ PIB2013
     No arguments at all.
+@hide mira rex
+//         ^^^ PIB2013
 
 // Must not trigger
 
 @if has_item("key") and is_night()
     Just right.
+@hide mira
