@@ -24,7 +24,8 @@ docs/                        the living documentation: design docs, the language
 dotnet build
 dotnet test
 dotnet test -p:TestAllTargets=true                                                             (net8.0 too, as CI does)
-dotnet run --project src/Pibbles.Cli -- check samples/kitchen                                  (Phase 1)
+dotnet run --project src/Pibbles.Cli -- check samples/kitchen
+dotnet run --project src/Pibbles.Cli -- ids samples/kitchen                                    (after adding lines to the sample)
 npm test --prefix editors/vscode                                                                (the grammar; npm ci there first)
 dotnet run --project src/Pibbles.Cli -- play samples/kitchen --start kitchen.door --script <file>  (Phase 3)
 ```

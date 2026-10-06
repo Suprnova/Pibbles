@@ -17,7 +17,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
         string text = "== kitchen.door\n" + string.Concat(Enumerable.Repeat("Narration.\n", 10)) + "mira: I'm #winning today.\n";
         var source = new SourceText("story/kitchen.pib", text);
         var cast = new SourceText("story/cast.pib", "@actor mira\n    name: Mira\n");
-        Diagnostic diagnostic = Assert.Single(Compilation.Create([cast, source]).Diagnostics);
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([cast, source]).Diagnostics, diagnostic => diagnostic.Code is "PIB1015");
 
         DiagnosticFormatter.WritePretty(output, source, diagnostic, color: false);
 

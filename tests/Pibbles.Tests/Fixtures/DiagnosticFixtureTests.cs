@@ -20,7 +20,12 @@ public class DiagnosticFixtureTests
         Assert.Equal(text.ReplaceLineEndings("\n"), annotated);
     }
 
-    /// <summary>Syntax fixtures are only parsed, since they use names they don't declare. Every other fixture compiles as a story of one file.</summary>
+    /// <summary>
+    /// Syntax fixtures are only parsed, since they use names they don't declare. Every other fixture compiles as a story
+    /// of one file. Fixtures leave out line IDs, so a missing one is only reported in its own fixture.
+    /// </summary>
     private static IReadOnlyList<Diagnostic> Diagnose(string fixture, SourceText source) =>
-        Path.GetDirectoryName(fixture) is "Syntax" ? SyntaxTree.Parse(source).Diagnostics : Compilation.Create([source]).Diagnostics;
+        Path.GetDirectoryName(fixture) is "Syntax"
+            ? SyntaxTree.Parse(source).Diagnostics
+            : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010" || Path.GetFileName(fixture) is "PIB3010.pib")];
 }

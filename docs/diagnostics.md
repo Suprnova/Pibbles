@@ -108,7 +108,8 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB3002 | Info | This option has no text. | Write what the player picks after the `->`. |
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
-| PIB3011 | Error | The line ID `k7qp2x` is also used at rooms/cellar.pib:40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
+| PIB3011 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
+| PIB3012 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
 
 The style rules, PIB5001 to PIB5040, are documented with examples in the [semantics design](semantics.md#style-rules).
 
@@ -979,6 +980,38 @@ Remove the line, or move it above the `@jump`. If it should only run sometimes, 
 ```
 
 Write what the player picks after the `->`: `-> Think about it`.
+
+### PIB3010
+
+**Every line a save can stop on has an ID:** text lines that show text, options, `@call` lines and variation blocks. IDs keep saves, translations and recordings attached to their lines through every edit, and `pibbles ids` writes them, so this is a warning: the story still plays, and CI's `--warnaserror` keeps lines without one out of a release. A line that has a mistake Pibbles can't read past isn't checked, since its ID may be there.
+
+```text
+mira: Locked.
+```
+
+Run `pibbles ids`, which gives the line an ID at its end: `mira: Locked. #id:k7qp2x`.
+
+### PIB3011
+
+**Each line ID is used once in the whole story,** since saves and translations find a line by its ID. Copying a line copies its ID, so this usually means a pasted line. The later one is reported, with where the first one is.
+
+```text
+mira: Locked. #id:k7qp2x
+mira: Still locked. #id:k7qp2x
+```
+
+Delete the ID from the copy and run `pibbles ids` to give it a new one. Keep the ID on the line that was there first, so saves and translations stay with it.
+
+### PIB3012
+
+**A line ID is never the same as a node's name or one of its old names,** so a name always means one thing. Generated IDs never clash; this comes from an ID written by hand.
+
+```text
+== intro
+mira: Hi. #id:intro
+```
+
+Delete the ID and run `pibbles ids` to give the line a new one, or write a different ID by hand.
 
 ## With extensions
 

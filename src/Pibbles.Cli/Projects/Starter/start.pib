@@ -2,7 +2,9 @@
 // Everything up to the next line starting with == belongs to it.
 
 == start.hello
-// Dialogue: the speaker's ID, a colon, then what they say.
+// Dialogue: the speaker's ID, a colon, then what they say. The #id: at the end is the
+// line's ID, which keeps saves and translations attached to the line. `pibbles ids`
+// writes them, so leave them as they are, even when you rewrite the line.
 guide: Hello! This is your first Pibbles story.
 
 // A pose in brackets changes how the speaker looks, until it changes again.

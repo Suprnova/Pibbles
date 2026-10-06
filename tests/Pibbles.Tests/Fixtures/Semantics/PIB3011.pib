@@ -1,0 +1,15 @@
+// Each line ID is used once in a story.
+
+@actor mira
+    name: Mira
+
+== kitchen.door
+mira: First. #id:k7qp2x
+mira: Second. #id:k7qp2x
+//            ^^^^^^^^^^ PIB3011
+-> Leave #id:k7qp2x
+//       ^^^^^^^^^^ PIB3011
+
+// Must not trigger
+
+mira: Third. #id:m3xw9a

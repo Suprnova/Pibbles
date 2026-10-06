@@ -617,6 +617,29 @@ public static class DiagnosticCatalog
         "This option has no text.",
         help: "Write what the player picks after the `->`.");
 
+    /// <summary>PIB3010: a line that needs a line ID and has none.</summary>
+    public static DiagnosticDescriptor MissingLineId { get; } = new(
+        "PIB3010",
+        DiagnosticSeverity.Warning,
+        "This line has no `#id`.",
+        help: "Run `pibbles ids` to add one.");
+
+    /// <summary>PIB3011: a line ID that another line already uses.</summary>
+    /// <remarks>Arguments: the ID, and where it's already used, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor DuplicateLineId { get; } = new(
+        "PIB3011",
+        DiagnosticSeverity.Error,
+        "The line ID `{0}` is also used {1}.",
+        help: "Delete one of the two IDs and run `pibbles ids` to give that line a new one.");
+
+    /// <summary>PIB3012: a line ID that's also a node's name or old name.</summary>
+    /// <remarks>Arguments: the ID, and what it also is, such as <c>the name of a node</c>.</remarks>
+    public static DiagnosticDescriptor LineIdIsNodeName { get; } = new(
+        "PIB3012",
+        DiagnosticSeverity.Error,
+        "The line ID `{0}` is also {1}.",
+        help: "Delete the ID and run `pibbles ids` to give the line a new one.");
+
     /// <summary>Every registered descriptor.</summary>
     public static IReadOnlyList<DiagnosticDescriptor> All { get; } =
     [
@@ -696,5 +719,8 @@ public static class DiagnosticCatalog
         UntypedVariable,
         NeverRuns,
         EmptyOption,
+        MissingLineId,
+        DuplicateLineId,
+        LineIdIsNodeName,
     ];
 }

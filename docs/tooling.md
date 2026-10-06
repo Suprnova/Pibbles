@@ -8,13 +8,13 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 
 | Command | Purpose | Phase |
 | --- | --- | --- |
-| `pibbles init [folder]` | Starts a project in `folder` (the current directory by default, made if it doesn't exist): a `pibbles.json` with the current settings, and a story folder holding a short example story whose comments explain each part, which `pibbles check` passes. `--blank` leaves the story folder empty. It never overwrites an existing `pibbles.json`, and leaves a story folder that already has `.pib` files as it is. Writers rarely know JSON, so this is how a project's settings file gets made. | 1 |
+| `pibbles init [folder]` | Starts a project in `folder` (the current directory by default, made if it doesn't exist): a `pibbles.json` with the current settings, and a story folder holding a short example story whose comments explain each part, with line IDs, which `pibbles check --warnaserror` passes. `--blank` leaves the story folder empty. It never overwrites an existing `pibbles.json`, and leaves a story folder that already has `.pib` files as it is. Writers rarely know JSON, so this is how a project's settings file gets made. | 1 |
 | `pibbles check [root]` | Compiles the story and prints each diagnostic with its source line, the problem marked, and a fix ([how diagnostics read](syntax.md#how-diagnostics-read)). `--format msbuild` prints one line per diagnostic instead, as `file(line,col): severity CODE: message`, the format editors and CI annotations understand. `--format json` gives tools machine-readable output. Color is used only when writing to a terminal, and never when `NO_COLOR` is set. With color, the problem is highlighted in its source line as well as marked under it, quoted code in messages is cyan instead of in backticks, and the help and its fixed line are green; source lines are always shown exactly as written. Exits non-zero on errors, or on warnings with `--warnaserror`. `--release` checks what a release build would ship; in v1 that's everything, and [drafts](#with-extensions) give it meaning later, so CI's command never has to change. CI runs `--release --warnaserror --format msbuild`. `--style` also shows hints ([semantics design](semantics.md)). Severities come from `.editorconfig`. | 1 (syntax), 2 (full analysis and `.editorconfig`) |
 | `pibbles explain <code>` | Prints a diagnostic's full entry: what it means, an example that triggers it, and how to fix it. The same text as the [diagnostics catalog](diagnostics.md). | 1 |
 | `pibbles play [root] --start <node>` | Plays the story in the terminal: lines with speaker and pose, markers shown inline (`⟨w 0.5⟩`, `⟨@sfx thud⟩`), numbered choices. `--set $var=value` seeds variables. Host functions are stubbed through `--stub has_item=true` or a stub file. | 3 |
 | `pibbles play … --script <file>` | Non-interactive: takes choices from a file and prints a deterministic transcript. It's the same format the transcript tests use, so a writer's reproduction of a bug becomes a test by copying files. | 3 |
-| `pibbles ids [root]` | Adds missing `#id:` tags in place | 2 |
-| `pibbles loc update [root]` | Regenerates `template.pot` and merges it into every `<locale>.po` | 5 |
+| `pibbles ids [root]` | Adds a line ID to every line that needs one and doesn't have it, in place ([below](#line-ids)) | 2 |
+| `pibbles loc update [root]` | Adds missing line IDs as `pibbles ids` does, then regenerates `template.pot` and merges it into every `<locale>.po` | 5 |
 | `pibbles voice script` | Exports a recording script per actor, one row per wording variant | Stretch |
 | `pibbles voice accept <id>` | Marks a recording as still matching its line after an edit | Stretch |
 | `pibbles graph [root]` | Writes the node flow graph as DOT or Mermaid, for reviewing branching | Stretch |
@@ -28,11 +28,24 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 - **The story** is every `.pib` file under the story folder: `story/` under the root, or the folder that `pibbles.json`'s `story` setting names.
 - **Paths in diagnostics** are relative to the current directory, so they point at the right file from an editor's terminal or a CI job, whichever folder the root is.
 - **The readable format** ends with a summary line, such as `Checked 3 files: 2 errors and 1 warning.` The `msbuild` and `json` formats print only the diagnostics.
+- **Missing line IDs (PIB3010)** all share one fix, so when there are more than five, the readable format shows them as one entry after the other problems, with how many each file has and the fix: run `pibbles ids`. Five or fewer are shown one by one, and the summary line counts each one either way. The `msbuild` and `json` formats always list every one, since tools and CI annotations need each location.
 - **JSON** is an array with one object per diagnostic: `path`, `line`, `column`, `endLine` and `endColumn` (1-based), `severity`, `code`, `message`, `label` and `help`.
 - **Exit codes:** 0 when the check passes, 1 when an error fails it (or a warning, with `--warnaserror`), and 2 when there's nothing to check, such as a missing story folder. `pibbles explain` exits 2 for a code it doesn't know.
 - **In CI,** the workflow registers `.github/pibbles-problem-matcher.json`, which turns `--format msbuild` output into annotations on the changed lines.
 
 `pibbles play` matters more than it looks. Writers can test a branch without launching the game or knowing C#, and it gives coding agents an end-to-end check that needs no engine.
+
+### Line IDs
+
+`pibbles ids` gives every line that needs a [line ID](localization.md#line-ids) and doesn't have one a new one: text lines that show text, options, `@call` and variation block openers. It finds the project the way `check` does.
+
+- **An ID goes at the end of its line,** after the line's tags, and before a trailing `//` comment on an `@` line: `@call kitchen.stuck #id:r4hc6v // Back down.` Nothing else in the file changes, including its line endings and any byte-order mark.
+- **A new ID is a lowercase letter and five lowercase letters or digits,** and never matches an ID, node name or old node name already in the story.
+- **A file with a PIB1xxx mistake,** the kind found while reading its lines, is left alone and listed, since a misread line could get its ID in the wrong place. The other files still get their IDs, and the command exits 1. Mistakes found later, such as an unknown actor, don't stop it.
+- It prints `Added 27 IDs in 1 file.`, or `Every line already has an ID.`, so running it twice changes nothing the second time.
+- **`pibbles init`** gives its example story IDs the same way, so a new project passes `pibbles check --warnaserror`.
+
+The core does the work in `LineIds.AddMissing`, which returns the text to insert and touches no files, so the language server can offer the same as a code action.
 
 ## VS Code extension
 
@@ -55,16 +68,25 @@ Writers will use VS Code, not Godot's script editor, for `.pib` files. Godot's e
 
 The language server is a thin layer over the `SemanticModel` ([semantics design](semantics.md#passes)). On every change it reparses the edited file and re-binds the project. Features, in priority order:
 
-1. **Diagnostics,** published per file.
+1. **Diagnostics,** published per file. A missing line ID (PIB3010) only shows on lines that haven't changed since the file was last saved ([line IDs in the editor](#line-ids-in-the-editor)).
 2. **Completion:** actors after line start, poses inside `(`, commands after `@`, parameters and enum members in arguments, node names after `@jump`/`@call` (in relative form for nodes under the file's prefix), variables after `$`, markup after `[`, icons after `{icon `, tags after `#`.
 3. **Go to definition:** jump targets, variables, commands, actors, markup.
 4. **Hover:** declaration signatures, with the declaration's `///` notes as documentation, and diagnostic explanations from the catalog.
 5. **Find references and rename:** for every declared name. Rename stops at a line boundary and never rewrites dialogue. Renamed nodes always get a `#was:` alias, and so do renamed variables once [release manifests](#with-extensions) arrive (the `pibbles.rename.aliases` setting turns this off). Renaming a file's `@prefix` renames each of its relative-named nodes, so each gets an alias. For names the game's code uses, the preview warns that the code must change too ([semantics design](semantics.md#pib5031--naming-convention)).
-6. **Code actions:** extract selected statements to a new node ([semantics design](semantics.md#extract-to-node)), add missing line IDs (also optionally on save), generate a migration header covering every retired ID that has nowhere to go (using node and range claims where possible), give a pasted duplicate a fresh ID, escape a colon that looks like a speaker, apply "did you mean" fixes, add an unknown word to `words.txt` ([spell checking](#spell-checking)).
+6. **Code actions:** extract selected statements to a new node ([semantics design](semantics.md#extract-to-node)), add missing line IDs (also on every save, by default), generate a migration header covering every retired ID that has nowhere to go (using node and range claims where possible), give a pasted duplicate a fresh ID, escape a colon that looks like a speaker, apply "did you mean" fixes, add an unknown word to `words.txt` ([spell checking](#spell-checking)).
 7. **Semantic tokens,** to refine TextMate highlighting where the grammar can't tell things apart, such as a known versus unknown actor.
 8. **Stretch:** document outline (nodes), folding, and a hover preview that renders a line's resolved text with its markers.
 
 **LSP library:** we'll evaluate this in Phase 6. The options are `OmniSharp.Extensions.LanguageServer`, or `StreamJsonRpc` with a hand-written subset of protocol types. Only diagnostics, completion, definition, hover, references, rename, code actions and semantic tokens are needed, and that subset is small enough that a hand-written protocol layer is realistic if the library turns out heavy or unmaintained. The server lives in its own project, so the core never picks up the dependency.
+
+### Line IDs in the editor
+
+Writers never type line IDs, and the editor never makes them look at a warning for one they couldn't have yet.
+
+- **IDs are added on every save,** the same way `pibbles ids` adds them. The `pibbles.ids.onSave` setting turns this off, for writers who'd rather run `pibbles ids` themselves.
+- **PIB3010 only shows on lines that haven't changed since the file was last saved.** A line being written has no ID yet by design, and people go a long time between saves, so warnings on every new line would bury the warnings and errors that matter. With IDs added on save, a line that's unchanged since the last save always has one, so PIB3010 only appears in the editor when `pibbles.ids.onSave` is off.
+- **With `pibbles.ids.onSave` off,** the editor says so once, when a file with missing IDs is saved, and suggests turning it back on or running `pibbles ids`.
+- **`pibbles check` and CI aren't affected.** They see every line, and report every missing ID.
 
 ## Spell checking
 

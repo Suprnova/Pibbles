@@ -37,6 +37,12 @@ internal static class Check
     /// <summary>The check couldn't run, for example because there's no story folder.</summary>
     public const int CouldNotRun = 2;
 
+    /// <summary>
+    /// How many missing line IDs the readable format lists one by one. Past this, they're one entry, since they share a
+    /// fix. The other formats list every one.
+    /// </summary>
+    private const int MissingIdsListed = 5;
+
     public static int Run(IReadOnlyList<SourceText> sources, CheckOptions options, TextWriter output)
     {
         Dictionary<string, SourceText> byPath = sources.ToDictionary(source => source.Path);
@@ -59,9 +65,17 @@ internal static class Check
                 break;
 
             default:
-                foreach ((SourceText source, Diagnostic diagnostic) in found)
+                Diagnostic[] missingIds = [.. found.Select(entry => entry.Diagnostic).Where(diagnostic => diagnostic.Code == DiagnosticCatalog.MissingLineId.Code)];
+                bool collapse = missingIds.Length > MissingIdsListed;
+                foreach ((SourceText source, Diagnostic diagnostic) in found.Where(entry => !collapse || entry.Diagnostic.Code != DiagnosticCatalog.MissingLineId.Code))
                 {
                     DiagnosticFormatter.WritePretty(output, source, diagnostic, options.Color);
+                    output.WriteLine();
+                }
+
+                foreach (IGrouping<DiagnosticSeverity, Diagnostic> group in collapse ? missingIds.GroupBy(diagnostic => diagnostic.Severity) : [])
+                {
+                    DiagnosticFormatter.WriteMissingIds(output, [.. group], options.Color);
                     output.WriteLine();
                 }
 

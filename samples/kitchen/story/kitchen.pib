@@ -1,6 +1,5 @@
 // A short scene in a kitchen. Each node is a conversation the game starts by name:
 // kitchen.enter when the scene opens, and one node for each thing worth a look.
-// Only kitchen.door has line IDs so far; `pibbles ids` adds the rest.
 
 @prefix kitchen
 
@@ -8,43 +7,43 @@
 @show mira left
 @show rex right
 @if visits(.enter) > 1
-    rex: Back in the kitchen. Thrilling.
+    rex: Back in the kitchen. Thrilling. #id:c0wiqs
     @enter_room kitchen on_exit=.leave
     @end
 
-mira (worried): This kitchen gives me the creeps.
-rex (grumpy): It's a kitchen.{w 0.4} Relax.
-mira (worried): Who said that?
-rex: Rex. I live in the walls.{w} Kidding. I'm behind the fridge.
-mira: Let's look around. Press {icon interact} to inspect things.
+mira (worried): This kitchen gives me the creeps. #id:mfzuit
+rex (grumpy): It's a kitchen.{w 0.4} Relax. #id:aesok7
+mira (worried): Who said that? #id:lh35ik
+rex: Rex. I live in the walls.{w} Kidding. I'm behind the fridge. #id:er911h
+mira: Let's look around. Press {icon interact} to inspect things. #id:ob3a3g
 @enter_room kitchen on_exit=.leave
 
 == .fridge
-@sequence
-    - mira: It's a fridge.{@sfx fridge_hum} It hums. [wave]Ominously.[/wave]
-    - mira (smug): Still a fridge.
-    - mira: I refuse to look at this fridge again.
+@sequence #id:hngwd1
+    - mira: It's a fridge.{@sfx fridge_hum} It hums. [wave]Ominously.[/wave] #id:xdq5lg
+    - mira (smug): Still a fridge. #id:zprojv
+    - mira: I refuse to look at this fridge again. #id:ca76yd
 
 == .drawer
-@once
-    mira: Spoons, spoons, more spoons, and...{w} [clue]a small brass key[/clue]!
+@once #id:lnbr5w
+    mira: Spoons, spoons, more spoons, and...{w} [clue]a small brass key[/clue]! #id:ml21he
     @set $has_key = true
-    mira (happy): Press {icon inventory} to check your items.
+    mira (happy): Press {icon inventory} to check your items. #id:xqf9qw
     @end
-mira: Just spoons now.
+mira: Just spoons now. #id:ds4oao
 
 == .window
 @if has_item("crowbar")
-    mira: I could pry it open... but the door's right there.
+    mira: I could pry it open... but the door's right there. #id:jjevmc
     @end
-@cycle
-    - mira: Dusty.
-    - mira: Very dusty.
+@cycle #id:skmne3
+    - mira: Dusty. #id:i6f2vr
+    - mira: Very dusty. #id:xj5acx
         @wait 0.5s
         @sfx sneeze
-        mira (angry): Ugh.
-    - mira: When did anyone last clean this?
-    - rex: You two stare at everything, don't you?
+        mira (angry): Ugh. #id:wdsl43
+    - mira: When did anyone last clean this? #id:ytr2cv
+    - rex: You two stare at everything, don't you? #id:h5aeqs
 
 == .door #was:.front_door
 @if $door_open
@@ -75,12 +74,12 @@ rex: {if $bravery > 2}Maybe stop hitting it?{else}Well, that didn't work.{/if} #
 == .leave
 @hide rex
 @move mira offscreen nowait
-mira (happy): Onward!
-rex (surprised): Wait for m—
+mira (happy): Onward! #id:tbn8zd
+rex (surprised): Wait for m— #id:y22poy
 @camera hallway
 
 == common.stuck
-@cycle
-    - mira (sad): Nope.
-    - mira (sad): Not that.
-    - mira (sad): That's not it either.
+@cycle #id:qtsu77
+    - mira (sad): Nope. #id:koyi9l
+    - mira (sad): Not that. #id:dugpwb
+    - mira (sad): That's not it either. #id:z27jmk

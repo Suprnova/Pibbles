@@ -58,7 +58,7 @@ public class BinderTests
     [Theory]
     [MemberData(nameof(ValidOperations))]
     public void Compile_ValidOperation_HasResultType(string expression, string type) =>
-        Assert.Empty(Compile($"{Operands}@set $out_{type} = {expression}\n").Diagnostics);
+        Assert.Empty(Diagnose($"{Operands}@set $out_{type} = {expression}\n"));
 
     /// <summary>Combinations the operator types don't allow, each assigned to a variable of the type the operator would give.</summary>
     public static TheoryData<string, string> InvalidOperations { get; } = new()
@@ -88,7 +88,7 @@ public class BinderTests
     [Theory]
     [MemberData(nameof(InvalidOperations))]
     public void Compile_InvalidOperation_ReportsOperatorTypesOnly(string expression, string type) =>
-        Assert.Equal(["PIB2033"], Compile($"{Operands}@set $out_{type} = {expression}\n").Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB2033"], Diagnose($"{Operands}@set $out_{type} = {expression}\n").Select(diagnostic => diagnostic.Code));
 
     public static TheoryData<string, string, string?> Messages { get; } = new()
     {
@@ -217,7 +217,7 @@ public class BinderTests
     [Fact]
     public void Compile_SpeakerNotDeclared_NamesSpeakerByIdInSyntaxMessage()
     {
-        Diagnostic diagnostic = Assert.Single(Compile("== a.b\nmira:\n").Diagnostics, diagnostic => diagnostic.Code == "PIB1054");
+        Diagnostic diagnostic = Assert.Single(Diagnose("== a.b\nmira:\n"), diagnostic => diagnostic.Code == "PIB1054");
 
         Assert.StartsWith("Write what mira says", diagnostic.Help);
     }
@@ -228,7 +228,7 @@ public class BinderTests
     [MemberData(nameof(Messages))]
     public void Compile_Problem_ReportsMessageAndHelp(string text, string message, string? help)
     {
-        Diagnostic diagnostic = Assert.Single(Compile(text).Diagnostics);
+        Diagnostic diagnostic = Assert.Single(Diagnose(text));
 
         Assert.Equal((message, help), (diagnostic.Message, diagnostic.Help));
     }
@@ -236,10 +236,12 @@ public class BinderTests
     [Fact]
     public void Compile_ProblemInsideBrokenExpression_ReportsOnce()
     {
-        var compilation = Compile("@var $n = 0\n\n== a.b\n@if ($missing + 1) * 2 > $n and not $missing\n    Hm.\n");
+        Diagnostic[] diagnostics = Diagnose("@var $n = 0\n\n== a.b\n@if ($missing + 1) * 2 > $n and not $missing\n    Hm.\n");
 
-        Assert.Equal(["PIB2030", "PIB2030"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB2030", "PIB2030"], diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
-    private static Compilation Compile(string text) => Compilation.Create([new SourceText("story.pib", text)]);
+    /// <summary>Compiles a story of one file, leaving out missing line IDs, which these stories don't write.</summary>
+    private static Diagnostic[] Diagnose(string text) =>
+        [.. Compilation.Create([new SourceText("story.pib", text)]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010")];
 }

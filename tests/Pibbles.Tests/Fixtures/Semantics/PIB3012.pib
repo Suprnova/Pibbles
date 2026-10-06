@@ -1,0 +1,16 @@
+// A line ID is never a node's name or old name, so a name always means one thing.
+
+@actor mira
+    name: Mira
+
+== intro
+mira: Hi. #id:intro
+//        ^^^^^^^^^ PIB3012
+
+== kitchen.door #was:start
+mira: Hi again. #id:start
+//              ^^^^^^^^^ PIB3012
+
+// Must not trigger
+
+mira: Bye. #id:kitchen

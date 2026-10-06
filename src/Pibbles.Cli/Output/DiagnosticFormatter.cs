@@ -49,6 +49,24 @@ internal static class DiagnosticFormatter
     }
 
     /// <summary>
+    /// Writes many missing line IDs, all of one severity, as one entry for people: how many there are, how many each file
+    /// has, and the fix they share. Listing each one would bury the problems that need a person to look at them.
+    /// </summary>
+    public static void WriteMissingIds(TextWriter output, IReadOnlyList<Diagnostic> missing, bool color)
+    {
+        DiagnosticSeverity severity = missing[0].Severity;
+        string lines = missing.Count == 1 ? "1 line has" : $"{missing.Count} lines have";
+        string bar = Paint("|", Blue, color);
+
+        output.WriteLine($"{Paint($"{Name(severity)}[{missing[0].Code}]", Tint(severity), color)}{Paint($": {Markup.Render($"{lines} no `#id`.", color)}", Bold, color)}");
+        foreach (IGrouping<string, Diagnostic> file in missing.GroupBy(diagnostic => diagnostic.Location.Path))
+            output.WriteLine($" {Paint("-->", Blue, color)} {file.Key}: {Plural(file.Count(), "line")}");
+
+        output.WriteLine($"  {bar}");
+        output.WriteLine($"  {Paint("=", Blue, color)} {Paint("help", Green, color)}: {Markup.Render("Run `pibbles ids` to add them.", color)}");
+    }
+
+    /// <summary>
     /// The closing line of the readable format, such as <c>Checked 3 files: 2 errors and 1 warning.</c> With color, each
     /// count is in its severity's color, and "no problems" is green.
     /// </summary>

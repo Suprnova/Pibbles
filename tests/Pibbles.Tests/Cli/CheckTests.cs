@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Pibbles.Cli.Commands;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
@@ -8,7 +9,7 @@ namespace Pibbles.Tests.Cli;
 public sealed class CheckTests : IDisposable
 {
     private readonly StringWriter output = new();
-    private readonly SourceText clean = new("story/clean.pib", "@actor mira\n    name: Mira\n\n== kitchen.door\nmira: Locked.\n");
+    private readonly SourceText clean = new("story/clean.pib", "@actor mira\n    name: Mira\n\n== kitchen.door\nmira: Locked. #id:k7qp2x\n");
     private readonly SourceText broken = new("story/broken.pib", "== kitchen.fridge\nI'm #winning today.\n@jump\n");
 
     public void Dispose() => output.Dispose();
@@ -28,6 +29,47 @@ public sealed class CheckTests : IDisposable
 
         Assert.Equal(Check.Failed, exitCode);
         Assert.EndsWith("Checked 2 files: 2 errors.\n", output.ToString().ReplaceLineEndings("\n"));
+    }
+
+    [Fact]
+    public void Run_ManyMissingIds_ShowsThemAsOneEntryAfterOtherProblems()
+    {
+        SourceText rooms = new("story/rooms.pib", "== kitchen.cellar\nOne.\nTwo.\nThree.\nFour.\n@jump\n");
+        SourceText hall = new("story/hall.pib", "== kitchen.hall\nFive.\nSix.\n");
+
+        int exitCode = Check.Run([rooms, hall], new(OutputFormat.Pretty), output);
+
+        Assert.Equal(Check.Failed, exitCode);
+        Assert.EndsWith(
+            "warning[PIB3010]: 6 lines have no `#id`.\n" +
+            " --> story/rooms.pib: 4 lines\n" +
+            " --> story/hall.pib: 2 lines\n" +
+            "  |\n" +
+            "  = help: Run `pibbles ids` to add them.\n" +
+            "\n" +
+            "Checked 2 files: 1 error and 6 warnings.\n",
+            output.ToString().ReplaceLineEndings("\n"));
+        Assert.Equal(1, Regex.Count(output.ToString(), @"\[PIB3010\]"));
+    }
+
+    [Fact]
+    public void Run_FewMissingIds_ShowsEachOne()
+    {
+        SourceText story = new("story/rooms.pib", "== kitchen.cellar\nOne.\nTwo.\nThree.\nFour.\nFive.\n");
+
+        Check.Run([story], new(OutputFormat.Pretty), output);
+
+        Assert.Equal(5, Regex.Count(output.ToString(), @"warning\[PIB3010\]: This line has no `#id`\."));
+    }
+
+    [Fact]
+    public void Run_ManyMissingIdsInMSBuildFormat_ListsEachOne()
+    {
+        SourceText story = new("story/rooms.pib", "== kitchen.cellar\nOne.\nTwo.\nThree.\nFour.\nFive.\nSix.\n");
+
+        Check.Run([story], new(OutputFormat.MSBuild), output);
+
+        Assert.Equal(6, Regex.Count(output.ToString(), "warning PIB3010"));
     }
 
     [Fact]

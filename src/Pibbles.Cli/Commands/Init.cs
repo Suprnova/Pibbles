@@ -6,7 +6,7 @@ namespace Pibbles.Cli.Commands;
 
 /// <summary>
 /// <c>pibbles init [folder]</c>: starts a project with a <c>pibbles.json</c> and a story folder. By default the folder
-/// gets a short example story whose comments explain each part, which <c>pibbles check</c> passes.
+/// gets a short example story whose comments explain each part, with line IDs, which <c>pibbles check --warnaserror</c> passes.
 /// </summary>
 internal static class Init
 {
@@ -20,7 +20,7 @@ internal static class Init
     /// Creates the project in <paramref name="folder"/>, which may not exist yet. An existing <c>pibbles.json</c> is
     /// never overwritten, and a story folder that already has <c>.pib</c> files is left as it is.
     /// </summary>
-    public static int Run(string folder, string currentDirectory, bool blank, TextWriter output, TextWriter error)
+    public static int Run(string folder, string currentDirectory, bool blank, Random random, TextWriter output, TextWriter error)
     {
         string root = Path.GetFullPath(folder, currentDirectory);
         string settingsFile = Path.Combine(root, ProjectSettings.FileName);
@@ -43,10 +43,11 @@ internal static class Init
 
         if (!blank && !hasSources)
         {
-            foreach ((string file, string description) in Starter)
+            IReadOnlyList<(string File, string Text)> files = Ids.AddTo([.. Starter.Select(entry => (entry.File, ReadStarter(entry.File)))], random);
+            foreach (((string file, string text), (_, string description)) in files.Zip(Starter))
             {
                 string path = Path.Combine(story, file);
-                File.WriteAllText(path, ReadStarter(file));
+                File.WriteAllText(path, text);
                 created.Add((path, description));
             }
         }

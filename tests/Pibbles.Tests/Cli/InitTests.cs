@@ -9,6 +9,7 @@ public sealed class InitTests : IDisposable
     private readonly DirectoryInfo root = Directory.CreateTempSubdirectory("pibbles-");
     private readonly StringWriter output = new();
     private readonly StringWriter error = new();
+    private readonly Random random = new(2718);
 
     public void Dispose()
     {
@@ -20,7 +21,7 @@ public sealed class InitTests : IDisposable
     [Fact]
     public void Run_NewFolder_CreatesSettingsAndStarterStory()
     {
-        int exitCode = Init.Run("my-story", root.FullName, blank: false, output, error);
+        int exitCode = Init.Run("my-story", root.FullName, blank: false, random, output, error);
 
         Assert.Equal(Check.Passed, exitCode);
         Assert.Equal(ProjectSettings.Default.ToJson(), File.ReadAllText(Path.Combine(root.FullName, "my-story", "pibbles.json")));
@@ -29,12 +30,12 @@ public sealed class InitTests : IDisposable
     }
 
     [Fact]
-    public void Run_StarterStory_PassesCheckWithNoProblems()
+    public void Run_StarterStory_PassesCheckWithWarningsAsErrors()
     {
-        Init.Run(".", root.FullName, blank: false, output, error);
+        Init.Run(".", root.FullName, blank: false, random, output, error);
         IReadOnlyList<SourceText> sources = StoryFolder.Load(".", root.FullName, error)!;
 
-        int exitCode = Check.Run(sources, new(OutputFormat.MSBuild), output);
+        int exitCode = Check.Run(sources, new(OutputFormat.MSBuild, WarnAsError: true), output);
 
         Assert.Equal(Check.Passed, exitCode);
         Assert.StartsWith("I made a Pibbles project in this folder:", output.ToString());
@@ -44,7 +45,7 @@ public sealed class InitTests : IDisposable
     [Fact]
     public void Run_Blank_CreatesOnlySettingsAndEmptyStoryFolder()
     {
-        Init.Run(".", root.FullName, blank: true, output, error);
+        Init.Run(".", root.FullName, blank: true, random, output, error);
 
         Assert.Empty(Directory.EnumerateFileSystemEntries(Path.Combine(root.FullName, "story")));
         Assert.Matches(@"story/ +the story folder, for your \.pib files", output.ToString());
@@ -56,7 +57,7 @@ public sealed class InitTests : IDisposable
         string settings = Path.Combine(root.FullName, "pibbles.json");
         File.WriteAllText(settings, """{ "story": "mine" }""");
 
-        int exitCode = Init.Run(".", root.FullName, blank: false, output, error);
+        int exitCode = Init.Run(".", root.FullName, blank: false, random, output, error);
 
         Assert.Equal((Check.CouldNotRun, """{ "story": "mine" }"""), (exitCode, File.ReadAllText(settings)));
         Assert.StartsWith("`pibbles.json` already exists", error.ToString());
@@ -68,7 +69,7 @@ public sealed class InitTests : IDisposable
         Directory.CreateDirectory(Path.Combine(root.FullName, "story"));
         File.WriteAllText(Path.Combine(root.FullName, "story", "mine.pib"), "== mine");
 
-        Init.Run(".", root.FullName, blank: false, output, error);
+        Init.Run(".", root.FullName, blank: false, random, output, error);
 
         Assert.Equal(["mine.pib"], Directory.EnumerateFiles(Path.Combine(root.FullName, "story")).Select(Path.GetFileName));
         Assert.Contains("`story` already has .pib files, so I left them as they are.", output.ToString());

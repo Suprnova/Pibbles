@@ -262,7 +262,7 @@ Lines get a short ID at the end:
 mira: This line has an ID. #id:k7qp2x
 ```
 
-Variation blocks get one too, after the keyword (`@once #id:b8k2qd`), so the story remembers how often each block has run. You don't type these. A tool adds them, and they keep saves attached to the right line. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor fades them out so they don't get in the way. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
+Options, `@call` lines and variation blocks get one too, after the keyword (`@once #id:b8k2qd`), so the story remembers how often each block has run. You don't type these: run `pibbles ids` and it adds one to every line that needs one, at the end of the line. They keep saves and translations attached to the right line. Until a line has one, `pibbles check` reminds you with a warning, and the story still plays. Leave them alone when editing a line, even if you rewrite its text completely, or move it to another file. The editor fades them out so they don't get in the way. If you copy and paste a line, Pibbles notices the duplicate ID. If you delete a line, its ID goes with it.
 
 ---
 

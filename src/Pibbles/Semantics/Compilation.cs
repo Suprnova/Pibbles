@@ -42,6 +42,7 @@ public sealed class Compilation
         SymbolTable symbols = DeclarationPass.Run(trees, found, references);
         Binder.Run(trees, symbols, found, references);
         FlowChecks.Run(trees, found);
+        LineIdChecks.Run(trees, symbols, found);
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
         return new(trees, symbols, new SemanticModel(symbols, references),

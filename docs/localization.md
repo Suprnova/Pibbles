@@ -33,7 +33,7 @@ IDs are what everything else keys on:
 
 ### Who writes them
 
-**The tooling, never the writer's memory.** `pibbles ids` adds missing IDs in place, touching only the end of each line. The language server does the same as a code action, and optionally on every save. A pre-commit hook running `pibbles ids` is an alternative for writers who work outside VS Code.
+**The tooling, never the writer's memory.** `pibbles ids` adds missing IDs in place, touching only the end of each line. The language server does the same on every save, and as a code action ([line IDs in the editor](tooling.md#line-ids-in-the-editor)), and `pibbles loc update` adds any that are still missing before it extracts text. A pre-commit hook running `pibbles ids` is an alternative for writers who work outside VS Code.
 
 The writer's only rule: **leave IDs alone.** That applies when rewriting a line (the ID keeps pointing at "this line") and when moving it to another file (the ID travels with it). Deleting a line retires its ID. After a release, a retired ID needs a `#was:` alias or a migration, so old saves know where to go ([language design](language/design.md#migrations)). Two situations need a tool rather than a rule:
 
@@ -78,8 +78,8 @@ story/
     ja.po
 ```
 
-1. Writers write in the source locale and run `pibbles ids`.
-2. `pibbles loc update` regenerates `template.pot` and merges it into each `<locale>.po`. New lines appear untranslated. Lines whose source text changed are marked fuzzy. Removed lines become obsolete entries.
+1. Writers write in the source locale. Saving in VS Code gives each new line its ID.
+2. `pibbles loc update` adds any line IDs still missing, then regenerates `template.pot` and merges it into each `<locale>.po`. New lines appear untranslated. Lines whose source text changed are marked fuzzy. Removed lines become obsolete entries.
 3. Translators work in standard PO tools (Poedit, Weblate, Crowdin).
 4. `pibbles check` validates every locale along with the source. CI runs it.
 5. At runtime, the host sets `runner.Locale`, and Pibbles looks up each line in that locale.
