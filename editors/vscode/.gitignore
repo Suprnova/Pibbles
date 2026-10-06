@@ -3,3 +3,6 @@ node_modules/
 # Build output: the compiled grammar and the license copied from the repository root.
 syntaxes/pibbles.tmLanguage.json
 LICENSE
+
+# Compiled TypeScript.
+out/
