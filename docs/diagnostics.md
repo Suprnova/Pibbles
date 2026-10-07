@@ -842,7 +842,7 @@ Write the words for each case: `You {if $has_key}have{else}don't have{/if} the k
 
 ### PIB2039
 
-**A speed, a pause or a wait has to be more than zero,** because a speed of zero would never show the next character, and a pause of nothing or less does nothing. This covers the value in `{speed x}`, `{w d}` and `@wait d`, when it's a constant: a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(0.5s - 1s)`. A value that depends on a variable or a function call isn't checked here: if it isn't more than zero when the story runs, that point is skipped with a warning.
+**A speed, a pause or a wait has to be more than zero,** because a speed of zero would never show the next character, and a pause of nothing or less does nothing. This covers the value in `{speed x}`, `{w d}` and `@wait d`, when it's a constant: a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(0.5s - 1s)`. A value that depends on a variable or a function call isn't checked here: if it isn't more than zero when the story runs, that speed, pause or wait is skipped with a warning.
 
 ```text
 mira: Wait.{w 0} What?

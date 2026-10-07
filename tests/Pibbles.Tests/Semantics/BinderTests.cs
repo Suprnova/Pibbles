@@ -265,6 +265,13 @@ public class BinderTests
     [InlineData("== a.b\nWait.{speed (1 / 0)}{speed 99999999999999999999999999999} Done.\n")]
     public void Compile_PacingValueThatIsNotRepresentable_IsNotConstant(string text) => Assert.Empty(Diagnose(text));
 
+    [Theory]
+    [InlineData("== a.b\nSlow.{speed 0s} Done.\n")]
+    [InlineData("== a.b\nSlow.{w \"0\"} Done.\n")]
+    [InlineData("== a.b\n@wait \"0\"\n")]
+    public void Compile_PacingValueOfWrongType_ReportsOnlyTheType(string text) =>
+        Assert.Equal(["PIB2031"], Diagnose(text).Select(diagnostic => diagnostic.Code));
+
     [Fact]
     public void Compile_ProblemInsideBrokenExpression_ReportsOnce()
     {

@@ -115,8 +115,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     break;
 
                 case WaitStatementSyntax wait:
-                    BindValue(wait.Duration, TypeSymbol.Duration, "`@wait` takes a `duration`");
-                    CheckPositive(wait.Duration, "The time to `@wait`", "Write a time longer than zero, like `@wait 0.5s`.");
+                    BindPacing(wait.Duration, TypeSymbol.Duration, "`@wait` takes a `duration`", "The time to `@wait`", "Write a time longer than zero, like `@wait 0.5s`.");
                     break;
             }
         }
@@ -208,13 +207,11 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     break;
 
                 case PauseSyntax { Duration: { } duration }:
-                    BindValue(duration, TypeSymbol.Duration, "`{w}` takes a `duration`");
-                    CheckPositive(duration, "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
+                    BindPacing(duration, TypeSymbol.Duration, "`{w}` takes a `duration`", "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
                     break;
 
                 case SpeedSyntax { Factor: { } factor }:
-                    BindValue(factor, TypeSymbol.Number, "`{speed}` takes a `number`");
-                    CheckPositive(factor, "A speed", "Write a speed above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.");
+                    BindPacing(factor, TypeSymbol.Number, "`{speed}` takes a `number`", "A speed", "Write a speed above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.");
                     break;
 
                 case IconSyntax icon when symbols.Icons.TryGetValue(icon.Name.Text, out IconSymbol? symbol):
@@ -367,17 +364,24 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     }
 
     /// <summary>Binds a value that has to have <paramref name="target"/>'s type, reporting it with what it's for if it doesn't.</summary>
-    private void BindValue(ExpressionSyntax value, TypeSymbol target, string purpose)
+    /// <returns>Whether the value's type converts to <paramref name="target"/>.</returns>
+    private bool BindValue(ExpressionSyntax value, TypeSymbol target, string purpose)
     {
         TypeSymbol type = Bind(value, target);
-        if (!Converts(type, target))
-            ReportWithOptionalHelp(DiagnosticCatalog.ValueType, value.Span, purpose, type.Describe(), ValueHelp(target));
+        if (Converts(type, target))
+            return true;
+
+        ReportWithOptionalHelp(DiagnosticCatalog.ValueType, value.Span, purpose, type.Describe(), ValueHelp(target));
+        return false;
     }
 
-    /// <summary>Reports a pacing value that's constant and not more than zero. A value computed at run time is checked by the runtime.</summary>
-    private void CheckPositive(ExpressionSyntax value, string what, string help)
+    /// <summary>
+    /// Binds a pacing value, and reports it if it has the right type but is a constant that isn't more than zero. A value
+    /// computed at run time is checked by the runtime.
+    /// </summary>
+    private void BindPacing(ExpressionSyntax value, TypeSymbol target, string purpose, string what, string help)
     {
-        if (ConstantValue.Fold(value) is <= 0)
+        if (BindValue(value, target, purpose) && ConstantValue.Fold(value) is <= 0)
             Report(DiagnosticCatalog.NotPositive, value.Span, what, TextOf(value.Span), help);
     }
 

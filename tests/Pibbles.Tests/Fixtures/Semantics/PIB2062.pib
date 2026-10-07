@@ -4,7 +4,6 @@
 //       ^^ PIB2062
 @command term()
 //       ^^^^ PIB2062
-@markup speed
 @actor true
 //     ^^^^ PIB2062
     name: True
@@ -18,6 +17,9 @@
 //   ^^ PIB2062
 @command shake(nowait: bool)
 //             ^^^^^^ PIB2062
+
+// Must not trigger here: `speed` is a free markup name.
+@markup speed
 
 == wait
 // ^^^^ PIB2062
