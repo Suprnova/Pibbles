@@ -1,0 +1,28 @@
+start story.main
+
+  narration: Narration without a speaker.  #l01
+  mira: A line with a speaker.  #l02
+  pose mira happy
+  mira: A posed line.  #l03
+  pose mira sad
+  rex: ⟨w⟩  #l04
+  @show mira center
+  @show rex left
+  @move mira right waits
+  @move mira right
+  $count = 6
+  $delay = 2s
+  wait 0.5s
+  wait 2s
+  rex: Some.  #l06
+  mira: In the sub.  #l08
+  mira: First.  #l10
+  rex: Ping.  #l12
+  mira: Once.  #l14
+  choice
+    1. Go on  #o01
+    2. Stay  #o02
+> #o02
+  mira: Staying.  #l16
+  mira: Done.  #l17
+  end

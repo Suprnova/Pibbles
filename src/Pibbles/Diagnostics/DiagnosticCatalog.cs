@@ -236,6 +236,13 @@ public static class DiagnosticCatalog
         "`{0}` is too large a number for me.",
         help: "Numbers go up to 79228162514264337593543950335. Write a smaller one.");
 
+    /// <summary>PIB1048: the character U+FFFC in text, which Pibbles uses to stand for an icon.</summary>
+    public static DiagnosticDescriptor ObjectReplacementCharacter { get; } = new(
+        "PIB1048",
+        DiagnosticSeverity.Error,
+        "This text has U+FFFC in it, which Pibbles uses to mark where an icon goes.",
+        help: "Remove it. To show an icon, write `{{icon name}}`.");
+
     /// <summary>PIB1050: a positional argument after a named one.</summary>
     public static DiagnosticDescriptor ArgumentOrder { get; } = new(
         "PIB1050",
@@ -828,6 +835,7 @@ public static class DiagnosticCatalog
         DottedName,
         Missing,
         NumberTooLarge,
+        ObjectReplacementCharacter,
         ArgumentOrder,
         SpaceBeforeCall,
         InvalidLineId,

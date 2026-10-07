@@ -12,7 +12,7 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 | `pibbles check [root]` | Compiles the story and prints each diagnostic with its source line, the problem marked, and a fix ([how diagnostics read](syntax.md#how-diagnostics-read)). `--format msbuild` prints one line per diagnostic instead, as `file(line,col): severity CODE: message`, the format editors and CI annotations understand. `--format json` gives tools machine-readable output. Color is used only when writing to a terminal, and never when `NO_COLOR` is set. With color, the problem is highlighted in its source line as well as marked under it, quoted code in messages is cyan instead of in backticks, and the help and its fixed line are green; source lines are always shown exactly as written. Exits non-zero on errors, or on warnings with `--warnaserror`. `--release` checks what a release build would ship; in v1 that's everything, and [drafts](#with-extensions) give it meaning later, so CI's command never has to change. CI runs `--release --warnaserror --format msbuild`. `--style` also shows hints ([semantics design](semantics.md)). Severities come from `.editorconfig`. | 1 (syntax), 2 (full analysis and `.editorconfig`) |
 | `pibbles explain <code>` | Prints a diagnostic's full entry: what it means, an example that triggers it, and how to fix it. The same text as the [diagnostics catalog](diagnostics.md). | 1 |
 | `pibbles play [root] --start <node>` | Plays the story in the terminal: lines with speaker and pose, markers shown inline (`⟨w 0.5⟩`, `⟨@sfx thud⟩`), numbered choices. `--set $var=value` seeds variables. Host functions are stubbed through `--stub has_item=true` or a stub file. | 3 |
-| `pibbles play … --script <file>` | Non-interactive: takes choices from a file and prints a deterministic transcript. It's the same format the transcript tests use, so a writer's reproduction of a bug becomes a test by copying files. | 3 |
+| `pibbles play … --script <file>` | Non-interactive: takes choices from a file and prints a deterministic transcript. It's the same format the transcript tests use, so a writer's reproduction of a bug becomes a test by copying files ([below](#scripts-and-transcripts)). | 3 |
 | `pibbles ids [root]` | Adds a line ID to every line that needs one and doesn't have it, in place ([below](#line-ids)) | 2 |
 | `pibbles upgrade [root]` | Rewrites the project's `pibbles.json` in the newest schema, keeping its settings ([project settings](#project-settings)). It finds the project the way `check` does, and a file that's already current is left as it is. | 2 |
 | `pibbles loc update [root]` | Adds missing line IDs as `pibbles ids` does, then regenerates `template.pot` and merges it into every `<locale>.po` | 5 |
@@ -33,6 +33,35 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 - **JSON** is an array with one object per diagnostic: `path`, `line`, `column`, `endLine` and `endColumn` (1-based), `severity`, `code`, `message`, `label` and `help`.
 - **Exit codes:** 0 when the check passes, 1 when an error fails it (or a warning, with `--warnaserror`), and 2 when there's nothing to check, such as a missing story folder. `pibbles explain` exits 2 for a code it doesn't know.
 - **In CI,** the workflow registers `.github/pibbles-problem-matcher.json`, which turns `--format msbuild` output into annotations on the changed lines.
+
+### Scripts and transcripts
+
+A **script** says where to start and what to answer. A **transcript** is a script with every step written in, so any transcript is also a valid script: the reader only takes the directives and the answers, which are the lines that start in column 0, and ignores everything else. Copying a run into the tests is a file copy.
+
+```text
+start kitchen.door
+set $has_key = true
+stub has_item("crowbar") = false
+stub has_item = false
+
+  pose mira worried
+  mira: Locked.⟨w⟩ Of course it's locked.  #k7qp2x
+  choice
+    1. Rattle the handle  #c4ne8r
+    2. Use the key #show_disabled  #m3xw9a
+    3. Knock politely  #t5bq2m
+    4. Leave it  #x2jm5p
+> #m3xw9a
+  @sfx key_turn
+  $door_open = true
+  mira (happy): Got it!  #h8ya3k
+```
+
+- **Directives** are `start <node>` (required; a later `start` begins when the dialogue before it ends, with the state kept, which is how a script visits a node twice), `set $var = value` (seeds a variable before the first start), `stub fn(args) = value` (the value for one set of arguments) and `stub fn = value` (the value for any others). Host functions are side-effect free, so a stub is just a value. A function the story calls with no stub fails at the start, listing every one that's missing, and a call with arguments no stub matches fails naming the call.
+- **Answers** are `> #id`, which picks an option by its ID (the writer always writes this), or a hand-written `> 2`, which picks the second option as written in the source, counting options `@once` has removed, so the same number means the same option on every visit. The writer uses `> N` for an option without an `#id`. A script that runs out of answers at a choice fails, naming the choice.
+- **Steps are indented** by two spaces, and anything free-form in them has its backslashes and line breaks escaped (`\n`, `\\`). Directives and answers are at column 0, so no step can be read as one, whatever its text says.
+- **What's printed:** every step; every marker inline at its position (`⟨w⟩`, `⟨w 0.5s⟩`, `⟨p⟩`, `⟨speed 0.3⟩`, `⟨speed⟩`, `⟨@sfx thud⟩`, with ` wait` when the command waits), icons inline (`⟨icon interact⟩`), spans as in the source with all their arguments (`[wave 2 5]…[/wave]`), each option of a choice with its source number, its ID and its state (`(unavailable)`, `(chosen)`), each command's `waits`, every variable change (`$var = value`) before the step that followed it, every runtime warning with its kind and location, and a line's tags and ID after its text. A fallback ID is written `#~`, since it changes whenever lines move. Numbers are normalized, strings quoted, durations written with `s`.
+- **There is no version header.** The format only ever grows.
 
 `pibbles play` matters more than it looks. Writers can test a branch without launching the game or knowing C#, and it gives coding agents an end-to-end check that needs no engine.
 

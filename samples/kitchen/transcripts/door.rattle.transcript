@@ -1,0 +1,20 @@
+start kitchen.door
+stub has_item = false
+
+  pose mira worried
+  mira: Locked.⟨w⟩ Of course it's locked.  #k7qp2x
+  choice
+    1. Rattle the handle  #c4ne8r
+    2. Use the key #show_disabled  #m3xw9a (unavailable)
+    3. Knock politely  #t5bq2m
+    4. Leave it  #x2jm5p
+> #c4ne8r
+  @sfx door_rattle
+  @jolt mira
+  pose mira angry
+  mira: [shout]Open up![/shout]⟨@shake_screen 0.5 0.3s⟩  #p2vd7t
+  $bravery = 1
+  pose mira sad
+  mira: Nope.  #koyi9l
+  rex: Well, that didn't work.  #q7gt3n
+  end

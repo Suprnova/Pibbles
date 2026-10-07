@@ -1,0 +1,27 @@
+start kitchen.door
+stub has_item = false
+
+  pose mira worried
+  mira: Locked.⟨w⟩ Of course it's locked.  #k7qp2x
+  choice
+    1. Rattle the handle  #c4ne8r
+    2. Use the key #show_disabled  #m3xw9a (unavailable)
+    3. Knock politely  #t5bq2m
+    4. Leave it  #x2jm5p
+> #t5bq2m
+  pose rex surprised
+  rex: Did you just knock on a door you're trying to break open?  #w9fz4e
+  pose mira smug
+  mira: Manners matter, Rex.  #d6kr8u
+  rex: Well, that didn't work.  #q7gt3n
+  end
+
+start kitchen.door
+  pose mira worried
+  mira: Locked.⟨w⟩ Of course it's locked.  #k7qp2x
+  choice
+    1. Rattle the handle  #c4ne8r
+    2. Use the key #show_disabled  #m3xw9a (unavailable)
+    4. Leave it  #x2jm5p
+> #x2jm5p
+  end

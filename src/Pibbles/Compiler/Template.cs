@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 
 namespace Pibbles.Compiler;
@@ -24,7 +25,8 @@ internal sealed record TextElement(string Text) : TemplateElement;
 /// <param name="Markup">The markup.</param>
 /// <param name="Arguments">The arguments, in the order of the markup's parameters, with defaults filled in.</param>
 /// <param name="Children">The span's content.</param>
-internal sealed record MarkupElement(MarkupSymbol Markup, IReadOnlyList<Expr> Arguments, IReadOnlyList<TemplateElement> Children) : TemplateElement;
+/// <param name="Location">Where the span is written, for a warning about its arguments.</param>
+internal sealed record MarkupElement(MarkupSymbol Markup, IReadOnlyList<Expr> Arguments, IReadOnlyList<TemplateElement> Children, SourceLocation Location) : TemplateElement;
 
 /// <summary>A value shown in the text. Its <see cref="Expr.Type"/> is <c>string</c>, <c>number</c> or <c>actor</c>, which are formatted differently.</summary>
 internal sealed record InterpolationElement(Expr Value) : TemplateElement;
@@ -33,16 +35,21 @@ internal sealed record InterpolationElement(Expr Value) : TemplateElement;
 /// <param name="Command">The command.</param>
 /// <param name="Arguments">The arguments, in the order of the command's parameters, with defaults filled in.</param>
 /// <param name="Waits">Whether the reveal waits for the command to finish.</param>
-internal sealed record CommandElement(CommandSymbol Command, IReadOnlyList<Expr> Arguments, bool Waits) : TemplateElement;
+/// <param name="Location">Where the command is written, for a warning about its arguments.</param>
+internal sealed record CommandElement(CommandSymbol Command, IReadOnlyList<Expr> Arguments, bool Waits, SourceLocation Location) : TemplateElement;
 
 /// <summary><c>{w}</c>: waits for the player.</summary>
 internal sealed record InputWaitElement : TemplateElement;
 
 /// <summary><c>{w d}</c>: pauses the reveal.</summary>
-internal sealed record PauseElement(Expr Duration) : TemplateElement;
+/// <param name="Duration">How long.</param>
+/// <param name="Location">Where the pause is written, for a warning.</param>
+internal sealed record PauseElement(Expr Duration, SourceLocation Location) : TemplateElement;
 
 /// <summary><c>{speed x}</c>: sets the reveal speed, relative to the player's setting, from here on.</summary>
-internal sealed record SpeedElement(Expr Factor) : TemplateElement;
+/// <param name="Factor">The speed.</param>
+/// <param name="Location">Where the speed is written, for a warning.</param>
+internal sealed record SpeedElement(Expr Factor, SourceLocation Location) : TemplateElement;
 
 /// <summary><c>{speed}</c>: returns to the player's speed setting.</summary>
 internal sealed record SpeedResetElement : TemplateElement;

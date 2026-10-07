@@ -1,0 +1,62 @@
+// Every kind of statement: text lines, poses, commands, @set, @wait, @if, @call, @return, @jump, variations and a choice.
+
+@actor mira
+    name: Mira
+    poses: neutral, happy, sad
+@actor rex
+    name: Rex
+
+@enum position: left, center, right
+
+@var $count = 0
+@var $delay = 1s
+@var $key = false
+
+@command show(who: actor, at: position = center)
+@command move(who: actor, to: position) waits
+
+== story.main
+Narration without a speaker. #id:l01
+mira: A line with a speaker. #id:l02
+mira (happy): A posed line. #id:l03
+mira (sad):
+rex: {w} #id:l04
+@show mira
+@show rex left
+@move mira right
+@move mira right nowait
+@set $count = 5
+@set $count += 2
+@set $count -= 1
+@set $delay += 1
+@wait 0.5s
+@wait $delay
+@if $count > 10
+    rex: Many. #id:l05
+@elif $count > 3
+    rex: Some. #id:l06
+@else
+    rex: Few. #id:l07
+@call story.sub #id:c01
+@jump story.rest
+
+== story.sub
+mira: In the sub. #id:l08
+@return
+mira: Never. #id:l09
+
+== story.rest
+@sequence #id:s01
+    - mira: First. #id:l10
+    - mira: Then. #id:l11
+@cycle #id:s02
+    - rex: Ping. #id:l12
+    - rex: Pong. #id:l13
+@once #id:s03
+    mira: Once. #id:l14
+-> Go on #id:o01
+    mira: Going. #id:l15
+    @end
+-> Stay #id:o02
+    mira: Staying. #id:l16
+mira: Done. #id:l17

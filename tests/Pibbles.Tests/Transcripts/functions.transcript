@@ -1,0 +1,16 @@
+start f.main
+stub price("key") = 2.50
+stub price("rope") = 4
+stub has_item = false
+stub has_item("key") = true
+stub pick_mood = tense
+stub pause = 0.25s
+stub who = mira
+
+  mira: The key costs 2.5, the rope 4.  #f01
+  mira: Have it.  #f02
+  $total = 6.5
+  mira: Total 6.5.  #f04
+  wait 0.25s
+  mira: Mood tense, Mira.  #f05
+  end

@@ -1,0 +1,12 @@
+start kitchen.drawer
+stub has_item = false
+
+  mira: Spoons, spoons, more spoons, and...⟨w⟩ [clue]a small brass key[/clue]!  #ml21he
+  $has_key = true
+  pose mira happy
+  mira: Press ⟨icon inventory⟩ to check your items.  #xqf9qw
+  end
+
+start kitchen.drawer
+  mira: Just spoons now.  #ds4oao
+  end

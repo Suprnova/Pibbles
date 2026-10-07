@@ -175,7 +175,9 @@ mira (sad):
 - **`speaker (pose):`** sets the actor's pose, then shows the line. The pose stays until it's changed again.
 - **`speaker (pose):` with no text** changes the pose without showing a line.
 - **`speaker:` with neither a pose nor text** is an error. For a box that shows only the speaker's name, write a point and no text: `mira: {w}`.
-- Each line is shown as one message, and its text is inline-markup text ([below](#inline-text)). Leading and trailing whitespace is trimmed.
+- Each line is shown as one message, and its text is inline-markup text ([below](#inline-text)).
+- **Leading and trailing whitespace is trimmed from what the line shows,** not only from what you typed. A conditional that renders nothing, a shown value's own spaces and a `{br}` at either end don't leave blank space at the ends of the box, and the `{if $key}Ah, {/if}there.` case shows `there.` Spaces inside the text stay as they are. A point that falls in the trimmed space moves to the nearest end of the text.
+- **The character U+FFFC (the object replacement character) can't appear in text** (PIB1048), because the runtime uses it to mark where each icon goes in a line's text. One in a shown value shows as U+FFFD.
 
 ### Choices
 
@@ -385,7 +387,7 @@ rex: [wave amplitude=2]Spooooky.[/wave]
 | `{w}` | Waits for player input, then continues on the same page. |
 | `{w 0.5}` | Pauses the reveal for this long (a duration). |
 | `{speed 0.3}` | Sets the reveal speed from this point on, relative to the player's speed setting (a `number`: `2` is twice as fast, `0.5` is half). |
-| `{speed}` | Returns to the player's speed setting. |
+| `{speed}` | Returns to the player's speed setting. The reveal reads each speed point as the factor in effect after it: `x`, or 1 for `{speed}`. |
 | `{p}` | Page break: waits for input, clears the box, continues. |
 | `{br}` | Line break. |
 | `{icon name}` | A declared icon, which counts as one character. |

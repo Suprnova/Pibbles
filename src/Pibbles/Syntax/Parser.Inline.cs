@@ -67,6 +67,9 @@ internal sealed partial class Parser
 
             if (c is not ('[' or '{'))
             {
+                if (c is '\uFFFC')
+                    Fail(DiagnosticCatalog.ObjectReplacementCharacter, new(inlinePosition, 1));
+
                 text.Append(c);
                 inlinePosition++;
                 continue;

@@ -99,7 +99,7 @@ Everything else (`@set`, branches, `@jump`, `@call`, `@return`, variations) the 
 
 **Choices.** The runner delivers every option except an `@once` option that has already been chosen, in source order, with its conditions evaluated when the choice is reached. A `ChoiceOption` has the option's text as a `Line` (its `Id` is the option's ID, and it has no speaker), `IsAvailable` (its `@if`, or true) and `WasChosen`. The host decides whether an unavailable option is hidden or greyed out. If none is available the choice is skipped. `Choose` records the option as chosen before its body runs, and `Next()` then continues in the body; when the body finishes without leaving, flow continues after the whole choice.
 
-**Lines.** M4's `Line` carries the plain text; its spans, markers, icons and tags are empty until the reveal helper exists. The text is the text runs, the text inside markup (without the markup), shown values (a string as written, an actor's display name, a number with the invariant culture, no digit grouping and no trailing zeros), the chosen branch of conditional text, `{br}` as `\n` and an icon as U+FFFC. Points contribute nothing, shown values are inserted literally and never read as markup, and leading and trailing whitespace is trimmed.
+**Lines** are rendered as [described below](#lines-and-text).
 
 **Visits.** A node's visit count goes up on `Start`, `@jump` and `@call` into it, before its first statement, so a node that jumps to itself counts its rounds. It doesn't go up on `@return`, or when a save is restored.
 
@@ -151,28 +151,51 @@ Three kinds of problem, three channels:
 | Kind | When it happens | What the story does instead | How to fix the script |
 | --- | --- | --- | --- |
 | `DivisionByZero` | `/` or `%` with a divisor that is zero at run time | The result is `0` | Check the divisor first, or divide by something that can't be zero |
+| `NonPositivePause` | A `{w d}` in a line whose duration, computed at run time, isn't more than zero | The pause is left out of the line | Make sure the duration can't be zero or negative |
+| `NonPositiveSpeed` | A `{speed x}` in a line whose factor, computed at run time, isn't more than zero | The speed change is left out of the line | Make sure the factor can't be zero or negative |
 | `NonPositiveWait` | An `@wait` whose duration, computed at run time, isn't more than zero | The wait is skipped and the story carries on | Make sure the duration can't be zero or negative |
 | `InfiniteLoop` | A dialogue runs through the instruction budget without showing anything | The runner ends the dialogue | Give the loop a way out, such as a condition on a variable it changes |
 | `Overflow` | A result past about ±7.9 × 10^28 from `+`, `-`, `*` or `/`; or a duration too long for a `TimeSpan` passed to a host function | The largest or smallest value it can hold, with the true result's sign | Use smaller numbers |
 
-Skipped non-positive pauses and speeds in a line will join the table when the reveal helper exists. The runner [reports warnings](#steps) to the host through its options.
+The runner [reports warnings](#steps) to the host through its options.
 
 ## Lines and text
 
 ```csharp
 public sealed record Line(
     string Id,
-    string? Speaker,                 // actor ID; null for narration
+    string? Speaker,                 // actor ID; null for narration and options
     string? SpeakerName,             // the actor's display name
-    string Text,                     // plain text, fully resolved; icons are U+FFFC
-    ImmutableArray<Span> Spans,      // (Markup, Arguments, Start, Length)
-    ImmutableArray<Marker> Markers,  // (Position, Kind, payload): pause, input wait, page, speed (the factor after it), command
-    ImmutableArray<Tag> Tags);
+    string Text,                     // plain text, fully resolved; an icon is U+FFFC, {br} is \n
+    ImmutableArray<Span> Spans,      // (Name, Start, Length, Arguments)
+    ImmutableArray<Marker> Markers,  // closed set of records, each with a Position
+    ImmutableArray<Icon> Icons,      // (Position, Name), one for each U+FFFC in Text
+    TagCollection Tags);
 ```
 
-- Rendering a template resolves interpolation and conditionals against the state, producing plain text plus spans and markers. Spans and markers are positioned in the resolved text.
-- **Positions are UTF-16 indices** into `Text`, in logical order (which is what .NET strings use). Adapters convert them if their engine counts differently.
-- `{br}` becomes a `\n` in `Text`. `{p}` and `{w}` are markers only.
+Rendering a template resolves the interpolation and conditionals against the state in one pass, producing the text and everything positioned in it. Everything is evaluated before the line is returned, so a failing host function leaves the runner where it was.
+
+- **Positions are UTF-16 indices** into `Text`, in logical order (which is what .NET strings use), after the text is trimmed. Adapters convert them if their engine counts differently. A span's `Length` counts the same way, and a span can be empty (`[b][/b]`).
+- **Spans** come from `[name args]…[/name]`, including the built-ins `b`, `i`, `u`, `s` and `color`. They are ordered by start, with an outer span before an inner one that starts at the same place. A span's `Arguments` are read by parameter name, like a command's, with defaults filled in.
+- **Markers** are records under `Marker`, at the position where they appear, in source order when several share one. Hosts and `LineReveal` match on them and keep a default arm, since later versions add kinds.
+
+  | Source | Marker | Payload |
+  | --- | --- | --- |
+  | `{w}` | `InputWaitMarker` | |
+  | `{w d}` | `PauseMarker` | `TimeSpan`, clamped like host function durations |
+  | `{p}` | `PageBreakMarker` | |
+  | `{speed x}`, `{speed}` | `SpeedMarker` | The factor in effect after the marker: `x`, or 1 for `{speed}`. Speed resets to 1 at the start of every line, with no marker. |
+  | `{@command args}` | `CommandMarker` | A `CommandInvocation` and `Waits`, resolved like a statement command's |
+
+- **A `{w d}` or `{speed x}` whose value isn't more than zero** produces no marker and a `NonPositivePause` or `NonPositiveSpeed` [warning](#runtime-warnings). Constants are rejected when the story is checked (PIB2039); this covers values computed at run time.
+- **Only the chosen branch** of conditional text contributes spans, markers and icons. Inline commands fire again when a line is rendered again after a load, which is why only commands declared `inline` can appear in text.
+- **Icons** are in their own array, not among the markers: markers are things the reveal does, and an icon is neither timing nor an effect. A literal U+FFFC can't be written in a story (PIB1048), and one in a shown value shows as U+FFFD, so the character in `Text` always means an icon.
+- **Option text** is a `Line` too, with spans, icons and tags. It can't hold commands, `{w}`, `{p}` or `{speed}`, so its markers are always empty.
+- **Trimming.** The rendered text is trimmed of leading and trailing whitespace, whatever it came from: an `{if}` that renders nothing, a shown value's own spaces, a `{br}` at either end. Spaces inside the text stay. Every position is computed after trimming, and a marker, icon or span edge that fell in trimmed space moves to the nearest end of the text.
+- **Shown values** are inserted literally and never read as markup. A number uses the invariant culture, with no digit grouping and no trailing zeros (`1.50` shows `1.5`), and an actor shows its display name. Localized formatting comes with localization.
+- **Lines compare by value:** two lines are equal when all their fields are, including the contents of the arrays, and so are spans, markers, icons and tags.
+- **Tags** reach the host in source order, `#id` included, as `Tag(Name, Kind, Value)`: `Kind` is `Flag`, `Text`, `Enum` or `Reserved`, and an empty optional value is `null`. `line.Tags` also gives typed access: `Has("thought")`, `GetString("cue")`, `GetEnum("mood")` and `GetEnum<TMood>("mood")` (the generic `Enum.TryParse`, no reflection). Asking for a tag the story doesn't declare throws `ArgumentException`, and so does the wrong accessor for its kind (`InvalidOperationException`); asking for a declared tag the line doesn't have isn't misuse: `Has` is false and the getters return `null`.
+- **Host enums.** `story.ValidateEnum<TMood>("mood")` compares a C# enum's members with a story enum's and returns the mismatches without throwing, so a renamed member fails when the game starts, not mid-scene. `story.Nodes` lists each node's current name and its `#was:` names.
 
 ### The reveal helper
 

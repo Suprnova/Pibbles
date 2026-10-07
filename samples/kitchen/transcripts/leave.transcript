@@ -1,0 +1,11 @@
+start kitchen.leave
+stub has_item = false
+
+  @hide rex
+  @move mira offscreen
+  pose mira happy
+  mira: Onward!  #tbn8zd
+  pose rex surprised
+  rex: Wait for m—  #y22poy
+  @camera hallway waits
+  end

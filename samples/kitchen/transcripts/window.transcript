@@ -1,0 +1,25 @@
+start kitchen.window
+stub has_item = false
+
+  mira: Dusty.  #i6f2vr
+  end
+
+start kitchen.window
+  mira: Very dusty.  #xj5acx
+  wait 0.5s
+  @sfx sneeze
+  pose mira angry
+  mira: Ugh.  #wdsl43
+  end
+
+start kitchen.window
+  mira: When did anyone last clean this?  #ytr2cv
+  end
+
+start kitchen.window
+  rex: You two stare at everything, don't you?  #h5aeqs
+  end
+
+start kitchen.window
+  mira: Dusty.  #i6f2vr
+  end

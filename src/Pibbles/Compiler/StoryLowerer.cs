@@ -41,6 +41,8 @@ internal sealed class StoryLowerer(Compilation compilation)
             sites,
             fallbackIds,
             symbols.Actors,
+            symbols.Tags,
+            symbols.Enums,
             symbols.Functions.Where(function => function.Value.Location is not null).ToDictionary());
     }
 
@@ -257,9 +259,9 @@ internal sealed class StoryLowerer(Compilation compilation)
         InterpolationSyntax interpolation => new InterpolationElement(LowerExpression(interpolation.Value)),
         InlineCommandSyntax command => LowerInlineCommand(command),
         PauseSyntax { Duration: null } => new InputWaitElement(),
-        PauseSyntax { Duration: { } duration } => new PauseElement(LowerExpression(duration)),
+        PauseSyntax { Duration: { } duration } => new PauseElement(LowerExpression(duration), LocationOf(item)),
         SpeedSyntax { Factor: null } => new SpeedResetElement(),
-        SpeedSyntax { Factor: { } factor } => new SpeedElement(LowerExpression(factor)),
+        SpeedSyntax { Factor: { } factor } => new SpeedElement(LowerExpression(factor), LocationOf(item)),
         PageBreakSyntax => new PageBreakElement(),
         LineBreakSyntax => new LineBreakElement(),
         IconSyntax icon => new IconElement(SymbolOf<IconSymbol>(icon.Name)),
@@ -270,13 +272,13 @@ internal sealed class StoryLowerer(Compilation compilation)
     private MarkupElement LowerMarkup(MarkupSyntax markup)
     {
         MarkupSymbol symbol = SymbolOf<MarkupSymbol>(markup.Name);
-        return new(symbol, Arrange(symbol.Parameters, markup.Arguments.Select(argument => argument.Value), markup), LowerInline(markup.Content));
+        return new(symbol, Arrange(symbol.Parameters, markup.Arguments.Select(argument => argument.Value), markup), LowerInline(markup.Content), LocationOf(markup));
     }
 
     private CommandElement LowerInlineCommand(InlineCommandSyntax command)
     {
         CommandSymbol symbol = SymbolOf<CommandSymbol>(command.Command);
-        return new(symbol, Arrange(symbol.Parameters, command.Arguments.Select(argument => argument.Value), command), Waits(symbol, command.Wait));
+        return new(symbol, Arrange(symbol.Parameters, command.Arguments.Select(argument => argument.Value), command), Waits(symbol, command.Wait), LocationOf(command));
     }
 
     private ConditionalElement LowerConditional(ConditionalTextSyntax conditional) => new(

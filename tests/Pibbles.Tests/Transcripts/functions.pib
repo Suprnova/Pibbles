@@ -1,0 +1,25 @@
+// Host functions in conditions, text, @set and @wait, with their stubs.
+
+@actor mira
+    name: Mira
+
+@enum mood: calm, tense
+
+@var $total = 0
+
+@function price(item: string) -> number
+@function has_item(id: string) -> bool
+@function pick_mood() -> mood
+@function pause() -> duration
+@function who() -> actor
+
+== f.main
+mira: The key costs {price("key")}, the rope {price("rope")}. #id:f01
+@if has_item("key")
+    mira: Have it. #id:f02
+@else
+    mira: Missing. #id:f03
+@set $total = price("key") + price("rope")
+mira: Total {$total}. #id:f04
+@wait pause()
+mira: Mood {if pick_mood() == tense}tense{else}calm{/if}, {who()}. #id:f05

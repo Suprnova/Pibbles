@@ -1,0 +1,21 @@
+start kitchen.enter
+stub has_item = false
+
+  @show mira left
+  @show rex right
+  pose mira worried
+  mira: This kitchen gives me the creeps.  #mfzuit
+  pose rex grumpy
+  rex: It's a kitchen.⟨w 0.4s⟩ Relax.  #aesok7
+  mira: Who said that?  #lh35ik
+  rex: Rex. I live in the walls.⟨w⟩ ⟨speed 0.5⟩Kidding.⟨speed⟩ I'm behind the fridge.  #er911h
+  mira: Let's look around. Press ⟨icon interact⟩ to inspect things.  #ob3a3g
+  @enter_room kitchen kitchen.leave
+  end
+
+start kitchen.enter
+  @show mira left
+  @show rex right
+  rex: Back in the kitchen. Thrilling.  #c0wiqs
+  @enter_room kitchen kitchen.leave
+  end

@@ -1,0 +1,5 @@
+start kitchen.window
+stub has_item = true
+
+  mira: I could pry it open... but the door's right there.  #jjevmc
+  end

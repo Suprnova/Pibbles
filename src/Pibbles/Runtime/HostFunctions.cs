@@ -118,7 +118,11 @@ public sealed class HostFunctions
         return functions.TryAdd(name, new(parameters, returns, invoke)) ? this : throw new ArgumentException($"`{name}` is already registered.", nameof(name));
     }
 
-    private static Type ClrTypeOf(TypeSymbol type) =>
+    /// <summary>Registers a function whose signature is only known at run time, such as a stub. The types follow the same mapping.</summary>
+    internal HostFunctions AddUntyped(string name, Type[] parameters, Type returns, Func<object?[], object?> invoke) =>
+        Register(name, invoke, parameters, returns, invoke);
+
+    internal static Type ClrTypeOf(TypeSymbol type) =>
         type == TypeSymbol.Bool ? typeof(bool)
         : type == TypeSymbol.Number ? typeof(decimal)
         : type == TypeSymbol.Duration ? typeof(TimeSpan)
@@ -174,7 +178,7 @@ public sealed class HostFunctions
         if (type == TypeSymbol.Actor)
             return story.Actors.TryGetValue(text, out ActorSymbol? actor) ? Value.Actor(actor) : throw NotA(function, text, "a declared actor");
 
-        string node = story.Nodes.ContainsKey(text) ? text : story.Aliases.GetValueOrDefault(text) ?? throw NotA(function, text, "a node or an old name of one");
+        string node = story.CompiledNodes.ContainsKey(text) ? text : story.Aliases.GetValueOrDefault(text) ?? throw NotA(function, text, "a node or an old name of one");
         return Value.Node(node);
     }
 

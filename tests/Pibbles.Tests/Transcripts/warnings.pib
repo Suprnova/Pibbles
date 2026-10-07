@@ -1,0 +1,17 @@
+// Problems the story carries on from: dividing by zero, a number too large, a wait that is not for any time, and a loop.
+
+@actor mira
+    name: Mira
+
+@var $zero = 0
+@var $huge = 79228162514264337593543950335
+
+== w.main
+@set $zero = 5 / $zero
+@set $huge = $huge + 1
+@wait $zero
+mira: Done. #id:w01
+@jump w.spin
+
+== w.spin
+@jump w.spin

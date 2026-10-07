@@ -55,6 +55,7 @@ public sealed class DialogueRunner
     private CompiledNode? node;
     private int index;
     private List<(CompiledOption Compiled, ChoiceOption Offered)> offered = [];
+    private ChoiceInstruction? waitingChoice;
 
     /// <summary>Creates a runner that isn't running anything yet. Call <see cref="Start"/>.</summary>
     /// <param name="story">The compiled story.</param>
@@ -92,14 +93,14 @@ public sealed class DialogueRunner
     /// <exception cref="InvalidOperationException">The story has no such node. The message suggests the closest name.</exception>
     public void Start(string node)
     {
-        string name = story.Nodes.ContainsKey(node) ? node
+        string name = story.CompiledNodes.ContainsKey(node) ? node
             : story.Aliases.GetValueOrDefault(node)
             ?? throw new InvalidOperationException($"The story has no node called `{node}`.{Suggestion(node)}");
 
         frames.Clear();
         offered = [];
         pending.Clear();
-        Enter(story.Nodes[name]);
+        Enter(story.CompiledNodes[name]);
         phase = Phase.Running;
     }
 
@@ -143,6 +144,9 @@ public sealed class DialogueRunner
         return Finish();
     }
 
+    /// <summary>The IDs of every option of the waiting choice in source order, including options `@once` has removed, or empty when none is waiting.</summary>
+    internal IReadOnlyList<string> WaitingChoiceIds => waitingChoice?.Options.Select(option => option.Id).ToArray() ?? [];
+
     /// <summary>Picks an option of the choice that is waiting.</summary>
     /// <param name="option">An option from the current <see cref="ChoiceStep"/>.</param>
     /// <inheritdoc cref="Choose(string)"/>
@@ -169,6 +173,7 @@ public sealed class DialogueRunner
         state.ChosenOptions.Add(id);
         index = Compiled.Body;
         offered = [];
+        waitingChoice = null;
         phase = Phase.Running;
     }
 
@@ -211,12 +216,12 @@ public sealed class DialogueRunner
                 return new CommandStep(new(command.Command, arguments, command.Location, EmitNow), command.Waits);
 
             case JumpInstruction jump:
-                Enter(story.Nodes[jump.Node]);
+                Enter(story.CompiledNodes[jump.Node]);
                 return null;
 
             case CallInstruction call:
                 frames.Push(new(node!, index + 1, call.Id));
-                Enter(story.Nodes[call.Node]);
+                Enter(story.CompiledNodes[call.Node]);
                 return null;
 
             case ReturnInstruction when frames.Count > 0:
@@ -266,6 +271,7 @@ public sealed class DialogueRunner
         }
 
         offered = delivered;
+        waitingChoice = choice;
         phase = Phase.AwaitingChoice;
         return new ChoiceStep([.. delivered.Select(option => option.Offered)]);
     }
@@ -287,9 +293,7 @@ public sealed class DialogueRunner
 
     private Line BuildLine(string id)
     {
-        Template template = story.Templates[id];
-        string text = PlainText.Render(template.Content, context);
-        return new(id, template.Speaker?.Name, template.Speaker?.DisplayName, text, [], [], [], []);
+        return LineRenderer.Render(id, story.Templates[id], story, context, Warn, EmitNow);
     }
 
     /// <summary>Moves to the start of a node, counting the visit.</summary>
@@ -310,7 +314,7 @@ public sealed class DialogueRunner
     }
 
     private string Suggestion(string name) =>
-        Suggestions.Closest(name, story.Nodes.Keys.Concat(story.Aliases.Keys)) is { } closest ? $" Did you mean `{closest}`?" : "";
+        Suggestions.Closest(name, story.CompiledNodes.Keys.Concat(story.Aliases.Keys)) is { } closest ? $" Did you mean `{closest}`?" : "";
 
     private void Warn(RuntimeWarning warning) => pending.Add(warning);
 

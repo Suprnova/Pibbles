@@ -10,18 +10,16 @@ namespace Pibbles.Runtime;
 /// <remarks>
 /// An accessor throws <see cref="ArgumentException"/> for a name the command has no parameter for, and
 /// <see cref="InvalidOperationException"/> if it isn't the accessor for that parameter's type: both are the host's mistakes.
+/// Two invocations are equal when they are for the same command with the same values.
 /// </remarks>
-public sealed class CommandInvocation
+public sealed class CommandInvocation : IEquatable<CommandInvocation>
 {
-    private readonly SourceLocation location;
-    private readonly Action<RuntimeWarning> warn;
+    private readonly Arguments arguments;
 
-    internal CommandInvocation(CommandSymbol command, IReadOnlyList<Value> arguments, SourceLocation location, Action<RuntimeWarning> warn)
+    internal CommandInvocation(CommandSymbol command, IReadOnlyList<Value> values, SourceLocation location, Action<RuntimeWarning> warn)
     {
         Symbol = command;
-        Arguments = arguments;
-        this.location = location;
-        this.warn = warn;
+        arguments = new($"`{command.Name}`", command.Parameters, values, location, warn);
     }
 
     /// <summary>The command's name, without the <c>@</c>.</summary>
@@ -30,60 +28,39 @@ public sealed class CommandInvocation
     internal CommandSymbol Symbol { get; }
 
     /// <summary>The arguments, in the order of the command's parameters.</summary>
-    internal IReadOnlyList<Value> Arguments { get; }
+    internal IReadOnlyList<Value> Values => arguments.Values;
 
-    /// <summary>The value of a <c>bool</c> parameter.</summary>
-    public bool GetBool(string parameter) => Get(parameter, TypeSymbol.Bool).AsBool;
+    /// <inheritdoc cref="Arguments.GetBool"/>
+    public bool GetBool(string parameter) => arguments.GetBool(parameter);
 
-    /// <summary>The value of a <c>string</c> parameter.</summary>
-    public string GetString(string parameter) => Get(parameter, TypeSymbol.String).AsString;
+    /// <inheritdoc cref="Arguments.GetString"/>
+    public string GetString(string parameter) => arguments.GetString(parameter);
 
-    /// <summary>The value of a <c>number</c> parameter.</summary>
-    public decimal GetNumber(string parameter) => Get(parameter, TypeSymbol.Number).AsDecimal;
+    /// <inheritdoc cref="Arguments.GetNumber"/>
+    public decimal GetNumber(string parameter) => arguments.GetNumber(parameter);
 
-    /// <summary>
-    /// The value of a <c>duration</c> parameter, rounded to the nearest tick. A duration beyond <see cref="TimeSpan"/>'s
-    /// range clamps, with an <see cref="RuntimeWarningKind.Overflow"/> warning.
-    /// </summary>
-    public TimeSpan GetDuration(string parameter) => Durations.ToTimeSpan(Get(parameter, TypeSymbol.Duration).AsDecimal, location, warn);
+    /// <inheritdoc cref="Arguments.GetDuration"/>
+    public TimeSpan GetDuration(string parameter) => arguments.GetDuration(parameter);
 
-    /// <summary>The actor ID of an <c>actor</c> parameter.</summary>
-    public string GetActor(string parameter) => Get(parameter, TypeSymbol.Actor).AsSymbol.Name;
+    /// <inheritdoc cref="Arguments.GetActor"/>
+    public string GetActor(string parameter) => arguments.GetActor(parameter);
 
-    /// <summary>The node's current name, for a <c>node</c> parameter.</summary>
-    public string GetNode(string parameter) => Get(parameter, TypeSymbol.Node).AsString;
+    /// <inheritdoc cref="Arguments.GetNode"/>
+    public string GetNode(string parameter) => arguments.GetNode(parameter);
 
-    /// <summary>The member's name, for a parameter whose type is an enum.</summary>
-    public string GetEnum(string parameter)
-    {
-        Value value = Find(parameter);
-        return value.Type is EnumSymbol ? value.AsSymbol.Name : throw WrongAccessor(parameter, value.Type);
-    }
+    /// <inheritdoc cref="Arguments.GetEnum(string)"/>
+    public string GetEnum(string parameter) => arguments.GetEnum(parameter);
 
-    /// <summary>The member of a parameter whose type is an enum, as the host's own enum with the same member names.</summary>
-    /// <typeparam name="TEnum">The host's enum.</typeparam>
-    /// <exception cref="InvalidOperationException">The host's enum has no member with that name.</exception>
+    /// <inheritdoc cref="Arguments.GetEnum{TEnum}"/>
     public TEnum GetEnum<TEnum>(string parameter)
-        where TEnum : struct, Enum
-    {
-        string member = GetEnum(parameter);
-        return Enum.TryParse(member, ignoreCase: false, out TEnum result)
-            ? result
-            : throw new InvalidOperationException($"`{typeof(TEnum).Name}` has no member called `{member}`, which `{parameter}` can be.");
-    }
+        where TEnum : struct, Enum => arguments.GetEnum<TEnum>(parameter);
 
-    private Value Get(string parameter, TypeSymbol type)
-    {
-        Value value = Find(parameter);
-        return value.Type == type ? value : throw WrongAccessor(parameter, value.Type);
-    }
+    /// <inheritdoc/>
+    public bool Equals(CommandInvocation? other) => other is not null && ReferenceEquals(Symbol, other.Symbol) && arguments.Equals(other.arguments);
 
-    private Value Find(string parameter)
-    {
-        int index = Symbol.Parameters.ToList().FindIndex(candidate => candidate.Name == parameter);
-        return index >= 0 ? Arguments[index] : throw new ArgumentException($"`{Name}` has no parameter called `{parameter}`.", nameof(parameter));
-    }
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => Equals(obj as CommandInvocation);
 
-    private InvalidOperationException WrongAccessor(string parameter, TypeSymbol type) =>
-        new($"`{parameter}` of `{Name}` is {type.Describe()}, so it can't be read this way.");
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(Symbol, arguments);
 }

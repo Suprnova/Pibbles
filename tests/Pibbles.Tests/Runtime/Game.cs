@@ -30,6 +30,10 @@ internal sealed class Game
         @function risky() -> number
         @icon bag
         @markup shout
+        @markup wave(amplitude: number = 1, frequency: number = 5)
+        @tag thought
+        @tag box: mood
+        @tag cue: string
 
         """;
 
@@ -108,7 +112,7 @@ internal sealed class Game
     {
         LineStep line => $"Line{(line.Line.Speaker is { } speaker ? $" {speaker}" : "")}: {Visible(line.Line.Text)}",
         ChoiceStep choice => "Choice " + string.Join(" | ", choice.Options.Select(option => option.Text.Text + (option.IsAvailable ? "" : " (unavailable)") + (option.WasChosen ? " (chosen)" : ""))),
-        CommandStep command => $"Command @{command.Command.Name}({string.Join(", ", command.Command.Arguments.Select(Show))}){(command.Waits ? " waits" : "")}",
+        CommandStep command => $"Command @{command.Command.Name}({string.Join(", ", command.Command.Values.Select(Show))}){(command.Waits ? " waits" : "")}",
         PoseStep pose => $"Pose {pose.Actor} {pose.Pose}",
         WaitStep wait => $"Wait {wait.Duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)}s",
         EndStep => "End",

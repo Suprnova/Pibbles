@@ -24,7 +24,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
         foreach ((string old, string current) in story.Aliases.OrderBy(alias => alias.Key, StringComparer.Ordinal))
             builder.Append(CultureInfo.InvariantCulture, $"alias {old} -> {current}\n");
 
-        foreach (CompiledNode node in story.Nodes.Values)
+        foreach (CompiledNode node in story.CompiledNodes.Values)
         {
             builder.Append(CultureInfo.InvariantCulture, $"node {node.Name}\n");
             for (int i = 0; i < node.Instructions.Count; i++)

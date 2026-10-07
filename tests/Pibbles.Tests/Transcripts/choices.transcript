@@ -1,0 +1,25 @@
+start c.main
+
+  choice
+    1. Sticky  #c01
+    2. Once  #c02
+    3. Third  #c03
+    4. Gate #show_disabled  #c04 (unavailable)
+    5. No ID here  #~
+> #c02
+  mira: Once.  #c12
+  choice
+    1. Sticky  #c01
+    3. Third  #c03
+    4. Gate #show_disabled  #c04 (unavailable)
+    5. No ID here  #~
+> #c03
+  mira: Third.  #c13
+  choice
+    1. Sticky  #c01
+    3. Third  #c03 (chosen)
+    4. Gate #show_disabled  #c04 (unavailable)
+    5. No ID here  #~
+> 5
+  mira: Fallback.  #~
+  end

@@ -1,0 +1,18 @@
+start kitchen.fridge
+stub has_item = false
+
+  mira: It's a fridge.⟨@sfx fridge_hum⟩ It hums. [wave 1 5]Ominously.[/wave]  #xdq5lg
+  end
+
+start kitchen.fridge
+  pose mira smug
+  mira: Still a fridge.  #zprojv
+  end
+
+start kitchen.fridge
+  mira: I refuse to look at this fridge again.  #ca76yd
+  end
+
+start kitchen.fridge
+  mira: I refuse to look at this fridge again.  #ca76yd
+  end

@@ -1,0 +1,21 @@
+// A choice visited three times: an @once option goes, and a hand-written answer counts it anyway.
+
+@actor mira
+    name: Mira
+
+@var $key = false
+@tag show_disabled
+
+== c.main
+-> Sticky #id:c01
+    mira: Sticky. #id:c11
+-> Once  @once #id:c02
+    mira: Once. #id:c12
+-> Third #id:c03
+    mira: Third. #id:c13
+-> Gate  @if $key #show_disabled #id:c04
+    mira: Gate. #id:c14
+-> No ID here
+    mira: Fallback.
+@if visits(c.main) < 3
+    @jump c.main

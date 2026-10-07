@@ -1,0 +1,42 @@
+// Every piece of a line: markup, shown values, commands, pauses, speed, breaks, icons, conditional text and tags.
+
+@actor mira
+    name: Mira
+@actor rex
+    name: Rex
+
+@enum mood: calm, tense
+
+@var $name = "Sam"
+@var $count = 3
+@var $price = 1.50
+@var $who: actor = rex
+@var $key = false
+@var $delay = 0s
+@var $loud = 0
+
+@command shake(strength: number = 1) inline
+@command wait_for(who: actor) inline waits
+
+@markup wave(amplitude: number = 1, frequency: number = 5)
+@markup shout
+@icon bag, key
+@tag thought
+@tag box: mood
+@tag cue: string
+
+== text.main
+mira: Plain, [b]bold [i]and italic[/i][/b] and [wave amplitude=2]waving [shout]nested[/shout][/wave]. #id:t01
+mira: Pause{w 0.5} then wait{w} then a page{p}and a break{br}here. #id:t02
+mira: {speed 0.3}Slow{speed} normal {speed 2}fast. #id:t03
+mira: Icons {icon bag} and [b]{icon key}[/b]. #id:t04
+mira: {@shake 2}Shaking, {@wait_for rex}waiting, {@wait_for rex nowait}not, {@shake 3 wait}now. #id:t05
+rex: {$name} has {$price} and {$count}, says {$who}. #id:t06
+mira: You {if $key}have{elif $count > 1}nearly have{else}lack{/if} it. #id:t07
+mira: {if $key}{w}{p}[b]yes[/b]{else}no{/if} #id:t08
+mira: Ends with {$name}{w} #id:t09
+rex: Tags. #thought #box:tense #cue:rex_01 #id:t10
+mira: Skipped{w $delay}{speed $loud} points. #id:t11
+-> A [b]bold[/b] option {icon key} #thought #id:p01
+    mira: Chosen. #id:t12
+-> Plain option #id:p02

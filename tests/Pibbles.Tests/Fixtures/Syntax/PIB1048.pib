@@ -1,0 +1,10 @@
+// U+FFFC is how Pibbles marks an icon in a line's text, so text can't contain it.
+
+== fixture.object
+mira: Press ￼ to look.
+//          ^ PIB1048
+
+// Must not trigger
+
+mira: Press {icon interact} to look.
+mira: A replacement character � is fine.

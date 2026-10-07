@@ -1,0 +1,8 @@
+start w.main
+
+  warning DivisionByZero (tests/Pibbles.Tests/Transcripts/warnings.pib line 10): I divided by zero here, so the result is 0.
+  warning Overflow (tests/Pibbles.Tests/Transcripts/warnings.pib line 11): This result is too large for me to hold, so I used the largest number I can.
+  warning NonPositiveWait (tests/Pibbles.Tests/Transcripts/warnings.pib line 12): This wait isn't for more than zero time, so I skipped it.
+  mira: Done.  #w01
+  warning InfiniteLoop (tests/Pibbles.Tests/Transcripts/warnings.pib line 16): This story went round in a loop for 100000 steps without showing anything, so I ended the dialogue.
+  end

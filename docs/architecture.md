@@ -80,7 +80,7 @@ Example tests only prove the cases someone thought to write. These tests fail wh
 
 - **Every syntax node kind** appears in at least one syntax snapshot.
 - **Every diagnostic code** in `DiagnosticCatalog` has at least one fixture that triggers it.
-- **Every step kind and marker kind** appears in at least one transcript.
+- **Every step kind and marker kind** appears in at least one transcript, and **every statement and inline element** of the grammar appears in the source of one. Transcripts live in `tests/Pibbles.Tests/Transcripts/` beside the `.pib` they play (`name.variant.transcript` belongs to `name.pib`), and the sample story's in `samples/kitchen/transcripts/`.
 - **Every instruction, template element and expression kind** appears in at least one IR snapshot.
 - **Every code block in the language reference and the writer's guide** is extracted and checked, so the docs can't drift from the implementation, and every documented example is also a test. A block's info string says how it's checked:
 

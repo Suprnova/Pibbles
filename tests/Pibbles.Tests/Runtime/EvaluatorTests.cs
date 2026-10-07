@@ -171,7 +171,7 @@ public class EvaluatorTests
     public void Evaluate_Expression_ChangesNothing()
     {
         (Story story, FakeContext context) = Setup();
-        var set = (SetInstruction)story.Nodes["t.n"].Instructions[0];
+        var set = (SetInstruction)story.CompiledNodes["t.n"].Instructions[0];
         Value before = context.Variables[set.Variable];
 
         Evaluator.Evaluate(new BinaryExpr(BinaryOperator.Divide, new NumberExpr(1), new NumberExpr(0), TypeSymbol.Number, default), context);
@@ -208,7 +208,9 @@ public class EvaluatorTests
         wait.Play("t.n");
         Game loop = Game.Of("== t.n\n@jump t.n\n", budget: 20);
         loop.Play("t.n");
-        return [.. wait.Warnings, .. loop.Warnings];
+        Game line = Game.Of("== t.n\nmira: a{w $delay}b{speed $count}c\n");
+        line.Play("t.n");
+        return [.. wait.Warnings, .. loop.Warnings, .. line.Warnings];
     }
 
     /// <summary>Compiles a story that stores <paramref name="expression"/> in a variable, and evaluates what it stores.</summary>
@@ -216,7 +218,7 @@ public class EvaluatorTests
     {
         string text = $"{Defs}\n@set $out_{type} = {expression}\n";
         (Story story, FakeContext context) = Setup(text);
-        var set = (SetInstruction)story.Nodes["t.m"].Instructions[0];
+        var set = (SetInstruction)story.CompiledNodes["t.m"].Instructions[0];
 
         Value value = Evaluator.Evaluate(set.Value, context);
         return new(Show(value), context.Warnings, context.Pings);

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Pibbles.Tests" />
+    <InternalsVisibleTo Include="Pibbles.Cli" />
   </ItemGroup>
 
 </Project>

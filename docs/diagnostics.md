@@ -62,6 +62,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1047 | Error | `99999999999999999999999999999` is too large a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
+| PIB1048 | Error | This text has U+FFFC in it, which Pibbles uses to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
@@ -466,6 +467,16 @@ Write the missing part: `@jump kitchen.leave`.
 ```
 
 Write a smaller number.
+
+### PIB1048
+
+**The character U+FFFC (the object replacement character) can't be in a line's text,** because Pibbles puts it in a line's text to stand for each icon, so that a game can find where every icon goes. If a line could contain one of its own, the game couldn't tell the two apart. The character is invisible in most editors, so it usually arrives from a copy and paste.
+
+```text
+mira: Press ￼ to look.
+```
+
+Delete the character. To show an icon, write `{icon interact}`.
 
 ### PIB1050
 
