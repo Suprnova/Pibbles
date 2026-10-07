@@ -224,7 +224,7 @@ repository:
         captures:
           '1': { name: keyword.other.point.pibbles }
           '2': { name: constant.other.icon.pibbles }
-      - match: '\G[ \t]*(w|p|br)(?![\p{L}\p{M}\p{N}_])'
+      - match: '\G[ \t]*(w|p|br|speed)(?![\p{L}\p{M}\p{N}_])'
         captures:
           '1': { name: keyword.other.point.pibbles }
       - match: '\G[ \t]*(@[\p{L}_][\p{L}\p{M}\p{N}_]*)'

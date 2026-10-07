@@ -19,6 +19,7 @@ public class StyleChecksTests
         { "Wait.{w 0.2}{w 300ms} Done.\n", "PIB5011", "Write one pause: `{w 0.5}`." },
         { "Wait.{w 0.1}{w 0.2} Done.\n", "PIB5011", "Write one pause: `{w 0.3}`." },
         { "Wait.{w}{p}Done.\n", "PIB5011", "Remove it." },
+        { "Wait.{w 99999999999999999999999999999}{w 1} Done.\n", "PIB5011", "Write them as one pause." },
     };
 
     [Theory]

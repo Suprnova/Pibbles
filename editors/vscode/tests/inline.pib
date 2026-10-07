@@ -40,3 +40,7 @@ rex: You {if $bravery > 2}hit it{elif $bravery > 0}touched it{else}didn't{/if}.
 //                               ^^^^ keyword.control.conditional.pibbles
 //                                                            ^^^^ keyword.control.conditional.pibbles
 //                                                                        ^^^ keyword.control.conditional.pibbles
+mira: Very {speed 0.3}slowly{speed} now.
+//          ^^^^^ keyword.other.point.pibbles
+//                ^^^ constant.numeric.pibbles
+//                           ^^^^^ keyword.other.point.pibbles

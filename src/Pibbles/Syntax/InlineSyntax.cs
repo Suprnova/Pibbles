@@ -28,6 +28,10 @@ public sealed record InlineCommandSyntax(NameSyntax Command, IReadOnlyList<Argum
 /// <param name="Duration">How long to pause, or <see langword="null"/> to wait for the player.</param>
 public sealed record PauseSyntax(ExpressionSyntax? Duration) : InlineSyntax;
 
+/// <summary><c>{speed 2}</c>, which sets the reveal speed from this point on, or <c>{speed}</c>, which returns to the player's setting.</summary>
+/// <param name="Factor">The speed relative to the player's setting, or <see langword="null"/> to return to it.</param>
+public sealed record SpeedSyntax(ExpressionSyntax? Factor) : InlineSyntax;
+
 /// <summary><c>{p}</c>: waits for the player, clears the box, and continues.</summary>
 public sealed record PageBreakSyntax : InlineSyntax;
 

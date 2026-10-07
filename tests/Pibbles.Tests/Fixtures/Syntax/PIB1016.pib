@@ -1,4 +1,4 @@
-// An option's text can't pause or run commands.
+// An option's text can't pause, change speed or run commands.
 
 == fixture.option_text
 -> Wait {w} here
@@ -11,8 +11,10 @@
 //      ^^^^^^^^^^^^ PIB1016
 -> {if $a}Wait{w}{/if}
 //            ^^^ PIB1016
+-> Fast {speed 2}
+//      ^^^^^^^^^ PIB1016
 
 // Must not trigger
 
 -> [b]Bold[/b] {$name} {icon interact} {if $a}yes{/if}{br}line two
-mira: Text lines can {w} pause{p} and {@jolt mira} run commands.
+mira: Text lines can {w} pause{p}, {speed 2}speed up{speed} and {@jolt mira} run commands.

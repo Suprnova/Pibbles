@@ -44,7 +44,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1013 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
 | PIB1014 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
 | PIB1015 | Error | This text comes after a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
-| PIB1016 | Error | An option's text can't contain `{w}`. | Pauses and commands go in the indented lines under the option. |
+| PIB1016 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1021 | Error | Declarations have to come before the file's first node. | Move this above the first `==` line, or into another file. |
@@ -95,6 +95,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2036 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
 | PIB2037 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB2038 | Error | I can't show `$has_key` in text, because it's a `bool`. | Show text that depends on it instead: `{if $has_key}…{else}…{/if}`. |
+| PIB2039 | Error | A pause has to be more than zero, but `0` isn't. | Write a pause longer than zero, like `{w 0.5}`. |
 | PIB2045 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB2046 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
 | PIB2047 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
@@ -255,7 +256,7 @@ If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning 
 
 ### PIB1016
 
-**An option's text is shown in a menu, so it can't pause or run commands.** `{w}`, `{p}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
+**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{p}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
 
 ```text
 -> Knock{w} and wait
@@ -270,7 +271,7 @@ Move the pause into the option's body:
 
 ### PIB1017
 
-**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{p}`, `{br}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
+**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{p}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
 
 ```text
 mira: Hi, {name}.
@@ -664,7 +665,7 @@ Remove one of them: `@show rex`.
 
 ### PIB2017
 
-**Markup is built in (`b`, `i`, `u`, `s`, `color` and `speed`) or declared with `@markup`,** since the game styles every span the story uses. The help suggests the closest markup.
+**Markup is built in (`b`, `i`, `u`, `s` and `color`) or declared with `@markup`,** since the game styles every span the story uses. The help suggests the closest markup. Speed isn't built-in markup: unless the host declares its own `@markup speed`, the old `[speed 0.5]…[/speed]` is reported with the help "Did you mean `{speed}`?"
 
 ```text
 @markup clue
@@ -838,6 +839,16 @@ You have the key {$has_key}.
 ```
 
 Write the words for each case: `You {if $has_key}have{else}don't have{/if} the key.` A function that returns text works too.
+
+### PIB2039
+
+**A speed, a pause or a wait has to be more than zero,** because a speed of zero would never show the next character, and a pause of nothing or less does nothing. This covers the value in `{speed x}`, `{w d}` and `@wait d`, when it's a constant: a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(0.5s - 1s)`. A value that depends on a variable or a function call isn't checked here: if it isn't more than zero when the story runs, that point is skipped with a warning.
+
+```text
+mira: Wait.{w 0} What?
+```
+
+Write a pause longer than zero, like `{w 0.5}`, or remove it. For a speed, write one above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.
 
 ### PIB2045
 

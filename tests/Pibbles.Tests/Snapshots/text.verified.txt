@@ -50,7 +50,7 @@ File 1:1-19:1
           Tags:
             Tag 11:59-11:67 Name="thought" Value=null
             Tag 11:68-11:78 Name="box" Value="phone"
-        TextLine 12:1-12:97
+        TextLine 12:1-12:96
           Speaker: Name 12:1-12:4 Text="rex"
           Content:
             Markup 12:6-12:40
@@ -62,21 +62,18 @@ File 1:1-19:1
               Content:
                 TextRun 12:24-12:33 Text="Spooooky."
             TextRun 12:40-12:41 Text=" "
-            Markup 12:41-12:67
-              Name: Name 12:42-12:47 Text="speed"
+            Speed 12:41-12:52
+              Factor: NumberLiteral 12:48-12:51 Value=0.3
+            TextRun 12:52-12:59 Text="Slowly."
+            Speed 12:59-12:66
+            TextRun 12:66-12:67 Text=" "
+            Markup 12:67-12:96
+              Name: Name 12:68-12:73 Text="color"
               Arguments:
-                Argument 12:48-12:51
-                  Value: NumberLiteral 12:48-12:51 Value=0.3
+                Argument 12:74-12:83
+                  Value: StringLiteral 12:74-12:83 Value="#ff0000"
               Content:
-                TextRun 12:52-12:59 Text="Slowly."
-            TextRun 12:67-12:68 Text=" "
-            Markup 12:68-12:97
-              Name: Name 12:69-12:74 Text="color"
-              Arguments:
-                Argument 12:75-12:84
-                  Value: StringLiteral 12:75-12:84 Value="#ff0000"
-              Content:
-                TextRun 12:85-12:89 Text="Red."
+                TextRun 12:84-12:88 Text="Red."
         TextLine 13:1-13:82
           Speaker: Name 13:1-13:5 Text="mira"
           Content:

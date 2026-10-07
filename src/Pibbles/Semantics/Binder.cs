@@ -116,6 +116,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
                 case WaitStatementSyntax wait:
                     BindValue(wait.Duration, TypeSymbol.Duration, "`@wait` takes a `duration`");
+                    CheckPositive(wait.Duration, "The time to `@wait`", "Write a time longer than zero, like `@wait 0.5s`.");
                     break;
             }
         }
@@ -208,6 +209,12 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
                 case PauseSyntax { Duration: { } duration }:
                     BindValue(duration, TypeSymbol.Duration, "`{w}` takes a `duration`");
+                    CheckPositive(duration, "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
+                    break;
+
+                case SpeedSyntax { Factor: { } factor }:
+                    BindValue(factor, TypeSymbol.Number, "`{speed}` takes a `number`");
+                    CheckPositive(factor, "A speed", "Write a speed above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.");
                     break;
 
                 case IconSyntax icon when symbols.Icons.TryGetValue(icon.Name.Text, out IconSymbol? symbol):
@@ -243,13 +250,18 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         else
         {
             if (!markup.Name.IsMissing)
-                ReportWithOptionalHelp(DiagnosticCatalog.UnknownMarkup, markup.Name.Span, markup.Name.Text, Suggestions.Closest(markup.Name.Text, symbols.Markup.Keys));
+                ReportWithOptionalHelp(DiagnosticCatalog.UnknownMarkup, markup.Name.Span, markup.Name.Text, UnknownMarkupHelp(markup.Name.Text));
 
             BindUnmatched(markup.Arguments);
         }
 
         BindInline(markup.Content);
     }
+
+    private string? UnknownMarkupHelp(string name) =>
+        name is "speed" ? "Did you mean `{speed}`?"
+        : Suggestions.Closest(name, symbols.Markup.Keys) is { } closest ? $"Did you mean `{closest}`?"
+        : null;
 
     /// <summary>A value shown in text, which is text, a number formatted for the player's language, or an actor's display name.</summary>
     private void BindInterpolation(InterpolationSyntax interpolation)
@@ -360,6 +372,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         TypeSymbol type = Bind(value, target);
         if (!Converts(type, target))
             ReportWithOptionalHelp(DiagnosticCatalog.ValueType, value.Span, purpose, type.Describe(), ValueHelp(target));
+    }
+
+    /// <summary>Reports a pacing value that's constant and not more than zero. A value computed at run time is checked by the runtime.</summary>
+    private void CheckPositive(ExpressionSyntax value, string what, string help)
+    {
+        if (ConstantValue.Fold(value) is <= 0)
+            Report(DiagnosticCatalog.NotPositive, value.Span, what, TextOf(value.Span), help);
     }
 
     private void BindCondition(ExpressionSyntax condition)

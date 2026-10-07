@@ -11,7 +11,7 @@ public class ReservedWordsTests
         ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "wait",
          "sequence", "cycle", "once", "term", "resume", "shuffle"];
 
-    private static readonly string[] Brace = ["w", "p", "br", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];
+    private static readonly string[] Brace = ["w", "p", "br", "speed", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];
 
     private static readonly string[] Value = ["true", "false", "and", "or", "not"];
 
@@ -21,7 +21,7 @@ public class ReservedWordsTests
 
     private static readonly string[] BuiltInTypes = ["bool", "number", "string", "duration", "node", "actor"];
 
-    private static readonly string[] BuiltInMarkup = ["speed", "b", "i", "u", "s", "color"];
+    private static readonly string[] BuiltInMarkup = ["b", "i", "u", "s", "color"];
 
     private static readonly string[] ReservedTags = ["id", "was", "migrates", "draft", "voice", "unvoiced"];
 

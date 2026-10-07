@@ -112,7 +112,7 @@ Translators need freedom. Word order changes, emphasis moves, and pauses land so
 | Information | `{icon}`, `required` markup | Same multiset. Position and extent may change. | Error |
 | Values | `{$var}`, `{fn()}` interpolations | Same multiset | Warning |
 | Logic | `{if}`, variations, `{plural}`, term references | Free to add, remove or restructure. Must bind: only declared variables and functions, correct types. | Normal binding errors |
-| Presentation | Style markup, `[speed]`, `{w}`, `{p}`, `{br}` | Free | — |
+| Presentation | Style markup, `{speed}`, `{w}`, `{p}`, `{br}` | Free | — |
 
 Some consequences:
 

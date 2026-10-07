@@ -112,7 +112,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 **Types:** `bool`, `number` (a 64-bit float), `string`, `duration`, `node`, `actor`, and any declared enum.
 
-**The prelude:** Pibbles ships a small built-in declaration file with `@markup b`, `i`, `u`, `s` and `color(value: string)`, which the host renders like its own markup. It also declares `@markup speed(factor: number)` and `@function visits(target: node) -> number`, which have core semantics: Pibbles handles them, not the host. The host can't redeclare any of these names.
+**The prelude:** Pibbles ships a small built-in declaration file with `@markup b`, `i`, `u`, `s` and `color(value: string)`, which the host renders like its own markup. It also declares `@function visits(target: node) -> number`, which has core semantics: Pibbles handles it, not the host. The host can't redeclare any of these names. (`speed` isn't markup: it's a [point](#points-and-values).)
 
 Declared names share one namespace per kind, and each kind avoids the [reserved words](#reserved-words) that could be read in its positions.
 
@@ -366,12 +366,10 @@ Everything after the speaker prefix of a text line, and the text of an option, i
 ```pib
 mira: That's [b]not[/b] a normal key. It's [clue]the master key[/clue].
 rex: [wave amplitude=2]Spooooky.[/wave]
-mira: [speed 0.3]Very... slowly...[/speed] there.
 ```
 
 - The syntax is `[name args]…[/name]`. Arguments work like command arguments.
 - Spans must nest properly (`[b][i]…[/i][/b]`), must close on the same line, and can't cross a conditional boundary.
-- `[speed x]` multiplies reveal speed by `x`, relative to the player's setting.
 
 ### Points and values
 
@@ -381,9 +379,25 @@ mira: [speed 0.3]Very... slowly...[/speed] there.
 | `{@command args}` | Runs a command declared `inline` at this point in the reveal. `{@jolt mira wait}` holds the reveal until the host finishes. |
 | `{w}` | Waits for player input, then continues on the same page. |
 | `{w 0.5}` | Pauses the reveal for this long (a duration). |
+| `{speed 0.3}` | Sets the reveal speed from this point on, relative to the player's speed setting (a `number`: `2` is twice as fast, `0.5` is half). |
+| `{speed}` | Returns to the player's speed setting. |
 | `{p}` | Page break: waits for input, clears the box, continues. |
 | `{br}` | Line break. |
 | `{icon name}` | A declared icon, which counts as one character. |
+
+```pib
+mira: Very... {speed 0.3}slowly...{speed} there.
+```
+
+Speed resets to the player's setting at the start of every line. Each speed point stands alone, so there's nothing to nest: the last one before a character decides how fast it appears.
+
+**Pacing values** are the value of `{speed x}` and the durations of `{w d}` and `@wait d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
+
+```pib-error PIB2039
+mira: Wait.{w 0} What?
+```
+
+A value computed at run time (anything involving a variable or a function call) that isn't greater than zero isn't an error: the runtime skips that point and reports a warning.
 
 ### Conditional text
 
@@ -399,7 +413,7 @@ The branches can contain any inline text, including markup and points. Only the 
 | --- | --- | --- |
 | Markup spans, interpolation, icons, conditionals | Yes | Yes |
 | `{br}` | Yes | Yes |
-| Commands, `{w}`, `{p}` | Yes | No |
+| Commands, `{w}`, `{p}`, `{speed}` | Yes | No |
 
 ## Runtime semantics summary
 
@@ -418,12 +432,12 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Group | Words |
 | --- | --- |
 | Statement and declaration keywords (after `@`) | `prefix`, `actor`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `wait`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
-| Brace keywords (after `{`) | `w`, `p`, `br`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
+| Brace keywords (after `{`) | `w`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |
 | Built-in functions | `visits`; *(ext)* `random` |
 | Built-in types | `bool`, `number`, `string`, `duration`, `node`, `actor` |
-| Built-in markup | `speed`, and the prelude's `b`, `i`, `u`, `s`, `color` |
+| Built-in markup | The prelude's `b`, `i`, `u`, `s`, `color` |
 
 ### What each kind of name can't be
 
@@ -645,6 +659,7 @@ point_body      ::= VARIABLE
                   | NAME call_args
                   | AT_WORD arg* wait_flag?
                   | "w" arg?
+                  | "speed" arg?
                   | "p"
                   | "br"
                   | "icon" NAME
@@ -685,7 +700,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - `#id` has the [line ID](#lexical-basics) shape, at most once, only on a text line that shows text, an option, `@call` or a variation block opener. A block opener takes no other tag.
 - `#was` names a node, only on a node header. A node header takes no other tag in v1.
 - Node names, node aliases and line IDs are all distinct from one another.
-- Option text can't contain commands, `{w}` or `{p}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
+- Option text can't contain commands, `{w}`, `{p}` or `{speed}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
 - A `(` separated from the NAME before it by whitespace, where only a call can follow the NAME (`{fn (x)}`, `has_item ("key")`), is an error that suggests removing the space.
 - A declared name isn't a [reserved word](#reserved-words) for its kind, and uses ASCII letters only.
 

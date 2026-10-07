@@ -70,7 +70,7 @@ public sealed record Line(
     string? SpeakerName,             // the actor's display name
     string Text,                     // plain text, fully resolved; icons are U+FFFC
     ImmutableArray<Span> Spans,      // (Markup, Arguments, Start, Length)
-    ImmutableArray<Marker> Markers,  // (Position, Kind, payload): pause, input wait, page, speed, command
+    ImmutableArray<Marker> Markers,  // (Position, Kind, payload): pause, input wait, page, speed (the factor after it), command
     ImmutableArray<Tag> Tags);
 ```
 
@@ -90,7 +90,7 @@ reveal.Resume();                             // continue after an input wait, pa
 
 - **States:** `Revealing`, `WaitingForInput` (after `{w}` or `{p}`), `WaitingForHost` (after a blocking inline command, until `Resume()`), `Complete`.
 - **Reveals move by grapheme cluster** (`StringInfo`), so emoji and combining marks never show half-drawn. Segmentation follows the runtime's Unicode version, so .NET 8 and .NET 10 can split the newest emoji differently. Reveal fixtures shared by both targets avoid them.
-- **Timing:** `[speed]` multiplies the base rate. `Instant` shows everything at once but still stops at input waits. Optional extra pauses after punctuation are a setting, not part of the language.
+- **Timing:** `{speed x}` multiplies the base rate from that point on, and `{speed}` returns to it. Speed resets at the start of every line, and each speed marker carries the factor in effect after it. A speed factor, pause or wait computed at run time that isn't greater than zero is skipped with a warning; constants are rejected at check time ([PIB2039](diagnostics.md#pib2039)). `Instant` shows everything at once but still stops at input waits. Optional extra pauses after punctuation are a setting, not part of the language.
 - **Skip semantics** are defined once, here: effect markers fire in order, timing markers are dropped ([reference](language/reference.md#runtime-semantics-summary)).
 
 ## State and saves

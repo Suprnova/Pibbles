@@ -96,7 +96,7 @@ public class SemanticModelTests
     {
         MarkupSymbol[] builtIn = [.. compilation.Model.Symbols<MarkupSymbol>().Where(markup => markup.Location is null)];
 
-        Assert.Equal(["b", "i", "u", "s", "color", "speed"], builtIn.Select(markup => markup.Name));
+        Assert.Equal(["b", "i", "u", "s", "color"], builtIn.Select(markup => markup.Name));
     }
 
     [Fact]

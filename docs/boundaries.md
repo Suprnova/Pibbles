@@ -34,7 +34,7 @@ The host **implements** it.
 | Pose / sprite swaps | `mira (smug):` changes a pose. Pibbles validates the pose against the actor and tracks it. | Swaps textures and animates the swap |
 | Sprite animations (bounce, jolt) | Host-declared commands, run as a statement or (when declared `inline`) at a position in a line, with wait semantics | Implements the animation |
 | Screen effects | Same as sprite animations | Same as sprite animations |
-| Text speed | `[speed 0.5]…[/speed]` sets a multiplier relative to the player's setting. The reveal helper does the timing. | Player speed setting, rendering visible characters |
+| Text speed | `{speed 0.5}` sets a multiplier relative to the player's setting, until `{speed}` or the end of the line. The reveal helper does the timing. | Player speed setting, rendering visible characters |
 | Pauses and input waits | `{w 0.5}`, `{w}` and `@wait 1s` produce timing markers and steps | Drives the clock and input |
 | Newlines and page breaks | `{br}` and `{p}` produce markers | Renders them. Paginates text that overflows, since only the host knows box size and font. |
 | Choices | Which options exist, whether each is available, which have been chosen before, `@once`, where flow goes next | Choice UI. Whether unavailable or already-chosen options are hidden or shown greyed out (based on option tags and flags). Choice timers. |

@@ -12,7 +12,7 @@ internal static class ReservedWords
         ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "wait", "sequence", "cycle", "once"],
         ["term", "resume", "shuffle"]);
 
-    private static readonly Group Brace = new("inside `{…}`", ["w", "p", "br", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
+    private static readonly Group Brace = new("inside `{…}`", ["w", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
 
     private static readonly Group Value = new("in expressions", ["true", "false", "and", "or", "not"], []);
 
@@ -24,7 +24,7 @@ internal static class ReservedWords
 
     private static readonly Group BuiltInType = new("for its own type", ["bool", "number", "string", "duration", "node", "actor"], []);
 
-    private static readonly Group BuiltInMarkup = new("for its own markup", ["speed", "b", "i", "u", "s", "color"], []);
+    private static readonly Group BuiltInMarkup = new("for its own markup", ["b", "i", "u", "s", "color"], []);
 
     private static readonly Group ReservedTag = new("for its own tag", ["id", "was"], ["migrates", "draft", "voice", "unvoiced"]);
 

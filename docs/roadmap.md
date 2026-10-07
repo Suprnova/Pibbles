@@ -10,7 +10,7 @@
 - Choices with `@if`, `@once`, tags and gather
 - `@if`/`@elif`/`@else`, `@set`, expressions, `visits()`
 - Block variations: `@sequence`, `@cycle`, `@once`
-- Inline: markup spans, `[speed]`, interpolation, inline commands (with `wait`), `{w}`, `{p}`, `{br}`, `{icon}`, `{if}`
+- Inline: markup spans, interpolation, inline commands (with `wait`), `{w}`, `{speed}`, `{p}`, `{br}`, `{icon}`, `{if}`
 - Line IDs (syntax, checks, `pibbles ids`)
 - Runtime: runner, state and versioned snapshots, mid-dialogue saves (ID-based positions, fast-forward to save points), `Line` rendering, `LineReveal`
 - CLI: `check`, `play`, `ids`

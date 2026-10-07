@@ -5,7 +5,6 @@
 @command term()
 //       ^^^^ PIB2062
 @markup speed
-//      ^^^^^ PIB2062
 @actor true
 //     ^^^^ PIB2062
     name: True

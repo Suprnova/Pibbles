@@ -99,13 +99,13 @@ public static class DiagnosticCatalog
         "this starts a tag",
         "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
-    /// <summary>PIB1016: a command, <c>{w}</c> or <c>{p}</c> in an option's text.</summary>
+    /// <summary>PIB1016: a command, <c>{w}</c>, <c>{p}</c> or <c>{speed}</c> in an option's text.</summary>
     /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
     public static DiagnosticDescriptor NotInOption { get; } = new(
         "PIB1016",
         DiagnosticSeverity.Error,
         "An option's text can't contain `{0}`.",
-        help: "Pauses and commands go in the indented lines under the option.");
+        help: "Pauses, speed changes and commands go in the indented lines under the option.");
 
     /// <summary>PIB1017: a point that isn't a variable, call, command or brace keyword.</summary>
     /// <remarks>Argument: the point as written.</remarks>
@@ -386,12 +386,12 @@ public static class DiagnosticCatalog
         help: "Remove one of them.");
 
     /// <summary>PIB2017: markup that isn't declared or built in.</summary>
-    /// <remarks>Arguments: the markup's name, and the closest markup, or <see langword="null"/> to leave out the help.</remarks>
+    /// <remarks>Arguments: the markup's name, and what to do instead, such as <c>Did you mean `clue`?</c>, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownMarkup { get; } = new(
         "PIB2017",
         DiagnosticSeverity.Error,
         "I don't know markup called `{0}`.",
-        help: "Did you mean `{1}`?");
+        help: "{1}");
 
     /// <summary>PIB2018: an icon that isn't declared.</summary>
     /// <remarks>Arguments: the icon's name, and the closest icon, or <see langword="null"/> to leave out the help.</remarks>
@@ -506,6 +506,14 @@ public static class DiagnosticCatalog
         "PIB2038",
         DiagnosticSeverity.Error,
         "I can't show `{0}` in text, because it's {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2039: a constant pacing value (a speed, a pause or a wait) that isn't more than zero.</summary>
+    /// <remarks>Arguments: what the value is, such as <c>A pause</c>; the value as written; and how to write a valid one.</remarks>
+    public static DiagnosticDescriptor NotPositive { get; } = new(
+        "PIB2039",
+        DiagnosticSeverity.Error,
+        "{0} has to be more than zero, but `{1}` isn't.",
         help: "{2}");
 
     /// <summary>PIB2045: a tag that's neither reserved nor declared.</summary>
@@ -837,6 +845,7 @@ public static class DiagnosticCatalog
         NotValueOfType,
         TwoNames,
         NotShowable,
+        NotPositive,
         UnknownTag,
         TagValuePresence,
         OldNodeName,

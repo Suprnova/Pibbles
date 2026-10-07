@@ -9,7 +9,7 @@ The kitchen smells of old coffee.
 Note\: escaped colons, \[brackets\], \{braces\}, \#hashes and a \\ backslash.
 my #1 fan, and ] and } on their own.
 mira: That's [b]not[/b] a [clue]normal [i]key[/i][/clue]. #thought #box:phone
-rex: [wave amplitude=2]Spooooky.[/wave] [speed 0.3]Slowly.[/speed] [color "#ff0000"]Red.[/color]
+rex: [wave amplitude=2]Spooooky.[/wave] {speed 0.3}Slowly.{speed} [color "#ff0000"]Red.[/color]
 mira: Hi, {$player_name}. You have {item_count("key")} keys and {icon inventory}.
 mira: Locked.{w} Of course.{w 0.5} Really.{p}New page.{br}New line.
 mira: [shout]Open up![/shout]{@shake_screen 0.5}{@jolt mira wait}{@sfx thud nowait}

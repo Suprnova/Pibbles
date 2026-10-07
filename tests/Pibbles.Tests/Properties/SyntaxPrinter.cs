@@ -230,6 +230,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         InterpolationSyntax interpolation => $"{{{Expression(interpolation.Value)}}}",
         InlineCommandSyntax command => $"{{@{command.Command.Text}{Arguments(command.Arguments, command.Wait)}}}",
         PauseSyntax pause => pause.Duration is null ? "{w}" : $"{{w {Expression(pause.Duration)}}}",
+        SpeedSyntax speed => speed.Factor is null ? "{speed}" : $"{{speed {Expression(speed.Factor)}}}",
         PageBreakSyntax => "{p}",
         LineBreakSyntax => "{br}",
         IconSyntax icon => $"{{icon {icon.Name.Text}}}",

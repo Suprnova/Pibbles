@@ -66,6 +66,7 @@ internal static class SyntaxWalk
         InterpolationSyntax interpolation => [interpolation.Value],
         InlineCommandSyntax command => command.Arguments.Select(argument => argument.Value),
         PauseSyntax { Duration: { } duration } => [duration],
+        SpeedSyntax { Factor: { } factor } => [factor],
         ConditionalTextSyntax conditional => [conditional.Condition, .. conditional.ElseIfs.Select(elseIf => elseIf.Condition)],
         _ => [],
     };

@@ -214,6 +214,7 @@ internal static class SyntaxGenerators
                 (1, Gen.Select(Identifier, Arguments(1, allowWait: true),
                     InlineSyntax (name, arguments) => new InlineCommandSyntax(Name(name), arguments.Arguments, arguments.Wait) { Span = default })),
                 (1, Maybe(Value(1)).Select(InlineSyntax (duration) => new PauseSyntax(duration) { Span = default })),
+                (1, Maybe(Value(1)).Select(InlineSyntax (factor) => new SpeedSyntax(factor) { Span = default })),
                 (1, Gen.Const<InlineSyntax>(new PageBreakSyntax { Span = default })),
             ]);
         }

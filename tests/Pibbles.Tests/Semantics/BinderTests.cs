@@ -93,6 +93,26 @@ public class BinderTests
     public static TheoryData<string, string, string?> Messages { get; } = new()
     {
         {
+            "== a.b\nVery [speed 0.3]slowly[/speed] there.\n",
+            "I don't know markup called `speed`.",
+            "Did you mean `{speed}`?"
+        },
+        {
+            "== a.b\nWait.{w (0.3s - 0.1s - 0.2s)} Done.\n",
+            "A pause has to be more than zero, but `(0.3s - 0.1s - 0.2s)` isn't.",
+            "Write a pause longer than zero, like `{w 0.5}`."
+        },
+        {
+            "== a.b\nSlow.{speed (1 - 1)} Done.\n",
+            "A speed has to be more than zero, but `(1 - 1)` isn't.",
+            "Write a speed above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting."
+        },
+        {
+            "== a.b\n@wait (-1s)\n",
+            "The time to `@wait` has to be more than zero, but `(-1s)` isn't.",
+            "Write a time longer than zero, like `@wait 0.5s`."
+        },
+        {
             "@prefix kitchen\n\n== .door\n@if visits(.dor) > 0\n    Hm.\n",
             "I can't find a node called `.dor`.",
             "Did you mean `.door`?"
@@ -239,6 +259,11 @@ public class BinderTests
 
         Assert.Equal((message, help), (diagnostic.Message, diagnostic.Help));
     }
+
+    [Theory]
+    [InlineData("== a.b\nWait.{w (1 / 0)}{w 99999999999999999999999999999} Done.\n")]
+    [InlineData("== a.b\nWait.{speed (1 / 0)}{speed 99999999999999999999999999999} Done.\n")]
+    public void Compile_PacingValueThatIsNotRepresentable_IsNotConstant(string text) => Assert.Empty(Diagnose(text));
 
     [Fact]
     public void Compile_ProblemInsideBrokenExpression_ReportsOnce()

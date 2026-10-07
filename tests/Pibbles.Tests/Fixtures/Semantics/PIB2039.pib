@@ -1,0 +1,26 @@
+// A speed, a pause or a wait written as a constant has to be more than zero.
+
+@var $s = 1
+@var $d = 1s
+
+== kitchen.door
+A {speed 0} B.
+//       ^ PIB2039
+A {speed (-1)} B.
+//       ^^^^ PIB2039
+A {speed (2 * 0)} B.
+//       ^^^^^^^ PIB2039
+A {w 0} B.
+//   ^ PIB2039
+A {w 0s} B.
+//   ^^ PIB2039
+A {w (0.5s - 1s)} B.
+//   ^^^^^^^^^^^ PIB2039
+@wait 0s
+//    ^^ PIB2039
+
+// Must not trigger
+
+A {w 0.1} B {speed $s} C {w $d} D {speed 0.5} E {speed} F.
+A {w (1 / 0)} B {speed (0 / 0)} C {w 99999999999999999999999999999} D.
+@wait 0.5s

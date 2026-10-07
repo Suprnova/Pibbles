@@ -193,7 +193,7 @@ This line pauses briefly here,{w 0.5} then keeps going.
 This line waits for the player to click here,{w} then keeps going.
 This line fills one box.{p}This part starts on a fresh page after a click.
 This line has a line break here{br}and continues on the next line.
-This part types at normal speed, [speed 0.3]this part types slowly,[/speed] and [speed 3]this part fast.[/speed]
+This part types at normal speed, {speed 0.3}this part types slowly,{speed 3} and this part fast.{speed} Back to normal.
 ```
 
 | Write | Effect |
@@ -202,7 +202,8 @@ This part types at normal speed, [speed 0.3]this part types slowly,[/speed] and 
 | `{w}` | Wait for a click, then continue on the same page |
 | `{p}` | Wait for a click, clear the box, continue |
 | `{br}` | Start a new line |
-| `[speed 2]…[/speed]` | Type faster (above 1) or slower (below 1), relative to the player's speed setting |
+| `{speed 2}` | From here on, type faster (above 1) or slower (below 1), relative to the player's speed setting |
+| `{speed}` | Back to the player's speed setting (every line also starts there) |
 
 ## Stage directions and game events
 
@@ -524,7 +525,7 @@ This node used to be called kitchen.door.
 | `@sequence` `@cycle` `@once` | Vary lines on repeat visits |
 | `@command args` | Stage direction or game event |
 | `[b]…[/b]` `[i]` `[u]` `[s]` `[color "#hex"]` | Formatting |
-| `[speed 0.5]…[/speed]` | Slower or faster typing |
+| `{speed 0.5}` / `{speed}` | Slower or faster typing / back to normal |
 | `{$x}` | Show a variable's value |
 | `{w 0.5}` / `{w}` | Timed pause / wait for click |
 | `{p}` / `{br}` | New page / new line |
