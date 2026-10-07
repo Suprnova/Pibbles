@@ -46,8 +46,8 @@ public sealed class Compilation
         SyntaxTree[] trees = [.. sources.Select(SyntaxTree.Parse)];
         List<Diagnostic> found = [.. trees.SelectMany(tree => tree.Diagnostics)];
         var references = new ReferenceIndex();
-        SymbolTable symbols = DeclarationPass.Run(trees, found, references);
         var bindings = new Bindings();
+        SymbolTable symbols = DeclarationPass.Run(trees, found, references, bindings);
         Binder.Run(trees, symbols, found, references, bindings);
         FlowChecks.Run(trees, found);
         LineIdChecks.Run(trees, symbols, found);

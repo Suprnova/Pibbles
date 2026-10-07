@@ -44,14 +44,12 @@ internal sealed class StoryLowerer(Compilation compilation)
     private StoryVariable LowerVariable(VariableSymbol variable)
     {
         nodeName = $"${variable.Name}";
-        tree = compilation.SyntaxTrees.FirstOrDefault(candidate => candidate.Source.Path == variable.Location?.Path) ?? compilation.SyntaxTrees[0];
-        return new(variable, LowerExpression(variable.StartingValue));
+        return new(variable, LowerIn(variable, variable.StartingValue));
     }
 
     private void LowerNode(NodeSyntax node)
     {
-        string prefix = tree.Root.Prefix?.Name.Text.TrimStart('.') ?? "";
-        nodeName = node.Name.Text.StartsWith('.') ? prefix + node.Name.Text : node.Name.Text;
+        nodeName = SymbolOf<NodeSymbol>(node.Name).Name;
         code = [];
         LowerBlock(node.Body);
         code.Add(new ReturnInstruction());
@@ -238,7 +236,9 @@ internal sealed class StoryLowerer(Compilation compilation)
             fallbackIds.Add(id);
         }
 
-        sites[id] = new(nodeName, index);
+        if (!sites.TryAdd(id, new(nodeName, index)))
+            throw new InvalidOperationException($"Can't lower `{nodeName}`: the ID `{id}` is already used by {sites[id].Node}[{sites[id].Index}]. Two sources probably share the path `{tree.Source.Path}`.");
+
         return id;
     }
 
@@ -297,9 +297,25 @@ internal sealed class StoryLowerer(Compilation compilation)
         return
         [
             .. parameters.Select(parameter =>
-                given.FirstOrDefault(argument => bindings.ParameterOf(argument) == parameter) ?? parameter.Default ?? throw Missing(owner, $"an argument for `{parameter.Name}`"))
-                .Select(LowerExpression),
+                given.FirstOrDefault(argument => bindings.ParameterOf(argument) == parameter) is { } argument
+                    ? LowerExpression(argument)
+                    : parameter.Default is { } value ? LowerIn(parameter, value) : throw Missing(owner, $"an argument for `{parameter.Name}`")),
         ];
+    }
+
+    /// <summary>Lowers an expression written in a declaration, such as a default, which may be in another file than the code using it.</summary>
+    private Expr LowerIn(Symbol declaration, ExpressionSyntax expression)
+    {
+        SyntaxTree used = tree;
+        tree = compilation.SyntaxTrees.FirstOrDefault(candidate => candidate.Source.Path == declaration.Location?.Path) ?? used;
+        try
+        {
+            return LowerExpression(expression);
+        }
+        finally
+        {
+            tree = used;
+        }
     }
 
     private Expr LowerExpression(ExpressionSyntax expression)

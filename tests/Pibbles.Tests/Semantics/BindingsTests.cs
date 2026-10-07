@@ -74,6 +74,16 @@ public class BindingsTests
     }
 
     [Fact]
+    public void Bindings_NodeHeader_ResolvesToTheFullNode()
+    {
+        (Compilation compilation, SyntaxTree tree) = Compile(Story);
+
+        string[] names = [.. tree.Root.Nodes.Select(node => compilation.Bindings.SymbolOf(node.Name)?.Name ?? "?")];
+
+        Assert.Equal(["kitchen.door", "kitchen.hall"], names);
+    }
+
+    [Fact]
     public void Bindings_SpeakerAndNamedArgument_Resolve()
     {
         (Compilation compilation, SyntaxTree tree) = Compile(Story + "\n@show mira left delay=2\n");

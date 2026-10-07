@@ -13,15 +13,15 @@ namespace Pibbles.Semantics;
 /// missing type can be suggested from every other name. A name with a problem is still declared, so the places that
 /// use it don't report it again; a duplicate isn't, and the first declaration wins.
 /// </remarks>
-internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceIndex references) : AnalysisPass(diagnostics, references)
+internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings) : AnalysisPass(diagnostics, references)
 {
     private readonly SymbolTable symbols = new();
     private readonly Dictionary<string, SourceLocation> nodeNames = [];
     private bool builtIn;
 
-    public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics, ReferenceIndex references)
+    public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings)
     {
-        var pass = new DeclarationPass(diagnostics, references);
+        var pass = new DeclarationPass(diagnostics, references, bindings);
         pass.ForEachFile(trees, pass.DeclareEnums);
         pass.ForEachFile(trees, pass.DeclareOthers);
         pass.ForEachFile(trees, pass.DeclareVariables);
@@ -163,6 +163,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         var symbol = new NodeSymbol(name, Location(node.Name.Span), aliases);
         symbols.Nodes.Add(name, symbol);
         Declares(node.Name.Span, symbol);
+        bindings.BindName(node.Name, symbol);
 
         foreach (NameSyntax alias in node.Aliases)
         {
