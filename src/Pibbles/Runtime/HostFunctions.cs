@@ -25,8 +25,6 @@ namespace Pibbles.Runtime;
 /// </remarks>
 public sealed class HostFunctions
 {
-    private const decimal TicksPerSecond = 10_000_000m;
-
     private readonly Dictionary<string, Registration> functions = [];
 
     /// <summary>Registers a function with no parameters.</summary>
@@ -93,9 +91,9 @@ public sealed class HostFunctions
         if (!functions.TryGetValue(name, out Registration? registered))
             throw new InvalidOperationException($"The story calls `{name}`, but no function with that name is registered. Call HostFunctions.Validate when the game starts to find these.");
 
+        object?[] hostArguments = [.. arguments.Select(argument => ToHost(argument, call.Location, warn))];
         try
         {
-            object?[] hostArguments = [.. arguments.Select(argument => ToHost(argument, call.Location, warn))];
             return FromHost(registered.Invoke(hostArguments), call.Function, story);
         }
         catch (Exception exception)
@@ -151,19 +149,7 @@ public sealed class HostFunctions
         if (value.Type == TypeSymbol.String || value.Type == TypeSymbol.Node)
             return value.AsString;
 
-        return value.Type == TypeSymbol.Duration ? ToTimeSpan(value.AsDecimal, location, warn) : value.AsSymbol.Name;
-    }
-
-    private static TimeSpan ToTimeSpan(decimal seconds, SourceLocation location, Action<RuntimeWarning> warn)
-    {
-        decimal ticks = Math.Round(seconds * TicksPerSecond, MidpointRounding.AwayFromZero);
-        if (ticks >= long.MaxValue || ticks <= long.MinValue)
-        {
-            warn(new(RuntimeWarningKind.Overflow, "This duration is too long for the game to use, so I used the longest one it can.", location));
-            return seconds < 0 ? TimeSpan.MinValue : TimeSpan.MaxValue;
-        }
-
-        return TimeSpan.FromTicks((long)ticks);
+        return value.Type == TypeSymbol.Duration ? Durations.ToTimeSpan(value.AsDecimal, location, warn) : value.AsSymbol.Name;
     }
 
     private static Value FromHost(object? result, FunctionSymbol function, Story story)
@@ -176,7 +162,7 @@ public sealed class HostFunctions
             return Value.Number((decimal)result!);
 
         if (type == TypeSymbol.Duration)
-            return Value.Duration(((TimeSpan)result!).Ticks / TicksPerSecond);
+            return Value.Duration(Durations.ToSeconds((TimeSpan)result!));
 
         string text = (string?)result ?? throw new InvalidOperationException($"`{function.Name}` returned null, but the story expects {type.Describe()}.");
         if (type == TypeSymbol.String)

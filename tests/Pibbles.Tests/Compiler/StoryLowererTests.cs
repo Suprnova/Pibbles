@@ -7,11 +7,21 @@ namespace Pibbles.Tests.Compiler;
 public class StoryLowererTests
 {
     [Fact]
-    public void Compile_TwoSourcesWithTheSamePath_ThrowsInsteadOfOverwritingAnId()
+    public void Compile_TwoSourcesWithTheSamePath_ThrowsArgumentExceptionNamingThePath()
     {
-        SourceText[] sources = [new("story.pib", "== a.one\nHi.\n"), new("story.pib", "== a.two\nHello.\n")];
+        SourceText[] sources = [new("story.pib", "== a.one\nHi. #id:one\n"), new("story.pib", "== a.two\nHello. #id:two\n")];
 
-        var exception = Assert.Throws<InvalidOperationException>(() => StoryCompiler.Compile(sources));
+        var exception = Assert.Throws<ArgumentException>(() => StoryCompiler.Compile(sources));
+
+        Assert.Contains("story.pib", exception.Message);
+    }
+
+    [Fact]
+    public void Lower_TwoFallbackIdsThatCollide_ThrowsAsACompilerBug()
+    {
+        Compilation compilation = Compilation.Create([new("story.pib", "== a.one\nHi.\n"), new("story.pib", "== a.two\nHello.\n")]);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => StoryLowerer.Lower(compilation));
 
         Assert.Contains("~story.pib:2", exception.Message);
     }

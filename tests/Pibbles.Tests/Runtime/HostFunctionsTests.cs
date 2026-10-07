@@ -115,6 +115,37 @@ public class HostFunctionsTests
         Assert.Equal((RuntimeWarningKind.Overflow, Here), (warning.Kind, warning.Location));
     }
 
+    [Fact]
+    public void ToTimeSpan_ExtremeSeconds_ClampsWithoutThrowing()
+    {
+        List<RuntimeWarning> warnings = [];
+
+        TimeSpan longest = Durations.ToTimeSpan(decimal.MaxValue, Here, warnings.Add);
+        TimeSpan shortest = Durations.ToTimeSpan(decimal.MinValue, Here, warnings.Add);
+
+        Assert.Equal((TimeSpan.MaxValue, TimeSpan.MinValue), (longest, shortest));
+        Assert.Equal(2, warnings.Count(warning => warning.Kind is RuntimeWarningKind.Overflow));
+    }
+
+    [Fact]
+    public void Invoke_DurationOfDecimalMaxValue_ClampsInsteadOfFailing()
+    {
+        HostFunctions functions = new HostFunctions().Add("lasting", (TimeSpan d) => d);
+
+        Value result = Call(functions, "lasting", Value.Duration(decimal.MaxValue));
+
+        Assert.Equal(Durations.ToSeconds(TimeSpan.MaxValue), result.AsDecimal);
+    }
+
+    [Fact]
+    public void Invoke_WarningHandlerThatThrows_IsNotBlamedOnTheHostFunction()
+    {
+        HostFunctions functions = new HostFunctions().Add("lasting", (TimeSpan d) => d);
+
+        Assert.Throws<NotSupportedException>(() =>
+            functions.Invoke(Story, new CallExpr(Story.Functions["lasting"], [], Here), [Value.Duration(decimal.MaxValue)], _ => throw new NotSupportedException()));
+    }
+
     /// <summary>Warnings from a duration too long for a <see cref="TimeSpan"/>, for the test that every warning kind is triggered.</summary>
     internal static IReadOnlyList<RuntimeWarning> ClampedDurationWarnings()
     {
