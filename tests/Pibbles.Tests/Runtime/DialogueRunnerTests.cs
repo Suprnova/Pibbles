@@ -309,6 +309,16 @@ public class DialogueRunnerTests
         Assert.IsType<LineStep>(game.Runner.Next());
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public void Constructor_InstructionBudgetThatIsNotPositive_Throws(int budget)
+    {
+        Game game = Game.Of("== t.n\nmira: x\n");
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DialogueRunner(game.Story, game.State, game.Functions, new() { InstructionBudget = budget }));
+    }
+
     [Fact]
     public void Start_DropsTheDialogueInProgress()
     {

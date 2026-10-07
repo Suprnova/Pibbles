@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
 using Pibbles.Compiler;
 using Pibbles.Semantics;
+using System.Collections.Immutable;
 
 namespace Pibbles.Runtime;
 
@@ -62,15 +62,17 @@ public sealed class DialogueRunner
     /// <param name="functions">The host functions the story calls.</param>
     /// <param name="options">How the runner behaves, or <see langword="null"/> for the defaults.</param>
     /// <exception cref="ArgumentException">The state is for another story.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The instruction budget isn't positive.</exception>
     public DialogueRunner(Story story, StoryState state, HostFunctions functions, RunnerOptions? options = null)
     {
         if (!ReferenceEquals(state.Story, story))
             throw new ArgumentException("The state belongs to another story.", nameof(state));
 
+        this.options = options ?? new();
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(this.options.InstructionBudget, nameof(options));
         this.story = story;
         this.state = state;
         this.functions = functions;
-        this.options = options ?? new();
         context = new(this);
     }
 
@@ -157,15 +159,15 @@ public sealed class DialogueRunner
         if (phase is not Phase.AwaitingChoice)
             throw new InvalidOperationException("There's no choice waiting.");
 
-        (CompiledOption Compiled, ChoiceOption Offered) match = offered.Find(candidate => candidate.Offered.Id == id);
-        if (match.Compiled is null)
+        (CompiledOption Compiled, ChoiceOption Offered) = offered.Find(candidate => candidate.Offered.Id == id);
+        if (Compiled is null)
             throw new InvalidOperationException($"`{id}` isn't one of the options on offer.");
 
-        if (!match.Offered.IsAvailable)
+        if (!Offered.IsAvailable)
             throw new InvalidOperationException($"The option `{id}` isn't available.");
 
         state.ChosenOptions.Add(id);
-        index = match.Compiled.Body;
+        index = Compiled.Body;
         offered = [];
         phase = Phase.Running;
     }
