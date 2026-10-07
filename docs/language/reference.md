@@ -331,7 +331,12 @@ A chained comparison is reported, never guessed at:
 - **A number is read as seconds wherever a duration is expected:** a duration parameter or variable, and the other side of `+`, `-`, `==`, `!=`, `<`, `<=`, `>` and `>=` when one side is a duration. So `0.5s + 1` is 1.5 seconds, and `$delay > 2` compares against 2 seconds. In `*` and `/` a number is a factor, never a time.
 - **Conditions are bool.** `@if`, `@elif`, option `@if` and `{if}` take a bool, with no truthiness: `@if $attempts` is an error that suggests `$attempts > 0`.
 - **`$x += v` means `$x = $x + v`,** and likewise for `-=`. The result must have `$x`'s type, so `+=` works on numbers, durations and strings.
-- **Strings compare by exact characters,** case-sensitive and independent of the locale: `"Sam" == "sam"` is false.
+- **Strings compare by exact characters,** case-sensitive and independent of the locale: `"Sam" == "sam"` is false. Numbers and durations compare by value, so `1.50 == 1.5`.
+- **Dividing by zero gives 0.** `/` and `%` by zero, including a duration divided by zero or by `0s`, give `0` and a [runtime warning](../runtime.md#runtime-warnings); the story carries on. A divisor that is a constant zero (`$x / 0`, `$x % (1 - 1)`) is also a warning when the story is checked (PIB2070).
+- **A result too large for a number is clamped.** A result past about ±7.9 × 10^28 from `+`, `-`, `*` or `/` becomes the largest or smallest number, with the sign of the true result, and gives a runtime warning.
+- **`%` is floored,** as in Python and Lua: the result takes the divisor's sign, so `-7 % 3` is `2`, `7 % -3` is `-2`, and a counter wraps around at any sign.
+- **Division isn't always exact.** `1 / 3 * 3` is `0.9999999999999999999999999999`, because a number holds about 28 digits and results aren't rounded. `+`, `-` and `*` of numbers written in the story are exact: `0.1 + 0.2` is `0.3`.
+- **`and` and `or` short-circuit,** left to right: in `$a and f()`, `f()` isn't called when `$a` is false. Host functions don't have side effects, so this only shows in that a function on the right may not be called, and a runtime warning on the right may not happen.
 
 Strings and enums aren't ordered, a number never becomes a string (text shows numbers through interpolation, `{$n}`), and values of different types never compare equal. Each of these is an error, so adding one later can't change a valid story.
 

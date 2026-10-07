@@ -109,6 +109,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2065 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
 | PIB2066 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
 | PIB2067 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
+| PIB2070 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB3002 | Info | This option has no text. | Write what the player picks after the `->`. |
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
@@ -998,6 +999,19 @@ Use `@tag count: string`, or declare an enum with the values the tag can take an
 ```
 
 Write the type after the variable: `@var $where: position = left`.
+
+### PIB2070
+
+**Dividing by zero has no answer, so a story that does it gets 0 and a warning when it runs.** `/` and `%` both divide. This is reported when the right side is a constant that comes to zero: `0`, `0s`, or `(1 - 1)`. A divisor that depends on a variable or a function isn't checked here; if it's zero when the story runs, the result is 0 and the game receives a warning.
+
+```text
+@var $total = 10
+
+== shop.till
+@set $total = $total / 0
+```
+
+Divide by something that isn't zero. If you meant to guard against a zero that can happen, check it first: `@if $count > 0`.
 
 ### PIB3001
 

@@ -1,0 +1,23 @@
+// A divisor that is a constant zero always gives 0.
+
+@var $x = 1
+@var $y = 1
+@var $t = 1s
+
+== fixture.divide
+@set $x = $x / 0
+//        ^^^^^^ PIB2070
+@set $x = $x % (1 - 1)
+//        ^^^^^^^^^^^^ PIB2070
+@set $t = $t / 0s
+//        ^^^^^^^ PIB2070
+@set $x = $t / 0s
+//        ^^^^^^^ PIB2070
+
+// Must not trigger
+
+@set $x = $x / 0.001
+@set $x = $x / $y
+@set $x = $x * 0
+@set $x = 0 / $y
+@set $x = $x % 3

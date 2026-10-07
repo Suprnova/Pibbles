@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 using Pibbles.Syntax;
 
@@ -38,7 +39,9 @@ internal sealed class StoryLowerer(Compilation compilation)
             variables,
             templates,
             sites,
-            fallbackIds);
+            fallbackIds,
+            symbols.Actors,
+            symbols.Functions.Where(function => function.Value.Location is not null).ToDictionary());
     }
 
     private StoryVariable LowerVariable(VariableSymbol variable)
@@ -184,7 +187,7 @@ internal sealed class StoryLowerer(Compilation compilation)
             _ => null,
         };
 
-        return new(variable, @operator is { } op ? new BinaryExpr(op, new VariableExpr(variable), value, variable.Type) : value);
+        return new(variable, @operator is { } op ? new BinaryExpr(op, new VariableExpr(variable), value, variable.Type, LocationOf(set)) : value);
     }
 
     private void LowerVariation(BlockKind kind, IReadOnlyList<TagSyntax> tags, TextSpan span, IEnumerable<IReadOnlyList<StatementSyntax>> alternatives)
@@ -332,7 +335,7 @@ internal sealed class StoryLowerer(Compilation compilation)
             CallExpressionSyntax call => LowerCall(call),
             ParenthesizedExpressionSyntax parenthesized => LowerExpression(parenthesized.Expression),
             UnaryExpressionSyntax unary => new UnaryExpr(unary.Operator, LowerExpression(unary.Operand), type.Type),
-            BinaryExpressionSyntax binary => new BinaryExpr(binary.Operator, LowerExpression(binary.Left), LowerExpression(binary.Right), type.Type),
+            BinaryExpressionSyntax binary => new BinaryExpr(binary.Operator, LowerExpression(binary.Left), LowerExpression(binary.Right), type.Type, LocationOf(binary)),
             _ => throw Missing(expression, "a lowerable expression"),
         };
 
@@ -351,15 +354,17 @@ internal sealed class StoryLowerer(Compilation compilation)
     {
         FunctionSymbol function = SymbolOf<FunctionSymbol>(call.Function);
         Expr[] arguments = Arrange(function.Parameters, call.Arguments, call);
-        return function.Location is null && function.Name is "visits" ? new VisitsExpr(arguments[0]) : new CallExpr(function, arguments);
+        return function.Location is null && function.Name is "visits" ? new VisitsExpr(arguments[0]) : new CallExpr(function, arguments, LocationOf(call));
     }
 
     private T SymbolOf<T>(SyntaxNode name)
         where T : Symbol => bindings.SymbolOf(name) as T ?? throw Missing(name, $"a {typeof(T).Name}");
 
+    private SourceLocation LocationOf(SyntaxNode node) => tree.Source.GetLocation(node.Span);
+
     private InvalidOperationException Missing(SyntaxNode node, string what)
     {
-        var location = tree.Source.GetLocation(node.Span);
+        SourceLocation location = LocationOf(node);
         return new($"Can't lower `{nodeName}`: nothing was bound for {what} at {location.Path}:{location.Start.Line + 1}.");
     }
 }

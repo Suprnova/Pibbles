@@ -77,12 +77,56 @@ while (true)
 
 - **Pull-based, synchronous, single-threaded.** The core has no `async`, no events and no timers. It has no skip mode either: skipping is the caller asking for steps without waiting ([skipping](godot.md#skipping)). Hosts wrap it in whatever model their engine prefers. The Godot adapter uses signals and `await`. This keeps the core trivially testable.
 - **Steps are immutable records.** Pattern matching on them is the whole host API for flow. Extensions add step kinds, so a host's `switch` keeps a default arm.
-- **Host functions** are registered as typed delegates through generic `Add` overloads (AOT-safe, no reflection). `HostFunctions.Validate(story)` reports missing or mistyped functions, and adapters call it at startup.
+- **Host functions** are registered as typed delegates through generic `Add` overloads (AOT-safe, no reflection), described [below](#host-functions). `HostFunctions.Validate(story)` reports missing or mistyped functions, and adapters call it at startup.
 - **Command arguments** arrive as a `CommandInvocation` with typed accessors by parameter name (`command.GetActor("who")`, `command.GetNumber("strength")`). Enum values come through as their member names.
 - **The seed is chosen by the host** when it creates a new state, usually at random for a new game. v1 stores it without using it, so adding randomness later doesn't change the API.
 - **Several runners can share one `StoryState`,** for example ambient remarks during room play while the main dialogue is suspended. Everything is single-threaded.
 - **Node names from the host resolve through aliases.** `Start`, `node` values restored from a snapshot, and anything else the host passes in accept a node's current name or any of its `#was:` aliases. A scene that still says `kitchen.front_door` keeps working after the node is renamed.
 - **Misuse throws; content never does.** Calling `Next()` while a choice is waiting, choosing an out-of-range or unavailable option, starting a node that doesn't exist, or reaching a host function that was never registered throws `InvalidOperationException`. For an unknown node, the message suggests the closest name. A story that passed analysis can't cause a runtime type error. Host functions are checked at registration.
+
+### Values
+
+The runtime's values are the language's types: `bool`; `number`, an exact `decimal`, so `0.1 + 0.2` is exactly `0.3`; `string`; `duration`, `decimal` seconds (`TimeSpan` appears only at the host function edge); an enum member, an actor, and a `node`, held by its current name. Equality is by value within one type: numbers and durations compare numerically (`1.50 == 1.5`), strings by exact characters, and members, actors and nodes by identity. The binder has already rejected comparisons across types. `Value` is internal; the public API has typed accessors instead.
+
+Expressions are evaluated recursively against an evaluation context that answers a variable's value, a node's visit count (when a visit counts is the runner's business) and host function calls, and receives runtime warnings. The semantics of the operators, including division by zero, overflow, floored `%` and short-circuiting, are in the [reference](language/reference.md#operator-types). Evaluating never throws for content and changes nothing but through host functions, so a throw from one can't leave a half-done step.
+
+### Host functions
+
+```csharp
+var functions = new HostFunctions()
+    .Add("has_item", (string id) => inventory.Contains(id));
+```
+
+`Add` has overloads for zero to four parameters. Types are strict:
+
+| Story type | CLR type |
+| --- | --- |
+| `bool` | `bool` |
+| `number` | `decimal` |
+| `string` | `string` |
+| `duration` | `TimeSpan`: decimal seconds rounded to the nearest tick (100 ns). A duration past `TimeSpan`'s range clamps, with an `Overflow` [warning](#runtime-warnings). A returned `TimeSpan` becomes exact seconds. |
+| An enum, `actor` or `node` | `string`: the member's name, the actor's ID, the node's current name |
+
+Nothing else is accepted: no `int`, `float`, `double` or C# enum, so a game converts its own floats. A function declared to return an enum, actor or node returns a string that must name a member, a declared actor, or a node (its current name or a `#was:` name); anything else is a host error. Functions must be free of side effects: `and` and `or` short-circuit, and text is rendered again after a load.
+
+- **`Add` throws `ArgumentException`** for a name registered twice, a null delegate, an unsupported type, or `visits`, which the core answers itself.
+- **`Validate(story)`** returns a list of `HostFunctionProblem`, never throwing: a declared function that's missing, a registered one whose parameters or return type don't match ("In the story, `has_item` takes a `string` and returns a `bool`, but the registered function takes a `decimal` and returns a `bool`"), and a registered name the story doesn't declare, which is likely a typo. They describe the host's code, so they aren't diagnostics. Hosts keep a default arm on `HostFunctionProblemKind`, which can grow.
+- **At run time,** calling a function that was never registered throws `InvalidOperationException`, which `Validate` exists to catch first. A function that throws, or returns a string that names nothing, is wrapped in a `HostFunctionException` that names the function and the story location, with the original as `InnerException`. The Godot adapter catches it and falls back ([failures](godot.md#failures)).
+
+### Runtime warnings
+
+Three kinds of problem, three channels:
+
+- **Diagnostics are static.** They report what analysis finds before the story runs.
+- **Exceptions are for the host.** A host that misuses the API, or a host function that fails, throws.
+- **Runtime warnings are for content the story carries on from.** A `RuntimeWarning` has a `Kind` (a public enum, so hosts filter by it and keep a default arm, since kinds are added), a message written for writers, and the story location (path and line). It has no `PIB` code and isn't in the diagnostic catalog. Content problems never throw, so the story always carries on.
+
+| Kind | When it happens | What the story does instead | How to fix the script |
+| --- | --- | --- | --- |
+| `DivisionByZero` | `/` or `%` with a divisor that is zero at run time | The result is `0` | Check the divisor first, or divide by something that can't be zero |
+| `Overflow` | A result past about ±7.9 × 10^28 from `+`, `-`, `*` or `/`; or a duration too long for a `TimeSpan` passed to a host function | The largest or smallest value it can hold, with the true result's sign | Use smaller numbers |
+
+Skipped non-positive pauses, waits and speeds will join the table when the runner and the reveal helper exist. The runner decides how it exposes warnings to the host.
 
 ## Lines and text
 

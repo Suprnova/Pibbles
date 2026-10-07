@@ -15,7 +15,9 @@ public sealed class Story
         IReadOnlyList<StoryVariable> variables,
         IReadOnlyDictionary<string, Template> templates,
         IReadOnlyDictionary<string, IdSite> sites,
-        IReadOnlySet<string> fallbackIds)
+        IReadOnlySet<string> fallbackIds,
+        IReadOnlyDictionary<string, ActorSymbol> actors,
+        IReadOnlyDictionary<string, FunctionSymbol> functions)
     {
         Nodes = nodes;
         Aliases = aliases;
@@ -23,6 +25,8 @@ public sealed class Story
         Templates = templates;
         Sites = sites;
         FallbackIds = fallbackIds;
+        Actors = actors;
+        Functions = functions;
     }
 
     /// <summary>Every node, by its current name.</summary>
@@ -45,6 +49,12 @@ public sealed class Story
     /// <c>~path:line</c>, which no written ID can be, and they don't survive an edit to the file.
     /// </summary>
     internal IReadOnlySet<string> FallbackIds { get; }
+
+    /// <summary>Every declared actor, by ID, for checking what a host function returns.</summary>
+    internal IReadOnlyDictionary<string, ActorSymbol> Actors { get; }
+
+    /// <summary>The functions the story declares, which the host provides. <c>visits</c> isn't among them.</summary>
+    internal IReadOnlyDictionary<string, FunctionSymbol> Functions { get; }
 }
 
 /// <summary>A node, compiled.</summary>

@@ -623,6 +623,14 @@ public static class DiagnosticCatalog
         "`{0}` starts as `{1}`, so I need its type written out.",
         help: "Write the type after the variable: `{2}`.");
 
+    /// <summary>PIB2070: a <c>/</c> or <c>%</c> whose right side is a constant zero.</summary>
+    /// <remarks>Argument: the operation as written, such as <c>$x / 0</c>.</remarks>
+    public static DiagnosticDescriptor DivisionByZero { get; } = new(
+        "PIB2070",
+        DiagnosticSeverity.Warning,
+        "`{0}` divides by zero, so it gives 0.",
+        help: "Divide by something that isn't zero.");
+
     /// <summary>PIB3001: a statement after one that always leaves its block.</summary>
     /// <remarks>Arguments: why it never runs, such as <c>of the `@jump` above it</c>, and the statement that leaves, such as <c>@jump</c>.</remarks>
     public static DiagnosticDescriptor NeverRuns { get; } = new(
@@ -867,6 +875,7 @@ public static class DiagnosticCatalog
         RequiredAfterOptional,
         TagValueType,
         UntypedVariable,
+        DivisionByZero,
         NeverRuns,
         EmptyOption,
         MissingLineId,

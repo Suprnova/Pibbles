@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 using Pibbles.Syntax;
 
@@ -40,7 +41,8 @@ internal sealed record VariableExpr(VariableSymbol Variable) : Expr(Variable.Typ
 /// <summary>A call to a host function.</summary>
 /// <param name="Function">The function.</param>
 /// <param name="Arguments">The arguments, in the order of the function's parameters.</param>
-internal sealed record CallExpr(FunctionSymbol Function, IReadOnlyList<Expr> Arguments) : Expr(Function.ReturnType);
+/// <param name="Location">Where the call is written, for a function that fails.</param>
+internal sealed record CallExpr(FunctionSymbol Function, IReadOnlyList<Expr> Arguments, SourceLocation Location) : Expr(Function.ReturnType);
 
 /// <summary><c>visits(node)</c>, which the runtime answers itself.</summary>
 /// <param name="Target">The node, an expression of type <c>node</c>.</param>
@@ -50,7 +52,12 @@ internal sealed record VisitsExpr(Expr Target) : Expr(TypeSymbol.Number);
 internal sealed record UnaryExpr(UnaryOperator Operator, Expr Operand, TypeSymbol ResultType) : Expr(ResultType);
 
 /// <summary>A binary operator. The operands' types are <c>Left.Type</c> and <c>Right.Type</c>, which say what kind of sum or comparison it is.</summary>
-internal sealed record BinaryExpr(BinaryOperator Operator, Expr Left, Expr Right, TypeSymbol ResultType) : Expr(ResultType);
+/// <param name="Operator">The operator.</param>
+/// <param name="Left">The left operand.</param>
+/// <param name="Right">The right operand.</param>
+/// <param name="ResultType">The type of the result.</param>
+/// <param name="Location">Where the expression is written, for a warning from arithmetic that divides by zero or overflows.</param>
+internal sealed record BinaryExpr(BinaryOperator Operator, Expr Left, Expr Right, TypeSymbol ResultType, SourceLocation Location) : Expr(ResultType);
 
 /// <summary>A number used as a duration in seconds, where its context expects a duration.</summary>
 internal sealed record ToDurationExpr(Expr Operand) : Expr(TypeSymbol.Duration);
