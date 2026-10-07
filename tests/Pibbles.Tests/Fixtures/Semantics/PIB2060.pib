@@ -4,7 +4,7 @@
 @enum room: attic
 //    ^^^^ PIB2060
 @var $has_key = false
-@var $has_key = true
+@var $has_key = "yes"
 //   ^^^^^^^^ PIB2060
 @icon interact, inventory, interact
 //                         ^^^^^^^^ PIB2060

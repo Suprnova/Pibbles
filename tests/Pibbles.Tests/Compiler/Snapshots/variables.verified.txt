@@ -1,0 +1,25 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.variables
+    0  Set $count = 5
+    1  Set $count = ($count + 1):number
+    2  Set $count = ($count - (2 * 3):number):number
+    3  Set $delay = ($delay + duration(1)):duration
+    4  Set $delay = ($delay - 0.5s):duration
+    5  Set $name = ($name + "!"):string
+    6  Set $has_key = (not $has_key):bool
+    7  Set $where = right
+    8  Set $delay = ($delay * 2):duration
+    9  Wait duration(1)
+   10  Wait (0.5s + duration((1 + 2):number)):duration
+   11  Wait $delay
+   12  BranchIfFalse ($delay > duration(2)):bool -> 15
+   13  Wait ($delay / 2):duration
+   14  Branch -> 15
+   15  Return
+templates
+ids

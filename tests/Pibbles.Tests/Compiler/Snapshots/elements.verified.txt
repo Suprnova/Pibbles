@@ -1,0 +1,31 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.elements
+    0  Line ~elements.pib:4
+    1  Line ~elements.pib:5
+    2  Line ~elements.pib:6
+    3  Line ~elements.pib:7
+    4  Line ~elements.pib:8
+    5  Line ~elements.pib:9
+    6  Choice [~elements.pib:10 -> 7] join 7
+    7  Return
+templates
+  ~elements.pib:4: mira <> "Plain, "[b]("bold")" and "[wave 2 5]("waving "[shout]("nested"))"."
+  ~elements.pib:5: mira <> "Pause"{w duration(0.5)}" then wait"{w}" then a page"{p}"and a line"{br}"break."
+  ~elements.pib:6: mira <> {speed 0.5}"Slow"{speed}" normal "{speed ($count + 1):number}"fast."
+  ~elements.pib:7: mira <> "Icon "{icon interact}", "{@jolt(mira) waits=false}", "{@jolt(mira) waits=true}", "{@sfx("x") waits=false}"."
+  ~elements.pib:8: mira <> "You "{if $has_key: "have" | elif ($count > 1):bool: "nearly have" | else: "lack"}" it, "{$name:string}", "{$count:number}", "{$who:actor}"."
+  ~elements.pib:9: mira <> {if $has_key: "Only with the key."}
+  ~elements.pib:10: - <> "Option "[b]("text")" "{$name:string}" "{icon interact}{br}"and more"
+ids
+  ~elements.pib:4 -> snap.elements[0]
+  ~elements.pib:5 -> snap.elements[1]
+  ~elements.pib:6 -> snap.elements[2]
+  ~elements.pib:7 -> snap.elements[3]
+  ~elements.pib:8 -> snap.elements[4]
+  ~elements.pib:9 -> snap.elements[5]
+  ~elements.pib:10 -> snap.elements[6]

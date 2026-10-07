@@ -15,6 +15,20 @@ internal static class SyntaxWalk
         _ => [],
     };
 
+    /// <summary>
+    /// Whether a statement always leaves its block: <c>@jump</c>, <c>@end</c> or <c>@return</c>, or an <c>@if</c> with an
+    /// <c>@else</c> whose every branch leaves. Conditions are never evaluated, and choices and variations never count.
+    /// </summary>
+    public static bool AlwaysLeaves(StatementSyntax statement) => statement switch
+    {
+        JumpStatementSyntax or EndStatementSyntax or ReturnStatementSyntax => true,
+        IfStatementSyntax { Else: { } @else } @if => AlwaysLeaves(@if.Body) && @if.ElseIfs.All(elseIf => AlwaysLeaves(elseIf.Body)) && AlwaysLeaves(@else.Body),
+        _ => false,
+    };
+
+    /// <summary>Whether a block always leaves, because one of its statements does.</summary>
+    public static bool AlwaysLeaves(IReadOnlyList<StatementSyntax> block) => block.Any(AlwaysLeaves);
+
     /// <summary>Every statement in a block and in the blocks under it, in the order they're written.</summary>
     public static IEnumerable<StatementSyntax> Statements(IEnumerable<StatementSyntax> block) =>
         block.SelectMany(statement => (IEnumerable<StatementSyntax>)[statement, .. BlocksOf(statement).SelectMany(Statements)]);
@@ -80,7 +94,7 @@ internal static class SyntaxWalk
             ParenthesizedExpressionSyntax parenthesized => [parenthesized.Expression],
             UnaryExpressionSyntax unary => [unary.Operand],
             BinaryExpressionSyntax binary => [binary.Left, binary.Right],
-            _ => Array.Empty<ExpressionSyntax>(),
+            _ => [],
         }).SelectMany(Subexpressions),
     ];
 }

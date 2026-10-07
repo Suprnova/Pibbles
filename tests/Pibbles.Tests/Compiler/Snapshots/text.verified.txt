@@ -1,0 +1,31 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.text
+    0  Line ~text.pib:4
+    1  Line ~text.pib:5
+    2  Pose mira happy
+    3  Line ~text.pib:6
+    4  Pose mira sad
+    5  Line ~text.pib:8
+    6  Pose mira happy
+    7  Line ~text.pib:9
+    8  Line ~text.pib:10
+    9  Return
+templates
+  ~text.pib:4: - <> "Narration, with no speaker."
+  ~text.pib:5: mira <> "A line with a speaker."
+  ~text.pib:6: mira <> "A posed line."
+  ~text.pib:8: mira <> {w}
+  ~text.pib:9: mira <thought, box:tense(tense)> "Tags follow the text."
+  ~text.pib:10: mira <> "You have "{$count:number}" keys, "{$name:string}", and "{$who:actor}" is here."
+ids
+  ~text.pib:4 -> snap.text[0]
+  ~text.pib:5 -> snap.text[1]
+  ~text.pib:6 -> snap.text[3]
+  ~text.pib:8 -> snap.text[5]
+  ~text.pib:9 -> snap.text[7]
+  ~text.pib:10 -> snap.text[8]

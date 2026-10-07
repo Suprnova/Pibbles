@@ -119,6 +119,71 @@ public class BindingsTests
         Assert.Equal(TypeSymbol.Number, compilation.Bindings.TypeOf(product.Right)?.ConvertedType);
     }
 
+    [Theory]
+    [InlineData("$d > 2")]
+    [InlineData("$d == 1")]
+    [InlineData("2 < $d")]
+    public void Bindings_NumberComparedWithDuration_IsConverted(string condition)
+    {
+        (Compilation compilation, SyntaxTree tree) = Compile($"@var $d = 1s\n\n== a.b\n@if {condition}\n    @end\n");
+
+        var comparison = (BinaryExpressionSyntax)((IfStatementSyntax)Statements(tree).First(statement => statement is IfStatementSyntax)).Condition;
+        ExpressionSyntax number = comparison.Left is NumberLiteralSyntax ? comparison.Left : comparison.Right;
+        ExpressionSyntax duration = ReferenceEquals(number, comparison.Left) ? comparison.Right : comparison.Left;
+
+        Assert.Equal(new ExpressionType(TypeSymbol.Number, TypeSymbol.Duration), compilation.Bindings.TypeOf(number));
+        Assert.Equal(new ExpressionType(TypeSymbol.Duration, TypeSymbol.Duration), compilation.Bindings.TypeOf(duration));
+    }
+
+    [Fact]
+    public void Bindings_PositionalNamedAndMixedArguments_FillTheirParameters()
+    {
+        (Compilation compilation, SyntaxTree tree) = Compile(Story + "\n@show mira left 1s\n@show mira at=right\n@show who=mira at=left\n@show mira left delay=2\n@show delay=2 at=left who=mira\n");
+
+        CommandStatementSyntax[] shows = [.. Statements(tree).OfType<CommandStatementSyntax>()];
+
+        Assert.Equal(["who", "at", "delay"], ParameterNames(compilation, shows[1]));
+        Assert.Equal(["who", "at"], ParameterNames(compilation, shows[2]));
+        Assert.Equal(["who", "at"], ParameterNames(compilation, shows[3]));
+        Assert.Equal(["who", "at", "delay"], ParameterNames(compilation, shows[4]));
+        Assert.Equal(["delay", "at", "who"], ParameterNames(compilation, shows[5]));
+    }
+
+    [Fact]
+    public void Bindings_FunctionCallArguments_FillTheirParameters()
+    {
+        (Compilation compilation, SyntaxTree tree) = Compile(Story);
+
+        CallExpressionSyntax call = Statements(tree).SelectMany(SyntaxWalk.ExpressionsOf).OfType<CallExpressionSyntax>().Single();
+
+        Assert.Equal("item", compilation.Bindings.ParameterOf(call.Arguments[0])?.Name);
+    }
+
+    [Fact]
+    public void Bindings_ParameterAndVariable_KeepTheirDefaultAndStartingValue()
+    {
+        (Compilation compilation, _) = Compile(Story + "\n@var $count = 5\n");
+
+        ParameterSymbol delay = compilation.Symbols.Commands["show"].Parameters[2];
+
+        Assert.IsType<DurationLiteralSyntax>(delay.Default);
+        Assert.Null(compilation.Symbols.Commands["show"].Parameters[0].Default);
+        Assert.Equal(0m, Assert.IsType<NumberLiteralSyntax>(compilation.Symbols.Variables["count"].StartingValue).Value);
+    }
+
+    [Fact]
+    public void Bindings_DuplicateUntypedVariable_IsReportedOnlyAsDuplicate()
+    {
+        (Compilation compilation, _) = Compile("@var $a = 1\n@var $a = \"x\"\n");
+
+        string[] codes = [.. compilation.Diagnostics.Select(diagnostic => diagnostic.Code)];
+        Assert.Contains("PIB2060", codes);
+        Assert.DoesNotContain("PIB2031", codes);
+    }
+
+    private static string[] ParameterNames(Compilation compilation, CommandStatementSyntax command) =>
+        [.. command.Arguments.Select(argument => compilation.Bindings.ParameterOf(argument.Value)?.Name ?? "?")];
+
     [Fact]
     public void Bindings_IdenticalNodesInDifferentFiles_AreBoundSeparately()
     {
@@ -180,7 +245,7 @@ public class BindingsTests
             CommandDeclarationSyntax command => Defaults(command.Parameters),
             MarkupDeclarationSyntax markup => Defaults(markup.Parameters),
             FunctionDeclarationSyntax function => Defaults(function.Parameters),
-            _ => Array.Empty<ExpressionSyntax>(),
+            _ => [],
         });
 
         return declared.SelectMany(SyntaxWalk.Subexpressions).Concat(Statements(tree).SelectMany(SyntaxWalk.ExpressionsOf));

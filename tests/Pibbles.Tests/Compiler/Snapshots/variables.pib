@@ -1,0 +1,17 @@
+// @set with =, += and -=, durations and numbers together, and @wait.
+
+== snap.variables
+@set $count = 5
+@set $count += 1
+@set $count -= 2 * 3
+@set $delay += 1
+@set $delay -= 0.5s
+@set $name += "!"
+@set $has_key = not $has_key
+@set $where = right
+@set $delay = $delay * 2
+@wait 1
+@wait 0.5s + (1 + 2)
+@wait $delay
+@if $delay > 2
+    @wait ($delay / 2)

@@ -1,0 +1,18 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.commands
+    0  Command @show(mira, center) waits=false
+    1  Command @show(mira, left) waits=false
+    2  Command @show(rex, right) waits=false
+    3  Command @move(mira, right) waits=true
+    4  Command @move(mira, right) waits=false
+    5  Command @jolt(mira) waits=false
+    6  Command @jolt(mira) waits=true
+    7  Command @go(node(snap.commands)) waits=false
+    8  Return
+templates
+ids

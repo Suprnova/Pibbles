@@ -43,7 +43,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         {
             if (declaration is VariableDeclarationSyntax variable)
             {
-                TypeSymbol type = variable.Type is { } written ? TypeNamed(written) : symbols.Variables.GetValueOrDefault(variable.Variable.Name)?.Type ?? TypeSymbol.Error;
+                TypeSymbol type = variable.Type is { } written ? TypeNamed(written) : DeclarationPass.TypeOfStartingValue(variable.Value);
                 BindValue(variable.Value, type, $"`${variable.Variable.Name}` holds {type.Describe()}");
             }
 
@@ -593,6 +593,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             if (parameter is null)
                 continue;
 
+            bindings.BindArgument(argument.Value, parameter);
             if (Converts(type, parameter.Type))
                 bindings.ConvertTo(argument.Value, parameter.Type);
             else

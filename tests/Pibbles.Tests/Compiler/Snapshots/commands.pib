@@ -1,0 +1,11 @@
+// Commands: a default filled in, named arguments in any order, the wait and nowait overrides, and node arguments.
+
+== snap.commands
+@show mira
+@show mira left
+@show at=right who=rex
+@move mira right
+@move mira right nowait
+@jolt mira
+@jolt mira wait
+@go snap.commands

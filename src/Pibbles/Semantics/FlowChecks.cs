@@ -28,7 +28,7 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
 
     private void CheckBlock(IReadOnlyList<StatementSyntax> block)
     {
-        int leaves = block.ToList().FindIndex(AlwaysLeaves);
+        int leaves = block.ToList().FindIndex(SyntaxWalk.AlwaysLeaves);
         if (leaves >= 0 && leaves + 1 < block.Count)
             ReportNeverRuns(block[leaves + 1], block[leaves]);
 
@@ -58,12 +58,4 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
         Report(DiagnosticCatalog.NeverRuns, FirstLine(statement), because, keyword);
     }
 
-    private static bool AlwaysLeaves(StatementSyntax statement) => statement switch
-    {
-        JumpStatementSyntax or EndStatementSyntax or ReturnStatementSyntax => true,
-        IfStatementSyntax { Else: { } @else } @if => Leaves(@if.Body) && @if.ElseIfs.All(elseIf => Leaves(elseIf.Body)) && Leaves(@else.Body),
-        _ => false,
-    };
-
-    private static bool Leaves(IReadOnlyList<StatementSyntax> block) => block.Any(AlwaysLeaves);
 }

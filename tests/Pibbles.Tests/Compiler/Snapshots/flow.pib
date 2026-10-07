@@ -1,0 +1,12 @@
+// @jump, @call, @return and @end, and a target written with a node's old name.
+
+== snap.flow
+mira: Start.
+@call snap.sub
+@jump snap.renamed_old
+
+== snap.sub
+@return
+
+== snap.renamed #was:snap.renamed_old
+@end

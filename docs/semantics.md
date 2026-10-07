@@ -32,6 +32,9 @@ Once every pass has run, each diagnostic gets the severity its file's settings g
 - **The symbol each name refers to.** Names are keyed by the syntax node that spells them: the name of a speaker, pose, command, markup, icon, called function, named argument, or `@jump` and `@call` target; a variable; a bare name (an enum member, an actor or a node); and a tag, whose enum value is kept separately. A name that doesn't resolve has no entry.
 - **Each expression's type, and its converted type.** Every expression the binder reaches has an entry, nested ones included, and variables' starting values and parameters' defaults too. The converted type is the type the context uses the expression as, which differs from its type only for a number where a duration is expected (`@wait 1`, `{w 1}`, a `duration` argument, `@set $d += 1`, the number beside a duration in `+`, `-` and the comparisons). An expression whose type can't be known has the error type.
 
+- **The parameter each argument fills,** for commands (statement and inline), markup and function calls, positional and named alike, keyed by the argument's value expression. An argument that fills no parameter (an extra one, a repeat, or one for something that doesn't exist) has no entry.
+- **Defaults and starting values.** A `ParameterSymbol` keeps the expression after its `=`, and a `VariableSymbol` its starting value (the first declaration's, for a duplicate). Both are bound like any other expression, so their types and conversions are in the bindings.
+
 Entries are keyed by the identity of the syntax node, never its value, because syntax nodes compare by value and two identical lines at the same position in different files are different nodes. The bindings take no part in diagnostics, and the [semantic model](#the-semantic-model) is separate: it answers the editor's questions by position, and the bindings answer the compiler's by node.
 
 ### The semantic model

@@ -6,7 +6,7 @@ namespace Pibbles.Tests.Properties;
 /// <summary>Real Pibbles source to mutate: the sample story, the starter story, the fixtures, the snapshot inputs and the documentation.</summary>
 internal static class Corpus
 {
-    private static readonly string[] Folders = ["samples", "src/Pibbles.Cli/Projects", "tests/Pibbles.Tests/Fixtures", "tests/Pibbles.Tests/Snapshots", "docs/language"];
+    private static readonly string[] Folders = ["samples", "src/Pibbles.Cli/Projects", "tests/Pibbles.Tests/Fixtures", "tests/Pibbles.Tests/Snapshots", "docs/language", "tests/Pibbles.Tests/Compiler"];
 
     public static IReadOnlyList<SourceText> Files { get; } =
     [

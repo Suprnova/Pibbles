@@ -1,0 +1,22 @@
+// Choices: a plain option, a condition, @once, an empty body, bodies that fall through and that leave, and a nested choice.
+
+== snap.choices
+-> A plain option
+    mira: Picked.
+-> A conditional option  @if $has_key #thought
+    mira: Has the key.
+-> An option picked once  @once
+    @set $count += 1
+-> An empty body
+-> A body that jumps
+    mira: Going.
+    @jump snap.elsewhere
+-> A nested choice
+    -> Inner one
+        mira: One.
+    -> Inner two
+        @end
+mira: After the choice.
+
+== snap.elsewhere
+mira: Here.

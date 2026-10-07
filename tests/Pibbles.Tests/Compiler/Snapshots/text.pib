@@ -1,0 +1,10 @@
+// Text lines: narration, a speaker, a pose, a pose alone, a point and no text, tags, and shown values.
+
+== snap.text
+Narration, with no speaker.
+mira: A line with a speaker.
+mira (happy): A posed line.
+mira (sad):
+mira: {w}
+mira (happy): Tags follow the text. #thought #box:tense
+mira: You have {$count} keys, {$name}, and {$who} is here.

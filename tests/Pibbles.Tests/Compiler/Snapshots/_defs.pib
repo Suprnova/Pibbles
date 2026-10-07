@@ -1,0 +1,31 @@
+// Declarations the IR snapshot inputs share. It holds no nodes, so it has no instructions of its own.
+
+@actor mira
+    name: Mira
+    poses: neutral, happy, sad
+@actor rex
+    name: Rex
+
+@enum position: left, center, right
+@enum mood: calm, tense
+
+@var $count = 0
+@var $delay = 1s
+@var $name = "Sam"
+@var $has_key = false
+@var $where: position = left
+@var $who: actor = mira
+
+@command show(who: actor, at: position = center)
+@command move(who: actor, to: position) waits
+@command go(to: node)
+@command jolt(who: actor) inline
+@command sfx(name: string) inline
+
+@markup shout
+@markup wave(amplitude: number = 1, frequency: number = 5)
+@icon interact
+@tag thought
+@tag box: mood
+
+@function has_item(id: string) -> bool

@@ -1,0 +1,39 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.conditions
+    0  BranchIfFalse $has_key -> 3
+    1  Line ~conditions.pib:5
+    2  Branch -> 3
+    3  BranchIfFalse ($count > 1):bool -> 6
+    4  Line ~conditions.pib:7
+    5  Branch -> 10
+    6  BranchIfFalse ($count == 1):bool -> 9
+    7  Line ~conditions.pib:9
+    8  Branch -> 10
+    9  Line ~conditions.pib:11
+   10  BranchIfFalse (((-$count):number < 0):bool or (visits(node(snap.conditions)) > 3):bool):bool -> 13
+   11  Line ~conditions.pib:13
+   12  Branch -> 13
+   13  Line ~conditions.pib:14
+   14  BranchIfFalse ((not $has_key):bool and has_item("key")):bool -> 16
+   15  Jump snap.conditions
+   16  End
+   17  Return
+templates
+  ~conditions.pib:5: mira <> "Key."
+  ~conditions.pib:7: mira <> "Many."
+  ~conditions.pib:9: mira <> "One."
+  ~conditions.pib:11: mira <> "None."
+  ~conditions.pib:13: mira <> "Odd."
+  ~conditions.pib:14: mira <> "Between."
+ids
+  ~conditions.pib:5 -> snap.conditions[1]
+  ~conditions.pib:7 -> snap.conditions[4]
+  ~conditions.pib:9 -> snap.conditions[7]
+  ~conditions.pib:11 -> snap.conditions[9]
+  ~conditions.pib:13 -> snap.conditions[11]
+  ~conditions.pib:14 -> snap.conditions[13]

@@ -1,0 +1,23 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+alias snap.renamed_old -> snap.renamed
+node snap.flow
+    0  Line ~flow.pib:4
+    1  Call snap.sub ~flow.pib:5
+    2  Jump snap.renamed
+    3  Return
+node snap.sub
+    0  Return
+    1  Return
+node snap.renamed
+    0  End
+    1  Return
+templates
+  ~flow.pib:4: mira <> "Start."
+ids
+  ~flow.pib:4 -> snap.flow[0]
+  ~flow.pib:5 -> snap.flow[1]

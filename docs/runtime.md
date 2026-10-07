@@ -8,11 +8,28 @@ The runtime compiles a bound story to instructions and runs it: the compiler, th
 
 The compiler lowers each node's syntax tree to a **flat list of instructions**, reading what the binder worked out from the [bindings](semantics.md#bindings): the symbol each name refers to, and each expression's type, including a number that its context uses as a duration. The compiler never resolves a name itself. The instructions are:
 
-```
-Line(templateId) · Choice(options → targets) · Command(name, args, wait) · Pose(actor, pose)
-Wait(duration) · Set(var, expr) · JumpIfFalse(expr, target) · Jump(target) · Call(node) · Return · End
-Variation(kind, blockId, targets)
-```
+| Instruction | Lowered from |
+| --- | --- |
+| `Line(id)` | A text line that shows text, with or without a speaker. `mira: {w}` is one too. The line's template is stored under `id`. |
+| `Pose(actor, pose)` | A pose-only line (`mira (sad):`), and, before the `Line`, every posed line (`mira (happy): Hi`), every time, even if the actor already has that pose. A host treats a repeat as a no-op, and a host redrawing after a load can trust it. |
+| `Choice(options, join)` | Consecutive `->` options. Each option has its ID, its text template, its condition (from `@if`, or none), whether it is `@once`, its tags (in the template), and the index where its body starts. Options keep source order. |
+| `BranchIfFalse(condition, target)`, `Branch(target)` | `@if` / `@elif` / `@else`, and the branches that join them. A target is an index in the same node. |
+| `Set(variable, value)` | `@set`. `+=` and `-=` are lowered to a plain `Set` of a sum or difference, so `$x -= 1` is `Set($x, $x - 1)`. |
+| `Wait(duration)` | `@wait`. |
+| `Command(command, arguments, waits)` | A command line. Arguments are in parameter order, every parameter filled, an omitted one from its default. `waits` is the command's declared `waits`, overridden by `wait` or `nowait`. |
+| `Jump(node)` | `@jump`. Continues at the node, leaving the call stack as it is. The target is the node's current name, even when the story wrote an old one. |
+| `Call(node, id)` | `@call`. It has an ID because a save can be waiting inside the called node. |
+| `Return`, `End` | `@return` (at the top level it acts as `@end`) and `@end`, which ends the dialogue and clears the call stack. Every node's list ends with an implicit `Return`. |
+| `Variation(kind, blockId, alternatives, exit)` | `@sequence`, `@cycle` and `@once`. `alternatives` are the indexes where each alternative starts. |
+
+`Branch` and `BranchIfFalse` move within a node, and `Jump` and `Call` go to another one, so a local index is never mistaken for a node.
+
+**Layout.** A body that doesn't always leave ends with a `Branch` to the place flow continues: the choice's `join`, a variation's `exit`, or the end of an `@if`. Every body gets one, including the last, so the layout is uniform. An option with an empty body starts at `join` and has no instructions. A body *always leaves* when one of its statements is `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose branches all leave, the rule behind PIB3001 ([flow checks](semantics.md#passes)). Conditions are never evaluated, and a nested choice or variation never counts. An `@if` clause is `BranchIfFalse` to the next clause, its body, then `Branch` to the end; the `@else` body just falls through.
+
+The runner's side of each layout:
+
+- **Choices.** Options are sticky unless `@once`, which removes the option for good once it's picked. An option with a false `@if` is unavailable, but the host still sees it, flagged. If no option is available, the choice is skipped. Picking an option records it as chosen, keyed by its ID, before its body runs. The host picks by the option or its ID, never an index.
+- **Variations.** Each block has an entry count `n`, keyed by its ID. On entry the runner reads `n`, stores `n + 1`, then runs the pick: `@sequence` runs alternative `min(n, count - 1)`, `@cycle` runs `n mod count`, and `@once` runs its one alternative only when `n` is 0, otherwise it goes straight to `exit`. The count rises even when the pick ends in `@jump` or `@end`.
 
 Why a flat instruction list instead of walking the tree:
 
@@ -20,9 +37,15 @@ Why a flat instruction list instead of walking the tree:
 - **Serializable position.** `(node, index)` plus a call stack of the same shape is the whole execution state.
 - **Easy to test and dump.** An IR listing is a readable snapshot.
 
-Expressions stay as small trees, evaluated recursively. They never pause, so a stack machine would gain nothing.
+**Expressions** stay as small trees, evaluated recursively. They never pause, so a stack machine would gain nothing. Lowering builds them from the syntax and the bindings, so evaluating one needs neither: every name is already its symbol, and every node knows its type. The nodes are constants (number, duration in seconds, string, bool, and an enum member, actor or node as its symbol, a node by its current name), variables, calls to host functions (arguments in parameter order, defaults filled), `visits(node)` as a node of its own, unary and binary operators, and an explicit conversion. Every node carries its `Type`, so an operator's operand types (`Left.Type`, `Right.Type`) say whether `+` adds numbers, adds durations or joins text. Where the bindings say the context uses a number as a duration, lowering wraps that expression in a `ToDuration`: for `0.5s + (1 + 2)` the wrapper goes around the parenthesized sum. Nothing is folded or evaluated at this stage; division by zero, `%` and overflow are the evaluator's.
 
-**Line templates** are the parsed inline text of each line and option, stored per line ID. A template is a small tree of text runs, spans, points and conditionals.
+**Line templates** are the lowered inline text of each line and option, stored by ID. A template has the speaker (an actor or none), every tag with its name, raw value and, for an enum-typed tag, the member, and its content: a list of elements, each of which is text, a markup span (with its arguments in parameter order and its children), a shown value (a `string`, `number` or `actor` expression), an inline command (with its resolved `waits`), `{w}` (input wait), `{w d}` (timed pause), `{speed x}`, `{speed}` (reset), `{p}`, `{br}`, `{icon name}`, or conditional text with its `{if}`/`{elif}` branches and `{else}`. Speed is a point: `{speed x}` sets a factor relative to the player's setting from there on, and `{speed}` returns to it. Whether a computed pacing value is greater than zero is checked when the line is rendered, not here.
+
+**IDs.** Lines that show text, options, `@call` and the openers of `@sequence`, `@cycle` and `@once` have an ID, from their `#id` tag. Pose-only lines have none. A site with no `#id` gets a **fallback ID**, `~<path>:<line>`, where `path` is the source's path as given and `line` is the 1-based line of the site. No written ID can start with `~`, and the same sources always give the same fallback IDs. The story records which IDs are fallbacks, because a snapshot can't keep state keyed by one ([localization](localization.md#when-theyre-required)).
+
+**The `Story`** holds everything the runner needs and nothing from the sources: it doesn't keep the compilation. It has the nodes by name; each `#was:` name mapped to the node's current name, so a host can start a node by either; the variables with their starting values as expressions; the templates by ID; and, for restoring saves, a table from each ID to where it lives, `(node, index)`. An option's site is its choice. All of it is internal, and the `Story` itself has no public members yet.
+
+**When lowering fails.** Lowering only runs on sources with no errors, so every name resolved. A missing binding is a bug, not bad input, and throws `InvalidOperationException` naming the node and the source location.
 
 ## Runtime model
 

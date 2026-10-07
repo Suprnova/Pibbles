@@ -1,4 +1,5 @@
 using Pibbles.Diagnostics;
+using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
 
@@ -29,7 +30,7 @@ public abstract class TypeSymbol : Symbol
     /// <summary><c>true</c> or <c>false</c>.</summary>
     internal static TypeSymbol Bool { get; } = new BuiltInType("bool");
 
-    /// <summary>A 64-bit floating-point number.</summary>
+    /// <summary>An exact decimal number.</summary>
     internal static TypeSymbol Number { get; } = new BuiltInType("number");
 
     /// <summary>Text.</summary>
@@ -106,28 +107,38 @@ public sealed class PoseSymbol : Symbol
 /// <summary>A variable: <c>@var $name = value</c>.</summary>
 public sealed class VariableSymbol : Symbol
 {
-    internal VariableSymbol(string name, SourceLocation? location, TypeSymbol type)
-        : base(name, location) => Type = type;
+    internal VariableSymbol(string name, SourceLocation? location, TypeSymbol type, ExpressionSyntax startingValue)
+        : base(name, location)
+    {
+        Type = type;
+        StartingValue = startingValue;
+    }
 
     /// <summary>The variable's type, written out or from its starting value.</summary>
     public TypeSymbol Type { get; }
+
+    /// <summary>The expression after the <c>=</c> in the variable's declaration. For a duplicate declaration, the first one's.</summary>
+    internal ExpressionSyntax StartingValue { get; }
 }
 
 /// <summary>A parameter of a command, markup or function.</summary>
 public sealed class ParameterSymbol : Symbol
 {
-    internal ParameterSymbol(string name, SourceLocation? location, TypeSymbol type, bool isOptional)
+    internal ParameterSymbol(string name, SourceLocation? location, TypeSymbol type, ExpressionSyntax? defaultValue)
         : base(name, location)
     {
         Type = type;
-        IsOptional = isOptional;
+        Default = defaultValue;
     }
 
     /// <summary>The parameter's type.</summary>
     public TypeSymbol Type { get; }
 
     /// <summary>Whether the parameter has a default, so an argument for it can be left out.</summary>
-    public bool IsOptional { get; }
+    public bool IsOptional => Default is not null;
+
+    /// <summary>The expression after the <c>=</c> in the parameter's declaration, or <see langword="null"/> if it has none.</summary>
+    internal ExpressionSyntax? Default { get; }
 }
 
 /// <summary>A command the host carries out: <c>@command name(params)</c>.</summary>

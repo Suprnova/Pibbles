@@ -26,6 +26,7 @@ internal sealed class Bindings
 {
     private readonly Dictionary<SyntaxNode, Symbol> symbols = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<SyntaxNode, Symbol> tagValues = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<ExpressionSyntax, ParameterSymbol> parameters = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<ExpressionSyntax, ExpressionType> types = new(ReferenceEqualityComparer.Instance);
 
     /// <summary>The symbol a name refers to, or <see langword="null"/> if the name wasn't resolved.</summary>
@@ -36,6 +37,12 @@ internal sealed class Bindings
 
     /// <summary>The type of an expression, and what its context converts it to, or <see langword="null"/> if it wasn't bound.</summary>
     public ExpressionType? TypeOf(ExpressionSyntax expression) => types.TryGetValue(expression, out ExpressionType type) ? type : null;
+
+    /// <summary>The parameter an argument fills, or <see langword="null"/> if it fills none (it's extra, or repeated, or its owner doesn't exist).</summary>
+    /// <param name="argument">The argument's value expression, which is how an argument is keyed whether it's positional or named.</param>
+    public ParameterSymbol? ParameterOf(ExpressionSyntax argument) => parameters.GetValueOrDefault(argument);
+
+    public void BindArgument(ExpressionSyntax argument, ParameterSymbol parameter) => parameters[argument] = parameter;
 
     public void BindName(SyntaxNode name, Symbol symbol) => symbols[name] = symbol;
 

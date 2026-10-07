@@ -1,0 +1,41 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.variations
+    0  Variation Sequence ~variations.pib:4 [1, 3, 6] exit 8
+    1  Line ~variations.pib:5
+    2  Branch -> 8
+    3  Line ~variations.pib:6
+    4  Set $count = ($count + 1):number
+    5  Branch -> 8
+    6  Line ~variations.pib:9
+    7  Jump snap.variations
+    8  Variation Cycle ~variations.pib:11 [9, 11] exit 13
+    9  Line ~variations.pib:12
+   10  Branch -> 13
+   11  Line ~variations.pib:13
+   12  Branch -> 13
+   13  Variation Once ~variations.pib:14 [14] exit 16
+   14  Line ~variations.pib:15
+   15  End
+   16  Return
+templates
+  ~variations.pib:5: mira <> "First."
+  ~variations.pib:6: mira <> "Second."
+  ~variations.pib:9: mira <> "Third, in a block."
+  ~variations.pib:12: rex <> "A."
+  ~variations.pib:13: rex <> "B."
+  ~variations.pib:15: mira <> "Only once."
+ids
+  ~variations.pib:4 -> snap.variations[0]
+  ~variations.pib:5 -> snap.variations[1]
+  ~variations.pib:6 -> snap.variations[3]
+  ~variations.pib:9 -> snap.variations[6]
+  ~variations.pib:11 -> snap.variations[8]
+  ~variations.pib:12 -> snap.variations[9]
+  ~variations.pib:13 -> snap.variations[11]
+  ~variations.pib:14 -> snap.variations[13]
+  ~variations.pib:15 -> snap.variations[14]

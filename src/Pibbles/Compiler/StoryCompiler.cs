@@ -15,6 +15,6 @@ public static class StoryCompiler
     {
         Compilation compilation = Compilation.Create(sources, options);
         bool hasErrors = compilation.Diagnostics.Any(diagnostic => diagnostic.Severity is DiagnosticSeverity.Error);
-        return new(hasErrors ? null : new Story(compilation), compilation.Diagnostics);
+        return new(hasErrors ? null : StoryLowerer.Lower(compilation), compilation.Diagnostics);
     }
 }

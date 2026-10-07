@@ -1,4 +1,5 @@
 using CsCheck;
+using Pibbles.Compiler;
 using Pibbles.Semantics;
 using Pibbles.Syntax;
 using Pibbles.Tests.Syntax;
@@ -44,6 +45,22 @@ public class TotalityTests
     [Fact]
     public void Compile_MutatedFile_IsTotal() =>
         PropertyCheck.Run(MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+
+    [Fact]
+    public void Compile_CorpusFileWithoutErrors_LowersWithoutThrowing() =>
+        Assert.All(Corpus.Files, file => AssertLowers(file.Text));
+
+    [Fact]
+    public void Compile_MutatedFileWithoutErrors_LowersWithoutThrowing() =>
+        PropertyCheck.Run(MutatedFile, file => AssertLowers(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+
+    /// <summary>Compiling lowers a story with no errors, and a name the binder left unresolved there would throw.</summary>
+    private static void AssertLowers(string text)
+    {
+        CompileResult result = StoryCompiler.Compile([new SourceText("input.pib", text)]);
+
+        Assert.Equal(result.Story is null, result.HasErrors);
+    }
 
     private static void AssertTotal(string text)
     {

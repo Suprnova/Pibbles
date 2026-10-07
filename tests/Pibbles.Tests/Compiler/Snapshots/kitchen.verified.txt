@@ -1,0 +1,177 @@
+var $has_key = false
+var $door_open = false
+var $bravery = 0
+alias kitchen.front_door -> kitchen.door
+node kitchen.enter
+    0  Command @show(mira, left) waits=false
+    1  Command @show(rex, right) waits=false
+    2  BranchIfFalse (visits(node(kitchen.enter)) > 1):bool -> 6
+    3  Line #c0wiqs
+    4  Command @enter_room(kitchen, node(kitchen.leave)) waits=false
+    5  End
+    6  Pose mira worried
+    7  Line #mfzuit
+    8  Pose rex grumpy
+    9  Line #aesok7
+   10  Line #lh35ik
+   11  Line #er911h
+   12  Line #ob3a3g
+   13  Command @enter_room(kitchen, node(kitchen.leave)) waits=false
+   14  Return
+node kitchen.fridge
+    0  Variation Sequence #hngwd1 [1, 3, 6] exit 8
+    1  Line #xdq5lg
+    2  Branch -> 8
+    3  Pose mira smug
+    4  Line #zprojv
+    5  Branch -> 8
+    6  Line #ca76yd
+    7  Branch -> 8
+    8  Return
+node kitchen.drawer
+    0  Variation Once #lnbr5w [1] exit 6
+    1  Line #ml21he
+    2  Set $has_key = true
+    3  Pose mira happy
+    4  Line #xqf9qw
+    5  End
+    6  Line #ds4oao
+    7  Return
+node kitchen.window
+    0  BranchIfFalse has_item("crowbar") -> 3
+    1  Line #jjevmc
+    2  End
+    3  Variation Cycle #skmne3 [4, 6, 12, 14] exit 16
+    4  Line #i6f2vr
+    5  Branch -> 16
+    6  Line #xj5acx
+    7  Wait 0.5s
+    8  Command @sfx(sneeze) waits=false
+    9  Pose mira angry
+   10  Line #wdsl43
+   11  Branch -> 16
+   12  Line #ytr2cv
+   13  Branch -> 16
+   14  Line #h5aeqs
+   15  Branch -> 16
+   16  Return
+node kitchen.door
+    0  BranchIfFalse $door_open -> 2
+    1  Jump kitchen.leave
+    2  Pose mira worried
+    3  Line #k7qp2x
+    4  Choice [#c4ne8r -> 5, #m3xw9a if $has_key -> 12, #t5bq2m once -> 17, #x2jm5p -> 22] join 23
+    5  Command @sfx(door_rattle) waits=false
+    6  Command @jolt(mira) waits=false
+    7  Pose mira angry
+    8  Line #p2vd7t
+    9  Set $bravery = ($bravery + 1):number
+   10  Call common.stuck #r4hc6v
+   11  Branch -> 23
+   12  Command @sfx(key_turn) waits=false
+   13  Set $door_open = true
+   14  Pose mira happy
+   15  Line #h8ya3k
+   16  Jump kitchen.leave
+   17  Pose rex surprised
+   18  Line #w9fz4e
+   19  Pose mira smug
+   20  Line #d6kr8u
+   21  Branch -> 23
+   22  End
+   23  Line #q7gt3n
+   24  Return
+node kitchen.leave
+    0  Command @hide(rex) waits=false
+    1  Command @move(mira, offscreen) waits=false
+    2  Pose mira happy
+    3  Line #tbn8zd
+    4  Pose rex surprised
+    5  Line #y22poy
+    6  Command @camera(hallway) waits=true
+    7  Return
+node common.stuck
+    0  Variation Cycle #qtsu77 [1, 4, 7] exit 10
+    1  Pose mira sad
+    2  Line #koyi9l
+    3  Branch -> 10
+    4  Pose mira sad
+    5  Line #dugpwb
+    6  Branch -> 10
+    7  Pose mira sad
+    8  Line #z27jmk
+    9  Branch -> 10
+   10  Return
+templates
+  #c0wiqs: rex <id:c0wiqs> "Back in the kitchen. Thrilling."
+  #mfzuit: mira <id:mfzuit> "This kitchen gives me the creeps."
+  #aesok7: rex <id:aesok7> "It's a kitchen."{w duration(0.4)}" Relax."
+  #lh35ik: mira <id:lh35ik> "Who said that?"
+  #er911h: rex <id:er911h> "Rex. I live in the walls."{w}" "{speed 0.5}"Kidding."{speed}" I'm behind the fridge."
+  #ob3a3g: mira <id:ob3a3g> "Let's look around. Press "{icon interact}" to inspect things."
+  #xdq5lg: mira <id:xdq5lg> "It's a fridge."{@sfx(fridge_hum) waits=false}" It hums. "[wave 1 5]("Ominously.")
+  #zprojv: mira <id:zprojv> "Still a fridge."
+  #ca76yd: mira <id:ca76yd> "I refuse to look at this fridge again."
+  #ml21he: mira <id:ml21he> "Spoons, spoons, more spoons, and..."{w}" "[clue]("a small brass key")"!"
+  #xqf9qw: mira <id:xqf9qw> "Press "{icon inventory}" to check your items."
+  #ds4oao: mira <id:ds4oao> "Just spoons now."
+  #jjevmc: mira <id:jjevmc> "I could pry it open... but the door's right there."
+  #i6f2vr: mira <id:i6f2vr> "Dusty."
+  #xj5acx: mira <id:xj5acx> "Very dusty."
+  #wdsl43: mira <id:wdsl43> "Ugh."
+  #ytr2cv: mira <id:ytr2cv> "When did anyone last clean this?"
+  #h5aeqs: rex <id:h5aeqs> "You two stare at everything, don't you?"
+  #k7qp2x: mira <id:k7qp2x> "Locked."{w}" Of course it's locked."
+  #c4ne8r: - <id:c4ne8r> "Rattle the handle"
+  #p2vd7t: mira <id:p2vd7t> [shout]("Open up!"){@shake_screen(0.5, 0.3s) waits=false}
+  #m3xw9a: - <show_disabled, id:m3xw9a> "Use the key"
+  #h8ya3k: mira <id:h8ya3k> "Got it!"
+  #t5bq2m: - <id:t5bq2m> "Knock politely"
+  #w9fz4e: rex <id:w9fz4e> "Did you just knock on a door you're trying to break open?"
+  #d6kr8u: mira <id:d6kr8u> "Manners matter, Rex."
+  #x2jm5p: - <id:x2jm5p> "Leave it"
+  #q7gt3n: rex <id:q7gt3n> {if ($bravery > 2):bool: "Maybe stop hitting it?" | else: "Well, that didn't work."}
+  #tbn8zd: mira <id:tbn8zd> "Onward!"
+  #y22poy: rex <id:y22poy> "Wait for m—"
+  #koyi9l: mira <id:koyi9l> "Nope."
+  #dugpwb: mira <id:dugpwb> "Not that."
+  #z27jmk: mira <id:z27jmk> "That's not it either."
+ids
+  #c0wiqs -> kitchen.enter[3]
+  #mfzuit -> kitchen.enter[7]
+  #aesok7 -> kitchen.enter[9]
+  #lh35ik -> kitchen.enter[10]
+  #er911h -> kitchen.enter[11]
+  #ob3a3g -> kitchen.enter[12]
+  #hngwd1 -> kitchen.fridge[0]
+  #xdq5lg -> kitchen.fridge[1]
+  #zprojv -> kitchen.fridge[4]
+  #ca76yd -> kitchen.fridge[6]
+  #lnbr5w -> kitchen.drawer[0]
+  #ml21he -> kitchen.drawer[1]
+  #xqf9qw -> kitchen.drawer[4]
+  #ds4oao -> kitchen.drawer[6]
+  #jjevmc -> kitchen.window[1]
+  #skmne3 -> kitchen.window[3]
+  #i6f2vr -> kitchen.window[4]
+  #xj5acx -> kitchen.window[6]
+  #wdsl43 -> kitchen.window[10]
+  #ytr2cv -> kitchen.window[12]
+  #h5aeqs -> kitchen.window[14]
+  #k7qp2x -> kitchen.door[3]
+  #c4ne8r -> kitchen.door[4]
+  #p2vd7t -> kitchen.door[8]
+  #r4hc6v -> kitchen.door[10]
+  #m3xw9a -> kitchen.door[4]
+  #h8ya3k -> kitchen.door[15]
+  #t5bq2m -> kitchen.door[4]
+  #w9fz4e -> kitchen.door[18]
+  #d6kr8u -> kitchen.door[20]
+  #x2jm5p -> kitchen.door[4]
+  #q7gt3n -> kitchen.door[23]
+  #tbn8zd -> kitchen.leave[3]
+  #y22poy -> kitchen.leave[5]
+  #qtsu77 -> common.stuck[0]
+  #koyi9l -> common.stuck[2]
+  #dugpwb -> common.stuck[5]
+  #z27jmk -> common.stuck[8]

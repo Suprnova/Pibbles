@@ -46,7 +46,7 @@ A generated ID is a random lowercase letter followed by five random lowercase le
 
 A missing ID is a warning (PIB3010). It never stops the story from compiling, so a line written a minute ago can be playtested before `pibbles ids` runs. CI runs `pibbles check --release --warnaserror`, so no line reaches a release without an ID.
 
-Until it gets an ID, a line has a **fallback identity**: an internal key the compiler assigns, which no source file can spell. It lets the runtime track the line's option state and position while the game runs, but it's never written to a snapshot, because it can't survive an edit. When a snapshot is taken:
+Until it gets an ID, a line has a **fallback identity**: an internal key the compiler assigns, which no source file can spell. It is `~<path>:<line>`, the source's path and the 1-based line of the line, option, `@call` or block opener, so the same sources always give the same keys. It lets the runtime track the line's option state and position while the game runs, but it's never written to a snapshot, because it can't survive an edit. When a snapshot is taken:
 
 - State keyed by a fallback (chosen options, `@once` removal, block entry counts) is left out.
 - A dialogue waiting on a line or choice without an ID is saved as having no dialogue in progress.

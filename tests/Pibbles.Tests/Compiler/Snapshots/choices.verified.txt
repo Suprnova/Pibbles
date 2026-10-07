@@ -1,0 +1,56 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.choices
+    0  Choice [~choices.pib:4 -> 1, ~choices.pib:6 if $has_key -> 3, ~choices.pib:8 once -> 5, ~choices.pib:10 -> 14, ~choices.pib:11 -> 7, ~choices.pib:14 -> 9] join 14
+    1  Line ~choices.pib:5
+    2  Branch -> 14
+    3  Line ~choices.pib:7
+    4  Branch -> 14
+    5  Set $count = ($count + 1):number
+    6  Branch -> 14
+    7  Line ~choices.pib:12
+    8  Jump snap.elsewhere
+    9  Choice [~choices.pib:15 -> 10, ~choices.pib:17 -> 12] join 13
+   10  Line ~choices.pib:16
+   11  Branch -> 13
+   12  End
+   13  Branch -> 14
+   14  Line ~choices.pib:19
+   15  Return
+node snap.elsewhere
+    0  Line ~choices.pib:22
+    1  Return
+templates
+  ~choices.pib:4: - <> "A plain option"
+  ~choices.pib:5: mira <> "Picked."
+  ~choices.pib:6: - <thought> "A conditional option"
+  ~choices.pib:7: mira <> "Has the key."
+  ~choices.pib:8: - <> "An option picked once"
+  ~choices.pib:10: - <> "An empty body"
+  ~choices.pib:11: - <> "A body that jumps"
+  ~choices.pib:12: mira <> "Going."
+  ~choices.pib:14: - <> "A nested choice"
+  ~choices.pib:15: - <> "Inner one"
+  ~choices.pib:16: mira <> "One."
+  ~choices.pib:17: - <> "Inner two"
+  ~choices.pib:19: mira <> "After the choice."
+  ~choices.pib:22: mira <> "Here."
+ids
+  ~choices.pib:4 -> snap.choices[0]
+  ~choices.pib:5 -> snap.choices[1]
+  ~choices.pib:6 -> snap.choices[0]
+  ~choices.pib:7 -> snap.choices[3]
+  ~choices.pib:8 -> snap.choices[0]
+  ~choices.pib:10 -> snap.choices[0]
+  ~choices.pib:11 -> snap.choices[0]
+  ~choices.pib:12 -> snap.choices[7]
+  ~choices.pib:14 -> snap.choices[0]
+  ~choices.pib:15 -> snap.choices[9]
+  ~choices.pib:16 -> snap.choices[10]
+  ~choices.pib:17 -> snap.choices[9]
+  ~choices.pib:19 -> snap.choices[14]
+  ~choices.pib:22 -> snap.elsewhere[0]

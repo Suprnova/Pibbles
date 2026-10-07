@@ -1,0 +1,42 @@
+var $count = 0
+var $delay = 1s
+var $name = "Sam"
+var $has_key = false
+var $where = left
+var $who = mira
+node snap.ids
+    0  Line #first_line
+    1  Line ~ids.pib:5
+    2  Choice [#option_one -> 3, ~ids.pib:8 -> 4] join 4
+    3  End
+    4  Call snap.ids #the_call
+    5  Call snap.ids ~ids.pib:10
+    6  Variation Sequence #seq_block [7, 9] exit 11
+    7  Line ~ids.pib:12
+    8  Branch -> 11
+    9  Line ~ids.pib:13
+   10  Branch -> 11
+   11  Variation Once ~ids.pib:14 [12] exit 14
+   12  Line ~ids.pib:15
+   13  Branch -> 14
+   14  Return
+templates
+  #first_line: mira <id:first_line> "Written ID."
+  ~ids.pib:5: mira <> "No ID."
+  #option_one: - <id:option_one> "Written option"
+  ~ids.pib:8: - <> "Option with no ID"
+  ~ids.pib:12: mira <> "A."
+  ~ids.pib:13: mira <> "B."
+  ~ids.pib:15: mira <> "C."
+ids
+  #first_line -> snap.ids[0]
+  ~ids.pib:5 -> snap.ids[1]
+  #option_one -> snap.ids[2]
+  ~ids.pib:8 -> snap.ids[2]
+  #the_call -> snap.ids[4]
+  ~ids.pib:10 -> snap.ids[5]
+  #seq_block -> snap.ids[6]
+  ~ids.pib:12 -> snap.ids[7]
+  ~ids.pib:13 -> snap.ids[9]
+  ~ids.pib:14 -> snap.ids[11]
+  ~ids.pib:15 -> snap.ids[12]

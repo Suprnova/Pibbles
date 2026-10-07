@@ -1,0 +1,18 @@
+// @if with @elif and @else, without an @else, with every branch leaving, and with unary and call operands.
+
+== snap.conditions
+@if $has_key
+    mira: Key.
+@if $count > 1
+    mira: Many.
+@elif $count == 1
+    mira: One.
+@else
+    mira: None.
+@if -$count < 0 or visits(snap.conditions) > 3
+    mira: Odd.
+mira: Between.
+@if not $has_key and has_item("key")
+    @jump snap.conditions
+@else
+    @end

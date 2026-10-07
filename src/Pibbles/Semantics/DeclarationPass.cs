@@ -99,7 +99,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         {
             var name = new NameSyntax(declaration.Variable.Name) { Span = declaration.Variable.Span };
             TypeSymbol type = declaration.Type is { } written ? ResolveType(written) : TypeOfValue(declaration);
-            Declare(symbols.Variables, new VariableSymbol(name.Text, Location(name.Span), type), name, SymbolKind.Variable, $"${name.Text}");
+            Declare(symbols.Variables, new VariableSymbol(name.Text, Location(name.Span), type, declaration.Value), name, SymbolKind.Variable, $"${name.Text}");
         }
     }
 
@@ -126,7 +126,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             Report(DiagnosticCatalog.RequiredAfterOptional, parameter.Span, parameter.Name.Text);
 
         return DeclareList(parameters, parameter => parameter.Name, SymbolKind.Parameter, listName,
-            parameter => new ParameterSymbol(parameter.Name.Text, Location(parameter.Name.Span), ResolveType(parameter.Type), parameter.Default is not null));
+            parameter => new ParameterSymbol(parameter.Name.Text, Location(parameter.Name.Span), ResolveType(parameter.Type), parameter.Default));
     }
 
     /// <summary>Declares the names in one declaration's list, such as an actor's poses, which have to differ from each other.</summary>
@@ -257,13 +257,17 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
                 ReportWithOptionalHelp(DiagnosticCatalog.UntypedVariable, name.Span, $"${declaration.Variable.Name}", name.Name, written);
                 return TypeSymbol.Error;
 
-            case UnaryExpressionSyntax { Operand: var operand }:
-                return TypeOfLiteral(operand);
-
             default:
-                return TypeOfLiteral(declaration.Value);
+                return TypeOfStartingValue(declaration.Value);
         }
     }
+
+    /// <summary>The type a variable's starting value gives it when no type is written: a literal's, or <see cref="TypeSymbol.Error"/> for anything else.</summary>
+    public static TypeSymbol TypeOfStartingValue(ExpressionSyntax value) => value switch
+    {
+        UnaryExpressionSyntax { Operand: var operand } => TypeOfLiteral(operand),
+        _ => TypeOfLiteral(value),
+    };
 
     private static TypeSymbol TypeOfLiteral(ExpressionSyntax literal) => literal switch
     {

@@ -1,0 +1,16 @@
+// @sequence, @cycle, @once, and an alternative that is a block of its own.
+
+== snap.variations
+@sequence
+    - mira: First.
+    - mira: Second.
+        @set $count += 1
+    -
+        mira: Third, in a block.
+        @jump snap.variations
+@cycle
+    - rex: A.
+    - rex: B.
+@once
+    mira: Only once.
+    @end

@@ -1,0 +1,10 @@
+// Every piece of a line: text, markup, shown values, commands, pauses, speed, breaks, icons and conditional text.
+
+== snap.elements
+mira: Plain, [b]bold[/b] and [wave amplitude=2]waving [shout]nested[/shout][/wave].
+mira: Pause{w 0.5} then wait{w} then a page{p}and a line{br}break.
+mira: {speed 0.5}Slow{speed} normal {speed ($count + 1)}fast.
+mira: Icon {icon interact}, {@jolt mira}, {@jolt mira wait}, {@sfx "x" nowait}.
+mira: You {if $has_key}have{elif $count > 1}nearly have{else}lack{/if} it, {$name}, {$count}, {$who}.
+mira: {if $has_key}Only with the key.{/if}
+-> Option [b]text[/b] {$name} {icon interact}{br}and more

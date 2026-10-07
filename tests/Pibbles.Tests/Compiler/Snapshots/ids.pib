@@ -1,0 +1,15 @@
+// Sites with an ID and without one: a line, an option, a call and a block. A missing ID gets a fallback.
+
+== snap.ids
+mira: Written ID. #id:first_line
+mira: No ID.
+-> Written option #id:option_one
+    @end
+-> Option with no ID
+@call snap.ids #id:the_call
+@call snap.ids
+@sequence #id:seq_block
+    - mira: A.
+    - mira: B.
+@once
+    mira: C.
