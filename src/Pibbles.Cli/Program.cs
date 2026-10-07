@@ -57,12 +57,20 @@ var idsRoot = new Argument<string?>("folder")
 var ids = new Command("ids", "Add a line ID to every line that needs one, at the end of the line. Run it before committing.") { idsRoot };
 ids.SetAction(result => Ids.Run(result.GetValue(idsRoot) ?? ".", Directory.GetCurrentDirectory(), Random.Shared, messages, errors));
 
+var upgradeRoot = new Argument<string?>("folder")
+{
+    Description = "The project's folder, with pibbles.json in it. Leave it out to use the folder you're in.",
+    Arity = ArgumentArity.ZeroOrOne,
+};
+var upgrade = new Command("upgrade", "Rewrite the project's pibbles.json in the newest format, keeping its settings.") { upgradeRoot };
+upgrade.SetAction(result => Upgrade.Run(result.GetValue(upgradeRoot) ?? ".", Directory.GetCurrentDirectory(), messages, errors));
+
 var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB1011." };
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, errors, outputColor));
 
 // Named here rather than after the executable: installed as a tool, the CLI runs as Pibbles.Cli.dll, and help would say so.
-var pibbles = new Command("pibbles", "Pibbles: checks and plays narrative scripts.") { new HelpOption(), new VersionOption(), init, check, ids, explain };
+var pibbles = new Command("pibbles", "Pibbles: checks and plays narrative scripts.") { new HelpOption(), new VersionOption(), init, check, ids, upgrade, explain };
 pibbles.SetAction(result => new HelpAction().Invoke(result));
 
 return pibbles.Parse(args).Invoke();

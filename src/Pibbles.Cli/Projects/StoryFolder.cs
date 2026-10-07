@@ -53,7 +53,7 @@ internal static class StoryFolder
     }
 
     /// <summary>The nearest folder with a <c>pibbles.json</c>, from <paramref name="start"/> up, or <paramref name="start"/> itself if there's none.</summary>
-    private static string FindProject(string start)
+    public static string FindProject(string start)
     {
         for (DirectoryInfo? folder = new(start); folder is not null; folder = folder.Parent)
         {
@@ -64,10 +64,17 @@ internal static class StoryFolder
         return start;
     }
 
-    /// <summary>Reads the project's settings, or the defaults when it has no <c>pibbles.json</c>.</summary>
+    /// <summary>
+    /// Reads the project's settings, or the defaults when it has no <c>pibbles.json</c>. A file in an older schema still
+    /// reads, with a note on <paramref name="error"/> that <c>pibbles upgrade</c> updates it.
+    /// </summary>
     public static ProjectSettings? ReadSettings(string root, TextWriter error)
     {
         string file = Path.Combine(root, ProjectSettings.FileName);
-        return File.Exists(file) ? ProjectSettings.Parse(File.ReadAllText(file), error) : ProjectSettings.Default;
+        ProjectSettings? settings = File.Exists(file) ? ProjectSettings.Parse(File.ReadAllText(file), error) : ProjectSettings.Default;
+        if (settings?.FileSchema < ProjectSettings.Schema)
+            error.WriteLine($"Note: `{ProjectSettings.FileName}` uses schema {settings.FileSchema}, and this version of Pibbles writes schema {ProjectSettings.Schema}. It still works as it is. Run `pibbles upgrade` to update it.");
+
+        return settings;
     }
 }

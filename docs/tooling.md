@@ -14,6 +14,7 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 | `pibbles play [root] --start <node>` | Plays the story in the terminal: lines with speaker and pose, markers shown inline (`⟨w 0.5⟩`, `⟨@sfx thud⟩`), numbered choices. `--set $var=value` seeds variables. Host functions are stubbed through `--stub has_item=true` or a stub file. | 3 |
 | `pibbles play … --script <file>` | Non-interactive: takes choices from a file and prints a deterministic transcript. It's the same format the transcript tests use, so a writer's reproduction of a bug becomes a test by copying files. | 3 |
 | `pibbles ids [root]` | Adds a line ID to every line that needs one and doesn't have it, in place ([below](#line-ids)) | 2 |
+| `pibbles upgrade [root]` | Rewrites the project's `pibbles.json` in the newest schema, keeping its settings ([project settings](#project-settings)). It finds the project the way `check` does, and a file that's already current is left as it is. | 2 |
 | `pibbles loc update [root]` | Adds missing line IDs as `pibbles ids` does, then regenerates `template.pot` and merges it into every `<locale>.po` | 5 |
 | `pibbles voice script` | Exports a recording script per actor, one row per wording variant | Stretch |
 | `pibbles voice accept <id>` | Marks a recording as still matching its line after an edit | Stretch |
@@ -129,6 +130,7 @@ Translations aren't checked yet. The same check can later run on each `<locale>.
 
 - **Only keys something uses are defined.** A later key arrives with the feature that reads it, with a default, and raises the schema by one: the version (for saves and release manifests), `sourceLocale` and `localization` (localization), `voice` (voice tooling) and `drafts` (drafts). `pibbles init` always writes the current schema.
 - **An older schema still reads,** with each newer key at its default, and a renamed key read under its old name. Schema 1 named one folder as `"story": "story"`, which reads as `"storyFolders": ["story"]`. A key used under a schema that doesn't have it is an error that says which name to use.
+- **Upgrading is opt-in.** A command that reads an older schema adds a note on standard error that `pibbles upgrade` updates the file, and otherwise carries on as usual, with the same output and exit code. Only `pibbles upgrade` rewrites the file, since a project's settings are the writer's to change, and a repository may need to stay readable by an older Pibbles for a while.
 - **A newer schema than the tools know** is an error that asks the writer to update Pibbles, rather than a file misread.
 - **An unknown key is an error** that lists the settings, so a typo such as `stroy` is never silently ignored.
 

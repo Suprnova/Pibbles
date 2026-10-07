@@ -48,6 +48,18 @@ public sealed class StoryFolderTests : IDisposable
         IReadOnlyList<SourceText>? sources = StoryFolder.Load(".", root.FullName, error);
 
         Assert.Equal(["dialogue/a.pib"], sources!.Select(source => source.Path));
+        Assert.Equal("Note: `pibbles.json` uses schema 1, and this version of Pibbles writes schema 2. It still works as it is. Run `pibbles upgrade` to update it.\n", error.ToString().ReplaceLineEndings("\n"));
+    }
+
+    [Fact]
+    public void Load_CurrentSchema_WritesNoNote()
+    {
+        Write("pibbles.json", """{ "schema": 2, "storyFolders": ["story"] }""");
+        Write("story/a.pib", "== a");
+
+        StoryFolder.Load(".", root.FullName, error);
+
+        Assert.Empty(error.ToString());
     }
 
     [Fact]

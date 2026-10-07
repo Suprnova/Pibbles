@@ -18,6 +18,9 @@ internal sealed record ProjectSettings(IReadOnlyList<string> StoryFolders)
 
     public static ProjectSettings Default { get; } = new(["story"]);
 
+    /// <summary>The schema the file was written in. <c>pibbles upgrade</c> rewrites an older one in the current schema.</summary>
+    public int FileSchema { get; init; } = Schema;
+
     private static readonly string[] Keys = ["schema", "storyFolders"];
 
     /// <summary>Reads settings from <c>pibbles.json</c>'s text. Returns <see langword="null"/> after writing the problem to <paramref name="error"/>.</summary>
@@ -45,7 +48,7 @@ internal sealed record ProjectSettings(IReadOnlyList<string> StoryFolders)
             if (ReadSchema(document.RootElement, error) is not { } schema)
                 return null;
 
-            ProjectSettings settings = Default;
+            ProjectSettings settings = Default with { FileSchema = schema };
             foreach (JsonProperty property in document.RootElement.EnumerateObject())
             {
                 switch (property.Name)
