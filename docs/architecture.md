@@ -29,8 +29,7 @@ src/
     Diagnostics/               Diagnostic, severity, the diagnostic catalog
     Configuration/             a file's .editorconfig settings and the severities they set
     Compiler/                  IR, the story compiler, Story
-    Runtime/                   DialogueRunner, StoryState, values, steps, host functions
-    Text/                      Line, spans, markers, template rendering, LineReveal
+    Runtime/                   DialogueRunner, StoryState, values, steps, host functions, Line, spans, markers, line rendering, LineReveal
     Localization/              string tables, PO reading and writing, translation validation (with localization)
   Pibbles.Cli/                 the `pibbles` .NET tool
   Pibbles.LanguageServer/      LSP server (Phase 6)
@@ -107,6 +106,7 @@ Some guarantees are too combinatorial for examples. These run as ordinary tests 
 | **Determinism:** the same story, choices and function stubs always give the same transcript | Variation selection, conditions |
 | **Save anywhere:** play a random path, request a save at a random step, restore, and finish. The transcript matches an uninterrupted run, except for the replayed line. | Mid-dialogue saves and fast-forwarding, the riskiest runtime feature |
 | **Skip equivalence:** skipping a reveal at any point fires the same effect markers, in the same order, as revealing it fully | Reveal skip semantics |
+| **Frame-rate independence:** the same total time, split into different frames, reaches the same visible length and fires the same markers in the same order | Reveal timing arithmetic |
 
 The round-trip property needs a syntax tree printer. That's a small piece of test code, and it could later become the basis of the formatter. A test checks that the tree generator produces every node kind except the error node, so no part of the grammar drops out of the round-trip unnoticed.
 

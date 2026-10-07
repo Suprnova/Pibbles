@@ -210,15 +210,25 @@ Rendering a template resolves the interpolation and conditionals against the sta
 ```csharp
 var reveal = new LineReveal(line, new RevealSettings(CharactersPerSecond: 40, Instant: false));
 
-RevealFrame frame = reveal.Advance(delta);   // frame.VisibleLength, frame.Fired (markers crossed), frame.State
+RevealFrame frame = reveal.Advance(delta);   // what's visible, which markers were reached, the state
 reveal.Skip();                               // jump to the next stop point; fires skipped effect markers
 reveal.Resume();                             // continue after an input wait, page break or blocking command
 ```
 
+`LineReveal` is optional: a host can read a line's markers itself. It is pure logic with no engine, so every host reveals text the same way, and the Godot adapter's reveal label drives it by setting its visible character count each frame. `Skip` and `Resume` return a `RevealFrame` too.
+
+- **The frame** is `RevealFrame(State, PageStart, VisibleLength, Fired)`. The text on screen is `line.Text[PageStart..VisibleLength]`, and `Line.Text` itself is always the whole line. `Fired` is the markers the reveal reached during that call, in order. Frames compare by value.
 - **States:** `Revealing`, `WaitingForInput` (after `{w}` or `{p}`), `WaitingForHost` (after a blocking inline command, until `Resume()`), `Complete`.
-- **Reveals move by grapheme cluster** (`StringInfo`), so emoji and combining marks never show half-drawn. Segmentation follows the runtime's Unicode version, so .NET 8 and .NET 10 can split the newest emoji differently. Reveal fixtures shared by both targets avoid them.
-- **Timing:** `{speed x}` multiplies the base rate from that point on, and `{speed}` returns to it. Speed resets at the start of every line, and each speed marker carries the factor in effect after it. A speed factor, pause or wait computed at run time that isn't greater than zero is skipped with a warning; constants are rejected at check time ([PIB2039](diagnostics.md#pib2039)). `Instant` shows everything at once but still stops at input waits. Optional extra pauses after punctuation are a setting, not part of the language.
-- **Skip semantics** are defined once, here: effect markers fire in order, timing markers are dropped ([reference](language/reference.md#runtime-semantics-summary)).
+- **Waiting.** `Advance` and `Skip` while the reveal waits or is complete return the unchanged frame, with nothing fired, so a host can call `Advance` every frame. The time that passes while it waits is dropped, and so is any time left over when the reveal reaches a stop, so a long frame never makes the text burst out after `Resume()`. `Resume()` when nothing waits is misuse and throws `InvalidOperationException`.
+- **Reveals move by grapheme cluster** (`StringInfo`), so emoji and combining marks never show half-drawn. `VisibleLength` is a UTF-16 index into `Line.Text`, like every position, and always falls on a cluster boundary. Segmentation follows the runtime's Unicode version, so .NET 8 and .NET 10 can split the newest emoji differently; reveal tests and properties avoid emoji newer than Unicode 15.
+- **Timing.** Each cluster takes `1 / (CharactersPerSecond × factor)` seconds, where the factor is 1 until a `SpeedMarker` sets it. The factor is relative to the player's setting, and an inner speed replaces an outer one: there is no nesting. A `\n` takes no time, an icon takes one character's time, and spaces are timed like any other character. A `PauseMarker` holds the reveal for its duration. There are no extra pauses after punctuation. `CharactersPerSecond` is a `decimal` and must be more than zero (`ArgumentOutOfRangeException` otherwise), and `Advance` throws for a negative time.
+- **Time is exact.** The reveal counts ticks in `decimal`, never `double`, so frames depend only on the line, the settings and the sequence of calls, and the same total time reaches the same place however it is split into frames.
+- **`Instant`** shows everything up to the next stop at once. It drops timing (pauses, speed) but still stops at input waits, page breaks and blocking commands, and still fires effect markers.
+- **Markers fire in order** when the reveal reaches their position, before the character at that index shows. Several at one position keep their order, and a pause holds the reveal before the markers after it fire. Markers at position 0 fire on the first `Advance`, and markers at the end fire before the reveal can be `Complete`. A marker inside a grapheme cluster fires just before the cluster shows.
+- **Which markers `Fired` reports.** In normal play, every marker reached: pauses, speed changes, input waits, page breaks and commands. While skipping, and in `Instant` mode, only the commands, input waits and page breaks: the pauses and speed changes are dropped. Skipping still applies speed changes, so timing resumes at the right speed.
+- **Commands are the effects,** and the host carries them out. One whose `Waits` is false fires and the reveal carries on. One whose `Waits` is true fires and the reveal enters `WaitingForHost` until `Resume()`.
+- **`Skip`** jumps to the next stop point: an input wait, a page break, a blocking command, or the end. It fires every effect marker it passes, in order, and drops the timing, including the rest of a pause already under way. Skipping never changes the outcome: every effect still happens, in order ([reference](language/reference.md#runtime-semantics-summary)).
+- **Page breaks clear the box.** `{p}` stops the reveal; after `Resume()` the frame's `PageStart` is the break's position, and the host shows only the text from there on.
 
 ## State and saves
 
