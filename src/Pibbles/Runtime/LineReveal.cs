@@ -139,7 +139,10 @@ public sealed class LineReveal
             throw new InvalidOperationException("The reveal isn't waiting for anything.");
 
         if (pendingPageStart >= 0)
+        {
             PageStart = pendingPageStart;
+            position = Math.Max(position, pendingPageStart);
+        }
 
         pendingPageStart = -1;
         State = RevealState.Revealing;
@@ -219,7 +222,11 @@ public sealed class LineReveal
 
             case PageBreakMarker:
                 fired.Add(marker);
-                pendingPageStart = marker.Position;
+                int nextMarkerPos = markerIndex < line.Markers.Length ? line.Markers[markerIndex].Position : line.Text.Length;
+                int nextStart = marker.Position;
+                while (nextStart < nextMarkerPos && nextStart < line.Text.Length && line.Text[nextStart] is ' ' or '\t' or '\n' or '\r')
+                    nextStart++;
+                pendingPageStart = nextStart;
                 return Stop(RevealState.WaitingForInput);
 
             case InputWaitMarker:

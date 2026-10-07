@@ -56,7 +56,10 @@ public sealed class StoryState
             : throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
     }
 
-    /// <summary>A variable's current value as a host sees it, by the mapping of <see cref="StoryType.HostType"/>.</summary>
+    /// <summary>
+    /// A variable's current value as a host sees it, by the mapping of <see cref="StoryType.HostType"/>. A duration
+    /// variable beyond <see cref="TimeSpan"/>'s range clamps silently without a warning.
+    /// </summary>
     /// <param name="variable">The variable's name, without the <c>$</c>.</param>
     /// <exception cref="ArgumentException">The story has no such variable.</exception>
     public object GetVariable(string variable) => HostValues.ToHost(Variables[Find(variable)], default, _ => { });

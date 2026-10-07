@@ -66,6 +66,36 @@ public class LineRevealTests
     }
 
     [Fact]
+    public void PageBreak_SpaceAfterBreak_PageStartMovesPastSpace()
+    {
+        LineReveal reveal = Reveal("ab cd", new PageBreakMarker(2));
+
+        Assert.Equal("WaitingForInput page=0 visible=2 fired=[p@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+        Assert.Equal("Revealing page=3 visible=3 fired=[]", Show(reveal.Resume()));
+        Assert.Equal("Complete page=3 visible=5 fired=[]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+    }
+
+    [Fact]
+    public void PageBreak_LineBreakAfterBreak_PageStartMovesPastLineBreak()
+    {
+        LineReveal reveal = Reveal("ab\ncd", new PageBreakMarker(2));
+
+        Assert.Equal("WaitingForInput page=0 visible=2 fired=[p@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+        Assert.Equal("Revealing page=3 visible=3 fired=[]", Show(reveal.Resume()));
+        Assert.Equal("Complete page=3 visible=5 fired=[]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+    }
+
+    [Fact]
+    public void PageBreak_MarkerRightAfterBreak_DoesNotMovePastMarker()
+    {
+        LineReveal reveal = Reveal("ab cd", new PageBreakMarker(2), Command(2, 1));
+
+        Assert.Equal("WaitingForInput page=0 visible=2 fired=[p@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+        Assert.Equal("Revealing page=2 visible=2 fired=[]", Show(reveal.Resume()));
+        Assert.Equal("Complete page=2 visible=5 fired=[cmd1@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+    }
+
+    [Fact]
     public void InputWait_StopsWithoutMovingThePage()
     {
         LineReveal reveal = Reveal("abcd", new InputWaitMarker(2));

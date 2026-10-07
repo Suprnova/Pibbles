@@ -264,4 +264,18 @@ public class HostApiTests
         Assert.Equal([1, 2, 3], first.Options.Select(option => option.Number));
         Assert.Equal([1, 3], second.Options.Select(option => option.Number));
     }
+
+    [Fact]
+    public void GetVariable_DurationBeyondTimeSpanRange_ClampsSilently()
+    {
+        Game game = Game.Of("""
+            @var $huge: duration = 999999999999999s
+            == t.n
+            mira: hi
+            """);
+
+        object value = game.State.GetVariable("huge");
+
+        Assert.Equal(TimeSpan.MaxValue, value);
+    }
 }
