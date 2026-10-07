@@ -97,7 +97,8 @@ internal static class LineRenderer
                 [.. spans.Select(span => new Span(span.Name, Move(span.Start), Move(span.End) - Move(span.Start), span.Arguments))],
                 [.. markers.Select(marker => marker.Create(Move(marker.Position)))],
                 [.. icons.Select(icon => new Icon(Move(icon.Position), icon.Name))],
-                Tags(template, story));
+                Tags(template, story),
+                story.FallbackIds.Contains(id));
         }
 
         private void AppendSpan(MarkupElement markup)

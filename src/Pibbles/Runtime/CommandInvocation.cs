@@ -1,3 +1,4 @@
+using Pibbles.Compiler;
 using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 
@@ -29,6 +30,12 @@ public sealed class CommandInvocation : IEquatable<CommandInvocation>
 
     /// <summary>The arguments, in the order of the command's parameters.</summary>
     internal IReadOnlyList<Value> Values => arguments.Values;
+
+    /// <inheritdoc cref="Arguments.Parameters"/>
+    public IReadOnlyList<StoryParameter> Parameters => arguments.Parameters;
+
+    /// <inheritdoc cref="Arguments.GetValue"/>
+    public object GetValue(string parameter) => arguments.GetValue(parameter);
 
     /// <inheritdoc cref="Arguments.GetBool"/>
     public bool GetBool(string parameter) => arguments.GetBool(parameter);

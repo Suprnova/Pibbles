@@ -104,9 +104,9 @@ internal sealed class Game
         }
     }
 
-    public void Set(string variable, Value value) => State.Variables[Story.Variables.First(candidate => candidate.Variable.Name == variable).Variable] = value;
+    public void Set(string variable, Value value) => State.Variables[Story.VariableDefinitions.First(candidate => candidate.Variable.Name == variable).Variable] = value;
 
-    public Value Get(string variable) => State.Variables[Story.Variables.First(candidate => candidate.Variable.Name == variable).Variable];
+    public Value Get(string variable) => State.Variables[Story.VariableDefinitions.First(candidate => candidate.Variable.Name == variable).Variable];
 
     public static string Format(DialogueStep step) => step switch
     {

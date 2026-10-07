@@ -1,3 +1,4 @@
+using Pibbles.Compiler;
 using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 
@@ -16,6 +17,7 @@ public sealed class Arguments : IEquatable<Arguments>
 {
     private readonly string owner;
     private readonly IReadOnlyList<ParameterSymbol> parameters;
+    private IReadOnlyList<StoryParameter>? parameterInfos;
     private readonly SourceLocation location;
     private readonly Action<RuntimeWarning> warn;
 
@@ -30,6 +32,13 @@ public sealed class Arguments : IEquatable<Arguments>
 
     /// <summary>The arguments, in the order of the owner's parameters.</summary>
     internal IReadOnlyList<Value> Values { get; }
+
+    /// <summary>The names and types of the parameters, in order, for a host that forwards arguments it doesn't know at compile time.</summary>
+    public IReadOnlyList<StoryParameter> Parameters => parameterInfos ??= [.. parameters.Select(parameter => new StoryParameter(parameter.Name, StoryType.Of(parameter.Type)))];
+
+    /// <summary>The value of a parameter as a host sees it, whatever its type: see <see cref="StoryType.HostType"/>. A duration beyond <see cref="TimeSpan"/>'s range clamps, with an <see cref="RuntimeWarningKind.Overflow"/> warning.</summary>
+    /// <exception cref="ArgumentException">There is no parameter with that name.</exception>
+    public object GetValue(string parameter) => HostValues.ToHost(Find(parameter), location, warn);
 
     /// <summary>The value of a <c>bool</c> parameter.</summary>
     public bool GetBool(string parameter) => Get(parameter, TypeSymbol.Bool).AsBool;

@@ -20,7 +20,7 @@ public sealed class StoryState
         Seed = seed;
 
         var context = new StartingContext(Variables);
-        foreach (StoryVariable variable in story.Variables)
+        foreach (StoryVariable variable in story.VariableDefinitions)
             Variables[variable.Variable] = Evaluator.Evaluate(variable.StartingValue, context);
     }
 
@@ -51,10 +51,36 @@ public sealed class StoryState
         if (Poses.TryGetValue(actor, out string? pose))
             return pose;
 
-        return Story.Actors.TryGetValue(actor, out ActorSymbol? declared)
+        return Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared)
             ? (declared.Poses is [var first, ..] ? first.Name : null)
             : throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
     }
+
+    /// <summary>A variable's current value as a host sees it, by the mapping of <see cref="StoryType.HostType"/>.</summary>
+    /// <param name="variable">The variable's name, without the <c>$</c>.</param>
+    /// <exception cref="ArgumentException">The story has no such variable.</exception>
+    public object GetVariable(string variable) => HostValues.ToHost(Variables[Find(variable)], default, _ => { });
+
+    /// <summary>Sets a variable from the host, checked against the variable's type.</summary>
+    /// <param name="variable">The variable's name, without the <c>$</c>.</param>
+    /// <param name="value">The new value, as <see cref="StoryType.HostType"/> says: for an enum member, an actor or a node, a string that names one.</param>
+    /// <exception cref="ArgumentException">The story has no such variable, the value isn't of its type, or a string names nothing of the variable's type.</exception>
+    public void SetVariable(string variable, object value)
+    {
+        VariableSymbol symbol = Find(variable);
+        try
+        {
+            Variables[symbol] = HostValues.FromHost(value, symbol.Type, Story, $"`${variable}` was set to");
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ArgumentException(exception.Message, nameof(value));
+        }
+    }
+
+    private VariableSymbol Find(string variable) =>
+        Story.VariableDefinitions.Select(definition => definition.Variable).FirstOrDefault(candidate => candidate.Name == variable)
+        ?? throw new ArgumentException($"The story has no variable called `${variable}`.", nameof(variable));
 
     /// <summary>Evaluates starting values, which can only read the variables before them.</summary>
     private sealed class StartingContext(Dictionary<VariableSymbol, Value> variables) : IEvaluationContext

@@ -55,6 +55,23 @@ public sealed class HostFunctions
         Register(name, function, [typeof(T1), typeof(T2), typeof(T3), typeof(T4)], typeof(TResult), a => function((T1)a[0]!, (T2)a[1]!, (T3)a[2]!, (T4)a[3]!));
 
     /// <summary>
+    /// Registers a function whose parameter and return types are only known when the program runs, such as one a
+    /// scripting bridge forwards to another language. Types, arguments and results follow the same mapping as the typed
+    /// overloads (<see cref="StoryType.HostType"/>), and the function is validated the same way.
+    /// </summary>
+    /// <param name="name">The name the story declares.</param>
+    /// <param name="parameterTypes">The .NET type of each parameter: <see cref="bool"/>, <see cref="decimal"/>, <see cref="string"/> or <see cref="TimeSpan"/>.</param>
+    /// <param name="returnType">The .NET type of the result.</param>
+    /// <param name="function">The function, given its arguments as host values and returning one. A result of the wrong type is a host error.</param>
+    /// <exception cref="ArgumentException">The name is already registered or is <c>visits</c>, the function is null, or a type isn't supported.</exception>
+    public HostFunctions AddDynamic(string name, IReadOnlyList<Type> parameterTypes, Type returnType, Func<object?[], object?> function)
+    {
+        ArgumentNullException.ThrowIfNull(parameterTypes);
+        ArgumentNullException.ThrowIfNull(returnType);
+        return Register(name, function, [.. parameterTypes], returnType, function);
+    }
+
+    /// <summary>
     /// Finds the mismatches between the story's declared functions and the registered ones: a declared function that's
     /// missing, a registered one whose parameters or return type don't match, and a registered name the story doesn't
     /// declare, which is probably a typo. Call it at startup. It never throws.
@@ -64,7 +81,7 @@ public sealed class HostFunctions
     public IReadOnlyList<HostFunctionProblem> Validate(Story story)
     {
         List<HostFunctionProblem> problems = [];
-        foreach ((string name, FunctionSymbol declared) in story.Functions)
+        foreach ((string name, FunctionSymbol declared) in story.FunctionSymbols)
         {
             if (!functions.TryGetValue(name, out Registration? registered))
             {
@@ -77,7 +94,7 @@ public sealed class HostFunctions
         }
 
         problems.AddRange(functions.Keys
-            .Where(name => !story.Functions.ContainsKey(name))
+            .Where(name => !story.FunctionSymbols.ContainsKey(name))
             .Select(name => new HostFunctionProblem(HostFunctionProblemKind.NotDeclared, name, $"`{name}` is registered, but the story doesn't declare it. Check the spelling.")));
         return problems;
     }
@@ -91,10 +108,10 @@ public sealed class HostFunctions
         if (!functions.TryGetValue(name, out Registration? registered))
             throw new InvalidOperationException($"The story calls `{name}`, but no function with that name is registered. Call HostFunctions.Validate when the game starts to find these.");
 
-        object?[] hostArguments = [.. arguments.Select(argument => ToHost(argument, call.Location, warn))];
+        object?[] hostArguments = [.. arguments.Select(argument => HostValues.ToHost(argument, call.Location, warn))];
         try
         {
-            return FromHost(registered.Invoke(hostArguments), call.Function, story);
+            return HostValues.FromHost(registered.Invoke(hostArguments), call.Function.ReturnType, story, $"`{name}` returned");
         }
         catch (Exception exception)
         {
@@ -118,11 +135,7 @@ public sealed class HostFunctions
         return functions.TryAdd(name, new(parameters, returns, invoke)) ? this : throw new ArgumentException($"`{name}` is already registered.", nameof(name));
     }
 
-    /// <summary>Registers a function whose signature is only known at run time, such as a stub. The types follow the same mapping.</summary>
-    internal HostFunctions AddUntyped(string name, Type[] parameters, Type returns, Func<object?[], object?> invoke) =>
-        Register(name, invoke, parameters, returns, invoke);
-
-    internal static Type ClrTypeOf(TypeSymbol type) =>
+    private static Type ClrTypeOf(TypeSymbol type) =>
         type == TypeSymbol.Bool ? typeof(bool)
         : type == TypeSymbol.Number ? typeof(decimal)
         : type == TypeSymbol.Duration ? typeof(TimeSpan)
@@ -141,49 +154,6 @@ public sealed class HostFunctions
     }
 
     private static string ClrName(Type type) => type == typeof(bool) ? "bool" : type == typeof(decimal) ? "decimal" : type == typeof(string) ? "string" : "TimeSpan";
-
-    private static object ToHost(Value value, SourceLocation location, Action<RuntimeWarning> warn)
-    {
-        if (value.Type == TypeSymbol.Bool)
-            return value.AsBool;
-
-        if (value.Type == TypeSymbol.Number)
-            return value.AsDecimal;
-
-        if (value.Type == TypeSymbol.String || value.Type == TypeSymbol.Node)
-            return value.AsString;
-
-        return value.Type == TypeSymbol.Duration ? Durations.ToTimeSpan(value.AsDecimal, location, warn) : value.AsSymbol.Name;
-    }
-
-    private static Value FromHost(object? result, FunctionSymbol function, Story story)
-    {
-        TypeSymbol type = function.ReturnType;
-        if (type == TypeSymbol.Bool)
-            return Value.Bool((bool)result!);
-
-        if (type == TypeSymbol.Number)
-            return Value.Number((decimal)result!);
-
-        if (type == TypeSymbol.Duration)
-            return Value.Duration(Durations.ToSeconds((TimeSpan)result!));
-
-        string text = (string?)result ?? throw new InvalidOperationException($"`{function.Name}` returned null, but the story expects {type.Describe()}.");
-        if (type == TypeSymbol.String)
-            return Value.String(text);
-
-        if (type is EnumSymbol @enum)
-            return @enum.Members.FirstOrDefault(member => member.Name == text) is { } member ? Value.Member(member, @enum) : throw NotA(function, text, $"a member of `{@enum.Name}`");
-
-        if (type == TypeSymbol.Actor)
-            return story.Actors.TryGetValue(text, out ActorSymbol? actor) ? Value.Actor(actor) : throw NotA(function, text, "a declared actor");
-
-        string node = story.CompiledNodes.ContainsKey(text) ? text : story.Aliases.GetValueOrDefault(text) ?? throw NotA(function, text, "a node or an old name of one");
-        return Value.Node(node);
-    }
-
-    private static InvalidOperationException NotA(FunctionSymbol function, string text, string expected) =>
-        new($"`{function.Name}` returned \"{text}\", which isn't {expected}.");
 
     private sealed record Registration(Type[] Parameters, Type Returns, Func<object?[], object?> Invoke);
 }

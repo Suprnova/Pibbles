@@ -55,7 +55,6 @@ public sealed class DialogueRunner
     private CompiledNode? node;
     private int index;
     private List<(CompiledOption Compiled, ChoiceOption Offered)> offered = [];
-    private ChoiceInstruction? waitingChoice;
 
     /// <summary>Creates a runner that isn't running anything yet. Call <see cref="Start"/>.</summary>
     /// <param name="story">The compiled story.</param>
@@ -144,9 +143,6 @@ public sealed class DialogueRunner
         return Finish();
     }
 
-    /// <summary>The IDs of every option of the waiting choice in source order, including options `@once` has removed, or empty when none is waiting.</summary>
-    internal IReadOnlyList<string> WaitingChoiceIds => waitingChoice?.Options.Select(option => option.Id).ToArray() ?? [];
-
     /// <summary>Picks an option of the choice that is waiting.</summary>
     /// <param name="option">An option from the current <see cref="ChoiceStep"/>.</param>
     /// <inheritdoc cref="Choose(string)"/>
@@ -173,7 +169,6 @@ public sealed class DialogueRunner
         state.ChosenOptions.Add(id);
         index = Compiled.Body;
         offered = [];
-        waitingChoice = null;
         phase = Phase.Running;
     }
 
@@ -254,14 +249,14 @@ public sealed class DialogueRunner
     private ChoiceStep? ExecuteChoice(ChoiceInstruction choice)
     {
         List<(CompiledOption Compiled, ChoiceOption Offered)> delivered = [];
-        foreach (CompiledOption option in choice.Options)
+        foreach ((CompiledOption option, int index) in choice.Options.Select((option, index) => (option, index)))
         {
             bool wasChosen = state.ChosenOptions.Contains(option.Id);
             if (option.IsOnce && wasChosen)
                 continue;
 
             bool available = option.Condition is null || Evaluator.Evaluate(option.Condition, context).AsBool;
-            delivered.Add((option, new ChoiceOption(BuildLine(option.Id), available, wasChosen)));
+            delivered.Add((option, new ChoiceOption(BuildLine(option.Id), available, wasChosen, index + 1)));
         }
 
         if (!delivered.Any(option => option.Offered.IsAvailable))
@@ -271,7 +266,6 @@ public sealed class DialogueRunner
         }
 
         offered = delivered;
-        waitingChoice = choice;
         phase = Phase.AwaitingChoice;
         return new ChoiceStep([.. delivered.Select(option => option.Offered)]);
     }

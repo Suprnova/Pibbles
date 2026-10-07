@@ -279,7 +279,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
         string text = TextOf(interpolation.Value.Span);
         string help = type == TypeSymbol.Bool ? $"Show text that depends on it instead: `{{if {text}}}…{{else}}…{{/if}}`."
-            : type is EnumSymbol @enum ? $"Show text that depends on it instead, like `{{if {text} == {@enum.Members[0].Name}}}…{{/if}}`."
+            : type is EnumSymbol { Members: [var first, ..] } ? $"Show text that depends on it instead, like `{{if {text} == {first.Name}}}…{{/if}}`."
             : "Show text that depends on it with `{if …}…{/if}`, or call a function that returns text.";
         Report(DiagnosticCatalog.NotShowable, interpolation.Span, text, type.Describe(), help);
     }
@@ -332,7 +332,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
         if (tag.Value is null || (tag.Value.Length == 0 && !symbol.AllowsEmpty))
         {
-            string example = type is EnumSymbol @enum ? @enum.Members[0].Name : "value";
+            string example = type is EnumSymbol { Members: [var first, ..] } ? first.Name : "value";
             Report(DiagnosticCatalog.TagValuePresence, tag.Span, tag.Name, "needs a value", $"Write a value after the colon: `#{tag.Name}:{example}`.");
             return;
         }

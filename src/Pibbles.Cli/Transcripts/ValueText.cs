@@ -1,22 +1,35 @@
 using System.Globalization;
 using System.Text;
 using Pibbles.Compiler;
-using Pibbles.Runtime;
-using Pibbles.Semantics;
 
 namespace Pibbles.Cli.Transcripts;
 
-/// <summary>Reads and writes values the way a script writes them: numbers normalized, strings quoted, durations with <c>s</c>, names bare.</summary>
+/// <summary>
+/// Reads and writes values the way a script writes them: numbers normalized (invariant culture, no digit grouping, no
+/// trailing zeros), strings quoted, durations with <c>s</c>, and enum members, actors and nodes bare. Values are the
+/// host values of the public API (<see cref="StoryType.HostType"/>).
+/// </summary>
 internal static class ValueText
 {
-    /// <summary>Writes a value as a script would.</summary>
-    public static string Show(Value value) =>
-        value.Type == TypeSymbol.Bool ? (value.AsBool ? "true" : "false")
-        : value.Type == TypeSymbol.Number ? LineRenderer.FormatNumber(value.AsDecimal)
-        : value.Type == TypeSymbol.Duration ? LineRenderer.FormatNumber(value.AsDecimal) + "s"
-        : value.Type == TypeSymbol.String ? Quote(value.AsString)
-        : value.Type == TypeSymbol.Node ? value.AsString
-        : value.AsSymbol.Name;
+    private const string NumberFormat = "0.############################";
+
+    private const decimal TicksPerSecond = 10_000_000m;
+
+    /// <summary>A number as a script writes it.</summary>
+    public static string FormatNumber(decimal number) => number.ToString(NumberFormat, CultureInfo.InvariantCulture);
+
+    /// <summary>A duration in seconds, as a script writes it.</summary>
+    public static string FormatSeconds(TimeSpan duration) => FormatNumber(duration.Ticks / TicksPerSecond) + "s";
+
+    /// <summary>Writes a host value of a story type as a script would.</summary>
+    public static string Show(object value, StoryType type) => type.Kind switch
+    {
+        StoryTypeKind.Bool => (bool)value ? "true" : "false",
+        StoryTypeKind.Number => FormatNumber((decimal)value),
+        StoryTypeKind.Duration => FormatSeconds((TimeSpan)value),
+        StoryTypeKind.Text => Quote((string)value),
+        _ => (string)value,
+    };
 
     /// <summary>Escapes what would break a printed step across lines, or be read as an escape: backslashes and line breaks.</summary>
     public static string Escape(string text)
@@ -37,65 +50,70 @@ internal static class ValueText
         return escaped.ToString();
     }
 
-    private static bool IsLineBreak(char character) => character == (char)0x85 || character == (char)0x2028 || character == (char)0x2029;
-
-    /// <summary>Reads a value of a known type.</summary>
+    /// <summary>Reads a value of a known type, as a host value.</summary>
     /// <exception cref="TranscriptException">The text isn't a value of that type.</exception>
-    public static Value Parse(string text, TypeSymbol type, Story story, string line)
+    public static object Parse(string text, StoryType type, Story story, string line)
     {
         TranscriptException Bad(string expected) => new($"I can't read `{line}`: `{text}` isn't {expected}.");
 
-        if (type == TypeSymbol.Bool)
-            return text is "true" or "false" ? Value.Bool(text is "true") : throw Bad("`true` or `false`");
+        switch (type.Kind)
+        {
+            case StoryTypeKind.Bool:
+                return text is "true" or "false" ? text is "true" : throw Bad("`true` or `false`");
 
-        if (type == TypeSymbol.Number)
-            return decimal.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal number) ? Value.Number(number) : throw Bad("a number");
+            case StoryTypeKind.Number:
+                return decimal.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal number) ? number : throw Bad("a number");
 
-        if (type == TypeSymbol.Duration)
-            return TryParseDuration(text, out decimal seconds) ? Value.Duration(seconds) : throw Bad("a duration like `0.5s`");
+            case StoryTypeKind.Duration:
+                return TryParseDuration(text, out TimeSpan duration) ? duration : throw Bad("a duration like `0.5s`");
 
-        if (type == TypeSymbol.String)
-            return text.Length >= 2 && text[0] is '"' && text[^1] is '"' ? Value.String(Unquote(text)) : throw Bad("quoted text");
+            case StoryTypeKind.Text:
+                return text.Length >= 2 && text[0] is '"' && text[^1] is '"' ? Unquote(text) : throw Bad("quoted text");
 
-        if (type is EnumSymbol @enum)
-            return @enum.Members.FirstOrDefault(member => member.Name == text) is { } found ? Value.Member(found, @enum) : throw Bad($"a member of `{@enum.Name}`");
+            case StoryTypeKind.Enum:
+                return story.Enums.FirstOrDefault(@enum => @enum.Name == type.EnumName)?.Members.Contains(text) is true ? text : throw Bad($"a member of `{type.EnumName}`");
 
-        if (type == TypeSymbol.Actor)
-            return story.Actors.TryGetValue(text, out ActorSymbol? actor) ? Value.Actor(actor) : throw Bad("a declared actor");
+            case StoryTypeKind.Actor:
+                return story.Actors.Any(actor => actor.Id == text) ? text : throw Bad("a declared actor");
 
-        string node = story.CompiledNodes.ContainsKey(text) ? text : story.Aliases.GetValueOrDefault(text) ?? throw Bad("a node");
-        return Value.Node(node);
+            default:
+                return story.Nodes.Any(node => node.Name == text || node.Aliases.Contains(text)) ? text : throw Bad("a node");
+        }
     }
-
-    /// <summary>The value as the object a host function receives or returns, with the mapping <see cref="HostFunctions"/> uses.</summary>
-    public static object ToHost(Value value) =>
-        value.Type == TypeSymbol.Bool ? value.AsBool
-        : value.Type == TypeSymbol.Number ? value.AsDecimal
-        : value.Type == TypeSymbol.Duration ? Durations.ToTimeSpan(value.AsDecimal, default, _ => { })
-        : value.Type == TypeSymbol.String || value.Type == TypeSymbol.Node ? value.AsString
-        : value.AsSymbol.Name;
 
     /// <summary>A key that is the same for the same host values.</summary>
     public static string Key(object? value) => value switch
     {
-        decimal number => "n" + LineRenderer.FormatNumber(number),
+        decimal number => "n" + FormatNumber(number),
         TimeSpan duration => "d" + duration.Ticks.ToString(CultureInfo.InvariantCulture),
         bool flag => flag ? "btrue" : "bfalse",
         _ => "s" + value,
     };
 
-    private static bool TryParseDuration(string text, out decimal seconds)
+    private static bool IsLineBreak(char character) => character == (char)0x85 || character == (char)0x2028 || character == (char)0x2029;
+
+    private static bool TryParseDuration(string text, out TimeSpan duration)
     {
-        seconds = 0;
+        duration = default;
         const NumberStyles Style = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
+        decimal seconds;
         if (text.EndsWith("ms", StringComparison.Ordinal))
         {
-            bool parsed = decimal.TryParse(text[..^2], Style, CultureInfo.InvariantCulture, out decimal milliseconds);
+            if (!decimal.TryParse(text[..^2], Style, CultureInfo.InvariantCulture, out decimal milliseconds))
+                return false;
+
             seconds = milliseconds / 1000m;
-            return parsed;
+        }
+        else if (!decimal.TryParse(text.EndsWith('s') ? text[..^1] : text, Style, CultureInfo.InvariantCulture, out seconds))
+        {
+            return false;
         }
 
-        return decimal.TryParse(text.EndsWith('s') ? text[..^1] : text, Style, CultureInfo.InvariantCulture, out seconds);
+        if (Math.Abs(seconds) > 900_000_000_000m)
+            return false;
+
+        duration = TimeSpan.FromTicks((long)Math.Round(seconds * TicksPerSecond, MidpointRounding.AwayFromZero));
+        return true;
     }
 
     private static string Quote(string text) => "\"" + Escape(text).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";

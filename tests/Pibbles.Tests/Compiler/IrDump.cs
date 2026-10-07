@@ -18,7 +18,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
 
     private string Write()
     {
-        foreach (StoryVariable variable in story.Variables)
+        foreach (StoryVariable variable in story.VariableDefinitions)
             builder.Append(CultureInfo.InvariantCulture, $"var ${variable.Variable.Name} = {Format(variable.StartingValue)}\n");
 
         foreach ((string old, string current) in story.Aliases.OrderBy(alias => alias.Key, StringComparer.Ordinal))

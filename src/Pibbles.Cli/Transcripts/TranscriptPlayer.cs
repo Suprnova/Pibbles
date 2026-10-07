@@ -1,15 +1,14 @@
-using Pibbles.Compiler;
-using Pibbles.Runtime;
-using Pibbles.Semantics;
 using System.Globalization;
 using System.Text;
+using Pibbles.Compiler;
+using Pibbles.Runtime;
 
 namespace Pibbles.Cli.Transcripts;
 
 /// <summary>
 /// Plays a script against a story and writes the transcript: every step, with its markers, spans and icons in the text,
 /// every variable change before the step that followed it, every warning, and every answer. A transcript is also a
-/// valid script, so a run can be copied into a test as it is.
+/// valid script, so a run can be copied into a test as it is. It uses only the library's public API, like any host.
 /// </summary>
 /// <remarks>
 /// Steps are printed indented by two spaces, and anything free-form in them has its backslashes and line breaks
@@ -54,9 +53,9 @@ internal sealed class TranscriptPlayer
         state = new(story, 0);
         foreach (ScriptSet set in script.Sets)
         {
-            VariableSymbol variable = story.Variables.Select(candidate => candidate.Variable).FirstOrDefault(candidate => candidate.Name == set.Variable)
+            VariableInfo variable = story.Variables.FirstOrDefault(candidate => candidate.Name == set.Variable)
                 ?? throw new TranscriptException($"I can't read `{set.Line}`: the story has no variable called `${set.Variable}`.");
-            state.Variables[variable] = ValueText.Parse(set.Value, variable.Type, story, set.Line);
+            state.SetVariable(variable.Name, ValueText.Parse(set.Value, variable.Type, story, set.Line));
         }
 
         runner = new(story, state, functions, new() { OnWarning = warnings.Add });
@@ -115,37 +114,34 @@ internal sealed class TranscriptPlayer
 
     private void Answer(ChoiceStep choice, Queue<string> answers)
     {
-        IReadOnlyList<string> sourceOrder = runner.WaitingChoiceIds;
         if (answers.Count == 0)
-            throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(option => Name(option.Id)))}.");
+            throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(Name))}.");
 
         string answer = answers.Dequeue();
-        ChoiceOption? picked = (answer.StartsWith('#')
+        ChoiceOption? picked = answer.StartsWith('#')
             ? choice.Options.FirstOrDefault(option => option.Id == answer[1..])
-            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) && number >= 1 && number <= sourceOrder.Count
-                ? choice.Options.FirstOrDefault(option => option.Id == sourceOrder[number - 1])
-                : null) ?? throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{sourceOrder.ToList().IndexOf(option.Id) + 1} ({Name(option.Id)})"))}.");
+            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? choice.Options.FirstOrDefault(option => option.Number == number) : null;
+        if (picked is null)
+            throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
+
         if (!picked.IsAvailable)
             throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
 
-        output.Append(story.FallbackIds.Contains(picked.Id) ? $"> {sourceOrder.ToList().IndexOf(picked.Id) + 1}" : $"> #{picked.Id}").Append('\n');
+        output.Append(picked.Text.IsFallbackId ? $"> {picked.Number}" : $"> #{picked.Id}").Append('\n');
         runner.Choose(picked);
     }
 
-    private string Name(string id) => story.FallbackIds.Contains(id) ? $"option {id}" : $"#{id}";
+    private static string Name(ChoiceOption option) => option.Text.IsFallbackId ? $"option {option.Number}" : $"#{option.Id}";
 
     private void PrintVariableChanges()
     {
-        foreach (StoryVariable variable in story.Variables)
+        foreach (VariableInfo variable in story.Variables)
         {
-            string shown = ValueText.Show(state.Variables[variable.Variable]);
-            if (printed.TryGetValue(variable.Variable.Name, out string? before))
-            {
-                if (before != shown)
-                    output.Append(Indent).Append('$').Append(variable.Variable.Name).Append(" = ").Append(shown).Append('\n');
-            }
+            string shown = ValueText.Show(state.GetVariable(variable.Name), variable.Type);
+            if (printed.TryGetValue(variable.Name, out string? before) && before != shown)
+                output.Append(Indent).Append('$').Append(variable.Name).Append(" = ").Append(shown).Append('\n');
 
-            printed[variable.Variable.Name] = shown;
+            printed[variable.Name] = shown;
         }
     }
 
@@ -171,17 +167,16 @@ internal sealed class TranscriptPlayer
 
             case ChoiceStep choice:
                 output.Append(Indent).Append("choice\n");
-                IReadOnlyList<string> sourceOrder = runner.WaitingChoiceIds;
                 foreach (ChoiceOption option in choice.Options)
                 {
-                    output.Append(Indent).Append(Indent).Append(sourceOrder.ToList().IndexOf(option.Id) + 1).Append(". ").Append(Text(option.Text)).Append(Suffix(option.Text))
+                    output.Append(Indent).Append(Indent).Append(option.Number).Append(". ").Append(Text(option.Text)).Append(Suffix(option.Text))
                         .Append(option.IsAvailable ? "" : " (unavailable)").Append(option.WasChosen ? " (chosen)" : "").Append('\n');
                 }
 
                 break;
 
             case CommandStep command:
-                output.Append(Indent).Append('@').Append(command.Command.Name).Append(Arguments(command.Command.Values)).Append(command.Waits ? " waits" : "").Append('\n');
+                output.Append(Indent).Append('@').Append(command.Command.Name).Append(Arguments(command.Command.Parameters, command.Command.GetValue)).Append(command.Waits ? " waits" : "").Append('\n');
                 break;
 
             case PoseStep pose:
@@ -189,7 +184,7 @@ internal sealed class TranscriptPlayer
                 break;
 
             case WaitStep wait:
-                output.Append(Indent).Append("wait ").Append(LineRenderer.FormatNumber((decimal)wait.Duration.Ticks / 10_000_000m)).Append("s\n");
+                output.Append(Indent).Append("wait ").Append(ValueText.FormatSeconds(wait.Duration)).Append('\n');
                 break;
 
             case EndStep:
@@ -198,13 +193,14 @@ internal sealed class TranscriptPlayer
         }
     }
 
-    private static string Arguments(IEnumerable<Value> values) => string.Concat(values.Select(value => " " + ValueText.Show(value)));
+    private static string Arguments(IReadOnlyList<StoryParameter> parameters, Func<string, object> get) =>
+        string.Concat(parameters.Select(parameter => " " + ValueText.Show(get(parameter.Name), parameter.Type)));
 
     /// <summary>A line's tags and ID after its text. An ID the compiler made up is written <c>#~</c>, since it changes whenever lines move.</summary>
-    private string Suffix(Line line)
+    private static string Suffix(Line line)
     {
         string tags = string.Concat(line.Tags.Where(tag => tag.Name != "id").Select(tag => " #" + tag.Name + (tag.Value is null ? "" : ":" + tag.Value)));
-        return tags + "  " + (story.FallbackIds.Contains(line.Id) ? "#~" : "#" + line.Id);
+        return tags + "  " + (line.IsFallbackId ? "#~" : "#" + line.Id);
     }
 
     /// <summary>A line's text with its spans, markers and icons written in at their positions.</summary>
@@ -225,7 +221,7 @@ internal sealed class TranscriptPlayer
             for (; nextSpan < line.Spans.Length && line.Spans[nextSpan].Start == position; nextSpan++)
             {
                 Span span = line.Spans[nextSpan];
-                text.Append('[').Append(span.Name).Append(Arguments(span.Arguments.Values)).Append(']');
+                text.Append('[').Append(span.Name).Append(Arguments(span.Arguments.Parameters, span.Arguments.GetValue)).Append(']');
                 if (span.Length == 0)
                     text.Append("[/").Append(span.Name).Append(']');
                 else
@@ -248,27 +244,22 @@ internal sealed class TranscriptPlayer
         return marker switch
         {
             InputWaitMarker => "⟨w⟩",
-            PauseMarker pause => $"⟨w {LineRenderer.FormatNumber((decimal)pause.Duration.Ticks / 10_000_000m)}s⟩",
+            PauseMarker pause => $"⟨w {ValueText.FormatSeconds(pause.Duration)}⟩",
             PageBreakMarker => "⟨p⟩",
             SpeedMarker { Factor: 1 } => "⟨speed⟩",
-            SpeedMarker speed => $"⟨speed {LineRenderer.FormatNumber(speed.Factor)}⟩",
-            CommandMarker command => $"⟨@{command.Command.Name}{Arguments(command.Command.Values)}{(command.Waits ? " wait" : "")}⟩",
+            SpeedMarker speed => $"⟨speed {ValueText.FormatNumber(speed.Factor)}⟩",
+            CommandMarker command => $"⟨@{command.Command.Name}{Arguments(command.Command.Parameters, command.Command.GetValue)}{(command.Waits ? " wait" : "")}⟩",
             _ => throw new NotSupportedException(marker.GetType().Name),
         };
     }
 
-    /// <summary>Registers a stub for each function the story calls, and fails, listing every missing one, if any has none.</summary>
+    /// <summary>Registers a stub for each function the script stubs, and fails, listing every declared function left without one.</summary>
     private HostFunctions Stubs()
     {
-        FunctionSymbol[] called = [.. StoryCalls.Functions(story)];
-        string[] missing = [.. called.Select(function => function.Name).Where(name => script.Stubs.All(stub => stub.Function != name))];
-        if (missing.Length > 0)
-            throw new TranscriptException($"The story calls {string.Join(", ", missing.Select(name => $"`{name}`"))}, but the script has no stub for {(missing.Length == 1 ? "it" : "them")}. Add a line like `stub {missing[0]} = value`.");
-
         var functions = new HostFunctions();
         foreach (IGrouping<string, ScriptStub> group in script.Stubs.GroupBy(stub => stub.Function))
         {
-            FunctionSymbol function = story.Functions.GetValueOrDefault(group.Key)
+            FunctionInfo function = story.Functions.FirstOrDefault(candidate => candidate.Name == group.Key)
                 ?? throw new TranscriptException($"I can't read `{group.First().Line}`: the story doesn't declare a function called `{group.Key}`.");
 
             Dictionary<string, object> exact = [];
@@ -276,7 +267,7 @@ internal sealed class TranscriptPlayer
             bool hasFallback = false;
             foreach (ScriptStub stub in group)
             {
-                object result = ValueText.ToHost(ValueText.Parse(stub.Value, function.ReturnType, story, stub.Line));
+                object result = ValueText.Parse(stub.Value, function.ReturnType, story, stub.Line);
                 if (stub.Arguments is null)
                 {
                     fallback = result;
@@ -287,18 +278,22 @@ internal sealed class TranscriptPlayer
                 if (stub.Arguments.Count != function.Parameters.Count)
                     throw new TranscriptException($"I can't read `{stub.Line}`: `{function.Name}` takes {function.Parameters.Count} argument{(function.Parameters.Count == 1 ? "" : "s")}.");
 
-                string key = string.Join('\u0001', stub.Arguments.Select((argument, index) => ValueText.Key(ValueText.ToHost(ValueText.Parse(argument, function.Parameters[index].Type, story, stub.Line)))));
+                string key = string.Join('\u0001', stub.Arguments.Select((argument, index) => ValueText.Key(ValueText.Parse(argument, function.Parameters[index].Type, story, stub.Line))));
                 exact[key] = result;
             }
 
-            functions.AddUntyped(
+            functions.AddDynamic(
                 function.Name,
-                [.. function.Parameters.Select(parameter => HostFunctions.ClrTypeOf(parameter.Type))],
-                HostFunctions.ClrTypeOf(function.ReturnType),
+                [.. function.Parameters.Select(parameter => parameter.Type.HostType)],
+                function.ReturnType.HostType,
                 arguments => exact.TryGetValue(string.Join('\u0001', arguments.Select(ValueText.Key)), out object? result) ? result
                     : hasFallback ? fallback
-                    : throw new TranscriptException($"The script has no stub for `{function.Name}({string.Join(", ", arguments.Select(argument => argument is string text ? ValueText.Show(Value.String(text)) : ValueText.Key(argument)[1..]))})`."));
+                    : throw new TranscriptException($"The script has no stub for `{function.Name}({string.Join(", ", arguments.Zip(function.Parameters, (argument, parameter) => ValueText.Show(argument!, parameter.Type)))})`."));
         }
+
+        string[] missing = [.. functions.Validate(story).Where(problem => problem.Kind is HostFunctionProblemKind.Missing).Select(problem => problem.Function)];
+        if (missing.Length > 0)
+            throw new TranscriptException($"The story declares {string.Join(", ", missing.Select(name => $"`{name}`"))}, but the script has no stub for {(missing.Length == 1 ? "it" : "them")}. Add a line like `stub {missing[0]} = value`.");
 
         return functions;
     }

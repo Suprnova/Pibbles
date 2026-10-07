@@ -59,8 +59,8 @@ public class HostFunctionsTests
             .Add("echo", (string s) => s + "!")
             .Add("lasting", (TimeSpan d) => d + TimeSpan.FromSeconds(1))
             .Add("describe", (string p, string a, string n) => $"{p}/{a}/{n}");
-        ActorSymbol mira = Story.Actors["mira"];
-        EnumSymbol position = Story.Functions["pick"].ReturnType as EnumSymbol ?? throw new InvalidOperationException();
+        ActorSymbol mira = Story.ActorSymbols["mira"];
+        EnumSymbol position = Story.FunctionSymbols["pick"].ReturnType as EnumSymbol ?? throw new InvalidOperationException();
 
         Assert.True(Call(functions, "flag", Value.Bool(false)).AsBool);
         Assert.Equal("a!", Call(functions, "echo", Value.String("a")).AsString);
@@ -108,7 +108,7 @@ public class HostFunctionsTests
         });
         List<RuntimeWarning> warnings = [];
 
-        functions.Invoke(Story, new CallExpr(Story.Functions["lasting"], [], Here), [Value.Duration(decimal.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture))], warnings.Add);
+        functions.Invoke(Story, new CallExpr(Story.FunctionSymbols["lasting"], [], Here), [Value.Duration(decimal.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture))], warnings.Add);
 
         Assert.Equal(positive ? TimeSpan.MaxValue : TimeSpan.MinValue, received);
         RuntimeWarning warning = Assert.Single(warnings);
@@ -143,7 +143,7 @@ public class HostFunctionsTests
         HostFunctions functions = new HostFunctions().Add("lasting", (TimeSpan d) => d);
 
         Assert.Throws<NotSupportedException>(() =>
-            functions.Invoke(Story, new CallExpr(Story.Functions["lasting"], [], Here), [Value.Duration(decimal.MaxValue)], _ => throw new NotSupportedException()));
+            functions.Invoke(Story, new CallExpr(Story.FunctionSymbols["lasting"], [], Here), [Value.Duration(decimal.MaxValue)], _ => throw new NotSupportedException()));
     }
 
     /// <summary>Warnings from a duration too long for a <see cref="TimeSpan"/>, for the test that every warning kind is triggered.</summary>
@@ -152,7 +152,7 @@ public class HostFunctionsTests
         List<RuntimeWarning> warnings = [];
         new HostFunctions()
             .Add("lasting", (TimeSpan d) => d)
-            .Invoke(Story, new CallExpr(Story.Functions["lasting"], [], Here), [Value.Duration(1_000_000_000_000m)], warnings.Add);
+            .Invoke(Story, new CallExpr(Story.FunctionSymbols["lasting"], [], Here), [Value.Duration(1_000_000_000_000m)], warnings.Add);
         return warnings;
     }
 
@@ -280,7 +280,7 @@ public class HostFunctionsTests
     private static decimal ThrowFrom(Exception exception) => throw exception;
 
     private static Value Call(HostFunctions functions, string name, params Value[] arguments) =>
-        functions.Invoke(Story, new CallExpr(Story.Functions[name], [], Here), arguments, _ => { });
+        functions.Invoke(Story, new CallExpr(Story.FunctionSymbols[name], [], Here), arguments, _ => { });
 
     private static Story Compile(string text) => Compile([new SourceText("story.pib", text)]);
 

@@ -230,7 +230,7 @@ public class EvaluatorTests
         Story story = result.Story ?? throw new Xunit.Sdk.XunitException(string.Join("\n", result.Diagnostics.Select(diagnostic => $"{diagnostic.Code} {diagnostic.Message}")));
 
         var context = new FakeContext(story);
-        foreach (StoryVariable variable in story.Variables)
+        foreach (StoryVariable variable in story.VariableDefinitions)
             context.Variables[variable.Variable] = Evaluator.Evaluate(variable.StartingValue, context);
 
         context.Visits["t.n"] = 4;

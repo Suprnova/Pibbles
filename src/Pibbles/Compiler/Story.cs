@@ -11,6 +11,10 @@ namespace Pibbles.Compiler;
 public sealed class Story
 {
     private IReadOnlyList<NodeInfo>? nodeInfos;
+    private IReadOnlyList<FunctionInfo>? functionInfos;
+    private IReadOnlyList<VariableInfo>? variableInfos;
+    private IReadOnlyList<ActorInfo>? actorInfos;
+    private IReadOnlyList<EnumInfo>? enumInfos;
 
     internal Story(
         IReadOnlyDictionary<string, CompiledNode> nodes,
@@ -26,18 +30,32 @@ public sealed class Story
     {
         CompiledNodes = nodes;
         Aliases = aliases;
-        Variables = variables;
+        VariableDefinitions = variables;
         Templates = templates;
         Sites = sites;
         FallbackIds = fallbackIds;
-        Actors = actors;
+        ActorSymbols = actors;
         Tags = tags;
-        Enums = enums;
-        Functions = functions;
+        EnumSymbols = enums;
+        FunctionSymbols = functions;
     }
 
     /// <summary>Every node: its current name, and the old names from its <c>#was:</c> tags that the host can also start it by.</summary>
     public IReadOnlyList<NodeInfo> Nodes => nodeInfos ??= [.. CompiledNodes.Keys.Select(name => new NodeInfo(name, [.. Aliases.Where(alias => alias.Value == name).Select(alias => alias.Key)]))];
+
+    /// <summary>The functions the story declares, which the host provides: <c>visits</c> isn't among them.</summary>
+    public IReadOnlyList<FunctionInfo> Functions => functionInfos ??=
+        [.. FunctionSymbols.Values.Select(function => new FunctionInfo(function.Name, [.. function.Parameters.Select(parameter => new StoryParameter(parameter.Name, StoryType.Of(parameter.Type)))], StoryType.Of(function.ReturnType)))];
+
+    /// <summary>The variables the story declares, in declaration order.</summary>
+    public IReadOnlyList<VariableInfo> Variables => variableInfos ??= [.. VariableDefinitions.Select(variable => new VariableInfo(variable.Variable.Name, StoryType.Of(variable.Variable.Type)))];
+
+    /// <summary>The actors the story declares.</summary>
+    public IReadOnlyList<ActorInfo> Actors => actorInfos ??=
+        [.. ActorSymbols.Values.Select(actor => new ActorInfo(actor.Name, actor.DisplayName, [.. actor.Poses.Select(pose => pose.Name)]))];
+
+    /// <summary>The enums the story declares.</summary>
+    public IReadOnlyList<EnumInfo> Enums => enumInfos ??= [.. EnumSymbols.Values.Select(@enum => new EnumInfo(@enum.Name, [.. @enum.Members.Select(member => member.Name)]))];
 
     /// <summary>Every node's code, by its current name.</summary>
     internal IReadOnlyDictionary<string, CompiledNode> CompiledNodes { get; }
@@ -46,7 +64,7 @@ public sealed class Story
     internal IReadOnlyDictionary<string, string> Aliases { get; }
 
     /// <summary>Every variable, with its starting value as an expression.</summary>
-    internal IReadOnlyList<StoryVariable> Variables { get; }
+    internal IReadOnlyList<StoryVariable> VariableDefinitions { get; }
 
     /// <summary>Every line's and option's template, by ID.</summary>
     internal IReadOnlyDictionary<string, Template> Templates { get; }
@@ -61,16 +79,16 @@ public sealed class Story
     internal IReadOnlySet<string> FallbackIds { get; }
 
     /// <summary>Every declared actor, by ID, for checking what a host function returns.</summary>
-    internal IReadOnlyDictionary<string, ActorSymbol> Actors { get; }
+    internal IReadOnlyDictionary<string, ActorSymbol> ActorSymbols { get; }
 
     /// <summary>The functions the story declares, which the host provides. <c>visits</c> isn't among them.</summary>
-    internal IReadOnlyDictionary<string, FunctionSymbol> Functions { get; }
+    internal IReadOnlyDictionary<string, FunctionSymbol> FunctionSymbols { get; }
 
     /// <summary>The tags the story declares, by name.</summary>
     internal IReadOnlyDictionary<string, TagSymbol> Tags { get; }
 
     /// <summary>The enums the story declares, by name.</summary>
-    internal IReadOnlyDictionary<string, EnumSymbol> Enums { get; }
+    internal IReadOnlyDictionary<string, EnumSymbol> EnumSymbols { get; }
 
     /// <summary>
     /// Checks that the host's enum has exactly the members of one of the story's enums, so a renamed member fails when the
@@ -82,7 +100,7 @@ public sealed class Story
     public IReadOnlyList<HostEnumProblem> ValidateEnum<TEnum>(string storyEnum)
         where TEnum : struct, Enum
     {
-        if (!Enums.TryGetValue(storyEnum, out EnumSymbol? declared))
+        if (!EnumSymbols.TryGetValue(storyEnum, out EnumSymbol? declared))
             return [new(HostEnumProblemKind.UnknownEnum, storyEnum, $"The story doesn't declare an enum called `{storyEnum}`.")];
 
         string[] host = Enum.GetNames<TEnum>();

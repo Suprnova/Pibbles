@@ -11,7 +11,9 @@ internal sealed partial class StyleChecks
     {
         if (depth > limit)
         {
-            Report(DiagnosticCatalog.DeepNesting, FirstLine(block[0]), depth, limit);
+            if (block.Count > 0)
+                Report(DiagnosticCatalog.DeepNesting, FirstLine(block[0]), depth, limit);
+
             return;
         }
 

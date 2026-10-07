@@ -42,7 +42,8 @@ public sealed record EndStep : DialogueStep;
 /// <param name="Text">The option's text. Its <see cref="Line.Id"/> is the option's ID, and it has no speaker.</param>
 /// <param name="IsAvailable">Whether the option's <c>@if</c> holds. The host decides whether to hide an unavailable option or grey it out.</param>
 /// <param name="WasChosen">Whether the player has picked this option before.</param>
-public sealed record ChoiceOption(Line Text, bool IsAvailable, bool WasChosen)
+/// <param name="Number">The option's place among the choice's options as they're written in the source, starting at 1 and counting options <c>@once</c> has removed, so it's the same on every visit. It's for display and tools: pick an option with the option or its ID, never a number.</param>
+public sealed record ChoiceOption(Line Text, bool IsAvailable, bool WasChosen, int Number)
 {
     /// <summary>The option's ID.</summary>
     public string Id => Text.Id;

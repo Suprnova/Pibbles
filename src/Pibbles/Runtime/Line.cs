@@ -21,6 +21,7 @@ namespace Pibbles.Runtime;
 /// <param name="Markers">The points in <paramref name="Text"/> where the reveal does something, in the order the line has them.</param>
 /// <param name="Icons">The icons in <paramref name="Text"/>, one for each U+FFFC.</param>
 /// <param name="Tags">The line's tags, <c>#id</c> included.</param>
+/// <param name="IsFallbackId">Whether <paramref name="Id"/> was made up by the compiler because the source has no <c>#id</c>. A fallback ID changes whenever the file is edited, so a host that records which lines the player has seen must skip it.</param>
 public sealed record Line(
     string Id,
     string? Speaker,
@@ -29,7 +30,8 @@ public sealed record Line(
     ImmutableArray<Span> Spans,
     ImmutableArray<Marker> Markers,
     ImmutableArray<Icon> Icons,
-    TagCollection Tags)
+    TagCollection Tags,
+    bool IsFallbackId = false)
 {
     /// <inheritdoc/>
     public bool Equals(Line? other) =>
@@ -41,7 +43,8 @@ public sealed record Line(
         && Spans.SequenceEqual(other.Spans)
         && Markers.SequenceEqual(other.Markers)
         && Icons.SequenceEqual(other.Icons)
-        && Tags.Equals(other.Tags);
+        && Tags.Equals(other.Tags)
+        && IsFallbackId == other.IsFallbackId;
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(Id, Speaker, Text, Spans.Length, Markers.Length, Icons.Length);

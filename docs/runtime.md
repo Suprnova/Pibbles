@@ -124,21 +124,29 @@ var functions = new HostFunctions()
     .Add("has_item", (string id) => inventory.Contains(id));
 ```
 
-`Add` has overloads for zero to four parameters. Types are strict:
+`Add` has overloads for zero to four parameters, and `AddDynamic(name, parameterTypes, returnType, function)` registers a function whose types are only known when the program runs, such as one a scripting bridge forwards to another language: the delegate takes its arguments and returns its result as host values (`object?[]` in, `object?` out), and the registration is validated the same way. Types are strict, and there is one mapping for every value a host sees, wherever it meets one:
 
-| Story type | CLR type |
+| Story type | Host type |
 | --- | --- |
 | `bool` | `bool` |
 | `number` | `decimal` |
 | `string` | `string` |
-| `duration` | `TimeSpan`: decimal seconds rounded to the nearest tick (100 ns). A duration past `TimeSpan`'s range clamps, with an `Overflow` [warning](#runtime-warnings). A returned `TimeSpan` becomes exact seconds. |
-| An enum, `actor` or `node` | `string`: the member's name, the actor's ID, the node's current name |
+| `duration` | `TimeSpan`: decimal seconds rounded to the nearest tick (100 ns). A duration past `TimeSpan`'s range clamps, with an `Overflow` [warning](#runtime-warnings). A `TimeSpan` going the other way becomes exact seconds. |
+| An enum member | `string`: the member's name |
+| `actor` | `string`: the actor's ID |
+| `node` | `string`: the node's current name (an old `#was:` name is accepted on the way in) |
 
-Nothing else is accepted: no `int`, `float`, `double` or C# enum, so a game converts its own floats. A function declared to return an enum, actor or node returns a string that must name a member, a declared actor, or a node (its current name or a `#was:` name); anything else is a host error. Functions must be free of side effects: `and` and `or` short-circuit, and text is rendered again after a load.
+That is the mapping for function arguments and results, for a command's and a span's arguments (`GetValue`), and for variables (`StoryState.GetVariable` and `SetVariable`). `StoryType.HostType` gives the .NET type for a story type. A string for an enum member, an actor or a node is checked against the story wherever a host passes it in. Nothing else is accepted: no `int`, `float`, `double` or C# enum, so a game converts its own floats. A function declared to return an enum, actor or node returns a string that must name a member, a declared actor, or a node (its current name or a `#was:` name); anything else is a host error. Functions must be free of side effects: `and` and `or` short-circuit, and text is rendered again after a load.
 
 - **`Add` throws `ArgumentException`** for a name registered twice, a null delegate, an unsupported type, or `visits`, which the core answers itself.
 - **`Validate(story)`** returns a list of `HostFunctionProblem`, never throwing: a declared function that's missing, a registered one whose parameters or return type don't match ("In the story, `has_item` takes a `string` and returns a `bool`, but the registered function takes a `decimal` and returns a `bool`"), and a registered name the story doesn't declare, which is likely a typo. They describe the host's code, so they aren't diagnostics. Hosts keep a default arm on `HostFunctionProblemKind`, which can grow.
 - **At run time,** calling a function that was never registered throws `InvalidOperationException`, which `Validate` exists to catch first. A function that throws, or returns a string that names nothing, is wrapped in a `HostFunctionException` that names the function and the story location, with the original as `InnerException`. The Godot adapter catches it and falls back ([failures](godot.md#failures)).
+
+### Story metadata and variables
+
+A compiled story describes itself to hosts, read-only: `story.Functions` (each with its parameters' names and types and its return type), `story.Variables` (name and type), `story.Actors` (ID, display name and poses, the first being the default), `story.Enums` (name and members) and `story.Nodes` (current name and `#was:` names). A type is a `StoryType`: a kind (`Bool`, `Number`, `Text`, `Duration`, `Enum`, `Actor` or `Node`), plus the enum's name for an enum.
+
+`StoryState.GetVariable(name)` reads a variable as a host value, and `SetVariable(name, value)` sets one, checked against its type: a wrong .NET type, a string that names no member, actor or node, or an unknown variable throws `ArgumentException`. Hosts use them for debug overlays and seeding. `CommandInvocation` and a span's `Arguments` list their `Parameters` (names and types) and give any value with `GetValue(name)`, so a host can forward a command it doesn't know at compile time, for example as a dictionary to GDScript. A `Line` says whether its ID is a fallback (`IsFallbackId`), which a host that records the lines the player has seen must skip, because a fallback ID changes whenever the file is edited. A `ChoiceOption` has a `Number`, its place among the choice's options in the source, counting options `@once` has removed, so it is the same on every visit; it is for display and tools, and `Choose` still takes the option or its ID.
 
 ### Runtime warnings
 
