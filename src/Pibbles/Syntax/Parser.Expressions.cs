@@ -103,15 +103,17 @@ internal sealed partial class Parser
         {
             case TokenKind.Number:
                 Advance();
-                return ParseNumber(TextOf(current.Span)) is { } number
+                return ParseNumber(TextOf(current.Span), current.Span) is { } number
                     ? new NumberLiteralSyntax(number) { Span = current.Span }
                     : new ErrorExpressionSyntax { Span = current.Span };
 
             case TokenKind.Duration:
                 Advance();
                 string duration = TextOf(current.Span);
-                double seconds = duration.EndsWith("ms", StringComparison.Ordinal) ? ParseNumber(duration[..^2])!.Value / 1000 : ParseNumber(duration[..^1])!.Value;
-                return new DurationLiteralSyntax(seconds) { Span = current.Span };
+                decimal? seconds = duration.EndsWith("ms", StringComparison.Ordinal) ? ParseNumber(duration[..^2], current.Span) / 1000m : ParseNumber(duration[..^1], current.Span);
+                return seconds is { } value
+                    ? new DurationLiteralSyntax(value) { Span = current.Span }
+                    : new ErrorExpressionSyntax { Span = current.Span };
 
             case TokenKind.String:
                 Advance();
@@ -193,9 +195,20 @@ internal sealed partial class Parser
 
     private bool IsWord(string word) => token.Kind is TokenKind.Name && TextOf(token.Span) == word;
 
-    /// <summary>Reads a number the lexer accepted, or <see langword="null"/> for one it reported as malformed.</summary>
-    private static double? ParseNumber(string text) =>
-        double.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double value) ? value : null;
+    /// <summary>
+    /// Reads a number the lexer accepted. Returns <see langword="null"/> for one it reported as malformed, and for one too
+    /// large for a <see cref="decimal"/>, which is reported here. Fraction digits past what a <see cref="decimal"/> holds round.
+    /// </summary>
+    private decimal? ParseNumber(string text, TextSpan literal)
+    {
+        if (decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal value))
+            return value;
+
+        if (text.All(character => char.IsAsciiDigit(character) || character is '.') && text.Count(character => character is '.') <= 1)
+            Fail(DiagnosticCatalog.NumberTooLarge, literal, TextOf(literal));
+
+        return null;
+    }
 
     /// <summary>The text between a string's quotes, with each backslash removed and the character after it kept.</summary>
     private static string Unquote(string text)

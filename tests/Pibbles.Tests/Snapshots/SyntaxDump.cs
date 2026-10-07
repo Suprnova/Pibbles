@@ -77,7 +77,7 @@ internal static class SyntaxDump
         null => "null",
         TextSpan span => Format(source!, span),
         string text => $"\"{text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"",
-        double number => number.ToString("R", CultureInfo.InvariantCulture),
+        decimal number => number.ToString(CultureInfo.InvariantCulture),
         bool flag => flag ? "true" : "false",
         _ => Convert.ToString(value, CultureInfo.InvariantCulture)!,
     };

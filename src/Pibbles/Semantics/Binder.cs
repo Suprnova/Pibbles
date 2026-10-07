@@ -13,11 +13,11 @@ namespace Pibbles.Semantics;
 /// expected enum, an actor or a node. Anything whose type can't be known gets <see cref="TypeSymbol.Error"/>, which
 /// converts to and from every type, so each problem is reported once.
 /// </remarks>
-internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references) : AnalysisPass(diagnostics, references)
+internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings) : AnalysisPass(diagnostics, references)
 {
-    public static void Run(IReadOnlyList<SyntaxTree> trees, SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references)
+    public static void Run(IReadOnlyList<SyntaxTree> trees, SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings)
     {
-        var binder = new Binder(symbols, diagnostics, references);
+        var binder = new Binder(symbols, diagnostics, references, bindings);
         foreach (SyntaxTree tree in trees)
         {
             binder.Tree = tree;
@@ -27,13 +27,23 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         }
     }
 
+    /// <summary>Records that <paramref name="name"/> refers to <paramref name="symbol"/>, in the reference index and in the bindings.</summary>
+    private void Refers(SyntaxNode name, Symbol symbol) => Refers(name, name.Span, symbol);
+
+    /// <summary>Records that <paramref name="name"/>, whose reference is the text at <paramref name="span"/>, refers to <paramref name="symbol"/>.</summary>
+    private void Refers(SyntaxNode name, TextSpan span, Symbol symbol)
+    {
+        Refers(span, symbol);
+        bindings.BindName(name, symbol);
+    }
+
     private void BindDeclarations(IEnumerable<DeclarationSyntax> declarations)
     {
         foreach (DeclarationSyntax declaration in declarations)
         {
-            if (declaration is VariableDeclarationSyntax { Type: { } written } variable)
+            if (declaration is VariableDeclarationSyntax variable)
             {
-                TypeSymbol type = TypeNamed(written);
+                TypeSymbol type = variable.Type is { } written ? TypeNamed(written) : symbols.Variables.GetValueOrDefault(variable.Variable.Name)?.Type ?? TypeSymbol.Error;
                 BindValue(variable.Value, type, $"`${variable.Variable.Name}` holds {type.Describe()}");
             }
 
@@ -93,11 +103,11 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     break;
 
                 case JumpStatementSyntax jump:
-                    BindNode(jump.Target.Text, jump.Target.Span);
+                    BindNode(jump.Target.Text, jump.Target.Span, jump.Target);
                     break;
 
                 case CallStatementSyntax call:
-                    BindNode(call.Target.Text, call.Target.Span);
+                    BindNode(call.Target.Text, call.Target.Span, call.Target);
                     BindTags(call.Tags);
                     break;
 
@@ -141,13 +151,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
         }
 
-        Refers(speaker.Span, actor);
+        Refers(speaker, actor);
         if (line.Pose is not { } pose)
             return;
 
         if (actor.Poses.FirstOrDefault(known => known.Name == pose.Text) is { } posed)
         {
-            Refers(pose.Span, posed);
+            Refers(pose, posed);
             return;
         }
 
@@ -215,7 +225,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     break;
 
                 case IconSyntax icon when symbols.Icons.TryGetValue(icon.Name.Text, out IconSymbol? symbol):
-                    Refers(icon.Name.Span, symbol);
+                    Refers(icon.Name, symbol);
                     break;
 
                 case IconSyntax icon when !icon.Name.IsMissing:
@@ -241,7 +251,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     {
         if (symbols.Markup.TryGetValue(markup.Name.Text, out MarkupSymbol? symbol))
         {
-            Refers(markup.Name.Span, symbol);
+            Refers(markup.Name, symbol);
             BindArguments($"[{symbol.Name}]", symbol.Parameters, markup.Arguments, markup.Name.Span, named: true);
         }
         else
@@ -285,7 +295,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
         }
 
-        Refers(name.Span, command);
+        Refers(name, command);
         if (inline && !command.IsInline)
             Report(DiagnosticCatalog.NotInline, name.Span, name.Text);
 
@@ -303,7 +313,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             }
             else
             {
-                Refers(new(tag.Span.Start + 1, tag.Name.Length), symbol);
+                Refers(tag, new(tag.Span.Start + 1, tag.Name.Length), symbol);
                 BindTagValue(tag, symbol);
             }
         }
@@ -332,7 +342,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
         if (values.Members.FirstOrDefault(member => member.Name == tag.Value) is { } value)
         {
-            Refers(new(tag.Span.End - tag.Value.Length, tag.Value.Length), value);
+            Refers(new TextSpan(tag.Span.End - tag.Value.Length, tag.Value.Length), value);
+            bindings.BindTagValue(tag, value);
             return;
         }
 
@@ -343,7 +354,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private void BindSet(SetStatementSyntax set)
     {
-        TypeSymbol target = BindVariable(set.Variable);
+        TypeSymbol target = Bind(set.Variable);
         string holds = $"`${set.Variable.Name}` holds {target.Describe()}";
         if (set.Operator is AssignmentOperator.Assign)
         {
@@ -361,6 +372,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             Report(DiagnosticCatalog.OperatorTypes, new(set.Variable.Span.Start, set.Value.Span.End - set.Variable.Span.Start), TextOf(set.OperatorSpan), $"{target.Describe()} and {value.Describe()}", OperatorHelp(@operator));
         else if (result != target)
             ReportWithOptionalHelp(DiagnosticCatalog.ValueType, set.Value.Span, holds, value.Describe(), ValueHelp(target));
+        else
+            bindings.ConvertTo(set.Value, target);
     }
 
     /// <summary>Binds a value that has to have <paramref name="target"/>'s type, reporting it with what it's for if it doesn't.</summary>
@@ -369,7 +382,10 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     {
         TypeSymbol type = Bind(value, target);
         if (Converts(type, target))
+        {
+            bindings.ConvertTo(value, target);
             return true;
+        }
 
         ReportWithOptionalHelp(DiagnosticCatalog.ValueType, value.Span, purpose, type.Describe(), ValueHelp(target));
         return false;
@@ -399,7 +415,14 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     /// <summary>Binds an expression and returns its type.</summary>
     /// <param name="expression">The expression to bind.</param>
     /// <param name="expected">The type expected where the expression appears, which a bare name is read against.</param>
-    private TypeSymbol Bind(ExpressionSyntax expression, TypeSymbol? expected = null) => expression switch
+    private TypeSymbol Bind(ExpressionSyntax expression, TypeSymbol? expected = null)
+    {
+        TypeSymbol type = BindCore(expression, expected);
+        bindings.BindType(expression, type);
+        return type;
+    }
+
+    private TypeSymbol BindCore(ExpressionSyntax expression, TypeSymbol? expected) => expression switch
     {
         NumberLiteralSyntax => TypeSymbol.Number,
         DurationLiteralSyntax => TypeSymbol.Duration,
@@ -421,7 +444,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
         if (symbols.Variables.TryGetValue(variable.Name, out VariableSymbol? symbol))
         {
-            Refers(variable.Span, symbol);
+            Refers(variable, symbol);
             return symbol.Type;
         }
 
@@ -437,14 +460,14 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return TypeSymbol.Error;
 
         if (expected == TypeSymbol.Node)
-            return BindNode(name.Name, name.Span);
+            return BindNode(name.Name, name.Span, name);
 
         if (expected is EnumSymbol @enum)
         {
             if (@enum.Members.FirstOrDefault(member => member.Name == name.Name) is not { } member)
                 return NotValueOf(name, @enum, @enum.Members.Select(member => member.Name), $"Use one of {Phrase.Or(@enum.Members.Select(member => member.Name))}.");
 
-            Refers(name.Span, member);
+            Refers(name, member);
             return @enum;
         }
 
@@ -453,7 +476,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             if (!symbols.Actors.TryGetValue(name.Name, out ActorSymbol? actor))
                 return NotValueOf(name, TypeSymbol.Actor, symbols.Actors.Keys, null);
 
-            Refers(name.Span, actor);
+            Refers(name, actor);
             return TypeSymbol.Actor;
         }
 
@@ -471,20 +494,20 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         return TypeSymbol.Error;
     }
 
-    private TypeSymbol BindNode(string written, TextSpan span)
+    private TypeSymbol BindNode(string written, TextSpan span, SyntaxNode key)
     {
         if (FullName(written, span) is not { } name)
             return TypeSymbol.Error;
 
         if (symbols.Nodes.TryGetValue(name, out NodeSymbol? node))
         {
-            Refers(span, node);
+            Refers(key, span, node);
             return TypeSymbol.Node;
         }
 
         if (symbols.Aliases.TryGetValue(name, out NodeSymbol? current))
         {
-            Refers(span, current);
+            Refers(key, span, current);
             Report(DiagnosticCatalog.OldNodeName, span, written, AsWritten(current.Name, written));
             return TypeSymbol.Node;
         }
@@ -513,7 +536,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return TypeSymbol.Error;
         }
 
-        Refers(call.Function.Span, function);
+        Refers(call.Function, function);
         ArgumentSyntax[] arguments = [.. call.Arguments.Select(argument => new ArgumentSyntax(null, argument) { Span = argument.Span })];
         BindArguments($"{function.Name}()", function.Parameters, arguments, call.Span, named: false);
         return function.ReturnType;
@@ -554,7 +577,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 }
                 else
                 {
-                    Refers(name.Span, parameter);
+                    Refers(name, parameter);
                     if (given.Contains(parameter))
                     {
                         Report(DiagnosticCatalog.RepeatedArgument, argument.Span, owner, parameter.Name);
@@ -567,7 +590,12 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 given.Add(parameter);
 
             TypeSymbol type = Bind(argument.Value, parameter?.Type ?? TypeSymbol.Error);
-            if (parameter is not null && !Converts(type, parameter.Type))
+            if (parameter is null)
+                continue;
+
+            if (Converts(type, parameter.Type))
+                bindings.ConvertTo(argument.Value, parameter.Type);
+            else
                 ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Value.Span, owner, parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
         }
 
@@ -635,7 +663,15 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return fallback;
 
         if (OperatorType(binary.Operator, left, right) is { } result)
+        {
+            if (binary.Operator is not (BinaryOperator.Multiply or BinaryOperator.Divide or BinaryOperator.Remainder))
+            {
+                bindings.ConvertTo(binary.Left, right);
+                bindings.ConvertTo(binary.Right, left);
+            }
+
             return result;
+        }
 
         Report(DiagnosticCatalog.OperatorTypes, binary.Span, TextOf(binary.OperatorSpan), $"{left.Describe()} and {right.Describe()}", OperatorHelp(binary.Operator));
         return fallback;

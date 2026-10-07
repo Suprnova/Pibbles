@@ -1,6 +1,6 @@
 # Semantics design
 
-Semantic analysis turns syntax trees into a bound story: it resolves every name, checks every type, and runs the flow, content and style checks.
+Semantic analysis resolves every name in the syntax trees, checks every type, and runs the flow, content and style checks. The binder also keeps what it works out, as the [bindings](#bindings), so the compiler never has to resolve a name or infer a type again.
 
 ## Passes
 
@@ -24,6 +24,15 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
 4. **Style checks.** The [style rules](#style-rules), over the syntax trees, with the symbol table for actors and the recorded references for unused variables. Each file's thresholds come from its settings. Most rules look at one file; repeated lines (PIB5003) and repeated colors (PIB5004) count across the story, and each place is reported when the count reaches its own file's threshold.
 
 Once every pass has run, each diagnostic gets the severity its file's settings give it, or is dropped when they turn it off, and then [`// pibbles-ignore`](#levels-and-visibility) comments silence what they cover. Last, style hints on a line that has an error are dropped.
+
+### Bindings
+
+`Compilation.Bindings` is internal, for the compiler. The binder fills it as it goes:
+
+- **The symbol each name refers to.** Names are keyed by the syntax node that spells them: the name of a speaker, pose, command, markup, icon, called function, named argument, or `@jump` and `@call` target; a variable; a bare name (an enum member, an actor or a node); and a tag, whose enum value is kept separately. A name that doesn't resolve has no entry.
+- **Each expression's type, and its converted type.** Every expression the binder reaches has an entry, nested ones included, and variables' starting values and parameters' defaults too. The converted type is the type the context uses the expression as, which differs from its type only for a number where a duration is expected (`@wait 1`, `{w 1}`, a `duration` argument, `@set $d += 1`, the number beside a duration in `+`, `-` and the comparisons). An expression whose type can't be known has the error type.
+
+Entries are keyed by the identity of the syntax node, never its value, because syntax nodes compare by value and two identical lines at the same position in different files are different nodes. The bindings take no part in diagnostics, and the [semantic model](#the-semantic-model) is separate: it answers the editor's questions by position, and the bindings answer the compiler's by node.
 
 ### The semantic model
 

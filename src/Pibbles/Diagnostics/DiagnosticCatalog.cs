@@ -228,6 +228,14 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "I expected {0} after `{1}`.");
 
+    /// <summary>PIB1047: a number or duration too large to hold, past about 7.9 × 10^28.</summary>
+    /// <remarks>Argument: the number as written.</remarks>
+    public static DiagnosticDescriptor NumberTooLarge { get; } = new(
+        "PIB1047",
+        DiagnosticSeverity.Error,
+        "`{0}` is too large a number for me.",
+        help: "Numbers go up to 79228162514264337593543950335. Write a smaller one.");
+
     /// <summary>PIB1050: a positional argument after a named one.</summary>
     public static DiagnosticDescriptor ArgumentOrder { get; } = new(
         "PIB1050",
@@ -811,6 +819,7 @@ public static class DiagnosticCatalog
         InvalidDisplayName,
         DottedName,
         Missing,
+        NumberTooLarge,
         ArgumentOrder,
         SpaceBeforeCall,
         InvalidLineId,

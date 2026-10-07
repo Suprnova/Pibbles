@@ -42,7 +42,7 @@ internal static class SyntaxGenerators
 
     private static readonly Gen<string> Text = Piece.Array[1, 8].Select(string.Concat);
 
-    private static readonly Gen<double> Decimal = Gen.Int[0, 99999].Select(n => n / 100.0);
+    private static readonly Gen<decimal> Decimal = Gen.Int[0, 99999].Select(n => n / 100m);
 
     private static readonly Gen<TagSyntax> Tag = Gen.Select(Identifier, Maybe(Gen.String[Gen.Char["abcxyz019_.-:"], 0, 5]), (name, value) => new TagSyntax(name, value) { Span = default });
 

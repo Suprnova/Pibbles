@@ -61,6 +61,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
 | PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
+| PIB1047 | Error | `99999999999999999999999999999` is too large a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
@@ -454,6 +455,16 @@ Use a single name: `@enum kitchen_spots: fridge, sink`.
 ```
 
 Write the missing part: `@jump kitchen.leave`.
+
+### PIB1047
+
+**A number, or the number in a duration, can be at most 79228162514264337593543950335** (about 7.9 × 10^28). Digits after the decimal point past what fits, about 28 in all, are rounded rather than reported.
+
+```text
+@set $big = 99999999999999999999999999999
+```
+
+Write a smaller number.
 
 ### PIB1050
 

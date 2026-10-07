@@ -5,11 +5,11 @@ public abstract record ExpressionSyntax : SyntaxNode;
 
 /// <summary>A number, such as <c>3</c>, <c>0.5</c> or <c>.5</c>.</summary>
 /// <param name="Value">The number's value.</param>
-public sealed record NumberLiteralSyntax(double Value) : ExpressionSyntax;
+public sealed record NumberLiteralSyntax(decimal Value) : ExpressionSyntax;
 
 /// <summary>A duration, such as <c>0.5s</c> or <c>300ms</c>.</summary>
 /// <param name="Seconds">The duration in seconds, so <c>300ms</c> is <c>0.3</c>.</param>
-public sealed record DurationLiteralSyntax(double Seconds) : ExpressionSyntax;
+public sealed record DurationLiteralSyntax(decimal Seconds) : ExpressionSyntax;
 
 /// <summary>Quoted text, such as <c>"crowbar"</c>.</summary>
 /// <param name="Value">The text between the quotes, with escapes resolved.</param>

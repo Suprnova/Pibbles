@@ -71,7 +71,7 @@ internal static class SyntaxWalk
         _ => [],
     };
 
-    private static IEnumerable<ExpressionSyntax> Subexpressions(ExpressionSyntax expression) =>
+    public static IEnumerable<ExpressionSyntax> Subexpressions(ExpressionSyntax expression) =>
     [
         expression,
         .. (expression switch

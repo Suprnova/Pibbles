@@ -11,10 +11,11 @@ namespace Pibbles.Semantics;
 /// </remarks>
 public sealed class Compilation
 {
-    private Compilation(IReadOnlyList<SyntaxTree> syntaxTrees, SymbolTable symbols, SemanticModel model, IReadOnlyList<Diagnostic> diagnostics)
+    private Compilation(IReadOnlyList<SyntaxTree> syntaxTrees, SymbolTable symbols, Bindings bindings, SemanticModel model, IReadOnlyList<Diagnostic> diagnostics)
     {
         SyntaxTrees = syntaxTrees;
         Symbols = symbols;
+        Bindings = bindings;
         Model = model;
         Diagnostics = diagnostics;
     }
@@ -33,6 +34,9 @@ public sealed class Compilation
 
     internal SymbolTable Symbols { get; }
 
+    /// <summary>What the binder worked out about each name and expression, for the compiler.</summary>
+    internal Bindings Bindings { get; }
+
     /// <summary>Compiles a story.</summary>
     /// <param name="sources">Every source file in the story. Each path should be unique, since diagnostics refer to files by path.</param>
     /// <param name="options">How to compile it, such as each file's diagnostic severities, or <see langword="null"/> for the defaults.</param>
@@ -43,7 +47,8 @@ public sealed class Compilation
         List<Diagnostic> found = [.. trees.SelectMany(tree => tree.Diagnostics)];
         var references = new ReferenceIndex();
         SymbolTable symbols = DeclarationPass.Run(trees, found, references);
-        Binder.Run(trees, symbols, found, references);
+        var bindings = new Bindings();
+        Binder.Run(trees, symbols, found, references, bindings);
         FlowChecks.Run(trees, found);
         LineIdChecks.Run(trees, symbols, found);
         StyleChecks.Run(trees, symbols, references, options, found);
@@ -60,7 +65,7 @@ public sealed class Compilation
         ];
 
         HashSet<(string Path, int Line)> broken = [.. configured.Where(diagnostic => diagnostic.Severity is DiagnosticSeverity.Error && !IsStyle(diagnostic)).Select(LineOf)];
-        return new(trees, symbols, new SemanticModel(symbols, references),
+        return new(trees, symbols, bindings, new SemanticModel(symbols, references),
         [
             .. configured
                 .Where(diagnostic => !IsStyle(diagnostic) || !broken.Contains(LineOf(diagnostic)))

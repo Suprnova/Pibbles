@@ -4,9 +4,9 @@ The runtime compiles a bound story to instructions and runs it: the compiler, th
 
 ## Compilation
 
-`StoryCompiler.Compile(sources, options)` takes the sources and the project settings from `pibbles.json`.
+`StoryCompiler.Compile(sources, options)` (in `Pibbles.Compiler`) takes the sources and the compilation options, and returns a `CompileResult`: the `Story`, every diagnostic after the files' `.editorconfig` severities, and `HasErrors`. `Story` is `null` exactly when `HasErrors` is true, that is, when any diagnostic is an error, including a warning raised to one. A story with only warnings and hints compiles, and its diagnostics are still in the result.
 
-The compiler lowers each node's bound tree to a **flat list of instructions**:
+The compiler lowers each node's syntax tree to a **flat list of instructions**, reading what the binder worked out from the [bindings](semantics.md#bindings): the symbol each name refers to, and each expression's type, including a number that its context uses as a duration. The compiler never resolves a name itself. The instructions are:
 
 ```
 Line(templateId) · Choice(options → targets) · Command(name, args, wait) · Pose(actor, pose)

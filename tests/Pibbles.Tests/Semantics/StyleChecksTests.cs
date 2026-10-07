@@ -17,9 +17,10 @@ public class StyleChecksTests
         { "@if ($a and $a) == false\n    Hi.\n", "PIB5020", "Write `not ($a and $a)`." },
         { "@set $n = $n - 2 * 3\n", "PIB5021", "Write `@set $n -= 2 * 3`." },
         { "Wait.{w 0.2}{w 300ms} Done.\n", "PIB5011", "Write one pause: `{w 0.5}`." },
+        { "Wait.{w 0.10}{w 0.20} Done.\n", "PIB5011", "Write one pause: `{w 0.3}`." },
         { "Wait.{w 0.1}{w 0.2} Done.\n", "PIB5011", "Write one pause: `{w 0.3}`." },
         { "Wait.{w}{p}Done.\n", "PIB5011", "Remove it." },
-        { "Wait.{w 99999999999999999999999999999}{w 1} Done.\n", "PIB5011", "Write them as one pause." },
+        { "Wait.{w 79228162514264337593543950335}{w 1} Done.\n", "PIB5011", "Write them as one pause." },
     };
 
     [Theory]

@@ -88,13 +88,13 @@ internal sealed partial class StyleChecks
 
     private static string CombinedPause(ExpressionSyntax first, ExpressionSyntax second) =>
         Seconds(first) is { } a && Seconds(second) is { } b && ConstantValue.Add(a, b) is { } sum
-            ? $"Write one pause: `{{w {sum.ToString(CultureInfo.InvariantCulture)}}}`."
+            ? $"Write one pause: `{{w {sum.ToString("G29", CultureInfo.InvariantCulture)}}}`."
             : "Write them as one pause.";
 
     private static decimal? Seconds(ExpressionSyntax duration) => duration switch
     {
-        NumberLiteralSyntax number => ConstantValue.FromDouble(number.Value),
-        DurationLiteralSyntax literal => ConstantValue.FromDouble(literal.Seconds),
+        NumberLiteralSyntax number => number.Value,
+        DurationLiteralSyntax literal => literal.Seconds,
         _ => null,
     };
 

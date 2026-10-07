@@ -272,7 +272,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         _ => throw new ArgumentException($"No printed form for {expression.GetType().Name}.", nameof(expression)),
     };
 
-    private static string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+    private static string Number(decimal value) => value.ToString(CultureInfo.InvariantCulture);
 
     private static string Operator(BinaryOperator @operator) => @operator switch
     {

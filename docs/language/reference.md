@@ -110,7 +110,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 **Variables hold what the story decides. The game keeps everything else.** Inventory, solved puzzles and anything that outlives a save slot live in the game, reached through functions and commands.
 
-**Types:** `bool`, `number` (a 64-bit float), `string`, `duration`, `node`, `actor`, and any declared enum.
+**Types:** `bool`, `number` (an exact decimal number), `string`, `duration`, `node`, `actor`, and any declared enum.
 
 **The prelude:** Pibbles ships a small built-in declaration file with `@markup b`, `i`, `u`, `s` and `color(value: string)`, which the host renders like its own markup. It also declares `@function visits(target: node) -> number`, which has core semantics: Pibbles handles it, not the host. The host can't redeclare any of these names. (`speed` isn't markup: it's a [point](#points-and-values).)
 
@@ -299,7 +299,7 @@ mira: You found {item_name ("key")}.
 
 ## Expressions
 
-- **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error.
+- **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error. Numbers are exact decimals, from -79228162514264337593543950335 to 79228162514264337593543950335 (about 7.9 × 10^28), so `0.1 + 0.2` is exactly `0.3`. A literal outside that range is an error. A literal with more fraction digits than a number holds (about 28 in all) is rounded to fit.
 - **References:** `$variable`, `function(args)`, and [bare names](#bare-names) for enum members, actors and nodes.
 - **Operators,** from lowest to highest precedence: `or`; `and`; `not`; `== !=`; `< <= > >=`; `+ -`; `* / %`; unary `-`; then parentheses. `+` also joins strings.
 - **Comparisons don't chain.** `$a < $b < $c` and `$a == $b == $c` are errors: write `$a < $b and $b < $c`. Comparisons at different levels combine as usual, so `$a == $b < $c` means `$a == ($b < $c)`.
