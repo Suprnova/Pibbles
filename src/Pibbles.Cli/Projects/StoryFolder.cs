@@ -5,8 +5,8 @@ namespace Pibbles.Cli.Projects;
 
 /// <summary>
 /// Finds a project's story on disk. The project is the nearest folder with a <c>pibbles.json</c>, from the given folder
-/// up, the way git finds a repository, so the tools work from anywhere inside a project. Its story is the folder named
-/// by <c>pibbles.json</c>'s <c>story</c> setting, or <c>story</c>, and every <c>.pib</c> file under it.
+/// up, the way git finds a repository, so the tools work from anywhere inside a project. Its story is every <c>.pib</c>
+/// file under the folders <c>pibbles.json</c>'s <c>storyFolders</c> setting lists, or under <c>story</c>.
 /// </summary>
 internal static class StoryFolder
 {
@@ -29,17 +29,23 @@ internal static class StoryFolder
         if (ReadSettings(fullRoot, error) is not { } settings)
             return null;
 
-        string storyFolder = Path.GetFullPath(settings.Story, fullRoot);
-        if (!Directory.Exists(storyFolder))
+        string[] storyFolders = [.. settings.StoryFolders.Select(folder => Path.GetFullPath(folder, fullRoot))];
+        if (storyFolders.FirstOrDefault(folder => !Directory.Exists(folder)) is { } missing)
         {
-            error.WriteLine($"I can't find the story folder `{DisplayPath.Of(storyFolder, currentDirectory)}`. Put the story's `.pib` files there, name another folder with `story` in `pibbles.json`, or run `pibbles init` to start a new project.");
+            error.WriteLine($"I can't find the story folder `{DisplayPath.Of(missing, currentDirectory)}`. Put the story's `.pib` files there, list the story's folders in `storyFolders` in `pibbles.json`, or run `pibbles init` to start a new project.");
             return null;
         }
 
-        string[] files = [.. Directory.EnumerateFiles(storyFolder, "*.pib", SearchOption.AllDirectories).Order(StringComparer.Ordinal)];
+        string[] files =
+        [
+            .. storyFolders
+                .SelectMany(folder => Directory.EnumerateFiles(folder, "*.pib", SearchOption.AllDirectories))
+                .Distinct()
+                .Order(StringComparer.Ordinal),
+        ];
         if (files.Length == 0)
         {
-            error.WriteLine($"There are no `.pib` files in {DisplayPath.Folder(storyFolder, currentDirectory)}.");
+            error.WriteLine($"There are no `.pib` files in {string.Join(" or ", storyFolders.Select(folder => DisplayPath.Folder(folder, currentDirectory)))}.");
             return null;
         }
 

@@ -32,8 +32,18 @@ public class StyleChecksTests
         Assert.Equal(help, diagnostic.Help);
     }
 
+    [Fact]
+    public void Create_StyleProblemOnLineWithError_ReportsOnlyTheError()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@if $missing == true\n    Hi.\n@return\n");
+
+        IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010");
+
+        Assert.Equal(["PIB2030", "PIB5014"], diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
     [Theory]
-    [InlineData("@actor HTTPServer\n", "Write it as `http_server`, before anything outside the story uses the name.")]
+    [InlineData("@actor HTTPServer\n    name: Server\n", "Write it as `http_server`, before anything outside the story uses the name.")]
     [InlineData("== Kitchen.FrontDoor\n", "Write it as `kitchen.front_door`, before anything outside the story uses the name.")]
     [InlineData("@var $hasKey2 = 0\n", "Write it as `$has_key2`, before anything outside the story uses the name.")]
     public void Create_NameNotInSnakeCase_SuggestsSnakeCase(string text, string help)

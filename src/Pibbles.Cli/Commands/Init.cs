@@ -31,7 +31,7 @@ internal static class Init
         }
 
         ProjectSettings settings = ProjectSettings.Default;
-        string story = Path.Combine(root, settings.Story);
+        string story = Path.Combine(root, settings.StoryFolders[0]);
         bool hasSources = Directory.Exists(story) && Directory.EnumerateFiles(story, "*.pib", SearchOption.AllDirectories).Any();
         List<(string Path, string Description)> created = [(settingsFile, "the project's settings")];
 

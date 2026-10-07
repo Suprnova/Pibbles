@@ -25,7 +25,7 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 **How `pibbles check` reads the story and reports it:**
 
 - **The project** is found from the folder given, or the current directory, by going up to the nearest folder with a `pibbles.json` ([project root](language/reference.md#files-and-structure)). So `pibbles check` works from anywhere inside a project, such as its `story/` folder. `pibbles init` doesn't search: it starts a project exactly where it's told.
-- **The story** is every `.pib` file under the story folder: `story/` under the root, or the folder that `pibbles.json`'s `story` setting names.
+- **The story** is every `.pib` file under the story folders: `story/` under the root, or the folders that `pibbles.json`'s `storyFolders` setting lists. A file under two of them, because one folder is inside another, is read once.
 - **Paths in diagnostics** are relative to the current directory, so they point at the right file from an editor's terminal or a CI job, whichever folder the root is.
 - **The readable format** ends with a summary line, such as `Checked 3 files: 2 errors and 1 warning.` The `msbuild` and `json` formats print only the diagnostics.
 - **Missing line IDs (PIB3010)** all share one fix, so when there are more than five, the readable format shows them as one entry after the other problems, with how many each file has and the fix: run `pibbles ids`. Five or fewer are shown one by one, and the summary line counts each one either way. The `msbuild` and `json` formats always list every one, since tools and CI annotations need each location.
@@ -104,7 +104,7 @@ The language server spell-checks the text players see. It lives there rather tha
 A word is accepted if any of these contain it:
 
 1. **The source locale's dictionary.** A Hunspell dictionary for `sourceLocale` in `pibbles.json` (`en` without one). The server bundles `en`.
-2. **`words.txt` in the story folder.** A committed plain-text file with one word per line, optional. The "Add to dictionary" code action creates it or appends to it, keeping it sorted so parallel additions merge cleanly.
+2. **`words.txt` in the first story folder.** A committed plain-text file with one word per line, optional. The "Add to dictionary" code action creates it or appends to it, keeping it sorted so parallel additions merge cleanly.
 3. **Declared names.** Actor display names and persona names (`name: Mira`) are added automatically. A name is rarely misspelled where it's declared, so this also makes "did you mean" suggest `Mira` first for `Mirra`, using the same edit-distance suggestions as other diagnostics.
 
 Hunspell dictionaries are read with [WeCantSpell.Hunspell](https://github.com/aarondandy/WeCantSpell.Hunspell), a pure .NET port. Its license, and the bundled `en` dictionary's, are confirmed in Phase 6 before depending on them.
@@ -117,18 +117,18 @@ Translations aren't checked yet. The same check can later run on each `<locale>.
 
 ```json
 {
-  "schema": 1,
-  "story": "story"
+  "schema": 2,
+  "storyFolders": ["story"]
 }
 ```
 
 | Key | Meaning | Default |
 | --- | --- | --- |
-| `schema` | Which version of this format the file uses | `1` |
-| `story` | The story folder, relative to the project root | `"story"` |
+| `schema` | Which version of this format the file uses | `2` |
+| `storyFolders` | The folders the story's `.pib` files are in, relative to the project root. Every one has to exist. | `["story"]` |
 
 - **Only keys something uses are defined.** A later key arrives with the feature that reads it, with a default, and raises the schema by one: the version (for saves and release manifests), `sourceLocale` and `localization` (localization), `voice` (voice tooling) and `drafts` (drafts). `pibbles init` always writes the current schema.
-- **An older schema still reads,** with each newer key at its default. A change that a default can't cover, such as a renamed key, comes with an upgrade step that rewrites the file.
+- **An older schema still reads,** with each newer key at its default, and a renamed key read under its old name. Schema 1 named one folder as `"story": "story"`, which reads as `"storyFolders": ["story"]`. A key used under a schema that doesn't have it is an error that says which name to use.
 - **A newer schema than the tools know** is an error that asks the writer to update Pibbles, rather than a file misread.
 - **An unknown key is an error** that lists the settings, so a typo such as `stroy` is never silently ignored.
 

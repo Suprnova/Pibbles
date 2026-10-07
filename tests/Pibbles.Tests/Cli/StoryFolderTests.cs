@@ -27,7 +27,20 @@ public sealed class StoryFolderTests : IDisposable
     }
 
     [Fact]
-    public void Load_StorySetting_ReadsThatFolder()
+    public void Load_StoryFoldersSetting_ReadsEachFolderOnce()
+    {
+        Write("pibbles.json", """{ "schema": 2, "storyFolders": ["dialogue", "chapters", "dialogue/rooms"] }""");
+        Write("dialogue/a.pib", "== a");
+        Write("dialogue/rooms/b.pib", "== b");
+        Write("chapters/c.pib", "== c");
+
+        IReadOnlyList<SourceText>? sources = StoryFolder.Load(".", root.FullName, error);
+
+        Assert.Equal(["chapters/c.pib", "dialogue/a.pib", "dialogue/rooms/b.pib"], sources!.Select(source => source.Path));
+    }
+
+    [Fact]
+    public void Load_SchemaOneStorySetting_ReadsThatFolder()
     {
         Write("pibbles.json", """{ "schema": 1, "story": "dialogue" }""");
         Write("dialogue/a.pib", "== a");
@@ -77,8 +90,9 @@ public sealed class StoryFolderTests : IDisposable
     [InlineData(null, null, "I can't find the folder `missing`.", "missing")]
     [InlineData(null, null, "I can't find the story folder `story`.", ".")]
     [InlineData("pibbles.json", "{ not json", "I can't read `pibbles.json`:", ".")]
-    [InlineData("pibbles.json", """{ "story": 3 }""", "`story` in `pibbles.json` has to be a folder name", ".")]
+    [InlineData("pibbles.json", """{ "storyFolders": [3] }""", "`storyFolders` in `pibbles.json` has to be a list of folder names", ".")]
     [InlineData("story/readme.txt", "no sources", "There are no `.pib` files in `story`.", ".")]
+    [InlineData("pibbles.json", """{ "storyFolders": [".", "extra"] }""", "I can't find the story folder `extra`.", ".")]
     public void Load_NoStoryToRead_ReportsWhyAndReturnsNull(string? file, string? text, string message, string rootPath)
     {
         if (file is not null)

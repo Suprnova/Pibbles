@@ -33,7 +33,7 @@ rex: {if $bravery > 2}Maybe stop hitting it?{else}Well, that didn't work.{/if}
 - Source files use the `.pib` extension and are UTF-8. Any line-ending style is accepted.
 - A story is every `.pib` file under the story folder, compiled together. Names are global across files, and file names and folders carry no meaning to the language.
 - A file has two regions: **declarations** first, then **nodes**. The node region starts at the first node header (`==`). A file may contain only declarations or only nodes. An optional [`@prefix`](#prefixes) line comes before both.
-- An optional `pibbles.json` in the project root holds project settings, such as `story`, the story folder (`story` by default). Without it, defaults apply. `pibbles init` creates it, and the [tooling design](../tooling.md#project-settings) lists every setting.
+- An optional `pibbles.json` in the project root holds project settings, such as `storyFolders`, the folders the story is in (`story` by default). Without it, defaults apply. `pibbles init` creates it, and the [tooling design](../tooling.md#project-settings) lists every setting.
 - The project root is the nearest folder with a `pibbles.json`, starting from the folder the tools are pointed at (the CLI's `[root]` argument, or the current directory) and going up, the way git finds a repository. With no `pibbles.json` above it, the root is that folder itself. Diagnostic severities live in `.editorconfig` ([tooling design](../tooling.md#configuration)).
 
 ## Line classification

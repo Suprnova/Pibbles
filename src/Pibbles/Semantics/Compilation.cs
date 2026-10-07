@@ -50,15 +50,27 @@ public sealed class Compilation
 
         Dictionary<string, int> fileOrder = trees.Select((tree, index) => (tree.Source.Path, index)).DistinctBy(file => file.Path).ToDictionary();
         Dictionary<string, Suppressions> suppressions = trees.DistinctBy(tree => tree.Source.Path).ToDictionary(tree => tree.Source.Path, Suppressions.Of);
-        return new(trees, symbols, new SemanticModel(symbols, references),
+        Diagnostic[] configured =
         [
             .. found
                 .Select(diagnostic => diagnostic.NameSpeakers(speaker => symbols.Actors.GetValueOrDefault(speaker)?.DisplayName))
                 .Select(diagnostic => options.Settings.GetValueOrDefault(diagnostic.Location.Path, FileSettings.None).Configure(diagnostic))
                 .OfType<Diagnostic>()
-                .Where(diagnostic => !suppressions[diagnostic.Location.Path].Silences(diagnostic))
+                .Where(diagnostic => !suppressions[diagnostic.Location.Path].Silences(diagnostic)),
+        ];
+
+        HashSet<(string Path, int Line)> broken = [.. configured.Where(diagnostic => diagnostic.Severity is DiagnosticSeverity.Error && !IsStyle(diagnostic)).Select(LineOf)];
+        return new(trees, symbols, new SemanticModel(symbols, references),
+        [
+            .. configured
+                .Where(diagnostic => !IsStyle(diagnostic) || !broken.Contains(LineOf(diagnostic)))
                 .OrderBy(diagnostic => fileOrder[diagnostic.Location.Path])
                 .ThenBy(diagnostic => diagnostic.Location.Span.Start),
         ]);
     }
+
+    /// <summary>Whether a diagnostic is a style rule's. A line with an error gets none, since the error comes first.</summary>
+    private static bool IsStyle(Diagnostic diagnostic) => diagnostic.Code is ['P', 'I', 'B', '5', ..];
+
+    private static (string Path, int Line) LineOf(Diagnostic diagnostic) => (diagnostic.Location.Path, diagnostic.Location.Start.Line);
 }

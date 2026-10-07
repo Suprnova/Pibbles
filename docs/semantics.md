@@ -16,13 +16,14 @@ Semantic analysis turns syntax trees into a bound story: it resolves every name,
    - **Arguments** fill parameters in order, then by name (`at=left`), and a parameter with a default can be left out. Function calls have only positional arguments. A parameter missing its argument isn't reported when another argument's name is unknown, since that argument was most likely meant for it.
    - **Speakers.** A text line's speaker is a declared actor, and its pose one of the actor's poses. A narration line that almost looks like a speaker is reported, never quietly shown: a parenthesis that isn't a single pose (`mira (to Rex):`), and a declared actor with no space after the colon (`mira:Hi`). It reads the line with the parser's own `SpeakerScanner`, so the two never disagree on what a speaker is.
    - **Text** binds markup with its arguments, inline commands (which must be declared `inline`), icons, `{w}` durations, `{if}` conditions, and shown values, which are text, numbers or actors. Tags are declared, and take a value exactly when they're declared with a type.
+   - **"Did you mean" suggestions** compare a name only with the names that could go there, such as this actor's poses or this enum's members, by the rule in the [diagnostics catalog](diagnostics.md#ranges). When the name is valid as another kind, the help says so instead: a bare `has_key` in a condition suggests `$has_key`, and `crowbar` where text is expected suggests `"crowbar"`.
    - **The error type** is what anything gets when its type can't be known, because of a problem already reported, such as an unknown variable. It converts to and from every type, and no check reports on it, so one mistake is reported once however deep it sits in an expression.
 3. **Flow and content checks.** Statements that never run, options with no text, and missing or duplicate line IDs. What option text may contain is a [syntax check](syntax.md#syntax-checks).
    - **Statements that never run (PIB3001).** A statement always leaves its block when it's `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose every branch always leaves. The first statement after one in the same block is reported, once per block. It's decided from the statements alone: conditions are never evaluated and values never tracked, so `@if false` is like any other condition. Choices and variations never count as leaving, since a choice is skipped when no option is available and a variation's block can be skipped too.
    - **Options with no text (PIB3002)** are information, not errors. The story runs, and the host decides what an empty option looks like, so a game that wants one turns the code off.
 4. **Style checks.** The [style rules](#style-rules), over the syntax trees, with the symbol table for actors and the recorded references for unused variables. Each file's thresholds come from its settings. Most rules look at one file; repeated lines (PIB5003) and repeated colors (PIB5004) count across the story, and each place is reported when the count reaches its own file's threshold.
 
-Once every pass has run, each diagnostic gets the severity its file's settings give it, or is dropped when they turn it off, and then [`// pibbles-ignore`](#levels-and-visibility) comments silence what they cover.
+Once every pass has run, each diagnostic gets the severity its file's settings give it, or is dropped when they turn it off, and then [`// pibbles-ignore`](#levels-and-visibility) comments silence what they cover. Last, style hints on a line that has an error are dropped.
 
 ### The semantic model
 
@@ -51,6 +52,7 @@ Style rules introduce a fourth severity below the existing three:
 
 - Style rules use the `PIB5xxx` range. Most are hints. Maintenance rules are info.
 - `--warnaserror` never promotes hints or info, so style never blocks a build.
+- **A line with an error gets no style hints.** The error comes first, and a hint about code that doesn't work yet is noise: `@if $has_kye == true` reports the unknown variable, not the comparison.
 - **Configuration** lives in `.editorconfig`, covered in the [tooling design](tooling.md#configuration). Any rule can be turned off or given a different level, and thresholds are settings.
 - **Suppressing one instance:** a `// pibbles-ignore PIB5003` comment on its own line directly above the flagged line, with only other comments between them. It can list several codes. Above a file's first node, it applies to the whole file. Only style and spelling can be silenced this way, since a mistake gets fixed rather than hidden.
 - **Quick fixes:** every rule whose fix is mechanical offers one in VS Code. Those rules are marked ⚡.

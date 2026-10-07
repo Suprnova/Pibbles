@@ -13,6 +13,8 @@ The catalog of every diagnostic code. Each code has one entry here and one in `D
 | `PIB5xxx` | Style ([style rules](semantics.md#style-rules)) | `style` |
 | `PIB6xxx` | Spelling ([spell checking](tooling.md#spell-checking)) | `spelling` |
 
+Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and poses, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
+
 Severities are error, warning, info and hint. `.editorconfig` can override any of them ([configuration](tooling.md#configuration)).
 
 "Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). Ties go to the name declared first. When nothing is close enough, the help is left out.
@@ -127,7 +129,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 
-The style rules (PIB5xxx) are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
+The style rules (PIB5xxx) are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
 
 ## Explanations
 
