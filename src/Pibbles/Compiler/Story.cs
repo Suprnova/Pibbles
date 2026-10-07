@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 
 namespace Pibbles.Compiler;
@@ -58,7 +59,10 @@ public sealed class Story
 }
 
 /// <summary>A node, compiled.</summary>
-internal sealed record CompiledNode(string Name, IReadOnlyList<Instruction> Instructions);
+/// <param name="Name">The node's current name.</param>
+/// <param name="Instructions">What the node does, ending in an implicit <see cref="ReturnInstruction"/>.</param>
+/// <param name="Location">Where the node's header names it, for a warning about the node as a whole.</param>
+internal sealed record CompiledNode(string Name, IReadOnlyList<Instruction> Instructions, SourceLocation Location);
 
 /// <summary>A variable and where it starts.</summary>
 internal sealed record StoryVariable(VariableSymbol Variable, Expr StartingValue);

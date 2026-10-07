@@ -56,7 +56,7 @@ internal sealed class StoryLowerer(Compilation compilation)
         code = [];
         LowerBlock(node.Body);
         code.Add(new ReturnInstruction());
-        nodes[nodeName] = new(nodeName, [.. code]);
+        nodes[nodeName] = new(nodeName, [.. code], LocationOf(node.Name));
     }
 
     private void LowerBlock(IEnumerable<StatementSyntax> block)
@@ -86,12 +86,12 @@ internal sealed class StoryLowerer(Compilation compilation)
                 break;
 
             case WaitStatementSyntax wait:
-                code.Add(new WaitInstruction(LowerExpression(wait.Duration)));
+                code.Add(new WaitInstruction(LowerExpression(wait.Duration), LocationOf(wait)));
                 break;
 
             case CommandStatementSyntax command:
                 CommandSymbol symbol = SymbolOf<CommandSymbol>(command.Command);
-                code.Add(new CommandInstruction(symbol, Arrange(symbol.Parameters, command.Arguments.Select(argument => argument.Value), command), Waits(symbol, command.Wait)));
+                code.Add(new CommandInstruction(symbol, Arrange(symbol.Parameters, command.Arguments.Select(argument => argument.Value), command), Waits(symbol, command.Wait), LocationOf(command)));
                 break;
 
             case JumpStatementSyntax jump:
@@ -156,7 +156,7 @@ internal sealed class StoryLowerer(Compilation compilation)
 
         int join = code.Count;
         Patch(branches, join);
-        code[at] = new ChoiceInstruction([.. options.Select(option => new ChoiceOption(option.Id, option.Text, option.Condition, option.IsOnce, option.Body < 0 ? join : option.Body))], join);
+        code[at] = new ChoiceInstruction([.. options.Select(option => new CompiledOption(option.Id, option.Text, option.Condition, option.IsOnce, option.Body < 0 ? join : option.Body))], join);
     }
 
     private void LowerIf(IfStatementSyntax @if)

@@ -196,8 +196,19 @@ public class EvaluatorTests
     {
         HashSet<RuntimeWarningKind> triggered = [.. WarnedCases.Select(row => row.Kind)];
         triggered.UnionWith(HostFunctionsTests.ClampedDurationWarnings().Select(warning => warning.Kind));
+        triggered.UnionWith(RunnerWarnings().Select(warning => warning.Kind));
 
         Assert.Empty(Enum.GetValues<RuntimeWarningKind>().Except(triggered));
+    }
+
+    /// <summary>The warnings the runner raises: a wait that isn't for more than zero, and a loop that never shows anything.</summary>
+    private static IEnumerable<RuntimeWarning> RunnerWarnings()
+    {
+        Game wait = Game.Of("== t.n\n@wait $count\n");
+        wait.Play("t.n");
+        Game loop = Game.Of("== t.n\n@jump t.n\n", budget: 20);
+        loop.Play("t.n");
+        return [.. wait.Warnings, .. loop.Warnings];
     }
 
     /// <summary>Compiles a story that stores <paramref name="expression"/> in a variable, and evaluates what it stores.</summary>

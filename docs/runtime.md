@@ -4,7 +4,7 @@ The runtime compiles a bound story to instructions and runs it: the compiler, th
 
 ## Compilation
 
-`StoryCompiler.Compile(sources, options)` (in `Pibbles.Compiler`) takes the sources and the compilation options, and returns a `CompileResult`: the `Story`, every diagnostic after the files' `.editorconfig` severities, and `HasErrors`. `Story` is `null` exactly when `HasErrors` is true, that is, when any diagnostic is an error, including a warning raised to one. A story with only warnings and hints compiles, and its diagnostics are still in the result.
+`StoryCompiler.Compile(sources, options)` (in `Pibbles.Compiler`) takes the sources and the compilation options, and throws `ArgumentException` if two sources have the same path, which is a mistake in how the host gathered them. Otherwise it never throws, and returns a `CompileResult`: the `Story`, every diagnostic after the files' `.editorconfig` severities, and `HasErrors`. `Story` is `null` exactly when `HasErrors` is true, that is, when any diagnostic is an error, including a warning raised to one. A story with only warnings and hints compiles, and its diagnostics are still in the result.
 
 The compiler lowers each node's syntax tree to a **flat list of instructions**, reading what the binder worked out from the [bindings](semantics.md#bindings): the symbol each name refers to, and each expression's type, including a number that its context uses as a duration. The compiler never resolves a name itself. The instructions are:
 
@@ -56,8 +56,8 @@ if (result.HasErrors) { /* report result.Diagnostics */ }
 var functions = new HostFunctions()
     .Add("has_item", (string id) => inventory.Contains(id));
 
-var state = new StoryState(result.Story, seed);        // or StoryState.Restore(story, snapshot)
-var runner = new DialogueRunner(result.Story, state, functions);
+var state = new StoryState(result.Story!, seed);       // or StoryState.Restore(story, snapshot)
+var runner = new DialogueRunner(result.Story!, state, functions);
 
 runner.Start("kitchen.door");
 while (true)
@@ -65,8 +65,8 @@ while (true)
     switch (runner.Next())
     {
         case LineStep { Line: var line }: /* show, wait for player */ break;
-        case ChoiceStep { Options: var options }: runner.Choose(/* index */); break;
-        case CommandStep { Command: var command, Wait: var wait }: /* run; await if wait */ break;
+        case ChoiceStep { Options: var options }: runner.Choose(/* an option, or its ID */); break;
+        case CommandStep { Command: var command, Waits: var waits }: /* run; await if waits */ break;
         case PoseStep { Actor: var actor, Pose: var pose }: /* swap sprite */ break;
         case WaitStep { Duration: var duration }: /* delay */ break;
         case EndStep: return;
@@ -76,13 +76,40 @@ while (true)
 ```
 
 - **Pull-based, synchronous, single-threaded.** The core has no `async`, no events and no timers. It has no skip mode either: skipping is the caller asking for steps without waiting ([skipping](godot.md#skipping)). Hosts wrap it in whatever model their engine prefers. The Godot adapter uses signals and `await`. This keeps the core trivially testable.
-- **Steps are immutable records.** Pattern matching on them is the whole host API for flow. Extensions add step kinds, so a host's `switch` keeps a default arm.
+- **Steps are immutable records,** all deriving from `DialogueStep`. Pattern matching on them is the whole host API for flow. Later versions add step kinds, so a host's `switch` keeps a default arm.
 - **Host functions** are registered as typed delegates through generic `Add` overloads (AOT-safe, no reflection), described [below](#host-functions). `HostFunctions.Validate(story)` reports missing or mistyped functions, and adapters call it at startup.
-- **Command arguments** arrive as a `CommandInvocation` with typed accessors by parameter name (`command.GetActor("who")`, `command.GetNumber("strength")`). Enum values come through as their member names.
+- **Command arguments** arrive as a `CommandInvocation` with typed accessors by parameter name (`command.GetActor("who")`, `command.GetNumber("strength")`). Every parameter has a value, since defaults are filled in. The accessors are `GetBool`, `GetString`, `GetNumber` (`decimal`), `GetDuration` (`TimeSpan`, clamped like host function durations, with an `Overflow` warning), `GetActor` (the ID), `GetNode` (the current name), `GetEnum` (the member name) and `GetEnum<TEnum>`, which parses the name into the host's own enum without reflection. An unknown parameter name throws `ArgumentException`, and the wrong accessor for a parameter's type throws `InvalidOperationException`.
 - **The seed is chosen by the host** when it creates a new state, usually at random for a new game. v1 stores it without using it, so adding randomness later doesn't change the API.
 - **Several runners can share one `StoryState`,** for example ambient remarks during room play while the main dialogue is suspended. Everything is single-threaded.
 - **Node names from the host resolve through aliases.** `Start`, `node` values restored from a snapshot, and anything else the host passes in accept a node's current name or any of its `#was:` aliases. A scene that still says `kitchen.front_door` keeps working after the node is renamed.
-- **Misuse throws; content never does.** Calling `Next()` while a choice is waiting, choosing an out-of-range or unavailable option, starting a node that doesn't exist, or reaching a host function that was never registered throws `InvalidOperationException`. For an unknown node, the message suggests the closest name. A story that passed analysis can't cause a runtime type error. Host functions are checked at registration.
+- **Misuse throws; content never does.** Calling `Next()` before `Start` or while a choice is waiting, calling `Choose` when none is waiting or with an option that isn't offered or isn't available, starting a node that doesn't exist, or reaching a host function that was never registered throws `InvalidOperationException`. After an `EndStep`, `Next()` returns `EndStep` again until `Start` is called. For an unknown node, the message suggests the closest name. A story that passed analysis can't cause a runtime type error. Host functions are checked at registration.
+
+### Steps
+
+| Step | The host | The runner did first |
+| --- | --- | --- |
+| `LineStep(Line)` | Shows the line and waits for the player. | Rendered the line's text. |
+| `ChoiceStep(Options)` | Shows the options, and answers with `Choose(option)` or `Choose(id)`, never an index. | Evaluated the options' conditions and texts. |
+| `CommandStep(Command, Waits)` | Carries the command out, and waits for it to finish if `Waits`. | Evaluated the arguments, in parameter order with defaults. |
+| `PoseStep(Actor, Pose)` | Changes the actor's pose. It's sent every time, even for the pose the actor already has, so a host that redraws can trust it. | Set the pose in the state. |
+| `WaitStep(Duration)` | Pauses. | Evaluated the duration. One that isn't more than zero is skipped with a `NonPositiveWait` warning. |
+| `EndStep` | Ends the dialogue. | Cleared the call stack. |
+
+Everything else (`@set`, branches, `@jump`, `@call`, `@return`, variations) the runner does between steps.
+
+**Choices.** The runner delivers every option except an `@once` option that has already been chosen, in source order, with its conditions evaluated when the choice is reached. A `ChoiceOption` has the option's text as a `Line` (its `Id` is the option's ID, and it has no speaker), `IsAvailable` (its `@if`, or true) and `WasChosen`. The host decides whether an unavailable option is hidden or greyed out. If none is available the choice is skipped. `Choose` records the option as chosen before its body runs, and `Next()` then continues in the body; when the body finishes without leaving, flow continues after the whole choice.
+
+**Lines.** M4's `Line` carries the plain text; its spans, markers, icons and tags are empty until the reveal helper exists. The text is the text runs, the text inside markup (without the markup), shown values (a string as written, an actor's display name, a number with the invariant culture, no digit grouping and no trailing zeros), the chosen branch of conditional text, `{br}` as `\n` and an icon as U+FFFC. Points contribute nothing, shown values are inserted literally and never read as markup, and leading and trailing whitespace is trimmed.
+
+**Visits.** A node's visit count goes up on `Start`, `@jump` and `@call` into it, before its first statement, so a node that jumps to itself counts its rounds. It doesn't go up on `@return`, or when a save is restored.
+
+**`StoryState`** holds what a save slot holds: variable values (starting from their declared starting values), visit counts by node name, variation block entry counts by block ID, the IDs of chosen options, each actor's current pose (`GetPose(actor)`, which is the actor's first pose until the story sets one), and the seed. A variable's starting value can read variables declared before it, but not call a function.
+
+**Atomicity.** An instruction evaluates everything it needs before it changes anything. When one throws, such as a `HostFunctionException` from a condition, a command argument or a line's text, the state and the runner's position are unchanged, so the host can recover and call `Next()` again to retry it. Instructions that finished earlier in the same call stay finished, and warnings the failed instruction raised are dropped.
+
+**Warnings reach the host** through `RunnerOptions.OnWarning`, a callback the runner calls after the instruction that raised the warning has finished. Without one, warnings are dropped. Nothing about the story's flow depends on it. (Warnings from a command's duration are reported when the host reads it, since that is when the clamp happens.)
+
+**The loop budget.** `Next()` runs at most `RunnerOptions.InstructionBudget` instructions (100,000 by default) without producing a step. Past that it reports an `InfiniteLoop` warning and ends the dialogue with an `EndStep`, so a story can never hang the game.
 
 ### Values
 
@@ -124,9 +151,11 @@ Three kinds of problem, three channels:
 | Kind | When it happens | What the story does instead | How to fix the script |
 | --- | --- | --- | --- |
 | `DivisionByZero` | `/` or `%` with a divisor that is zero at run time | The result is `0` | Check the divisor first, or divide by something that can't be zero |
+| `NonPositiveWait` | An `@wait` whose duration, computed at run time, isn't more than zero | The wait is skipped and the story carries on | Make sure the duration can't be zero or negative |
+| `InfiniteLoop` | A dialogue runs through the instruction budget without showing anything | The runner ends the dialogue | Give the loop a way out, such as a condition on a variable it changes |
 | `Overflow` | A result past about ±7.9 × 10^28 from `+`, `-`, `*` or `/`; or a duration too long for a `TimeSpan` passed to a host function | The largest or smallest value it can hold, with the true result's sign | Use smaller numbers |
 
-Skipped non-positive pauses, waits and speeds will join the table when the runner and the reveal helper exist. The runner decides how it exposes warnings to the host.
+Skipped non-positive pauses and speeds in a line will join the table when the reveal helper exists. The runner [reports warnings](#steps) to the host through its options.
 
 ## Lines and text
 

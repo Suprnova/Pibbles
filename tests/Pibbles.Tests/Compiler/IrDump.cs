@@ -66,7 +66,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
         };
     }
 
-    private string Format(ChoiceOption option) =>
+    private string Format(CompiledOption option) =>
         $"{Id(option.Id)}{(option.Condition is { } condition ? $" if {Format(condition)}" : "")}{(option.IsOnce ? " once" : "")} -> {option.Body}";
 
     private string Format(Template template)

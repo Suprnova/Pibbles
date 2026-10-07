@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Semantics;
 
 namespace Pibbles.Compiler;
@@ -17,7 +18,7 @@ internal sealed record PoseInstruction(ActorSymbol Actor, PoseSymbol Pose) : Ins
 /// <summary>Offers the options of a choice. The choice is skipped when none is available.</summary>
 /// <param name="Options">The options, in source order.</param>
 /// <param name="Join">Where flow continues after an option's body.</param>
-internal sealed record ChoiceInstruction(IReadOnlyList<ChoiceOption> Options, int Join) : Instruction;
+internal sealed record ChoiceInstruction(IReadOnlyList<CompiledOption> Options, int Join) : Instruction;
 
 /// <summary>One option of a choice.</summary>
 /// <param name="Id">The option's ID, which the host picks it by and which records it as chosen.</param>
@@ -25,7 +26,7 @@ internal sealed record ChoiceInstruction(IReadOnlyList<ChoiceOption> Options, in
 /// <param name="Condition">The <c>@if</c> condition, or <see langword="null"/>.</param>
 /// <param name="IsOnce">Whether picking the option removes it for good.</param>
 /// <param name="Body">The index where the option's body starts, which is the choice's join if the body is empty.</param>
-internal sealed record ChoiceOption(string Id, Template Text, Expr? Condition, bool IsOnce, int Body)
+internal sealed record CompiledOption(string Id, Template Text, Expr? Condition, bool IsOnce, int Body)
 {
     /// <summary>The option's tags.</summary>
     public IReadOnlyList<TemplateTag> Tags => Text.Tags;
@@ -41,13 +42,16 @@ internal sealed record BranchIfFalseInstruction(Expr Condition, int Target) : In
 internal sealed record SetInstruction(VariableSymbol Variable, Expr Value) : Instruction;
 
 /// <summary>Pauses the story for a duration.</summary>
-internal sealed record WaitInstruction(Expr Duration) : Instruction;
+/// <param name="Duration">How long to wait.</param>
+/// <param name="Location">Where the <c>@wait</c> is written, for a warning.</param>
+internal sealed record WaitInstruction(Expr Duration, SourceLocation Location) : Instruction;
 
 /// <summary>Runs a command.</summary>
 /// <param name="Command">The command.</param>
 /// <param name="Arguments">The arguments, in the order of the command's parameters, with defaults filled in.</param>
 /// <param name="Waits">Whether the story waits for the command to finish: its declared <c>waits</c>, overridden by <c>wait</c> or <c>nowait</c>.</param>
-internal sealed record CommandInstruction(CommandSymbol Command, IReadOnlyList<Expr> Arguments, bool Waits) : Instruction;
+/// <param name="Location">Where the command is written, for a warning about its arguments.</param>
+internal sealed record CommandInstruction(CommandSymbol Command, IReadOnlyList<Expr> Arguments, bool Waits, SourceLocation Location) : Instruction;
 
 /// <summary>Continues at the start of another node, leaving the call stack as it is (<c>@jump</c>).</summary>
 /// <param name="Node">The node's current name.</param>

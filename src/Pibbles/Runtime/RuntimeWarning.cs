@@ -10,6 +10,12 @@ public enum RuntimeWarningKind
 
     /// <summary>A number or duration too large to hold, which was clamped to the nearest limit.</summary>
     Overflow,
+
+    /// <summary>A <c>@wait</c> that wasn't for more than zero time, which the runner skipped.</summary>
+    NonPositiveWait,
+
+    /// <summary>A dialogue that ran a very long time without showing anything, which the runner ended.</summary>
+    InfiniteLoop,
 }
 
 /// <summary>

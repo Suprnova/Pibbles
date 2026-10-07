@@ -1,0 +1,158 @@
+== enter, first visit
+  Command @show(mira, left)
+  Command @show(rex, right)
+  Pose mira worried
+  Line mira: This kitchen gives me the creeps.
+  Pose rex grumpy
+  Line rex: It's a kitchen. Relax.
+  Line mira: Who said that?
+  Line rex: Rex. I live in the walls. Kidding. I'm behind the fridge.
+  Line mira: Let's look around. Press <icon> to inspect things.
+  Command @enter_room(kitchen, kitchen.leave)
+  End
+
+== enter, second visit
+  Command @show(mira, left)
+  Command @show(rex, right)
+  Line rex: Back in the kitchen. Thrilling.
+  Command @enter_room(kitchen, kitchen.leave)
+  End
+
+== fridge, four visits
+  Line mira: It's a fridge. It hums. Ominously.
+  End
+  Pose mira smug
+  Line mira: Still a fridge.
+  End
+  Line mira: I refuse to look at this fridge again.
+  End
+  Line mira: I refuse to look at this fridge again.
+  End
+
+== drawer, two visits
+  Line mira: Spoons, spoons, more spoons, and... a small brass key!
+  Pose mira happy
+  Line mira: Press <icon> to check your items.
+  End
+  Line mira: Just spoons now.
+  End
+
+== window with the crowbar
+  Line mira: I could pry it open... but the door's right there.
+  End
+
+== window without it, five visits
+  Line mira: Dusty.
+  End
+  Line mira: Very dusty.
+  Wait 0.5s
+  Command @sfx(sneeze)
+  Pose mira angry
+  Line mira: Ugh.
+  End
+  Line mira: When did anyone last clean this?
+  End
+  Line rex: You two stare at everything, don't you?
+  End
+  Line mira: Dusty.
+  End
+
+== door, open already
+  Command @hide(rex)
+  Command @move(mira, offscreen)
+  Pose mira happy
+  Line mira: Onward!
+  Pose rex surprised
+  Line rex: Wait for m—
+  Command @camera(hallway) waits
+  End
+
+== door, the options
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+
+== door, rattle the handle
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+  Chose Rattle the handle
+  Command @sfx(door_rattle)
+  Command @jolt(mira)
+  Pose mira angry
+  Line mira: Open up!
+  Pose mira sad
+  Line mira: Nope.
+  Line rex: Well, that didn't work.
+  End
+
+== door, rattle when brave
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+  Chose Rattle the handle
+  Command @sfx(door_rattle)
+  Command @jolt(mira)
+  Pose mira angry
+  Line mira: Open up!
+  Pose mira sad
+  Line mira: Nope.
+  Line rex: Maybe stop hitting it?
+  End
+
+== door, knock twice
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+  Chose Knock politely
+  Pose rex surprised
+  Line rex: Did you just knock on a door you're trying to break open?
+  Pose mira smug
+  Line mira: Manners matter, Rex.
+  Line rex: Well, that didn't work.
+  End
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Leave it
+
+== door, use the key
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key | Knock politely | Leave it
+  Chose Use the key
+  Command @sfx(key_turn)
+  Pose mira happy
+  Line mira: Got it!
+  Command @hide(rex)
+  Command @move(mira, offscreen)
+  Pose mira happy
+  Line mira: Onward!
+  Pose rex surprised
+  Line rex: Wait for m—
+  Command @camera(hallway) waits
+  End
+
+== door, leave it
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+  Chose Leave it
+  End
+
+== leave
+  Command @hide(rex)
+  Command @move(mira, offscreen)
+  Pose mira happy
+  Line mira: Onward!
+  Pose rex surprised
+  Line rex: Wait for m—
+  Command @camera(hallway) waits
+  End
+
+== old name of the door
+  Pose mira worried
+  Line mira: Locked. Of course it's locked.
+  Choice Rattle the handle | Use the key (unavailable) | Knock politely | Leave it
+  Chose Leave it
+  End
+

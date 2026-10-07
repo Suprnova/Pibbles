@@ -125,7 +125,7 @@ Declared names share one namespace per kind, and each kind avoids the [reserved 
 A node header gives a globally unique name, full or [relative](#prefixes), and optional `#was:` aliases. The node's body is every line up to the next header or the end of the file, starting at column 0.
 
 - The host starts dialogues at nodes by name. Nodes jump to and call each other.
-- A node's **visit count** goes up each time it's entered, whether by the host, `@jump` or `@call`. `visits(kitchen.fridge)` reads it.
+- A node's **visit count** goes up each time it's entered, whether by the host, `@jump` or `@call`, before its first statement runs. A node that jumps to itself counts its rounds. It doesn't go up when an `@call` returns, or when a save is restored. `visits(kitchen.fridge)` reads it.
 - Reaching the end of a node returns to the caller after an `@call`. Otherwise it ends the dialogue.
 - **`#was:old.name`** records a former name after a rename. Node names held outside the story still find the node through it: names in the game's code and scenes, saved visit counts, and continuations a save holds, like an `on_exit=` argument. A node can list several, full or relative. Aliases are unique across the story like names are.
 - **The story itself always uses current names.** A `@jump`, `@call`, `visits()` or `node` argument that names an alias still reaches its node, but it's a warning that suggests the current name, so aliases never pile up in the source.
