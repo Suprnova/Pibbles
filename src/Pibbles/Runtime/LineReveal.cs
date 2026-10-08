@@ -26,7 +26,7 @@ public enum RevealState
 /// <summary>What a <see cref="LineReveal"/> shows after a call, and what happened on the way.</summary>
 /// <remarks>The text on screen is <c>line.Text[PageStart..VisibleLength]</c>; <see cref="Line.Text"/> itself is always the whole line.</remarks>
 /// <param name="State">Where the reveal is.</param>
-/// <param name="PageStart">Where the current page starts. It moves to a <c>{p}</c> marker's position when the reveal resumes after it, and the host shows only the text from there on.</param>
+/// <param name="PageStart">Where the current page starts. When the reveal resumes after a <c>{p}</c>, it moves past the spaces and line breaks that follow the break, but never past the next marker, and the host shows only the text from there on.</param>
 /// <param name="VisibleLength">How much of the line is visible: a UTF-16 index into the line's text, always on a grapheme cluster boundary.</param>
 /// <param name="Fired">The markers the reveal reached during this call, in order.</param>
 public sealed record RevealFrame(RevealState State, int PageStart, int VisibleLength, ImmutableArray<Marker> Fired)
@@ -130,7 +130,8 @@ public sealed class LineReveal
 
     /// <summary>
     /// Carries on after an input wait or a page break, once the player has answered, or after a waiting command, once the host
-    /// has finished it. After a page break the page starts where the break was.
+    /// has finished it. After a page break the page starts past the spaces and line breaks that follow it, but never past the
+    /// next marker.
     /// </summary>
     /// <exception cref="InvalidOperationException">The reveal isn't waiting.</exception>
     public RevealFrame Resume()
@@ -222,11 +223,7 @@ public sealed class LineReveal
 
             case PageBreakMarker:
                 fired.Add(marker);
-                int nextMarkerPos = markerIndex < line.Markers.Length ? line.Markers[markerIndex].Position : line.Text.Length;
-                int nextStart = marker.Position;
-                while (nextStart < nextMarkerPos && nextStart < line.Text.Length && line.Text[nextStart] is ' ' or '\t' or '\n' or '\r')
-                    nextStart++;
-                pendingPageStart = nextStart;
+                pendingPageStart = PageStartAfter(marker.Position);
                 return Stop(RevealState.WaitingForInput);
 
             case InputWaitMarker:
@@ -237,6 +234,16 @@ public sealed class LineReveal
                 fired.Add(marker);
                 return false;
         }
+    }
+
+    /// <summary>Where the page after a break starts: past the whitespace that follows it, but never past the next marker.</summary>
+    private int PageStartAfter(int position)
+    {
+        int limit = markerIndex < line.Markers.Length ? line.Markers[markerIndex].Position : line.Text.Length;
+        while (position < limit && line.Text[position] is ' ' or '\t' or '\n' or '\r')
+            position++;
+
+        return position;
     }
 
     private bool Stop(RevealState state)
