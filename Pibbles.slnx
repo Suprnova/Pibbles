@@ -4,6 +4,7 @@
     <Project Path="src/Pibbles.Cli/Pibbles.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Pibbles.Benchmarks/Pibbles.Benchmarks.csproj" />
     <Project Path="tests/Pibbles.Tests/Pibbles.Tests.csproj" />
   </Folder>
 </Solution>

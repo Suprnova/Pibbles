@@ -18,8 +18,8 @@ public class DeterminismTests
     {
         string script = string.Join('\n', [$"start {walk.Node}", .. walk.StubValues.Select(stub => $"stub {stub.Function.Name} = {ValueText.Show(stub.Value, stub.Function.ReturnType)}")]);
 
-        string first = TranscriptPlayer.Play(walk.Compiled, script, walk: new(walk.Chooser(), MaxSteps));
-        string second = TranscriptPlayer.Play(walk.Compiled, script, walk: new(walk.Chooser(), MaxSteps));
+        string first = TranscriptPlayer.Play(walk.Compiled, script, input: new TranscriptWalk(walk.Chooser(), MaxSteps));
+        string second = TranscriptPlayer.Play(walk.Compiled, script, input: new TranscriptWalk(walk.Chooser(), MaxSteps));
 
         Assert.Equal(first, second);
     }

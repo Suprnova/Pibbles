@@ -27,6 +27,11 @@
     <ProjectReference Include="..\..\src\Pibbles\Pibbles.csproj" />
   </ItemGroup>
 
+  <!-- The benchmarks' story generator, compiled here too, so a test checks that what it writes compiles. -->
+  <ItemGroup>
+    <Compile Include="..\Pibbles.Benchmarks\StoryGenerator.cs" Link="Benchmarks\StoryGenerator.cs" />
+  </ItemGroup>
+
   <!-- The CLI targets net10.0 only, like every tool, so its tests, and the determinism property that plays transcripts, only build for net10.0. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <ProjectReference Include="..\..\src\Pibbles.Cli\Pibbles.Cli.csproj" />

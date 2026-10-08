@@ -37,6 +37,9 @@ jobs:
           echo "::add-matcher::.github/pibbles-problem-matcher.json"
           dotnet run --project src/Pibbles.Cli --configuration Release --no-build -- check samples/kitchen --release --warnaserror --format msbuild
 
+      - name: Replay the sample story's transcripts
+        run: dotnet run --project src/Pibbles.Cli --configuration Release --no-build -- test samples/kitchen
+
       # The tool targets the runtime, not an OS, so one package serves every platform.
       - name: Pack the CLI tool
         if: matrix.os == 'ubuntu-latest'

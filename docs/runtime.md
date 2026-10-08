@@ -332,10 +332,26 @@ Taking and restoring snapshots report what they couldn't carry over as a list of
 
 ## Performance
 
-Compiling a large VN from source is expected to take tens of milliseconds, and a runtime step to take microseconds. These are estimates to confirm with the benchmark project in Phase 3. The reasoning:
+The design rests on two estimates: compiling a large VN from source takes tens of milliseconds, and a runtime step takes microseconds. The reasoning:
 
 - A big visual novel runs to hundreds of thousands of words, a few megabytes of script. A hand-written, line-oriented parser over `ReadOnlySpan<char>` processes text in the tens of megabytes per second. Binding is a few hash lookups per reference.
 - A runtime step is one instruction plus rendering a template of a few dozen elements. That's well below one frame even on weak hardware.
+
+**Measured,** with the benchmark project ([architecture](architecture.md#what-isnt-tested-here)), on a generated story of 51 files and 3.6 MB: 1,000 scenes, about 55,000 lines and 540,000 words, using every construct. Release build, BenchmarkDotNet 0.15.8, .NET 10.0.12 (SDK 10.0.401), Windows 11, AMD Ryzen 7 7840HS.
+
+| What | Time | Allocated |
+| --- | --- | --- |
+| Parsing alone | 40 ms | 91 MB |
+| `Compilation.Create`: parse, bind and check | 378 ms | 343 MB |
+| `StoryCompiler.Compile`: that, then lowering | 443 ms | 386 MB |
+| `DialogueRunner.Next`, over a 10,000-step walk through the story | 0.54 µs | 1.6 KB |
+| Rendering a line with spans, markers, an icon, interpolation and conditional text | 1.1 µs | 5 KB |
+| `LineReveal` through that line, 16 ms frames at 30 characters a second | 28 µs | 37 KB |
+| Saving the state and the runner as JSON and loading both back, deep into the story | 65 µs | 106 KB |
+
+- **A runtime step takes microseconds,** as estimated, and a whole line's reveal costs less than a frame's worth of time.
+- **Parsing runs at about 90 MB a second,** as estimated.
+- **Compiling takes about ten times the estimate:** hundreds of milliseconds, not tens. Every phase scales linearly with the story, at about 8 ms per thousand lines, and no single hotspot dominates. Of `Compilation.Create`, the style checks take the largest share, about 40%, then parsing, binding and the line ID checks; lowering adds about 65 ms. Whether this changes how a game loads its story is an open decision; until it's made, the design below stands.
 
 Decisions that follow:
 

@@ -1,14 +1,7 @@
-using Pibbles.Runtime;
-
 namespace Pibbles.Cli.Transcripts;
 
 /// <summary>A script (or transcript) could not be played: a mistake in the script, or the story failing in a way the script can't recover from.</summary>
 internal sealed class TranscriptException(string message) : Exception(message);
-
-/// <summary>How a test walks a story at random with <see cref="TranscriptPlayer"/>.</summary>
-/// <param name="Choose">Picks an available option of a choice the script has no answer for.</param>
-/// <param name="MaxSteps">How many steps to play before stopping, since a random walk may never end.</param>
-internal sealed record TranscriptWalk(Func<ChoiceStep, ChoiceOption> Choose, int MaxSteps);
 
 /// <summary>
 /// What a script or transcript says, read from the lines at column 0. Everything else is ignored, which is why a
@@ -21,9 +14,15 @@ internal sealed record TranscriptWalk(Func<ChoiceStep, ChoiceOption> Choose, int
 /// <param name="Answers">The answers to choices, in order: <c>#id</c> or a number.</param>
 internal sealed record TranscriptScript(IReadOnlyList<string> Starts, IReadOnlyList<string> Directives, IReadOnlyList<ScriptSet> Sets, IReadOnlyList<ScriptStub> Stubs, IReadOnlyList<string> Answers)
 {
-    /// <summary>Reads a script. Directives and answers start in column 0; steps a transcript prints are indented, so none can be mistaken for them.</summary>
+    /// <summary>
+    /// Reads a script. Directives and answers start in column 0; steps a transcript prints are indented, so none can be
+    /// mistaken for them.
+    /// </summary>
+    /// <param name="text">The script.</param>
+    /// <param name="start">A node that replaces the script's first <c>start</c>, or comes first if it has none.</param>
+    /// <param name="extra"><c>set</c> and <c>stub</c> lines that come after the script's own, so a later one wins.</param>
     /// <exception cref="TranscriptException">There is no <c>start</c> directive, or a directive can't be read.</exception>
-    public static TranscriptScript Parse(string text)
+    public static TranscriptScript Parse(string text, string? start = null, IEnumerable<string>? extra = null)
     {
         List<string> starts = [];
         List<string> directives = [];
@@ -31,11 +30,23 @@ internal sealed record TranscriptScript(IReadOnlyList<string> Starts, IReadOnlyL
         List<ScriptStub> stubs = [];
         List<string> answers = [];
 
-        foreach (string raw in text.Split('\n'))
+        string[] added = [.. extra ?? []];
+        if (added.FirstOrDefault(line => !line.StartsWith("set ", StringComparison.Ordinal) && !line.StartsWith("stub ", StringComparison.Ordinal)) is { } other)
+            throw new TranscriptException($"I can't read `{other}`: only `set` and `stub` lines can be added to a script.");
+
+        bool replacing = start is not null;
+        string[] first = start is null ? [] : [$"start {start}"];
+        string[] lines = [.. first, .. text.Split('\n').Select(raw => raw.TrimEnd('\r')), .. added];
+        foreach (string line in lines)
         {
-            string line = raw.TrimEnd('\r');
             if (line.StartsWith("start ", StringComparison.Ordinal))
             {
+                if (starts.Count == 1 && replacing)
+                {
+                    replacing = false;
+                    continue;
+                }
+
                 starts.Add(line["start ".Length..].Trim());
                 if (starts.Count == 1)
                     directives.Add(line);

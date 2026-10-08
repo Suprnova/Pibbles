@@ -24,7 +24,7 @@ public class TranscriptTests
     public void Play_Transcript_PrintsItselfExactly(string file)
     {
         string path = Path.Combine(RepositoryRoot.Path, file);
-        string expected = File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal);
+        string expected = TranscriptFile.Normalize(File.ReadAllText(path));
 
         string actual = TranscriptPlayer.Play(StoryOf(path), expected);
 
@@ -186,8 +186,7 @@ public class TranscriptTests
     private static IEnumerable<string> FindTranscripts() =>
         new[] { TestFolder, Path.Combine(KitchenFolder, "transcripts") }
             .Where(Directory.Exists)
-            .SelectMany(folder => Directory.EnumerateFiles(folder, "*.transcript"))
-            .Where(path => !path.Contains(".received.", StringComparison.Ordinal))
+            .SelectMany(TranscriptFile.Find)
             .Order(StringComparer.Ordinal);
 }
 

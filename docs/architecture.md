@@ -36,7 +36,7 @@ src/
   Pibbles.Godot/               generic Godot adapter (Phase 4)
 tests/
   Pibbles.Tests/
-  Pibbles.Benchmarks/          BenchmarkDotNet (Phase 3)
+  Pibbles.Benchmarks/          BenchmarkDotNet over a generated story; a console app, built with the solution and never run by `dotnet test`
 samples/kitchen/               the sample story. It must always check cleanly, and its transcripts are tests.
 editors/vscode/                TextMate grammar, snippets, line ID handling, LSP client (Phases 1, 2, 6)
 docs/                          design documents, the language reference and the writer's guide
@@ -131,8 +131,8 @@ The totality property also runs on *mutated real input*: `samples/kitchen`, the 
 ### What isn't tested here
 
 - **Rendering and timing inside Godot.** The adapter is kept thin, and it's checked by running the sample in a Godot project ([roadmap](roadmap.md)).
-- **Games' real stories.** They aren't part of this repository. A game's own CI runs `pibbles check` and its transcripts against its story, which makes real games the largest tests Pibbles gets.
-- **Benchmarks** (`Pibbles.Benchmarks`) measure; they don't pass or fail. They run on demand.
+- **Games' real stories.** They aren't part of this repository. A game's own CI runs `pibbles check` and `pibbles test`, which replays its transcripts against its story, so real games are the largest tests Pibbles gets.
+- **Benchmarks** (`tests/Pibbles.Benchmarks`) measure; they don't pass or fail, and run on demand, in Release: `dotnet run -c Release --project tests/Pibbles.Benchmarks -- --filter '*'`, or a filter such as `'*Compile*'` or `'*RuntimeBenchmarks.Next'` for some of them. They use a story a seeded generator writes in memory at setup, the size of a big visual novel and using every construct, so no megabytes of script are committed. The test project compiles the generator too, and checks that what it writes compiles without errors or warnings, uses every statement and inline element, and plays through to its end. The results are recorded in the [runtime design](runtime.md#performance).
 
 ## With extensions
 

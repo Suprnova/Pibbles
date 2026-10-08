@@ -65,12 +65,60 @@ var upgradeRoot = new Argument<string?>("folder")
 var upgrade = new Command("upgrade", "Rewrite the project's pibbles.json in the newest format, keeping its settings.") { upgradeRoot };
 upgrade.SetAction(result => Upgrade.Run(result.GetValue(upgradeRoot) ?? ".", Directory.GetCurrentDirectory(), messages, errors));
 
+var playRoot = new Argument<string?>("folder")
+{
+    Description = "The project's folder, with pibbles.json and the story folder in it. Leave it out to use the folder you're in.",
+    Arity = ArgumentArity.ZeroOrOne,
+};
+var script = new Option<string?>("--script") { Description = "Play a script, or an earlier transcript, and print the transcript. Without it, you play, answering in the terminal.", HelpName = "file" };
+var start = new Option<string?>("--start") { Description = "The node to start at. With --script, only needed when the script has no start, and it replaces the script's own.", HelpName = "node" };
+var set = new Option<string[]>("--set") { Description = "Set a variable before the start, like '$has_key=true'. Repeat it for more. It wins over the script's own.", HelpName = "$var=value" };
+var stub = new Option<string[]>("--stub") { Description = "What a host function returns, like 'has_item=true' or 'has_item(\"key\")=false'. Repeat it for more. It wins over the script's own and the stubs file.", HelpName = "fn=value" };
+var stubs = new Option<string?>("--stubs") { Description = "A file of stub lines, like 'stub has_item = true'. They win over the script's own.", HelpName = "file" };
+var record = new Option<string?>("--record") { Description = "Write the session to a file as a transcript, which plays the same again with --script.", HelpName = "file" };
+var noPause = new Option<bool>("--no-pause") { Description = "Print straight through to the next choice, instead of waiting for Enter after each line." };
+var play = new Command("play", "Play the story in the terminal, or play a script and print the transcript.") { playRoot, script, start, set, stub, stubs, record, noPause };
+play.SetAction(result =>
+{
+    // Ctrl+C still ends the process, with the system's interrupt code; first, play says so and writes what it recorded.
+    using var interrupted = new CancellationTokenSource();
+    ConsoleCancelEventHandler stop = (_, _) => interrupted.Cancel();
+    Console.CancelKeyPress += stop;
+    try
+    {
+        var options = new PlayOptions(
+            result.GetValue(playRoot) ?? ".",
+            result.GetValue(script),
+            result.GetValue(start),
+            result.GetValue(set),
+            result.GetValue(stub),
+            result.GetValue(stubs),
+            result.GetValue(record),
+            !result.GetValue(noPause),
+            outputColor);
+        return Play.Run(options, Directory.GetCurrentDirectory(), Console.In, Console.Out, errors, interrupted.Token);
+    }
+    finally
+    {
+        Console.CancelKeyPress -= stop;
+    }
+});
+
+var testRoot = new Argument<string?>("folder")
+{
+    Description = "The project's folder, with pibbles.json, the story folder and the transcripts folder in it. Leave it out to use the folder you're in.",
+    Arity = ArgumentArity.ZeroOrOne,
+};
+var update = new Option<bool>("--update") { Description = "Rewrite each transcript that doesn't match with what the story prints now. Use it once you've decided the change is right." };
+var test = new Command("test", "Replay the transcripts in the project's transcripts folder, and show any that no longer match the story.") { testRoot, update };
+test.SetAction(result => Test.Run(result.GetValue(testRoot) ?? ".", Directory.GetCurrentDirectory(), result.GetValue(update), Console.Out, errors, outputColor));
+
 var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB1011." };
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, errors, outputColor));
 
 // Named here rather than after the executable: installed as a tool, the CLI runs as Pibbles.Cli.dll, and help would say so.
-var pibbles = new Command("pibbles", "Pibbles: checks and plays narrative scripts.") { new HelpOption(), new VersionOption(), init, check, ids, upgrade, explain };
+var pibbles = new Command("pibbles", "Pibbles: checks and plays narrative scripts.") { new HelpOption(), new VersionOption(), init, check, play, test, ids, upgrade, explain };
 pibbles.SetAction(result => new HelpAction().Invoke(result));
 
 return pibbles.Parse(args).Invoke();

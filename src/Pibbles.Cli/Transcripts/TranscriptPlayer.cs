@@ -20,37 +20,79 @@ internal sealed class TranscriptPlayer
 
     private readonly Story story;
     private readonly TranscriptScript script;
+    private readonly TextWriter output;
+    private readonly IPlayInput? input;
     private readonly ISet<Type>? kinds;
-    private readonly TranscriptWalk? walk;
-    private readonly StringBuilder output = new();
     private readonly List<RuntimeWarning> warnings = [];
     private readonly Dictionary<string, string> printed = [];
+    private readonly List<string> supplied = [];
+    private readonly HashSet<string> called = [];
     private int started;
     private StoryState state = null!;
     private DialogueRunner runner = null!;
 
-    private TranscriptPlayer(Story story, TranscriptScript script, ISet<Type>? kinds, TranscriptWalk? walk)
+    /// <summary>
+    /// Prepares to play a script, writing the steps to <paramref name="output"/> as they happen. The directives aren't
+    /// written, since the input can add stubs as the run goes; <see cref="Transcript"/> puts them on top.
+    /// </summary>
+    /// <param name="story">The compiled story.</param>
+    /// <param name="script">The script, or an earlier transcript.</param>
+    /// <param name="output">Where the steps go.</param>
+    /// <param name="input">Answers what the script doesn't: a person at a terminal, or a test's random walk.</param>
+    /// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
+    public TranscriptPlayer(Story story, TranscriptScript script, TextWriter output, IPlayInput? input = null, ISet<Type>? kinds = null)
     {
         this.story = story;
         this.script = script;
+        this.output = output;
+        this.input = input;
         this.kinds = kinds;
-        this.walk = walk;
     }
+
+    /// <summary>
+    /// The transcript's directives, which go above its steps: the script's, then a <c>stub</c> line for every value the
+    /// input has supplied, then, when the input supplies stubs, a <c>stub</c> with the default value for each function the
+    /// run hasn't called, so that replaying the transcript as a script plays the same run.
+    /// </summary>
+    public IReadOnlyList<string> Directives => [.. script.Directives, .. supplied, .. Defaults()];
 
     /// <summary>Plays a script and returns the transcript.</summary>
     /// <param name="story">The compiled story.</param>
     /// <param name="scriptText">The script, or an earlier transcript.</param>
     /// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
-    /// <param name="walk">Answers the choices the script has no answer for, and limits the steps, for tests that walk a story at random.</param>
+    /// <param name="input">Answers what the script doesn't, for tests that walk a story at random.</param>
     /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, or the story fails.</exception>
-    public static string Play(Story story, string scriptText, ISet<Type>? kinds = null, TranscriptWalk? walk = null)
+    public static string Play(Story story, string scriptText, ISet<Type>? kinds = null, IPlayInput? input = null)
     {
-        var player = new TranscriptPlayer(story, TranscriptScript.Parse(scriptText), kinds, walk);
+        var steps = new StringWriter();
+        var player = new TranscriptPlayer(story, TranscriptScript.Parse(scriptText), steps, input, kinds);
         player.Run();
-        return player.output.ToString();
+        return player.Transcript(steps.ToString());
     }
 
-    private void Run()
+    /// <summary>The whole transcript: the <see cref="Directives"/>, a blank line, and the steps.</summary>
+    public string Transcript(string steps) => Header(Directives) + steps;
+
+    /// <summary>Directives as they go above a transcript's steps, each on its line, then a blank line.</summary>
+    public static string Header(IEnumerable<string> directives) => string.Concat(directives.Select(directive => directive + "\n")) + "\n";
+
+    /// <summary>Picks the option an answer names, by <c>#id</c> or by its source number, if it's available.</summary>
+    /// <exception cref="TranscriptException">The answer names no option on offer, or one that isn't available.</exception>
+    public static ChoiceOption Pick(ChoiceStep choice, string answer)
+    {
+        ChoiceOption? picked = answer.StartsWith('#')
+            ? choice.Options.FirstOrDefault(option => option.Id == answer[1..])
+            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? choice.Options.FirstOrDefault(option => option.Number == number) : null;
+        if (picked is null)
+            throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
+
+        return picked.IsAvailable ? picked : throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
+    }
+
+    /// <summary>Plays to the end, or until the input stops it. Call it once.</summary>
+    /// <returns>Whether the run reached its end, as opposed to its input stopping it.</returns>
+    /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, or the story fails.</exception>
+    public bool Run()
     {
         HostFunctions functions = Stubs();
         state = new(story, 0);
@@ -63,33 +105,30 @@ internal sealed class TranscriptPlayer
 
         runner = new(story, state, functions, new() { OnWarning = warnings.Add });
         StartNext();
-
-        foreach (string directive in script.Directives)
-            output.Append(directive).Append('\n');
-
-        output.Append('\n');
         PrintVariableChanges();
         Queue<string> answers = new(script.Answers);
-        for (int steps = 1; ; steps++)
+        while (true)
         {
-            DialogueStep step = Next();
+            if (Next() is not { } step)
+                return false;
+
             PrintVariableChanges();
             PrintWarnings();
             Print(step);
-            if (steps == walk?.MaxSteps)
-                return;
+            if (input?.Continue(step) is false)
+                return false;
 
             switch (step)
             {
                 case EndStep when started < script.Starts.Count:
-                    output.Append("\nstart ").Append(script.Starts[started]).Append('\n');
+                    WriteLine("");
+                    WriteLine("start " + script.Starts[started]);
                     StartNext();
                     break;
                 case EndStep:
-                    return;
-                case ChoiceStep choice:
-                    Answer(choice, answers);
-                    break;
+                    return true;
+                case ChoiceStep choice when !Answer(choice, answers):
+                    return false;
             }
         }
     }
@@ -106,11 +145,16 @@ internal sealed class TranscriptPlayer
         }
     }
 
-    private DialogueStep Next()
+    /// <summary>The next step, or <see langword="null"/> when the input stopped the run while a host function asked it for a value.</summary>
+    private DialogueStep? Next()
     {
         try
         {
             return runner.Next();
+        }
+        catch (HostFunctionException exception) when (exception.InnerException is StoppedException)
+        {
+            return null;
         }
         catch (HostFunctionException exception)
         {
@@ -118,27 +162,27 @@ internal sealed class TranscriptPlayer
         }
     }
 
-    private void Answer(ChoiceStep choice, Queue<string> answers)
+    /// <summary>Answers a choice from the script, or else from the input. Returns <see langword="false"/> when the input stopped the run instead.</summary>
+    private bool Answer(ChoiceStep choice, Queue<string> answers)
     {
-        ChoiceOption picked = answers.Count > 0 ? Parse(choice, answers.Dequeue())
-            : walk?.Choose(choice) ?? throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(Name))}.");
-
-        output.Append(picked.Text.IsFallbackId ? $"> {picked.Number}" : $"> #{picked.Id}").Append('\n');
-        runner.Choose(picked);
-    }
-
-    private static ChoiceOption Parse(ChoiceStep choice, string answer)
-    {
-        ChoiceOption? picked = answer.StartsWith('#')
-            ? choice.Options.FirstOrDefault(option => option.Id == answer[1..])
-            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? choice.Options.FirstOrDefault(option => option.Number == number) : null;
+        ChoiceOption? picked = answers.Count > 0 ? Pick(choice, answers.Dequeue())
+            : input is not null ? input.Choose(choice)
+            : throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(Name))}.");
         if (picked is null)
-            throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
+            return false;
 
-        return picked.IsAvailable ? picked : throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
+        WriteLine(picked.Text.IsFallbackId ? $"> {picked.Number}" : $"> #{picked.Id}");
+        runner.Choose(picked);
+        return true;
     }
 
     private static string Name(ChoiceOption option) => option.Text.IsFallbackId ? $"option {option.Number}" : $"#{option.Id}";
+
+    private void WriteLine(string line)
+    {
+        output.Write(line);
+        output.Write('\n');
+    }
 
     private void PrintVariableChanges()
     {
@@ -146,7 +190,7 @@ internal sealed class TranscriptPlayer
         {
             string shown = ValueText.Show(state.GetVariable(variable.Name), variable.Type);
             if (printed.TryGetValue(variable.Name, out string? before) && before != shown)
-                output.Append(Indent).Append('$').Append(variable.Name).Append(" = ").Append(shown).Append('\n');
+                WriteLine($"{Indent}${variable.Name} = {shown}");
 
             printed[variable.Name] = shown;
         }
@@ -155,10 +199,7 @@ internal sealed class TranscriptPlayer
     private void PrintWarnings()
     {
         foreach (RuntimeWarning warning in warnings)
-        {
-            output.Append(Indent).Append("warning ").Append(warning.Kind).Append(" (").Append(warning.Location.Path).Append(" line ")
-                .Append(warning.Location.Start.Line + 1).Append("): ").Append(ValueText.Escape(warning.Message)).Append('\n');
-        }
+            WriteLine($"{Indent}warning {warning.Kind} ({warning.Location.Path} line {warning.Location.Start.Line + 1}): {ValueText.Escape(warning.Message)}");
 
         warnings.Clear();
     }
@@ -169,33 +210,30 @@ internal sealed class TranscriptPlayer
         switch (step)
         {
             case LineStep line:
-                output.Append(Indent).Append(line.Line.Speaker ?? "narration").Append(": ").Append(Text(line.Line)).Append(Suffix(line.Line)).Append('\n');
+                WriteLine($"{Indent}{line.Line.Speaker ?? "narration"}: {Text(line.Line)}{Suffix(line.Line)}");
                 break;
 
             case ChoiceStep choice:
-                output.Append(Indent).Append("choice\n");
+                WriteLine($"{Indent}choice");
                 foreach (ChoiceOption option in choice.Options)
-                {
-                    output.Append(Indent).Append(Indent).Append(option.Number).Append(". ").Append(Text(option.Text)).Append(Suffix(option.Text))
-                        .Append(option.IsAvailable ? "" : " (unavailable)").Append(option.WasChosen ? " (chosen)" : "").Append('\n');
-                }
+                    WriteLine($"{Indent}{Indent}{option.Number}. {Text(option.Text)}{Suffix(option.Text)}{(option.IsAvailable ? "" : " (unavailable)")}{(option.WasChosen ? " (chosen)" : "")}");
 
                 break;
 
             case CommandStep command:
-                output.Append(Indent).Append('@').Append(command.Command.Name).Append(Arguments(command.Command.Parameters, command.Command.GetValue)).Append(command.Waits ? " waits" : "").Append('\n');
+                WriteLine($"{Indent}@{command.Command.Name}{Arguments(command.Command.Parameters, command.Command.GetValue)}{(command.Waits ? " waits" : "")}");
                 break;
 
             case PoseStep pose:
-                output.Append(Indent).Append("pose ").Append(pose.Actor).Append(' ').Append(pose.Pose).Append('\n');
+                WriteLine($"{Indent}pose {pose.Actor} {pose.Pose}");
                 break;
 
             case WaitStep wait:
-                output.Append(Indent).Append("wait ").Append(ValueText.FormatSeconds(wait.Duration)).Append('\n');
+                WriteLine($"{Indent}wait {ValueText.FormatSeconds(wait.Duration)}");
                 break;
 
             case EndStep:
-                output.Append(Indent).Append("end\n");
+                WriteLine($"{Indent}end");
                 break;
         }
     }
@@ -260,42 +298,21 @@ internal sealed class TranscriptPlayer
         };
     }
 
-    /// <summary>Registers a stub for each function the script stubs, and fails, listing every declared function left without one.</summary>
+    /// <summary>
+    /// Registers each declared function, answering from the script's stubs and then from the input. Without an input that
+    /// supplies stubs, it fails, listing every declared function the script doesn't stub.
+    /// </summary>
     private HostFunctions Stubs()
     {
+        if (script.Stubs.FirstOrDefault(stub => story.Functions.All(function => function.Name != stub.Function)) is { } unknown)
+            throw new TranscriptException($"I can't read `{unknown.Line}`: the story doesn't declare a function called `{unknown.Function}`.");
+
         var functions = new HostFunctions();
-        foreach (IGrouping<string, ScriptStub> group in script.Stubs.GroupBy(stub => stub.Function))
+        foreach (FunctionInfo function in story.Functions)
         {
-            FunctionInfo function = story.Functions.FirstOrDefault(candidate => candidate.Name == group.Key)
-                ?? throw new TranscriptException($"I can't read `{group.First().Line}`: the story doesn't declare a function called `{group.Key}`.");
-
-            Dictionary<string, object> exact = [];
-            object? fallback = null;
-            bool hasFallback = false;
-            foreach (ScriptStub stub in group)
-            {
-                object result = ValueText.Parse(stub.Value, function.ReturnType, story, stub.Line);
-                if (stub.Arguments is null)
-                {
-                    fallback = result;
-                    hasFallback = true;
-                    continue;
-                }
-
-                if (stub.Arguments.Count != function.Parameters.Count)
-                    throw new TranscriptException($"I can't read `{stub.Line}`: `{function.Name}` takes {function.Parameters.Count} argument{(function.Parameters.Count == 1 ? "" : "s")}.");
-
-                string key = string.Join('\u0001', stub.Arguments.Select((argument, index) => ValueText.Key(ValueText.Parse(argument, function.Parameters[index].Type, story, stub.Line))));
-                exact[key] = result;
-            }
-
-            functions.AddDynamic(
-                function.Name,
-                [.. function.Parameters.Select(parameter => parameter.Type.HostType)],
-                function.ReturnType.HostType,
-                arguments => exact.TryGetValue(string.Join('\u0001', arguments.Select(ValueText.Key)), out object? result) ? result
-                    : hasFallback ? fallback
-                    : throw new TranscriptException($"The script has no stub for `{function.Name}({string.Join(", ", arguments.Zip(function.Parameters, (argument, parameter) => ValueText.Show(argument!, parameter.Type)))})`."));
+            ScriptStub[] stubs = [.. script.Stubs.Where(stub => stub.Function == function.Name)];
+            if (stubs.Length > 0 || input?.SuppliesStubs is true)
+                functions.AddDynamic(function.Name, [.. function.Parameters.Select(parameter => parameter.Type.HostType)], function.ReturnType.HostType, new StubTable(this, function, stubs).Call);
         }
 
         string[] missing = [.. functions.Validate(story).Where(problem => problem.Kind is HostFunctionProblemKind.Missing).Select(problem => problem.Function)];
@@ -303,5 +320,69 @@ internal sealed class TranscriptPlayer
             throw new TranscriptException($"The story declares {string.Join(", ", missing.Select(name => $"`{name}`"))}, but the script has no stub for {(missing.Length == 1 ? "it" : "them")}. Add a line like `stub {missing[0]} = value`.");
 
         return functions;
+    }
+
+    /// <summary>A <c>stub</c> with the default value of its return type for each function the run never called and nothing stubs, when the input supplies stubs.</summary>
+    private IEnumerable<string> Defaults() =>
+        input?.SuppliesStubs is true
+            ? story.Functions
+                .Where(function => !called.Contains(function.Name) && script.Stubs.All(stub => stub.Function != function.Name))
+                .Select(function => (function, Value: ValueText.Default(function.ReturnType, story)))
+                .Where(stub => stub.Value is not null)
+                .Select(stub => $"stub {stub.function.Name} = {ValueText.Show(stub.Value!, stub.function.ReturnType)}")
+            : [];
+
+    /// <summary>The input stopped the run while a host function asked it for a value.</summary>
+    private sealed class StoppedException : Exception;
+
+    /// <summary>One function's stubs: exact ones by their arguments, the one for any others, and then whatever the input supplies.</summary>
+    private sealed class StubTable
+    {
+        private readonly TranscriptPlayer player;
+        private readonly FunctionInfo function;
+        private readonly Dictionary<string, object> exact = [];
+        private readonly object? fallback;
+
+        public StubTable(TranscriptPlayer player, FunctionInfo function, IEnumerable<ScriptStub> stubs)
+        {
+            this.player = player;
+            this.function = function;
+            foreach (ScriptStub stub in stubs)
+            {
+                object result = ValueText.Parse(stub.Value, function.ReturnType, player.story, stub.Line);
+                if (stub.Arguments is null)
+                {
+                    fallback = result;
+                    continue;
+                }
+
+                if (stub.Arguments.Count != function.Parameters.Count)
+                    throw new TranscriptException($"I can't read `{stub.Line}`: `{function.Name}` takes {function.Parameters.Count} argument{(function.Parameters.Count == 1 ? "" : "s")}.");
+
+                exact[Key(stub.Arguments.Select((argument, index) => ValueText.Parse(argument, function.Parameters[index].Type, player.story, stub.Line)))] = result;
+            }
+        }
+
+        public object? Call(object?[] arguments)
+        {
+            player.called.Add(function.Name);
+            string key = Key(arguments);
+            if (exact.TryGetValue(key, out object? result))
+                return result;
+
+            if (fallback is not null)
+                return fallback;
+
+            string call = ValueText.Call(function, arguments);
+            if (player.input?.SuppliesStubs is not true)
+                throw new TranscriptException($"The script has no stub for `{call}`.");
+
+            object supplied = player.input.Stub(function, arguments) ?? throw new StoppedException();
+            exact[key] = supplied;
+            player.supplied.Add($"stub {(function.Parameters.Count == 0 ? function.Name : call)} = {ValueText.Show(supplied, function.ReturnType)}");
+            return supplied;
+        }
+
+        private static string Key(IEnumerable<object?> arguments) => string.Join('\u0001', arguments.Select(ValueText.Key));
     }
 }

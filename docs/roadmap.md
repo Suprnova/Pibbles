@@ -71,8 +71,9 @@ Each phase ends with something usable and a clear exit check.
 
 ### Phase 3: Runtime
 
-- Compiler to IR, `DialogueRunner`, `StoryState` with versioned snapshots, runner snapshots, template rendering, `LineReveal`, host functions.
-- `pibbles play`, both interactive and scripted. Benchmarks.
+- Compiler to IR, `DialogueRunner`, `StoryState` with versioned snapshots, runner snapshots, fast-forward to a save point, template rendering, `LineReveal`, host functions.
+- `pibbles play`, both interactive and scripted, with `--record`. `pibbles test`, which replays a project's transcripts, in CI for the sample story.
+- Benchmarks over a generated story the size of a big visual novel.
 
 **Exit:** transcript tests cover every statement and inline element, the determinism, save-anywhere and skip-equivalence properties pass, the kitchen sample plays through all its branches in the terminal, and the benchmarks confirm the estimates in the [runtime design](runtime.md#performance) or the design is revisited.
 

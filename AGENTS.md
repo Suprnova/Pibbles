@@ -11,6 +11,7 @@ global.json                  SDK version; `dotnet test` runs on Microsoft Testin
 src/Pibbles/                 the core: net8.0 + net10.0, BCL only
 src/Pibbles.Cli/             the `pibbles` .NET tool
 tests/Pibbles.Tests/         xUnit v3 tests for the core, the CLI and the docs
+tests/Pibbles.Benchmarks/    BenchmarkDotNet benchmarks over a generated story; built, never run by `dotnet test`
 samples/kitchen/             the sample story
 editors/vscode/              the VS Code extension: the TextMate grammar (YAML), the editing aids and their tests, built with Node
 docs/                        the living documentation: design docs, the language reference and guide
@@ -27,7 +28,9 @@ dotnet test -p:TestAllTargets=true                                              
 dotnet run --project src/Pibbles.Cli -- check samples/kitchen
 dotnet run --project src/Pibbles.Cli -- ids samples/kitchen                                    (after adding lines to the sample)
 npm test --prefix editors/vscode                                                                (the extension and grammar; npm ci there first)
-dotnet run --project src/Pibbles.Cli -- play samples/kitchen --start kitchen.door --script <file>  (Phase 3)
+dotnet run --project src/Pibbles.Cli -- test samples/kitchen                                   (replays the sample's transcripts)
+dotnet run --project src/Pibbles.Cli -- play samples/kitchen --script <file>                   (prints a script's transcript; --start <node> without --script plays interactively)
+dotnet run -c Release --project tests/Pibbles.Benchmarks -- --filter '*Compile*'               (benchmarks, on demand)
 ```
 
 ## Invariants (never break these)
@@ -75,8 +78,8 @@ These checklists are where work tends to stop too early. Finish every step.
 **The verification loop.** Confirm a change without Godot:
 
 1. `dotnet test`: snapshots, fixtures, transcripts, reveal tests.
-2. `pibbles check samples/kitchen`: the sample story still compiles cleanly.
-3. `pibbles play … --script`: the behavior a change describes, shown as a transcript.
+2. `pibbles check samples/kitchen` and `pibbles test samples/kitchen`: the sample story still compiles cleanly, and its transcripts still match.
+3. `pibbles play … --script <file>`: the behavior a change describes, shown as a transcript. Save it under the sample's `transcripts/` and it becomes a test.
 
 Only the Godot adapter's rendering and timing glue needs the engine, and it's kept small on purpose.
 

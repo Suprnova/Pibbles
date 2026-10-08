@@ -81,6 +81,25 @@ internal static class ValueText
         }
     }
 
+    /// <summary>
+    /// The plainest value of a type, as a host value: <c>false</c>, <c>0</c>, <c>""</c>, <c>0s</c>, or the first enum member,
+    /// actor or node. <see langword="null"/> when the story has no actor for an <c>actor</c>.
+    /// </summary>
+    public static object? Default(StoryType type, Story story) => type.Kind switch
+    {
+        StoryTypeKind.Bool => false,
+        StoryTypeKind.Number => 0m,
+        StoryTypeKind.Duration => TimeSpan.Zero,
+        StoryTypeKind.Text => "",
+        StoryTypeKind.Enum => story.Enums.First(@enum => @enum.Name == type.EnumName).Members[0],
+        StoryTypeKind.Actor => story.Actors.Count > 0 ? story.Actors[0].Id : null,
+        _ => story.Nodes[0].Name,
+    };
+
+    /// <summary>A call as a script writes it: <c>price("rope")</c>.</summary>
+    public static string Call(FunctionInfo function, IEnumerable<object?> arguments) =>
+        $"{function.Name}({string.Join(", ", arguments.Zip(function.Parameters, (argument, parameter) => Show(argument!, parameter.Type)))})";
+
     /// <summary>A key that is the same for the same host values.</summary>
     public static string Key(object? value) => value switch
     {
