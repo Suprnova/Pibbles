@@ -58,6 +58,7 @@ public sealed class DialogueRunner
     private int index;
     private List<(CompiledOption Compiled, ChoiceOption Offered)> offered = [];
     private string? shownLine;
+    private bool restored;
 
     /// <summary>Creates a runner that isn't running anything yet. Call <see cref="Start"/>.</summary>
     /// <param name="story">The compiled story.</param>
@@ -103,6 +104,7 @@ public sealed class DialogueRunner
         offered = [];
         pending.Clear();
         shownLine = null;
+        restored = false;
         Enter(story.CompiledNodes[name]);
         phase = Phase.Running;
     }
@@ -135,26 +137,44 @@ public sealed class DialogueRunner
     /// effect), applies the poses, drops the waits, and shows the final line or choice.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The instruction budget covers the whole fast-forward, so a story that loops forever giving commands still can't hang
     /// the game: the runner reports an <see cref="RuntimeWarningKind.InfiniteLoop"/> warning and ends the dialogue.
+    /// </para>
+    /// <para>
+    /// If an instruction throws partway, such as a host function failing in a condition, the steps already passed have run:
+    /// their <c>@set</c>s happened and the runner has moved on. So the exception is a <see cref="FastForwardException"/>
+    /// whose <see cref="FastForwardException.Passed"/> holds them, for the host to carry out, with the original exception
+    /// as its <see cref="Exception.InnerException"/>. As with <see cref="Next"/>, the instruction that threw changed
+    /// nothing, and calling <see cref="FastForward"/> again tries it again.
+    /// </para>
     /// </remarks>
     /// <returns>
     /// Every step it passed, in order, ending with the <see cref="LineStep"/>, <see cref="ChoiceStep"/> or
     /// <see cref="EndStep"/> it stopped at. It's empty when the runner is already at a save point: right after a
-    /// <see cref="LineStep"/>, while a choice is waiting, or with no dialogue in progress.
+    /// <see cref="LineStep"/>, while a choice is waiting, right after <see cref="Restore"/> landed on a line or a choice, or
+    /// with no dialogue in progress.
     /// </returns>
+    /// <exception cref="FastForwardException">An instruction threw. The exception holds the steps passed before it.</exception>
     public IReadOnlyList<DialogueStep> FastForward()
     {
-        if (phase is not Phase.Running || shownLine is not null)
+        if (AtSavePoint)
             return [];
 
         List<DialogueStep> passed = [];
         int budget = options.InstructionBudget;
-        do
+        try
         {
-            passed.Add(Step(ref budget));
+            do
+            {
+                passed.Add(Step(ref budget));
+            }
+            while (passed[^1] is not (LineStep or ChoiceStep or EndStep));
         }
-        while (passed[^1] is not (LineStep or ChoiceStep or EndStep));
+        catch (Exception exception)
+        {
+            throw new FastForwardException(passed, exception);
+        }
 
         return passed;
     }
@@ -162,8 +182,9 @@ public sealed class DialogueRunner
     /// <summary>
     /// Takes a snapshot of where the dialogue is, as IDs: the line the host is showing or the options of the choice that is
     /// waiting, and the <c>@call</c>s it's inside. It can be taken right after <see cref="Next"/> returned a
-    /// <see cref="LineStep"/>, while a choice is waiting, or with no dialogue in progress (never started, or ended), which
-    /// gives <see cref="RunnerSnapshot.Empty"/>. At any other moment, call <see cref="FastForward"/> first.
+    /// <see cref="LineStep"/>, while a choice is waiting, right after <see cref="Restore"/> landed on a line or a choice, or
+    /// with no dialogue in progress (never started, or ended), which gives <see cref="RunnerSnapshot.Empty"/>. At any other
+    /// moment, call <see cref="FastForward"/> first.
     /// </summary>
     /// <returns>
     /// The snapshot, and a <see cref="SaveProblemKind.FallbackId"/> problem for each ID it left out because the compiler made
@@ -176,21 +197,23 @@ public sealed class DialogueRunner
         if (phase is Phase.NotStarted or Phase.Ended)
             return new(RunnerSnapshot.Empty, []);
 
-        if (phase is Phase.Running && shownLine is null)
+        if (!AtSavePoint)
             throw new InvalidOperationException("The dialogue isn't at a line or a choice, so it can't be saved here. Call FastForward first, then CreateSnapshot.");
 
+        Instruction? waiting = phase is Phase.AwaitingChoice || restored ? node!.Instructions[index] : null;
+        string? line = shownLine ?? (waiting as LineInstruction)?.Id;
         string[] calls = [.. frames.Reverse().Select(frame => frame.CallId)];
-        string[] choice = phase is Phase.AwaitingChoice ? [.. ((ChoiceInstruction)node!.Instructions[index]).Options.Select(option => option.Id)] : [];
+        string[] choice = waiting is ChoiceInstruction instruction ? [.. instruction.Options.Select(option => option.Id)] : [];
         string[] kept = [.. choice.Where(id => !story.FallbackIds.Contains(id))];
-        bool lost = calls.Any(story.FallbackIds.Contains) || (shownLine is not null && story.FallbackIds.Contains(shownLine)) || (choice.Length > 0 && kept.Length == 0);
+        bool lost = calls.Any(story.FallbackIds.Contains) || (line is not null && story.FallbackIds.Contains(line)) || (choice.Length > 0 && kept.Length == 0);
 
         string outcome = lost ? "so the dialogue is saved as not in progress" : "so the snapshot leaves it out";
         SaveProblem[] problems =
         [
-            .. calls.Append(shownLine).Concat(choice).OfType<string>().Where(story.FallbackIds.Contains)
+            .. calls.Append(line).Concat(choice).OfType<string>().Where(story.FallbackIds.Contains)
                 .Select(id => new SaveProblem(SaveProblemKind.FallbackId, id, $"`{id}` has no `#id`, {outcome}. Run `pibbles ids` to give it one.")),
         ];
-        return new(lost ? RunnerSnapshot.Empty : new() { Format = RunnerSnapshot.CurrentFormat, Calls = calls, Line = shownLine, Choice = kept }, problems);
+        return new(lost ? RunnerSnapshot.Empty : new() { Format = RunnerSnapshot.CurrentFormat, Calls = calls, Line = line, Choice = kept }, problems);
     }
 
     /// <summary>
@@ -212,6 +235,10 @@ public sealed class DialogueRunner
     /// frame survives, there's no dialogue in progress: the runner is ended, and <see cref="Next"/> returns
     /// <see cref="EndStep"/> until <see cref="Start"/>.
     /// </para>
+    /// <para>
+    /// A runner restored at a line or a choice is at a save point until <see cref="Next"/> shows it again, so a game can
+    /// save straight after loading. One that resumed after a call, or skipped a choice with nothing available, isn't.
+    /// </para>
     /// </remarks>
     /// <param name="story">The story as it is now.</param>
     /// <param name="state">The state to run against, usually restored with <see cref="StoryState.Restore"/>. It must be for the same story.</param>
@@ -223,7 +250,7 @@ public sealed class DialogueRunner
     /// <exception cref="HostFunctionException">A host function failed while a restored choice checked its options.</exception>
     public static SaveResult<DialogueRunner> Restore(Story story, StoryState state, HostFunctions functions, RunnerSnapshot snapshot, RunnerOptions? options = null)
     {
-        SnapshotFormat.Check(snapshot.Format, RunnerSnapshot.CurrentFormat, nameof(snapshot));
+        SnapshotChecks.Check(snapshot, nameof(snapshot));
         var runner = new DialogueRunner(story, state, functions, options);
         List<SaveProblem> problems = [];
         runner.Resume(snapshot, problems);
@@ -276,6 +303,7 @@ public sealed class DialogueRunner
                 throw;
             }
 
+            restored = false;
             Flush();
             if (step is not null)
             {
@@ -331,6 +359,7 @@ public sealed class DialogueRunner
         }
 
         (node, index) = site;
+        restored = true;
         return true;
     }
 
@@ -358,6 +387,7 @@ public sealed class DialogueRunner
         if (Offer(choice).Any(option => option.Offered.IsAvailable))
         {
             pending.Clear();
+            restored = true;
             return true;
         }
 
@@ -366,6 +396,12 @@ public sealed class DialogueRunner
         index = choice.Join;
         return true;
     }
+
+    /// <summary>
+    /// Whether a snapshot can be taken now: with no dialogue in progress, right after a line, while a choice waits, or right
+    /// after <see cref="Restore"/> landed on a line or a choice that hasn't been shown again yet.
+    /// </summary>
+    private bool AtSavePoint => phase is not Phase.Running || shownLine is not null || restored;
 
     private string Unwinding() => frames.Count > 0 ? "resumes after the call it was inside" : "is no longer in progress";
 
@@ -509,6 +545,7 @@ public sealed class DialogueRunner
         frames.Clear();
         offered = [];
         shownLine = null;
+        restored = false;
         node = null;
         phase = Phase.Ended;
         return End;
@@ -546,4 +583,20 @@ public sealed class DialogueRunner
 
         public void Warn(RuntimeWarning warning) => runner.Warn(warning);
     }
+}
+
+/// <summary>
+/// An instruction threw during <see cref="DialogueRunner.FastForward"/>. The steps passed before it have already run, so
+/// the host must still carry them out, or the stage and the story go out of step.
+/// </summary>
+public sealed class FastForwardException : Exception
+{
+    internal FastForwardException(IReadOnlyList<DialogueStep> passed, Exception inner)
+        : base($"Fast-forwarding stopped after {passed.Count} step{(passed.Count == 1 ? "" : "s")}: {inner.Message} Carry out the steps in {nameof(Passed)} before handling the error.", inner)
+    {
+        Passed = passed;
+    }
+
+    /// <summary>The steps passed before the instruction threw, in order. They have run, and the host carries them out as it would have.</summary>
+    public IReadOnlyList<DialogueStep> Passed { get; }
 }

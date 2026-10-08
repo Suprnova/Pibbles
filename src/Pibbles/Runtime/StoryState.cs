@@ -129,7 +129,7 @@ public sealed class StoryState
     /// <exception cref="InvalidOperationException">A variable's starting value reads a variable declared after it, or calls a function.</exception>
     public static SaveResult<StoryState> Restore(Story story, StateSnapshot snapshot)
     {
-        SnapshotFormat.Check(snapshot.Format, StateSnapshot.CurrentFormat, nameof(snapshot));
+        SnapshotChecks.Check(snapshot, nameof(snapshot));
         var state = new StoryState(story, snapshot.Seed);
         List<SaveProblem> problems = [];
         state.RestoreVariables(snapshot.Variables, problems);

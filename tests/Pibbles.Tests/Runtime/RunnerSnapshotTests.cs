@@ -362,6 +362,106 @@ public class RunnerSnapshotTests
         Assert.Equal([RuntimeWarningKind.InfiniteLoop], game.Warnings.Select(warning => warning.Kind));
     }
 
+    [Fact]
+    public void CreateSnapshot_RightAfterRestoringAtALine_GivesThatLine()
+    {
+        Game game = Game.Of(Nested);
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+        game.Runner.Next();
+        Game loaded = game.SaveAndLoad(out _);
+
+        RunnerSnapshot snapshot = loaded.Runner.CreateSnapshot().Value;
+
+        Assert.Equal(["c1", "c2"], snapshot.Calls);
+        Assert.Equal("l4", snapshot.Line);
+        Assert.Empty(loaded.Runner.FastForward());
+        Assert.Equal("Line mira: Deep.", Game.Format(loaded.Runner.Next()));
+    }
+
+    [Fact]
+    public void CreateSnapshot_RightAfterRestoringAtAChoice_GivesThatChoice()
+    {
+        Game game = Game.Of("== t.n\n-> A #id:o1\n-> B #id:o2\n");
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+        Game loaded = game.SaveAndLoad(out _);
+
+        RunnerSnapshot snapshot = loaded.Runner.CreateSnapshot().Value;
+
+        Assert.Equal(["o1", "o2"], snapshot.Choice);
+        Assert.Empty(loaded.Runner.FastForward());
+        Assert.Equal("Choice A | B", Game.Format(loaded.Runner.Next()));
+    }
+
+    [Fact]
+    public void CreateSnapshot_RightAfterRestoringWithALostCall_LeavesTheCallOut()
+    {
+        const string Before = "== t.n\n@call t.sub #id:c1\nmira: After. #id:l9\n== t.sub\nmira: In. #id:l5\n";
+        Game loaded = SaveAtFirstLine(Before, "== t.n\nmira: After. #id:l9\n== t.sub\nmira: In. #id:l5\n", out _);
+
+        RunnerSnapshot snapshot = loaded.Runner.CreateSnapshot().Value;
+
+        Assert.Empty(snapshot.Calls);
+        Assert.Equal("l5", snapshot.Line);
+    }
+
+    [Fact]
+    public void CreateSnapshot_RightAfterRestoringPastALostLine_Throws()
+    {
+        const string Before = "== t.n\n@call t.sub #id:c1\nmira: After. #id:l9\n== t.sub\nmira: In. #id:l5\n";
+        Game loaded = SaveAtFirstLine(Before, "== t.n\n@call t.sub #id:c1\nmira: After. #id:l9\n== t.sub\n", out _);
+
+        Assert.Throws<InvalidOperationException>(loaded.Runner.CreateSnapshot);
+        Assert.Equal(["Line mira: After."], loaded.Runner.FastForward().Select(Game.Format));
+    }
+
+    [Fact]
+    public void CreateSnapshot_RightAfterRestoringASkippedChoice_Throws()
+    {
+        Game game = Game.Of("== t.n\n-> A  @if $key #id:o1\nmira: After. #id:l1\n");
+        game.State.SetVariable("key", true);
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+        StoryState state = StoryState.Restore(game.Story, game.State.CreateSnapshot().Value).Value;
+        state.SetVariable("key", false);
+        DialogueRunner runner = DialogueRunner.Restore(game.Story, state, game.Functions, game.Runner.CreateSnapshot().Value).Value;
+
+        Assert.Throws<InvalidOperationException>(runner.CreateSnapshot);
+    }
+
+    [Fact]
+    public void SaveAndLoad_TwiceInARow_ResumesAtTheSamePlace()
+    {
+        Game game = Game.Of(Nested);
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+        game.Runner.Next();
+
+        Game twice = game.SaveAndLoad(out IReadOnlyList<SaveProblem> first).SaveAndLoad(out IReadOnlyList<SaveProblem> second);
+
+        Assert.Empty(first);
+        Assert.Empty(second);
+        Assert.Equal(["Line mira: Deep.", "Line mira: Sub end.", "Line mira: Back.", "End"], twice.Continue());
+    }
+
+    [Fact]
+    public void FastForward_HostFunctionThrowsPartway_HandsOverTheStepsAlreadyPassed()
+    {
+        Game game = Game.Of(
+            "== t.n\n@show mira\n@show rex\n@set $count = 1\n@if has_item(\"x\")\n    mira: Yes. #id:l1\n",
+            functions => functions.Add("has_item", (string id) => id == "crowbar" ? true : throw new InvalidOperationException("No inventory yet.")));
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+
+        var exception = Assert.Throws<FastForwardException>(game.Runner.FastForward);
+
+        Assert.Equal(["Command @show(rex, calm)"], exception.Passed.Select(Game.Format));
+        Assert.IsType<HostFunctionException>(exception.InnerException);
+        Assert.Equal(1m, game.State.GetVariable("count"));
+        Assert.Empty(Assert.Throws<FastForwardException>(game.Runner.FastForward).Passed);
+    }
+
     private static Game SaveAtFirstLine(string before, string after, out IReadOnlyList<SaveProblem> problems) => SaveAt<LineStep>(before, after, out problems);
 
     private static Game SaveAtFirstChoice(string before, string after, out IReadOnlyList<SaveProblem> problems) => SaveAt<ChoiceStep>(before, after, out problems);

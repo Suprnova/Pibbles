@@ -155,16 +155,69 @@ public enum SaveProblemKind
     NoOptionAvailable,
 }
 
-/// <summary>Checks a snapshot's format before it's restored.</summary>
-internal static class SnapshotFormat
+/// <summary>
+/// Checks snapshots before they're used. A snapshot can come from a corrupted or hand-edited save file, and JSON can hold
+/// <see langword="null"/> where the types say it can't, which net8.0's serializer doesn't reject.
+/// </summary>
+internal static class SnapshotChecks
 {
-    /// <exception cref="ArgumentException">The format is newer than <paramref name="current"/>, or isn't a format at all.</exception>
-    public static void Check(int format, int current, string parameter)
+    /// <summary>Checks a snapshot before it's restored.</summary>
+    /// <exception cref="ArgumentException">The format is newer than this version reads or isn't a format, or the snapshot has a null where a value must be.</exception>
+    public static void Check(StateSnapshot snapshot, string parameter)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot, parameter);
+        Check(snapshot.Format, StateSnapshot.CurrentFormat, NullIn(snapshot), parameter);
+    }
+
+    /// <inheritdoc cref="Check(StateSnapshot, string)"/>
+    public static void Check(RunnerSnapshot snapshot, string parameter)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot, parameter);
+        Check(snapshot.Format, RunnerSnapshot.CurrentFormat, NullIn(snapshot), parameter);
+    }
+
+    /// <summary>Where a state snapshot has a null that must be a value, as a JSON path, or <see langword="null"/> if it has none.</summary>
+    public static string? NullIn(StateSnapshot snapshot)
+    {
+        if (snapshot.Variables is null)
+            return "variables";
+
+        foreach ((string name, SavedValue value) in snapshot.Variables)
+        {
+            if (value?.Type is null)
+                return value is null ? $"variables.{name}" : $"variables.{name}.type";
+        }
+
+        if (snapshot.Visits is null)
+            return "visits";
+
+        if (snapshot.BlockEntries is null)
+            return "blockEntries";
+
+        if (NullIn(snapshot.ChosenOptions, "chosenOptions") is { } path)
+            return path;
+
+        if (snapshot.Poses is null)
+            return "poses";
+
+        return snapshot.Poses.FirstOrDefault(pose => pose.Value is null).Key is { } actor ? $"poses.{actor}" : null;
+    }
+
+    /// <summary>Where a runner snapshot has a null that must be a value, as a JSON path, or <see langword="null"/> if it has none.</summary>
+    public static string? NullIn(RunnerSnapshot snapshot) => NullIn(snapshot.Calls, "calls") ?? NullIn(snapshot.Choice, "choice");
+
+    private static string? NullIn(IReadOnlyList<string> ids, string name) =>
+        ids is null ? name : ids.Select((id, index) => id is null ? $"{name}[{index}]" : null).FirstOrDefault(path => path is not null);
+
+    private static void Check(int format, int current, string? nullPath, string parameter)
     {
         if (format > current)
             throw new ArgumentException($"The snapshot is in save format {format}, but this version of Pibbles reads formats up to {current}. It was probably saved by a newer version of the game.", parameter);
 
         if (format < 1)
             throw new ArgumentException($"The snapshot's format is {format}, which isn't a save format. Formats start at 1.", parameter);
+
+        if (nullPath is not null)
+            throw new ArgumentException($"The snapshot has null at `{nullPath}`, where it needs a value. The save is probably corrupted.", parameter);
     }
 }
