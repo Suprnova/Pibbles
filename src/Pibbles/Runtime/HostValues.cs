@@ -44,22 +44,34 @@ internal static class HostValues
             return result is TimeSpan duration ? Value.Duration(Durations.ToSeconds(duration)) : throw Wrong(subject, result, type);
 
         string text = result as string ?? throw Wrong(subject, result, type);
+        return FromText(text, type, story) ?? throw new InvalidOperationException($"{subject} \"{text}\", which isn't {Expected(type)}.");
+    }
+
+    /// <summary>
+    /// A value of a type held as a string: a <c>string</c>, or the enum member, actor or node (current or old name) the text
+    /// names. <see langword="null"/> if it names nothing of the type.
+    /// </summary>
+    public static Value? FromText(string text, TypeSymbol type, Story story)
+    {
         if (type == TypeSymbol.String)
             return Value.String(text);
 
         if (type is EnumSymbol @enum)
-            return @enum.Members.FirstOrDefault(member => member.Name == text) is { } member ? Value.Member(member, @enum) : throw NotA(subject, text, $"a member of `{@enum.Name}`");
+            return @enum.Members.FirstOrDefault(member => member.Name == text) is { } member ? Value.Member(member, @enum) : null;
 
         if (type == TypeSymbol.Actor)
-            return story.ActorSymbols.TryGetValue(text, out ActorSymbol? actor) ? Value.Actor(actor) : throw NotA(subject, text, "a declared actor");
+            return story.ActorSymbols.TryGetValue(text, out ActorSymbol? actor) ? Value.Actor(actor) : null;
 
-        string node = story.CompiledNodes.ContainsKey(text) ? text : story.Aliases.GetValueOrDefault(text) ?? throw NotA(subject, text, "a node or an old name of one");
-        return Value.Node(node);
+        return story.CompiledNodes.ContainsKey(text) ? Value.Node(text)
+            : story.Aliases.TryGetValue(text, out string? node) ? Value.Node(node)
+            : null;
     }
+
+    private static string Expected(TypeSymbol type) =>
+        type is EnumSymbol @enum ? $"a member of `{@enum.Name}`"
+        : type == TypeSymbol.Actor ? "a declared actor"
+        : "a node or an old name of one";
 
     private static InvalidOperationException Wrong(string subject, object? result, TypeSymbol type) =>
         new($"{subject} {(result is null ? "null" : $"a {result.GetType().Name}")}, but the story expects {type.Describe()}.");
-
-    private static InvalidOperationException NotA(string subject, string text, string expected) =>
-        new($"{subject} \"{text}\", which isn't {expected}.");
 }

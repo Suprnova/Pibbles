@@ -27,13 +27,14 @@
     <ProjectReference Include="..\..\src\Pibbles\Pibbles.csproj" />
   </ItemGroup>
 
-  <!-- The CLI targets net10.0 only, like every tool, so its tests only build for net10.0. -->
+  <!-- The CLI targets net10.0 only, like every tool, so its tests, and the determinism property that plays transcripts, only build for net10.0. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <ProjectReference Include="..\..\src\Pibbles.Cli\Pibbles.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
     <Compile Remove="Cli/**" />
+    <Compile Remove="Properties/DeterminismTests.cs" />
   </ItemGroup>
 
 </Project>

@@ -75,14 +75,14 @@ while (true)
 }
 ```
 
-- **Pull-based, synchronous, single-threaded.** The core has no `async`, no events and no timers. It has no skip mode either: skipping is the caller asking for steps without waiting ([skipping](godot.md#skipping)). Hosts wrap it in whatever model their engine prefers. The Godot adapter uses signals and `await`. This keeps the core trivially testable.
+- **Pull-based, synchronous, single-threaded.** The core has no `async`, no events and no timers. It has no skip mode either: skipping is the caller asking for steps without waiting ([skipping](godot.md#skipping)). The one exception is `FastForward()`, which skips to the next save point ([below](#save-points)). Hosts wrap it in whatever model their engine prefers. The Godot adapter uses signals and `await`. This keeps the core trivially testable.
 - **Steps are immutable records,** all deriving from `DialogueStep`. Pattern matching on them is the whole host API for flow. Later versions add step kinds, so a host's `switch` keeps a default arm.
 - **Host functions** are registered as typed delegates through generic `Add` overloads (AOT-safe, no reflection), described [below](#host-functions). `HostFunctions.Validate(story)` reports missing or mistyped functions, and adapters call it at startup.
 - **Command arguments** arrive as a `CommandInvocation` with typed accessors by parameter name (`command.GetActor("who")`, `command.GetNumber("strength")`). Every parameter has a value, since defaults are filled in. The accessors are `GetBool`, `GetString`, `GetNumber` (`decimal`), `GetDuration` (`TimeSpan`, clamped like host function durations, with an `Overflow` warning), `GetActor` (the ID), `GetNode` (the current name), `GetEnum` (the member name) and `GetEnum<TEnum>`, which parses the name into the host's own enum without reflection. An unknown parameter name throws `ArgumentException`, and the wrong accessor for a parameter's type throws `InvalidOperationException`.
 - **The seed is chosen by the host** when it creates a new state, usually at random for a new game. v1 stores it without using it, so adding randomness later doesn't change the API.
 - **Several runners can share one `StoryState`,** for example ambient remarks during room play while the main dialogue is suspended. Everything is single-threaded.
 - **Node names from the host resolve through aliases.** `Start`, `node` values restored from a snapshot, and anything else the host passes in accept a node's current name or any of its `#was:` aliases. A scene that still says `kitchen.front_door` keeps working after the node is renamed.
-- **Misuse throws; content never does.** Calling `Next()` before `Start` or while a choice is waiting, calling `Choose` when none is waiting or with an option that isn't offered or isn't available, starting a node that doesn't exist, or reaching a host function that was never registered throws `InvalidOperationException`. After an `EndStep`, `Next()` returns `EndStep` again until `Start` is called. For an unknown node, the message suggests the closest name. A story that passed analysis can't cause a runtime type error. Host functions are checked at registration.
+- **Misuse throws; content never does.** Calling `Next()` before `Start` or while a choice is waiting, calling `Choose` when none is waiting or with an option that isn't offered or isn't available, starting a node that doesn't exist, taking a runner snapshot away from a save point, or reaching a host function that was never registered throws `InvalidOperationException`. After an `EndStep`, `Next()` returns `EndStep` again until `Start` is called. For an unknown node, the message suggests the closest name. A story that passed analysis can't cause a runtime type error. Host functions are checked at registration.
 
 ### Steps
 
@@ -237,17 +237,45 @@ reveal.Resume();                             // continue after an input wait, pa
 - `@var` values
 - Node visit counts
 - Variation block entry counts (by block ID)
-- Options already chosen (keyed by option line ID), for `WasChosen` and `@once`
+- Options already chosen (by option ID), for `WasChosen` and `@once`
 - Current pose of each actor
 - The seed
 
 State that outlives a save slot, such as unlocks or read tracking, belongs to the game ([boundaries](boundaries.md)).
 
-- `state.CreateSnapshot()` and `StoryState.Restore(story, snapshot)` use plain records. The core provides JSON helpers built on `System.Text.Json` source generation, which is AOT-safe. The host decides where snapshots are stored.
-- **Snapshots carry a format version,** separate from the story's version. The language grows by [extensions](language/design.md#grammar-extensions) that add state ([below](#with-extensions)), so a newer core must restore every older format, filling new state with its defaults.
-- **Keys are chosen to survive script edits.** Variables are keyed by name, visits by node name (following `#was:` aliases, so a renamed node keeps its visit count), line and option state by line ID, and variation blocks by their own `#id`. So inserting, deleting or reordering blocks, moving one to another node, or renaming its node never hands one block's state to another.
-- **Variation blocks store an entry count, not a position.** Each block records how many times execution has entered it, and its kind derives what to run from that count ([reference](language/reference.md#variations)). A saved count therefore has a defined meaning whatever happens to the block afterwards: alternatives added or removed, or its kind changed.
-- **When restoring a snapshot, state entries that no longer match the story** (removed variables, changed types, counts for removed lines and blocks) are dropped. Each one is reported in a `RestoreReport` instead of throwing, so an old save still loads after a patch. A dialogue's *position* needs more care, covered [below](#restoring-after-an-update).
+```csharp
+// Saving: reach a save point, carrying out the steps passed as skip mode would.
+foreach (DialogueStep step in runner.FastForward()) { /* finish instantly */ }
+var (stateSnapshot, stateProblems) = state.CreateSnapshot();
+var (runnerSnapshot, runnerProblems) = runner.CreateSnapshot();
+string stateJson = SnapshotJson.Serialize(stateSnapshot);       // stored however the host likes
+string runnerJson = SnapshotJson.Serialize(runnerSnapshot);
+
+// Loading, against the story as it is now.
+var (restoredState, stateLoadProblems) = StoryState.Restore(story, SnapshotJson.DeserializeState(stateJson));
+var (restoredRunner, runnerLoadProblems) = DialogueRunner.Restore(story, restoredState, functions, SnapshotJson.DeserializeRunner(runnerJson));
+// then restoredRunner.Next() as usual
+```
+
+- **Snapshots are plain public records.** `state.CreateSnapshot()` gives a `StateSnapshot`, and `StoryState.Restore(story, snapshot)` makes a new state from one. Each returns a `SaveResult<T>`: the snapshot or the restored state, and a list of `SaveProblem`s ([below](#the-report)). A record deconstructs, so `var (snapshot, problems) = …` reads both.
+- **Keys are chosen to survive script edits.**
+
+  | State | Keyed by | Why |
+  | --- | --- | --- |
+  | Variables | Name | Survives reordering declarations |
+  | Visit counts | The node's name | On restore, a saved name resolves through `#was:` aliases, so a renamed node keeps its count |
+  | Variation block entry counts | Block ID | A block keeps its count when blocks are inserted, reordered or moved to another node |
+  | Chosen options | Option ID | `WasChosen` and `@once` removal survive rewording and reordering |
+  | Poses | Actor ID, to the pose's name | |
+  | Seed | | Stored, unused in v1 |
+
+- **Values are typed and exact.** A `SavedValue` holds the variable's type as the story writes it (`number`, `mood`) and one of `Bool`, `Number` (a number, or a duration in seconds, as its `decimal`) and `Text` (a string as written, or an enum member, actor or node by name).
+- **Variation blocks store an entry count, not a position.** Each block records how many times execution has entered it, and its kind derives what to run from that count ([reference](language/reference.md#variations)). A saved count therefore has a defined meaning whatever happens to the block afterwards: alternatives added or removed, or its kind changed. There's nothing to convert.
+- **Fallback IDs are never saved.** A line, option, call or block without an `#id` has an ID the compiler made up, which changes when the file is edited ([localization design](localization.md#when-theyre-required)), so saving it could hand one line's state to another. A snapshot leaves out a chosen option or block entry count keyed by one, and reports it. This only happens in development, since `pibbles check --warnaserror` rejects missing IDs.
+- **Restoring drops what no longer fits, and reports it,** so an old save still loads after a patch. It never throws for content: a variable that no longer exists or whose type changed (it keeps its starting value), a value that names something that's gone (an enum member, actor or node), visit counts for a node that no longer exists under any name, entry counts for a block that's gone, a chosen option that's gone, and a pose for an actor or pose that's gone. Variables the snapshot doesn't have get their starting values.
+- **Two saved names can land on one node,** when a node takes the other's name as a `#was:` alias. Its visit count is their sum, since both counted entries to what is now that node, and the report says so.
+- **Snapshots carry a format version,** `Format`, which says what the snapshot holds and is about Pibbles, not the story. Both snapshots start at format 1 (`StateSnapshot.CurrentFormat`, `RunnerSnapshot.CurrentFormat`), separately. The language grows by [extensions](language/design.md#grammar-extensions) that add state ([below](#with-extensions)), so a newer core restores every older format, filling new state with its defaults. A format newer than the core reads, which means the game was downgraded, is host misuse and throws `ArgumentException`.
+- **JSON.** `SnapshotJson.Serialize` writes either snapshot, and `SnapshotJson.DeserializeState` and `DeserializeRunner` read them, throwing `JsonException` for JSON that isn't one. They're built on `System.Text.Json` source generation, which is part of the BCL and AOT-safe, and they keep every digit of a `decimal`. The JSON is a save-file format, so a test pins its shape. The host decides where snapshots are stored.
 
 ### Saving mid-dialogue
 
@@ -256,11 +284,16 @@ Hosts save during dialogue, so the position of a running dialogue is part of a s
 #### Save points
 
 - **A dialogue's position is always a line or a choice.** Those are the moments it waits on the player.
-- **The player can still save at any time.** If a save is requested during any other step (a blocking command, a `@wait`, a pose change), the adapter **fast-forwards** first. It finishes the current step instantly, [skips](godot.md#skipping) to the next line or choice, and takes the snapshot there. This is the same mechanism as skip mode, so it adds nothing new for the host. If the dialogue ends before reaching another line, the save simply has no dialogue in progress.
-- **Only real line IDs are saved.** A line without an `#id` yet has a fallback identity that exists only in memory ([localization design](localization.md#when-theyre-required)). A snapshot leaves out state keyed by one, and a dialogue waiting on such a line saves as no dialogue in progress. The snapshot's report lists both. This only happens in development, since `pibbles check --warnaserror` rejects lines without IDs.
-- **Loading shows the saved line or choice again.** With inline variations, the line is rendered without bumping its show count, so it picks the same alternatives as before. Text that depends on host functions can still differ, since the game's own state may have changed. The reveal starts over and its inline markers fire again. That's why only commands declared `inline` may appear in text ([reference](language/reference.md#commands)). A restored choice evaluates its options' conditions again against the current state. If none is available, it's skipped like any other choice, and the `RestoreReport` says so.
-- **The runner snapshot is separate from the state snapshot,** because several runners can share one state. It holds the story's version (from `pibbles.json`) and the call stack as a list of IDs. The top frame is the ID of the line, or, for a choice, the IDs of all its options in source order, including any that were hidden, unavailable or already used up. A choice has no ID of its own, so the whole set identifies it, and any one survivor is enough to find it again. Every frame below it is the ID of the `@call` it's waiting on, since calls carry IDs too ([localization design](localization.md#what-needs-an-id)). The host stores both snapshots in its save file.
-- **Loading:** `DialogueRunner.Restore(story, state, functions, snapshot)`, followed by `Next()` as usual.
+- **`runner.CreateSnapshot()`** can be taken right after `Next()` returned a `LineStep` (the host is showing that line), while a choice is waiting, or when no dialogue is running (never started, or ended), which gives `RunnerSnapshot.Empty`. At any other moment, just after a `CommandStep`, `PoseStep` or `WaitStep`, or between `Start` or `Choose` and the next `Next()`, it throws `InvalidOperationException`, saying to fast-forward first. The runner remembers the ID of the line it last delivered, because its own position has already moved past the line.
+- **The player can still save at any time,** because the host **fast-forwards** first. `runner.FastForward()` calls `Next()` until it gets a `LineStep`, a `ChoiceStep` or an `EndStep`, and returns every step it passed, in order, the last one included. The host carries out the passed commands instantly (a command handler's skip variant), applies the poses, drops the waits, and shows the final line or choice, then takes the snapshot. This is the same mechanism as [skip mode](godot.md#skipping), so it adds nothing new for the host. If the dialogue ends first, the save has no dialogue in progress. At a save point already, `FastForward()` returns an empty list and changes nothing, so a host can always call it before saving. The instruction budget covers the whole fast-forward, so a story that loops forever giving commands still ends with an `InfiniteLoop` warning instead of hanging the game.
+- **The runner snapshot is separate from the state snapshot,** because several runners can share one state. The host stores both in its save file. A `RunnerSnapshot` holds the format version and the call stack as IDs: `Calls`, the IDs of the `@call`s the dialogue is inside, outermost first, since calls carry IDs ([localization design](localization.md#what-needs-an-id)); and either `Line`, the ID of the line, or `Choice`, the IDs of all its options in source order, including any that were hidden, unavailable or already used up. A choice has no ID of its own, so the whole set identifies it, and any one survivor is enough to find it again. `HasDialogue` says whether it has either.
+- **A dialogue waiting on a fallback ID saves as no dialogue in progress,** and the report says so: a line or a call whose ID is a fallback, or a choice whose option IDs all are. A choice that has some options with real IDs saves those.
+- **Loading:** `DialogueRunner.Restore(story, state, functions, snapshot, options)`, followed by `Next()` as usual.
+  - A line resumes at its `Line` instruction, so the next `Next()` shows it again, rendered afresh. Text that depends on host functions can differ, since the game's own state may have changed. The `Pose` before a posed line isn't replayed: the host redraws poses from `StoryState.GetPose`. The reveal starts over and the line's inline command markers fire again, which is why only commands declared `inline` may appear in text ([reference](language/reference.md#commands)). With inline variations, the line is rendered without bumping its show count, so it picks the same alternatives as before.
+  - A choice resumes at its `Choice` instruction, so the next `Next()` evaluates its options' conditions again against the current state. If none is available, it's skipped like any other choice, and the report says so. `Restore` checks this as it loads, so a host function that fails there throws `HostFunctionException`, as it would from `Next()`.
+  - A call frame resumes at the instruction after its `@call`.
+  - **Visits never count on restore.**
+  - With no dialogue in progress, the restored runner is ended: `Next()` returns `EndStep` until `Start`.
 
 #### What the host saves
 
@@ -270,11 +303,32 @@ Hosts save during dialogue, so the position of a running dialogue is part of a s
 
 #### Restoring after an update
 
-A saved ID still exists after an update as long as the line keeps its `#id`, however it was reworded or wherever it moved. The dialogue resumes there. For a choice, any of its saved option IDs that still exists finds the choice, and the whole choice is shown again, so deleting or reordering options never loses a save.
+A saved ID still exists after an update as long as the line keeps its `#id`, however it was reworded or wherever it moved. The dialogue resumes there, and continues through the flow of the node it's in now.
 
-If no saved ID exists any more, that frame is lost. Control unwinds to the frame below, or the dialogue ends, and the `RestoreReport` says so. In v1 this happens whenever an update deletes a line, or all of a choice's options, that a save is waiting on. Keep a replaced line's ID on its replacement rather than deleting the line. [Aliases and migrations](#release-manifests-and-migrations) give retired IDs somewhere to go later.
+**A choice is found by any of its saved option IDs** that is still an option (an ID that now belongs to a line doesn't count), and the whole choice is shown again, so deleting or reordering options never loses a save. If the surviving IDs now belong to different choices, because an edit split the options, the dialogue resumes at the choice holding the most of them, the earliest in saved order on a tie, and the report says so.
 
-**Nothing is guessed.** If the right place to resume isn't obvious, a person decides.
+**A frame whose ID no longer exists is lost,** and the report says which. Every lost frame is dropped. A lost call frame comes off the call stack, so the dialogue won't return there. If the line or choice is lost, the dialogue resumes as if its node had returned to the nearest surviving call frame, at the instruction after that `@call`. If no frame survives, there's no dialogue in progress. In v1 this happens whenever an update deletes a line, or all of a choice's options, that a save is waiting on. Keep a replaced line's ID on its replacement rather than deleting the line. [Aliases and migrations](#release-manifests-and-migrations) give retired IDs somewhere to go later.
+
+**Nothing is guessed.** If the right place to resume isn't obvious, the report says so and the dialogue doesn't resume there.
+
+#### The report
+
+Taking and restoring snapshots report what they couldn't carry over as a list of `SaveProblem`s, the same shape as `HostFunctions.Validate`'s problems: a `Kind`, the `Subject` (the saved ID or name), and a `Message` for the game's developers that names it and says what was done instead. The kinds can grow, so a host that switches on them keeps a default arm.
+
+| `SaveProblemKind` | Reported by | What was done |
+| --- | --- | --- |
+| `FallbackId` | Either `CreateSnapshot` | State or a position keyed by a made-up ID was left out; the message suggests `pibbles ids` |
+| `UnknownVariable` | `StoryState.Restore` | The variable no longer exists; its value is dropped |
+| `VariableTypeChanged` | `StoryState.Restore` | The variable keeps its starting value |
+| `InvalidValue` | `StoryState.Restore` | A value no longer fits its type, such as a removed enum member, and the variable keeps its starting value; or a count isn't a count, and it's dropped |
+| `UnknownNode` | `StoryState.Restore` | Visits to a node that's gone under every name are dropped |
+| `VisitsMerged` | `StoryState.Restore` | Two saved names are now one node; its count is their sum |
+| `UnknownBlock` | `StoryState.Restore` | Entries to a block that's gone are dropped |
+| `UnknownOption` | `StoryState.Restore` | A chosen option that's gone is dropped |
+| `UnknownActor`, `UnknownPose` | `StoryState.Restore` | The pose is dropped, and the actor keeps its default pose |
+| `LostFrame` | `DialogueRunner.Restore` | The frame is dropped, and the dialogue unwinds |
+| `ChoiceSplit` | `DialogueRunner.Restore` | The dialogue resumes at the choice with the most saved options |
+| `NoOptionAvailable` | `DialogueRunner.Restore` | The restored choice is skipped |
 
 ## Performance
 
@@ -344,6 +398,8 @@ Release manifests also change how saves resolve. Each saved ID goes through the 
 2. **A line lists it as a former ID** (`#was:k7qp2x`): resume at that line. Use this when a line is replaced, or deleted and a nearby line is the right place to pick up.
 3. **A migration node claims it,** by ID, by a range of shipped IDs, or by the whole shipped node it belonged to (`#migrates:k7qp2x`, `#migrates:k7qp2x..m3xw9a`, `#migrates:cellar.old_subplot`). Run that node, which fixes up state and ends with `@resume <id>` at the correct post-update point. The most specific claim wins ([language design](language/design.md#migrations)).
 4. **Nothing claims it:** the frame is lost, as in v1. A released build guarantees this never happens.
+
+Migrations scoped to a release need to know which release a save came from, so release manifests add the story's version (from `pibbles.json`) to the runner snapshot, as a new field in a new snapshot format. v1 has no story version, because restoring finds everything by ID and a version would only be reported, never acted on.
 
 A choice frame tries each step on all of its option IDs, in saved order, before moving on to the next step. So a surviving option always wins over an alias or a migration for one of its removed siblings. Variables also follow `#was:` aliases on `@var`, and line state follows line `#was:` aliases.
 

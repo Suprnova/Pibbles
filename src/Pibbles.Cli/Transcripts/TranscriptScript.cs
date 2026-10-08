@@ -1,7 +1,14 @@
+using Pibbles.Runtime;
+
 namespace Pibbles.Cli.Transcripts;
 
 /// <summary>A script (or transcript) could not be played: a mistake in the script, or the story failing in a way the script can't recover from.</summary>
 internal sealed class TranscriptException(string message) : Exception(message);
+
+/// <summary>How a test walks a story at random with <see cref="TranscriptPlayer"/>.</summary>
+/// <param name="Choose">Picks an available option of a choice the script has no answer for.</param>
+/// <param name="MaxSteps">How many steps to play before stopping, since a random walk may never end.</param>
+internal sealed record TranscriptWalk(Func<ChoiceStep, ChoiceOption> Choose, int MaxSteps);
 
 /// <summary>
 /// What a script or transcript says, read from the lines at column 0. Everything else is ignored, which is why a

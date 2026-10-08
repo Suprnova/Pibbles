@@ -1,0 +1,57 @@
+{
+  "format": 1,
+  "seed": 1,
+  "variables": {
+    "flag": {
+      "type": "bool",
+      "bool": true
+    },
+    "number": {
+      "type": "number",
+      "number": 1.50
+    },
+    "text": {
+      "type": "string",
+      "text": "a \u0022quote\u0022"
+    },
+    "delay": {
+      "type": "duration",
+      "number": 0.25
+    },
+    "mood": {
+      "type": "mood",
+      "text": "tense"
+    },
+    "who": {
+      "type": "actor",
+      "text": "mira"
+    },
+    "next": {
+      "type": "node",
+      "text": "t.sub"
+    }
+  },
+  "visits": {
+    "t.n": 1,
+    "t.sub": 1
+  },
+  "blockEntries": {
+    "b1": 1
+  },
+  "chosenOptions": [
+    "o1"
+  ],
+  "poses": {
+    "mira": "happy"
+  }
+}
+{
+  "format": 1,
+  "calls": [
+    "c1"
+  ],
+  "choice": [
+    "o3",
+    "o4"
+  ]
+}

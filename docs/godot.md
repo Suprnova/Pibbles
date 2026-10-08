@@ -15,7 +15,7 @@
 
 ## Skipping
 
-Skip mode races through a dialogue, and the save fast-forward is skip mode that stops at the next line or choice. The work is split three ways:
+Skip mode races through a dialogue, and the save fast-forward is skip mode that stops at the next line or choice. The adapter doesn't step the runner itself for a save: it calls the core's `DialogueRunner.FastForward()`, carries out the steps it returns as it does while skipping, then takes the snapshots ([runtime design](runtime.md#save-points)). The work is split three ways:
 
 - **The core defines what skipping may drop:** timing only. Every `@set`, command and effect marker still runs, in order ([reference](language/reference.md#runtime-semantics-summary)), so skipping can never cause a missed `@set`. Every `LineStep` carries its line ID, which is all read tracking needs.
 - **The adapter provides the mechanism.** While the runner node's `Skipping` flag is on, it reveals lines instantly, passes input waits, drops `WaitStep`s, and doesn't wait on blocking commands beyond their handlers' instant finish. Command handlers receive a context with `IsSkipping`, so a handler can use a skip variant of its effect: place the sprite at its target, cut the animation, mute the sound. The game passes a predicate that decides whether a line may be skipped, and skipping stops at the first line it rejects and at every choice.

@@ -22,11 +22,13 @@ public sealed record RunnerOptions
 
 /// <summary>
 /// Runs a story one step at a time: the host calls <see cref="Next"/>, does what the step says, and calls it again. It's
-/// pull-based, synchronous and single-threaded, with no timers, events or skip mode.
+/// pull-based, synchronous and single-threaded, with no timers or events. Skip mode belongs to the host, except for
+/// <see cref="FastForward"/>, which skips to the next save point.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Several runners can share one <see cref="StoryState"/>, each with its own place in the story.
+/// Several runners can share one <see cref="StoryState"/>, each with its own place in the story. A runner's place is saved
+/// with <see cref="CreateSnapshot"/> and loaded with <see cref="Restore"/>, separately from the state.
 /// </para>
 /// <para>
 /// An instruction that throws, such as a host function failing in a condition, changes nothing, and neither does the
@@ -36,7 +38,7 @@ public sealed record RunnerOptions
 /// <para>
 /// Misuse throws <see cref="InvalidOperationException"/>: <see cref="Next"/> before <see cref="Start"/> or while a choice is
 /// waiting, <see cref="Choose(string)"/> with no choice waiting or with an option that isn't offered or isn't available,
-/// and <see cref="Start"/> with an unknown node. Story content never throws.
+/// <see cref="Start"/> with an unknown node, and <see cref="CreateSnapshot"/> away from a save point. Story content never throws.
 /// </para>
 /// </remarks>
 public sealed class DialogueRunner
@@ -55,6 +57,7 @@ public sealed class DialogueRunner
     private CompiledNode? node;
     private int index;
     private List<(CompiledOption Compiled, ChoiceOption Offered)> offered = [];
+    private string? shownLine;
 
     /// <summary>Creates a runner that isn't running anything yet. Call <see cref="Start"/>.</summary>
     /// <param name="story">The compiled story.</param>
@@ -99,6 +102,7 @@ public sealed class DialogueRunner
         frames.Clear();
         offered = [];
         pending.Clear();
+        shownLine = null;
         Enter(story.CompiledNodes[name]);
         phase = Phase.Running;
     }
@@ -120,27 +124,110 @@ public sealed class DialogueRunner
                 return End;
         }
 
-        for (int executed = 0; executed < options.InstructionBudget; executed++)
+        int budget = options.InstructionBudget;
+        return Step(ref budget);
+    }
+
+    /// <summary>
+    /// Finishes whatever the dialogue is doing and runs on to the next save point: the next line or choice, or the end. A
+    /// host calls it when the player saves at any other moment, then calls <see cref="CreateSnapshot"/>. It's skip mode
+    /// that stops at the first line: the host carries out the commands it passed instantly (with a skip variant of their
+    /// effect), applies the poses, drops the waits, and shows the final line or choice.
+    /// </summary>
+    /// <remarks>
+    /// The instruction budget covers the whole fast-forward, so a story that loops forever giving commands still can't hang
+    /// the game: the runner reports an <see cref="RuntimeWarningKind.InfiniteLoop"/> warning and ends the dialogue.
+    /// </remarks>
+    /// <returns>
+    /// Every step it passed, in order, ending with the <see cref="LineStep"/>, <see cref="ChoiceStep"/> or
+    /// <see cref="EndStep"/> it stopped at. It's empty when the runner is already at a save point: right after a
+    /// <see cref="LineStep"/>, while a choice is waiting, or with no dialogue in progress.
+    /// </returns>
+    public IReadOnlyList<DialogueStep> FastForward()
+    {
+        if (phase is not Phase.Running || shownLine is not null)
+            return [];
+
+        List<DialogueStep> passed = [];
+        int budget = options.InstructionBudget;
+        do
         {
-            DialogueStep? step;
-            try
-            {
-                step = Execute(node!.Instructions[index]);
-            }
-            catch
-            {
-                pending.Clear();
-                throw;
-            }
-
-            Flush();
-            if (step is not null)
-                return step;
+            passed.Add(Step(ref budget));
         }
+        while (passed[^1] is not (LineStep or ChoiceStep or EndStep));
 
-        Warn(new(RuntimeWarningKind.InfiniteLoop, $"This story went round in a loop for {options.InstructionBudget} steps without showing anything, so I ended the dialogue.", node!.Location));
-        Flush();
-        return Finish();
+        return passed;
+    }
+
+    /// <summary>
+    /// Takes a snapshot of where the dialogue is, as IDs: the line the host is showing or the options of the choice that is
+    /// waiting, and the <c>@call</c>s it's inside. It can be taken right after <see cref="Next"/> returned a
+    /// <see cref="LineStep"/>, while a choice is waiting, or with no dialogue in progress (never started, or ended), which
+    /// gives <see cref="RunnerSnapshot.Empty"/>. At any other moment, call <see cref="FastForward"/> first.
+    /// </summary>
+    /// <returns>
+    /// The snapshot, and a <see cref="SaveProblemKind.FallbackId"/> problem for each ID it left out because the compiler made
+    /// it up. A dialogue waiting on a line or call with such an ID, or on a choice whose options all have one, is saved as no
+    /// dialogue in progress.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">The runner isn't at a line or a choice, so there's no save point.</exception>
+    public SaveResult<RunnerSnapshot> CreateSnapshot()
+    {
+        if (phase is Phase.NotStarted or Phase.Ended)
+            return new(RunnerSnapshot.Empty, []);
+
+        if (phase is Phase.Running && shownLine is null)
+            throw new InvalidOperationException("The dialogue isn't at a line or a choice, so it can't be saved here. Call FastForward first, then CreateSnapshot.");
+
+        string[] calls = [.. frames.Reverse().Select(frame => frame.CallId)];
+        string[] choice = phase is Phase.AwaitingChoice ? [.. ((ChoiceInstruction)node!.Instructions[index]).Options.Select(option => option.Id)] : [];
+        string[] kept = [.. choice.Where(id => !story.FallbackIds.Contains(id))];
+        bool lost = calls.Any(story.FallbackIds.Contains) || (shownLine is not null && story.FallbackIds.Contains(shownLine)) || (choice.Length > 0 && kept.Length == 0);
+
+        string outcome = lost ? "so the dialogue is saved as not in progress" : "so the snapshot leaves it out";
+        SaveProblem[] problems =
+        [
+            .. calls.Append(shownLine).Concat(choice).OfType<string>().Where(story.FallbackIds.Contains)
+                .Select(id => new SaveProblem(SaveProblemKind.FallbackId, id, $"`{id}` has no `#id`, {outcome}. Run `pibbles ids` to give it one.")),
+        ];
+        return new(lost ? RunnerSnapshot.Empty : new() { Format = RunnerSnapshot.CurrentFormat, Calls = calls, Line = shownLine, Choice = kept }, problems);
+    }
+
+    /// <summary>
+    /// Restores a runner from a snapshot, against the story as it is now, which may have changed since the snapshot was
+    /// taken. Then call <see cref="Next"/> as usual: it shows the saved line again, rendered afresh, or offers the saved
+    /// choice again, its conditions evaluated against the state as it is now. Restoring never counts a visit, and never
+    /// replays the pose before a line: the host redraws poses from <see cref="StoryState.GetPose"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Every saved ID is looked up exactly, never guessed, wherever it has moved. A choice is found by any of its saved
+    /// option IDs that is still an option. If they now belong to different choices, it resumes at the one that holds the
+    /// most of them, the earliest in saved order on a tie, and reports the split. If no option is available any more, the
+    /// choice is skipped like any other such choice, and reported.
+    /// </para>
+    /// <para>
+    /// A frame whose ID no longer exists is lost, and reported. A lost call is dropped from the call stack. A lost line or
+    /// choice resumes as if its node had returned to the nearest call that survives, at the instruction after it. If no
+    /// frame survives, there's no dialogue in progress: the runner is ended, and <see cref="Next"/> returns
+    /// <see cref="EndStep"/> until <see cref="Start"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="story">The story as it is now.</param>
+    /// <param name="state">The state to run against, usually restored with <see cref="StoryState.Restore"/>. It must be for the same story.</param>
+    /// <param name="functions">The host functions the story calls.</param>
+    /// <param name="snapshot">The snapshot, in any format up to <see cref="RunnerSnapshot.CurrentFormat"/>.</param>
+    /// <param name="options">How the runner behaves, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The restored runner, and the problems: what was lost, and what was done instead.</returns>
+    /// <exception cref="ArgumentException">The snapshot's format is newer than this version of Pibbles reads, or the state is for another story.</exception>
+    /// <exception cref="HostFunctionException">A host function failed while a restored choice checked its options.</exception>
+    public static SaveResult<DialogueRunner> Restore(Story story, StoryState state, HostFunctions functions, RunnerSnapshot snapshot, RunnerOptions? options = null)
+    {
+        SnapshotFormat.Check(snapshot.Format, RunnerSnapshot.CurrentFormat, nameof(snapshot));
+        var runner = new DialogueRunner(story, state, functions, options);
+        List<SaveProblem> problems = [];
+        runner.Resume(snapshot, problems);
+        return new(runner, problems);
     }
 
     /// <summary>Picks an option of the choice that is waiting.</summary>
@@ -171,6 +258,118 @@ public sealed class DialogueRunner
         offered = [];
         phase = Phase.Running;
     }
+
+    /// <summary>Runs instructions until one gives a step, spending <paramref name="budget"/>, and ends the dialogue with a warning when it runs out.</summary>
+    private DialogueStep Step(ref int budget)
+    {
+        shownLine = null;
+        for (; budget > 0; budget--)
+        {
+            DialogueStep? step;
+            try
+            {
+                step = Execute(node!.Instructions[index]);
+            }
+            catch
+            {
+                pending.Clear();
+                throw;
+            }
+
+            Flush();
+            if (step is not null)
+            {
+                budget--;
+                shownLine = (step as LineStep)?.Line.Id;
+                return step;
+            }
+        }
+
+        Warn(new(RuntimeWarningKind.InfiniteLoop, $"This story went round in a loop for {options.InstructionBudget} steps without showing anything, so I ended the dialogue.", node!.Location));
+        Flush();
+        return Finish();
+    }
+
+    private void Resume(RunnerSnapshot snapshot, List<SaveProblem> problems)
+    {
+        if (!snapshot.HasDialogue)
+        {
+            Finish();
+            return;
+        }
+
+        foreach (string id in snapshot.Calls)
+        {
+            if (story.Locate(id) is { } site && site.Node.Instructions[site.Index] is CallInstruction)
+                frames.Push(new(site.Node, site.Index + 1, id));
+            else
+                problems.Add(Lost(id, $"The saved dialogue is inside the call `{id}`, which no longer exists, so it won't return there."));
+        }
+
+        bool resumed = snapshot.Line is { } line ? ResumeLine(line, problems) : ResumeChoice(snapshot.Choice, problems);
+        if (!resumed)
+        {
+            if (!frames.TryPop(out Frame frame))
+            {
+                Finish();
+                return;
+            }
+
+            node = frame.Node;
+            index = frame.ReturnIndex;
+        }
+
+        phase = Phase.Running;
+    }
+
+    private bool ResumeLine(string id, List<SaveProblem> problems)
+    {
+        if (story.Locate(id) is not { } site || site.Node.Instructions[site.Index] is not LineInstruction)
+        {
+            problems.Add(Lost(id, $"The saved line `{id}` no longer exists, so the dialogue {Unwinding()}."));
+            return false;
+        }
+
+        (node, index) = site;
+        return true;
+    }
+
+    private bool ResumeChoice(IReadOnlyList<string> ids, List<SaveProblem> problems)
+    {
+        var choices = ids
+            .Select(id => (Id: id, Site: story.Locate(id)))
+            .Where(option => option.Site is { } site && site.Node.Instructions[site.Index] is ChoiceInstruction)
+            .GroupBy(option => option.Site!.Value)
+            .OrderByDescending(group => group.Count())
+            .ToList();
+        string saved = string.Join(", ", ids.Select(id => $"`{id}`"));
+        if (choices.Count == 0)
+        {
+            problems.Add(Lost(ids[0], $"None of the saved choice's options ({saved}) exists any more, so the dialogue {Unwinding()}."));
+            return false;
+        }
+
+        (node, index) = choices[0].Key;
+        string first = choices[0].First().Id;
+        if (choices.Count > 1)
+            problems.Add(new(SaveProblemKind.ChoiceSplit, first, $"The saved choice's options ({saved}) now belong to {choices.Count} different choices, so the dialogue resumes at the one with {string.Join(", ", choices[0].Select(option => $"`{option.Id}`"))}."));
+
+        var choice = (ChoiceInstruction)node.Instructions[index];
+        if (Offer(choice).Any(option => option.Offered.IsAvailable))
+        {
+            pending.Clear();
+            return true;
+        }
+
+        Flush();
+        problems.Add(new(SaveProblemKind.NoOptionAvailable, first, $"None of the options of the saved choice with `{first}` is available now, so it's skipped."));
+        index = choice.Join;
+        return true;
+    }
+
+    private string Unwinding() => frames.Count > 0 ? "resumes after the call it was inside" : "is no longer in progress";
+
+    private static SaveProblem Lost(string id, string message) => new(SaveProblemKind.LostFrame, id, message);
 
     private DialogueStep? Execute(Instruction instruction)
     {
@@ -248,6 +447,21 @@ public sealed class DialogueRunner
 
     private ChoiceStep? ExecuteChoice(ChoiceInstruction choice)
     {
+        List<(CompiledOption Compiled, ChoiceOption Offered)> delivered = Offer(choice);
+        if (!delivered.Any(option => option.Offered.IsAvailable))
+        {
+            index = choice.Join;
+            return null;
+        }
+
+        offered = delivered;
+        phase = Phase.AwaitingChoice;
+        return new ChoiceStep([.. delivered.Select(option => option.Offered)]);
+    }
+
+    /// <summary>The options still on offer, with their text and whether each is available now.</summary>
+    private List<(CompiledOption Compiled, ChoiceOption Offered)> Offer(ChoiceInstruction choice)
+    {
         List<(CompiledOption Compiled, ChoiceOption Offered)> delivered = [];
         foreach ((CompiledOption option, int index) in choice.Options.Select((option, index) => (option, index)))
         {
@@ -259,15 +473,7 @@ public sealed class DialogueRunner
             delivered.Add((option, new ChoiceOption(BuildLine(option.Id), available, wasChosen, index + 1)));
         }
 
-        if (!delivered.Any(option => option.Offered.IsAvailable))
-        {
-            index = choice.Join;
-            return null;
-        }
-
-        offered = delivered;
-        phase = Phase.AwaitingChoice;
-        return new ChoiceStep([.. delivered.Select(option => option.Offered)]);
+        return delivered;
     }
 
     private WaitStep? ExecuteWait(WaitInstruction wait)
@@ -302,6 +508,7 @@ public sealed class DialogueRunner
     {
         frames.Clear();
         offered = [];
+        shownLine = null;
         node = null;
         phase = Phase.Ended;
         return End;

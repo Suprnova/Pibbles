@@ -46,6 +46,15 @@ internal sealed class Game
         Runner = new(story, State, functions, options);
     }
 
+    private Game(Story story, HostFunctions functions, List<RuntimeWarning> warnings, StoryState state, DialogueRunner runner)
+    {
+        Story = story;
+        Functions = functions;
+        Warnings = warnings;
+        State = state;
+        Runner = runner;
+    }
+
     public Story Story { get; }
 
     public HostFunctions Functions { get; }
@@ -104,6 +113,27 @@ internal sealed class Game
         }
     }
 
+    /// <summary>
+    /// Saves the state and the runner, round-trips both snapshots through JSON, and loads them into <paramref name="story"/>
+    /// (this game's story if it's <see langword="null"/>), with the same functions. <paramref name="problems"/> holds the
+    /// problems of saving and then of loading.
+    /// </summary>
+    public Game SaveAndLoad(out IReadOnlyList<SaveProblem> problems, Story? story = null)
+    {
+        (StateSnapshot stateSnapshot, IReadOnlyList<SaveProblem> stateSaved) = State.CreateSnapshot();
+        (RunnerSnapshot runnerSnapshot, IReadOnlyList<SaveProblem> runnerSaved) = Runner.CreateSnapshot();
+        story ??= Story;
+
+        (StoryState state, IReadOnlyList<SaveProblem> stateLoaded) = StoryState.Restore(story, SnapshotJson.DeserializeState(SnapshotJson.Serialize(stateSnapshot)));
+        List<RuntimeWarning> warnings = [];
+        (DialogueRunner runner, IReadOnlyList<SaveProblem> runnerLoaded) = DialogueRunner.Restore(story, state, Functions, SnapshotJson.DeserializeRunner(SnapshotJson.Serialize(runnerSnapshot)), new() { OnWarning = warnings.Add });
+        problems = [.. stateSaved, .. runnerSaved, .. stateLoaded, .. runnerLoaded];
+        return new(story, Functions, warnings, state, runner);
+    }
+
+    /// <summary>Compiles a story on its own, without the shared declarations.</summary>
+    public static Story Compile(string text) => Of(text, declarations: false).Story;
+
     public void Set(string variable, Value value) => State.Variables[Story.VariableDefinitions.First(candidate => candidate.Variable.Name == variable).Variable] = value;
 
     public Value Get(string variable) => State.Variables[Story.VariableDefinitions.First(candidate => candidate.Variable.Name == variable).Variable];
@@ -121,7 +151,7 @@ internal sealed class Game
 
     private static string Visible(string text) => text.Replace("\n", "\\n", StringComparison.Ordinal).Replace("￼", "<icon>", StringComparison.Ordinal);
 
-    private static string Show(Value value) =>
+    public static string Show(Value value) =>
         value.Type == TypeSymbol.Bool ? (value.AsBool ? "true" : "false")
         : value.Type == TypeSymbol.Number ? value.AsDecimal.ToString(CultureInfo.InvariantCulture)
         : value.Type == TypeSymbol.Duration ? value.AsDecimal.ToString(CultureInfo.InvariantCulture) + "s"

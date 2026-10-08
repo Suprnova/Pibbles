@@ -21,6 +21,7 @@ internal sealed class TranscriptPlayer
     private readonly Story story;
     private readonly TranscriptScript script;
     private readonly ISet<Type>? kinds;
+    private readonly TranscriptWalk? walk;
     private readonly StringBuilder output = new();
     private readonly List<RuntimeWarning> warnings = [];
     private readonly Dictionary<string, string> printed = [];
@@ -28,21 +29,23 @@ internal sealed class TranscriptPlayer
     private StoryState state = null!;
     private DialogueRunner runner = null!;
 
-    private TranscriptPlayer(Story story, TranscriptScript script, ISet<Type>? kinds)
+    private TranscriptPlayer(Story story, TranscriptScript script, ISet<Type>? kinds, TranscriptWalk? walk)
     {
         this.story = story;
         this.script = script;
         this.kinds = kinds;
+        this.walk = walk;
     }
 
     /// <summary>Plays a script and returns the transcript.</summary>
     /// <param name="story">The compiled story.</param>
     /// <param name="scriptText">The script, or an earlier transcript.</param>
     /// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
+    /// <param name="walk">Answers the choices the script has no answer for, and limits the steps, for tests that walk a story at random.</param>
     /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, or the story fails.</exception>
-    public static string Play(Story story, string scriptText, ISet<Type>? kinds = null)
+    public static string Play(Story story, string scriptText, ISet<Type>? kinds = null, TranscriptWalk? walk = null)
     {
-        var player = new TranscriptPlayer(story, TranscriptScript.Parse(scriptText), kinds);
+        var player = new TranscriptPlayer(story, TranscriptScript.Parse(scriptText), kinds, walk);
         player.Run();
         return player.output.ToString();
     }
@@ -67,12 +70,15 @@ internal sealed class TranscriptPlayer
         output.Append('\n');
         PrintVariableChanges();
         Queue<string> answers = new(script.Answers);
-        while (true)
+        for (int steps = 1; ; steps++)
         {
             DialogueStep step = Next();
             PrintVariableChanges();
             PrintWarnings();
             Print(step);
+            if (steps == walk?.MaxSteps)
+                return;
+
             switch (step)
             {
                 case EndStep when started < script.Starts.Count:
@@ -114,21 +120,22 @@ internal sealed class TranscriptPlayer
 
     private void Answer(ChoiceStep choice, Queue<string> answers)
     {
-        if (answers.Count == 0)
-            throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(Name))}.");
+        ChoiceOption picked = answers.Count > 0 ? Parse(choice, answers.Dequeue())
+            : walk?.Choose(choice) ?? throw new TranscriptException($"The script has no answer for the choice with options {string.Join(", ", choice.Options.Select(Name))}.");
 
-        string answer = answers.Dequeue();
+        output.Append(picked.Text.IsFallbackId ? $"> {picked.Number}" : $"> #{picked.Id}").Append('\n');
+        runner.Choose(picked);
+    }
+
+    private static ChoiceOption Parse(ChoiceStep choice, string answer)
+    {
         ChoiceOption? picked = answer.StartsWith('#')
             ? choice.Options.FirstOrDefault(option => option.Id == answer[1..])
             : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? choice.Options.FirstOrDefault(option => option.Number == number) : null;
         if (picked is null)
             throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
 
-        if (!picked.IsAvailable)
-            throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
-
-        output.Append(picked.Text.IsFallbackId ? $"> {picked.Number}" : $"> #{picked.Id}").Append('\n');
-        runner.Choose(picked);
+        return picked.IsAvailable ? picked : throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
     }
 
     private static string Name(ChoiceOption option) => option.Text.IsFallbackId ? $"option {option.Number}" : $"#{option.Id}";

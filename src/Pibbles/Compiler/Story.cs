@@ -87,6 +87,12 @@ public sealed class Story
     /// <summary>The tags the story declares, by name.</summary>
     internal IReadOnlyDictionary<string, TagSymbol> Tags { get; }
 
+    /// <summary>Where an ID lives now, as a node and an instruction index, or <see langword="null"/> if nothing has it.</summary>
+    internal (CompiledNode Node, int Index)? Locate(string id) => Sites.TryGetValue(id, out IdSite? site) ? (CompiledNodes[site.Node], site.Index) : null;
+
+    /// <summary>The instruction an ID lives at now: its line, its option's choice, its call or its variation block.</summary>
+    internal Instruction? InstructionAt(string id) => Locate(id) is { } site ? site.Node.Instructions[site.Index] : null;
+
     /// <summary>The enums the story declares, by name.</summary>
     internal IReadOnlyDictionary<string, EnumSymbol> EnumSymbols { get; }
 
