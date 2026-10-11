@@ -53,11 +53,13 @@ public sealed class SourceText(string path, string text)
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(line, LineCount);
 
         int start = lineStarts[line];
-        int end = start;
-        while (end < Text.Length && Text[end] is not ('\r' or '\n'))
-            end++;
+        if (line == LineCount - 1)
+            return new(start, Text.Length - start);
 
-        return new(start, end - start);
+        int next = lineStarts[line + 1];
+        int lineBreak = next - start >= 2 && Text[next - 2] is '\r' && Text[next - 1] is '\n' ? 2 : 1;
+
+        return new(start, next - lineBreak - start);
     }
 
     private static int[] FindLineStarts(string text)

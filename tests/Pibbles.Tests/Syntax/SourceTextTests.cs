@@ -75,6 +75,21 @@ public class SourceTextTests
         Assert.Equal(new TextSpan(start, length), span);
     }
 
+    [Theory]
+    [InlineData("a\rb", 0, 0, 1)]
+    [InlineData("a\nb", 0, 0, 1)]
+    [InlineData("a\r\nb", 0, 0, 1)]
+    [InlineData("\r\r\n", 1, 1, 0)]
+    [InlineData("a\r\nb", 1, 3, 1)]
+    public void GetLineSpan_AnyLineBreak_EndsBeforeIt(string text, int line, int start, int length)
+    {
+        var source = new SourceText("story.pib", text);
+
+        TextSpan span = source.GetLineSpan(line);
+
+        Assert.Equal(new TextSpan(start, length), span);
+    }
+
     [Fact]
     public void GetLocation_SpanAcrossLines_HasStartAndEndPositions()
     {
