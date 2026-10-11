@@ -9,14 +9,15 @@ namespace Pibbles.Syntax;
 /// The core never reads files. Hosts pass each file in as a path and its text. A line ends at
 /// <c>\r\n</c>, <c>\n</c> or <c>\r</c>.
 /// </remarks>
-/// <remarks>Creates a source file from its path and text.</remarks>
-/// <param name="path">The file's path, as diagnostics should show it.</param>
+/// <param name="path">
+/// A unique name that identifies the file among the sources compiled with it, such as its path.
+/// </param>
 /// <param name="text">The file's full text.</param>
 public sealed class SourceText(string path, string text)
 {
     private readonly int[] lineStarts = FindLineStarts(text);
 
-    /// <summary>The file's path, as diagnostics show it.</summary>
+    /// <summary>The name that identifies the file, as given when it was created.</summary>
     public string Path { get; } = path;
 
     /// <summary>The file's full text.</summary>
