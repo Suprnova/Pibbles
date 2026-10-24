@@ -54,9 +54,9 @@ public partial class DiagnosticCatalogTests
     }
 
     [Fact]
-    public void DocumentedSyntaxCodes_AreAllRegistered()
+    public void DocumentedCodes_AreAllRegistered()
     {
-        string[] documented = [.. Section("Codes").Select(line => TableRow().Match(line)).Where(match => match.Success && match.Groups["code"].Value.StartsWith("PIB1", StringComparison.Ordinal)).Select(match => match.Groups["code"].Value)];
+        string[] documented = [.. Section("Codes").Select(line => TableRow().Match(line)).Where(match => match.Success).Select(match => match.Groups["code"].Value)];
 
         Assert.All(documented, code => Assert.Contains(DiagnosticCatalog.All, descriptor => descriptor.Code == code));
     }
