@@ -15,7 +15,7 @@ The catalog of every diagnostic code. Each code has one entry here and one in `D
 
 Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and poses, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
 
-Severities are error, warning, info and hint. `.editorconfig` can override any of them ([configuration](tooling.md#configuration)).
+Severities are error, warning, info and hint. `.editorconfig` can change any of them but an error, since a story with an error can't compile ([configuration](tooling.md#configuration)).
 
 "Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). Ties go to the name declared first. When nothing is close enough, the help is left out.
 

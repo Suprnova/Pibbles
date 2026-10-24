@@ -14,7 +14,7 @@ public class FileSettingsTests
     {
         { [], ["PIB2030 Error", "PIB3010 Warning"] },
         { ["pibbles_diagnostic.PIB3010.severity=error"], ["PIB2030 Error", "PIB3010 Error"] },
-        { ["pibbles_diagnostic.category-binding.severity=warning"], ["PIB2030 Warning", "PIB3010 Warning"] },
+        { ["pibbles_diagnostic.category-binding.severity=warning"], ["PIB2030 Error", "PIB3010 Warning"] },
         { ["pibbles_diagnostic.category-content.severity=none"], ["PIB2030 Error"] },
         { ["pibbles_diagnostic.pib3010.severity=None"], ["PIB2030 Error"] },
         { ["pibbles_diagnostic.PIB3010.severity=info", "pibbles_diagnostic.category-content.severity=none"], ["PIB2030 Error", "PIB3010 Info"] },
@@ -60,6 +60,8 @@ public class FileSettingsTests
         "pibbles_diagnostic.category-flavor.severity=none",
         "pibbles_diagnostic.PIB3010=none",
         "pibbles_diagnostic.PIB3010.severity=loud",
+        "pibbles_diagnostic.PIB2030.severity=warning",
+        "pibbles_diagnostic.pib2030.severity=none",
         "pibbles_max_nesting=deep",
         "pibbles_max_option_length=0",
     ];
@@ -72,6 +74,15 @@ public class FileSettingsTests
 
         Assert.Single(settings.Problems);
         Assert.Empty(settings.Properties);
+    }
+
+    [Fact]
+    public void From_ErrorSetToError_KeepsIt()
+    {
+        FileSettings settings = Settings(["pibbles_diagnostic.PIB2030.severity=error"]);
+
+        Assert.Empty(settings.Problems);
+        Assert.Equal(new Dictionary<string, string> { ["pibbles_diagnostic.pib2030.severity"] = "error" }, settings.Properties);
     }
 
     [Fact]

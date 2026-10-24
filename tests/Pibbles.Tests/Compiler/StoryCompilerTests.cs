@@ -58,4 +58,16 @@ public class StoryCompilerTests
         Assert.Null(result.Story);
         Assert.True(result.HasErrors);
     }
+
+    [Fact]
+    public void Compile_ErrorTurnedOffBySettings_GivesNoStory()
+    {
+        FileSettings settings = FileSettings.From([KeyValuePair.Create("pibbles_diagnostic.category-binding.severity", "none")]);
+        var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["story.pib"] = settings });
+
+        CompileResult result = StoryCompiler.Compile([WithError], options);
+
+        Assert.Null(result.Story);
+        Assert.True(result.HasErrors);
+    }
 }

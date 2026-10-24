@@ -38,8 +38,8 @@ public sealed class FileSettings
 
     /// <summary>
     /// What's wrong with the file's own settings: a <c>pibbles_diagnostic</c> setting that names no diagnostic or
-    /// category, or gives a severity that doesn't exist, and a threshold that isn't a whole number above 0. Those settings
-    /// are ignored.
+    /// category, gives a severity that doesn't exist, or lowers an error, and a threshold that isn't a whole number above
+    /// 0. Those settings are ignored.
     /// </summary>
     public IReadOnlyList<string> Problems { get; }
 
@@ -63,14 +63,18 @@ public sealed class FileSettings
     }
 
     /// <summary>
-    /// Applies the file's settings to a diagnostic. It gets the severity its code's setting asks for, or else its
-    /// category's, and <see langword="null"/> is returned when that's <c>none</c>, which turns the diagnostic off. Mixed
-    /// indentation (PIB1001) says which character to use when <c>indent_style</c> does.
+    /// Applies the file's settings to a diagnostic. An error stays an error, since a story with one can't run. Any other
+    /// diagnostic gets the severity its code's setting asks for, or else its category's, and <see langword="null"/> is
+    /// returned when that's <c>none</c>, which turns the diagnostic off. Mixed indentation (PIB1001) says which character
+    /// to use when <c>indent_style</c> does.
     /// </summary>
     internal Diagnostic? Configure(Diagnostic diagnostic)
     {
         if (diagnostic.Code == DiagnosticCatalog.MixedIndentation.Code && IndentWith() is { } indent)
             diagnostic = diagnostic with { Help = DiagnosticCatalog.MixedIndentationHelpWithStyle(indent) };
+
+        if (diagnostic.Severity is DiagnosticSeverity.Error)
+            return diagnostic;
 
         string category = Categories[diagnostic.Code[3] - '1'];
         string? severity = Properties.GetValueOrDefault($"pibbles_diagnostic.{diagnostic.Code.ToLowerInvariant()}.severity")
@@ -116,12 +120,16 @@ public sealed class FileSettings
         if (key.Split('.') is not [_, var target, "severity"])
             return $"I don't know the setting `{key}`. To change a diagnostic's severity, write `pibbles_diagnostic.PIB5003.severity`, or `pibbles_diagnostic.category-style.severity` for a whole category.";
 
-        bool known = target.StartsWith("category-", StringComparison.Ordinal)
-            ? Categories.Contains(target["category-".Length..])
-            : DiagnosticCatalog.All.Any(descriptor => descriptor.Code.Equals(target, StringComparison.OrdinalIgnoreCase));
+        DiagnosticDescriptor? descriptor = DiagnosticCatalog.All.FirstOrDefault(entry => entry.Code.Equals(target, StringComparison.OrdinalIgnoreCase));
+        bool known = target.StartsWith("category-", StringComparison.Ordinal) ? Categories.Contains(target["category-".Length..]) : descriptor is not null;
         if (!known)
             return $"`{key}` names no diagnostic code or category. The categories are {string.Join(", ", Categories.Select(category => $"`category-{category}`"))}.";
 
-        return Severities.Contains(value) ? null : $"`{key} = {value}`: `{value}` isn't a severity. Use `error`, `warning`, `info`, `hint` or `none`.";
+        if (!Severities.Contains(value))
+            return $"`{key} = {value}`: `{value}` isn't a severity. Use `error`, `warning`, `info`, `hint` or `none`.";
+
+        return descriptor?.DefaultSeverity is DiagnosticSeverity.Error && value is not "error"
+            ? $"`{key} = {value}`: {descriptor.Code} is an error, and settings can't lower or turn off an error, since a story with one can't run."
+            : null;
     }
 }
