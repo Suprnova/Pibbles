@@ -8,8 +8,8 @@ namespace Pibbles.Configuration;
 /// </summary>
 public sealed class FileSettings
 {
-    /// <summary>The diagnostic categories, by code range: PIB1xxx is <c>syntax</c>, PIB2xxx <c>binding</c>, and so on.</summary>
-    internal static readonly string[] Categories = ["syntax", "binding", "content", "localization", "style", "spelling"];
+    /// <summary>The categories a setting can name, such as <c>style</c>: those with a registered code.</summary>
+    private static readonly string[] Categories = [.. DiagnosticCatalog.All.Select(descriptor => descriptor.Category).OfType<DiagnosticCategory>().Distinct().Order().Select(Name)];
 
     private static readonly string[] Severities = ["error", "warning", "info", "hint", "none"];
 
@@ -76,9 +76,8 @@ public sealed class FileSettings
         if (diagnostic.Severity is DiagnosticSeverity.Error)
             return diagnostic;
 
-        string category = Categories[diagnostic.Code[3] - '1'];
         string? severity = Properties.GetValueOrDefault($"pibbles_diagnostic.{diagnostic.Code.ToLowerInvariant()}.severity")
-            ?? Properties.GetValueOrDefault($"pibbles_diagnostic.category-{category}.severity");
+            ?? (diagnostic.Descriptor?.Category is { } category ? Properties.GetValueOrDefault($"pibbles_diagnostic.category-{Name(category)}.severity") : null);
 
         return severity switch
         {
@@ -105,6 +104,9 @@ public sealed class FileSettings
         _ => null,
     };
 
+    /// <summary>A category's name in settings, such as <c>style</c>.</summary>
+    private static string Name(DiagnosticCategory category) => category.ToString().ToLowerInvariant();
+
     /// <summary>
     /// Checks a threshold, which is a whole number above 0, and a <c>pibbles_diagnostic</c> setting:
     /// <c>pibbles_diagnostic.&lt;code or category-name&gt;.severity</c>.
@@ -123,7 +125,7 @@ public sealed class FileSettings
         DiagnosticDescriptor? descriptor = DiagnosticCatalog.All.FirstOrDefault(entry => entry.Code.Equals(target, StringComparison.OrdinalIgnoreCase));
         bool known = target.StartsWith("category-", StringComparison.Ordinal) ? Categories.Contains(target["category-".Length..]) : descriptor is not null;
         if (!known)
-            return $"`{key}` names no diagnostic code or category. The categories are {string.Join(", ", Categories.Select(category => $"`category-{category}`"))}.";
+            return $"`{key}` names no diagnostic code or category. Name a code such as `PIB5003`, or {string.Join(" or ", Categories.Select(category => $"`category-{category}`"))}.";
 
         if (!Severities.Contains(value))
             return $"`{key} = {value}`: `{value}` isn't a severity. Use `error`, `warning`, `info`, `hint` or `none`.";

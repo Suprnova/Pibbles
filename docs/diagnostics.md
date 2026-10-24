@@ -4,14 +4,16 @@ The catalog of every diagnostic code. Each code has one entry here and one in `D
 
 ## Ranges
 
-| Range | Stage | Category in `.editorconfig` |
+| Range | What's in it | Category |
 | --- | --- | --- |
-| `PIB1xxx` | Syntax ([syntax design](syntax.md)) | `syntax` |
-| `PIB2xxx` | Declarations and binding ([semantics design](semantics.md)) | `binding` |
-| `PIB3xxx` | Flow and content checks ([semantics design](semantics.md)) | `content` |
+| `PIB1xxx` | Syntax ([syntax design](syntax.md)) | none |
+| `PIB2xxx` | Declarations and binding ([semantics design](semantics.md)) | none |
+| `PIB3xxx` | Flow and content checks ([semantics design](semantics.md)) | none |
 | `PIB4xxx` | Localization ([localization design](localization.md)) | `localization` |
 | `PIB5xxx` | Style ([style rules](semantics.md#style-rules)) | `style` |
 | `PIB6xxx` | Spelling ([spell checking](tooling.md#spell-checking)) | `spelling` |
+
+A code's first digit gives its category, a group of codes that writers switch on or off together. The category decides which `pibbles_diagnostic.category-<name>.severity` setting in `.editorconfig` reaches the code, once the category has a code of its own ([configuration](tooling.md#configuration)). It decides whether a `// pibbles-ignore` comment can silence the code: style and spelling only. It also decides whether a line with an error drops the code: style only. A code starting with 1 to 3 has no category. It's one of the story's own checks, and settings reach it only by its own code. A code that changes category gets a new number.
 
 Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and poses, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
 

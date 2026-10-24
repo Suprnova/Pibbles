@@ -202,7 +202,7 @@ indent_size = 4
 pibbles_diagnostic.PIB5003.severity = none
 pibbles_diagnostic.PIB5040.severity = hint
 
-# A whole category at once: syntax, binding, content, localization, style or spelling
+# A whole category at once: style, and localization and spelling once they have codes
 pibbles_diagnostic.category-style.severity = none
 
 # Thresholds
@@ -221,6 +221,7 @@ pibbles_diagnostic.category-style.severity = none
 Each threshold belongs to one of the [style rules](semantics.md#style-rules). Drafts don't need this for IDs, localization or voice, since those exemptions come with [draft status](language/design.md#drafts). The section above only silences style hints while a draft is rough.
 
 - **Standard keys are respected.** `indent_style` and `indent_size` are what PIB5032 checks against. Without them, PIB5032 only checks that a file is consistent with itself. PIB1001 is about a file mixing tabs and spaces, whatever the setting, and `indent_style` only decides which one its help says to use.
+- **A category comes from a code's first digit** ([ranges](diagnostics.md#ranges)), and a setting can name it once one of its codes exists. A code with no category, such as PIB3010, is configured by its own code.
 - **An error stays an error.** A story can't compile with one, so a code's setting that lowers an error is reported once and ignored, and a category's setting skips the errors in it, as the C# compiler's errors can't be configured off.
 - **A specific code beats its category,** wherever each is set, so a code's setting in a repository's root file still beats a category's setting in a folder's file, as in Roslyn. Otherwise a nearer file beats a farther one, and a later section beats an earlier one, following the usual `.editorconfig` rules.
 - **A `pibbles_diagnostic` setting that names no code or category, gives a severity that doesn't exist, or lowers an error,** is reported once and ignored, so a typo is never silently dropped, and so is a threshold that isn't a whole number above 0. Other settings belong to other tools, so they're kept and ignored.

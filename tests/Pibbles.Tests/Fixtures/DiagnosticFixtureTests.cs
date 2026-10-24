@@ -28,7 +28,7 @@ public class DiagnosticFixtureTests
     private static IReadOnlyList<Diagnostic> Diagnose(string fixture, SourceText source) =>
         Path.GetDirectoryName(fixture) is "Syntax"
             ? SyntaxTree.Parse(source).Diagnostics
-            : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => !IsOwnTopic(diagnostic.Code) || Path.GetFileNameWithoutExtension(fixture) == diagnostic.Code)];
+            : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => !IsOwnTopic(diagnostic) || Path.GetFileNameWithoutExtension(fixture) == diagnostic.Code)];
 
-    private static bool IsOwnTopic(string code) => code is "PIB3010" or ['P', 'I', 'B', '5', ..];
+    private static bool IsOwnTopic(Diagnostic diagnostic) => diagnostic.Code is "PIB3010" || diagnostic.Descriptor?.Category is DiagnosticCategory.Style;
 }

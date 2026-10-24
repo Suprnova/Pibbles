@@ -7,18 +7,21 @@ namespace Pibbles.Tests.Configuration;
 
 public class FileSettingsTests
 {
-    /// <summary>A story with an unknown variable (PIB2030, binding) and a line with no ID (PIB3010, content).</summary>
-    private readonly SourceText story = new("story.pib", "== a.b\n@set $missing = 1\nNarration.\n");
+    /// <summary>
+    /// A story with an unknown variable (PIB2030, an error), a line with no ID (PIB3010, a warning with no category) and an
+    /// <c>@return</c> that does nothing (PIB5014, style).
+    /// </summary>
+    private readonly SourceText story = new("story.pib", "== a.b\n@set $missing = 1\nNarration.\n@return\n");
 
     public static TheoryData<string[], string[]> Severities { get; } = new()
     {
-        { [], ["PIB2030 Error", "PIB3010 Warning"] },
-        { ["pibbles_diagnostic.PIB3010.severity=error"], ["PIB2030 Error", "PIB3010 Error"] },
-        { ["pibbles_diagnostic.category-binding.severity=warning"], ["PIB2030 Error", "PIB3010 Warning"] },
-        { ["pibbles_diagnostic.category-content.severity=none"], ["PIB2030 Error"] },
-        { ["pibbles_diagnostic.pib3010.severity=None"], ["PIB2030 Error"] },
-        { ["pibbles_diagnostic.PIB3010.severity=info", "pibbles_diagnostic.category-content.severity=none"], ["PIB2030 Error", "PIB3010 Info"] },
-        { ["pibbles_diagnostic.category-content.severity=none", "pibbles_diagnostic.PIB3010.severity=hint"], ["PIB2030 Error", "PIB3010 Hint"] },
+        { [], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Hint"] },
+        { ["pibbles_diagnostic.PIB3010.severity=error"], ["PIB2030 Error", "PIB3010 Error", "PIB5014 Hint"] },
+        { ["pibbles_diagnostic.pib3010.severity=None"], ["PIB2030 Error", "PIB5014 Hint"] },
+        { ["pibbles_diagnostic.category-style.severity=none"], ["PIB2030 Error", "PIB3010 Warning"] },
+        { ["pibbles_diagnostic.category-style.severity=warning"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Warning"] },
+        { ["pibbles_diagnostic.PIB5014.severity=info", "pibbles_diagnostic.category-style.severity=none"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Info"] },
+        { ["pibbles_diagnostic.category-style.severity=none", "pibbles_diagnostic.PIB5014.severity=warning"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Warning"] },
     };
 
     [Theory]
@@ -35,9 +38,9 @@ public class FileSettingsTests
     [Fact]
     public void Create_SettingsForAnotherFile_LeavesThisOneAlone()
     {
-        var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["other.pib"] = Settings(["pibbles_diagnostic.category-content.severity=none"]) });
+        var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["other.pib"] = Settings(["pibbles_diagnostic.category-style.severity=none"]) });
 
-        Assert.Contains(Compilation.Create([story], options).Diagnostics, diagnostic => diagnostic.Code == "PIB3010");
+        Assert.Contains(Compilation.Create([story], options).Diagnostics, diagnostic => diagnostic.Code == "PIB5014");
     }
 
     [Theory]
@@ -58,6 +61,9 @@ public class FileSettingsTests
     [
         "pibbles_diagnostic.PIB9999.severity=none",
         "pibbles_diagnostic.category-flavor.severity=none",
+        "pibbles_diagnostic.category-binding.severity=none",
+        "pibbles_diagnostic.category-localization.severity=none",
+        "pibbles_diagnostic.category-spelling.severity=none",
         "pibbles_diagnostic.PIB3010=none",
         "pibbles_diagnostic.PIB3010.severity=loud",
         "pibbles_diagnostic.PIB2030.severity=warning",

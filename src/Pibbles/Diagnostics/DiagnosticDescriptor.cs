@@ -19,6 +19,18 @@ public sealed class DiagnosticDescriptor(string code, DiagnosticSeverity default
     /// <summary>The severity unless configuration overrides it.</summary>
     public DiagnosticSeverity DefaultSeverity { get; } = defaultSeverity;
 
+    /// <summary>
+    /// The code's category, from its first digit, or <see langword="null"/> for a code starting with 1 to 3. This is the only
+    /// place a code's digits are read, so a code that changes category gets a new number.
+    /// </summary>
+    public DiagnosticCategory? Category => Code[3] switch
+    {
+        '4' => DiagnosticCategory.Localization,
+        '5' => DiagnosticCategory.Style,
+        '6' => DiagnosticCategory.Spelling,
+        _ => null,
+    };
+
     /// <summary>The template for <see cref="Diagnostic.Message"/>.</summary>
     public string Message { get; } = message;
 

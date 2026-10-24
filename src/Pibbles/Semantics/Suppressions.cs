@@ -6,7 +6,7 @@ namespace Pibbles.Semantics;
 /// <summary>
 /// The <c>// pibbles-ignore</c> comments in a file, such as <c>// pibbles-ignore PIB5003 PIB5010</c>. One on its own line
 /// silences the codes it lists on the next line that isn't a comment, and one above the file's first node silences them
-/// in the whole file. Only style and spelling (PIB5xxx and PIB6xxx) can be silenced, since a mistake gets fixed, not hidden.
+/// in the whole file. Only the style and spelling categories can be silenced, since a mistake gets fixed, not hidden.
 /// </summary>
 internal sealed class Suppressions
 {
@@ -44,7 +44,7 @@ internal sealed class Suppressions
 
     /// <summary>Whether one of the file's <c>// pibbles-ignore</c> comments silences a diagnostic.</summary>
     public bool Silences(Diagnostic diagnostic) =>
-        diagnostic.Code is ['P', 'I', 'B', '5' or '6', ..]
+        diagnostic.Descriptor?.Category is DiagnosticCategory.Style or DiagnosticCategory.Spelling
         && (everywhere.Contains(diagnostic.Code) || byLine.GetValueOrDefault(diagnostic.Location.Start.Line)?.Contains(diagnostic.Code) == true);
 
     /// <summary>The codes a comment lists after <c>pibbles-ignore</c>, or none if it isn't one.</summary>

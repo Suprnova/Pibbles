@@ -62,11 +62,11 @@ Style rules introduce a fourth severity below the existing three:
 | Info | Worth knowing, such as maintenance issues | Shown | Blue squiggle, Problems panel |
 | **Hint** | **Pure style** | Hidden unless `--style` | Faint dots under the text, not in the Problems panel |
 
-- Style rules use the `PIB5xxx` range. Most are hints. Maintenance rules are info.
+- Style rules are the `style` category, the `PIB5xxx` range. Most are hints. Maintenance rules are info.
 - `--warnaserror` never promotes hints or info, so style never blocks a build.
 - **A line with an error gets no style hints.** The error comes first, and a hint about code that doesn't work yet is noise: `@if $has_kye == true` reports the unknown variable, not the comparison.
-- **Configuration** lives in `.editorconfig`, covered in the [tooling design](tooling.md#configuration). Any rule can be turned off or given a different level, and thresholds are settings.
-- **Suppressing one instance:** a `// pibbles-ignore PIB5003` comment on its own line directly above the flagged line, with only other comments between them. It can list several codes. Above a file's first node, it applies to the whole file. Only style and spelling can be silenced this way, since a mistake gets fixed rather than hidden.
+- **Configuration** lives in `.editorconfig`, covered in the [tooling design](tooling.md#configuration). Any rule can be turned off or given a different level, one at a time or all together through `category-style`, and thresholds are settings.
+- **Suppressing one instance:** a `// pibbles-ignore PIB5003` comment on its own line directly above the flagged line, with only other comments between them. It can list several codes. Above a file's first node, it applies to the whole file. Only the `style` and `spelling` categories can be silenced this way, since a mistake gets fixed rather than hidden.
 - **Quick fixes:** every rule whose fix is mechanical offers one in VS Code. Those rules are marked ⚡.
 
 ### What makes a good style rule

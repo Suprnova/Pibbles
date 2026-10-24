@@ -75,7 +75,7 @@ public sealed class Compilation
     }
 
     /// <summary>Whether a diagnostic is a style rule's. A line with an error gets none, since the error comes first.</summary>
-    private static bool IsStyle(Diagnostic diagnostic) => diagnostic.Code is ['P', 'I', 'B', '5', ..];
+    private static bool IsStyle(Diagnostic diagnostic) => diagnostic.Descriptor?.Category is DiagnosticCategory.Style;
 
     private static (string Path, int Line) LineOf(Diagnostic diagnostic) => (diagnostic.Location.Path, diagnostic.Location.Start.Line);
 }

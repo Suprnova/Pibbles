@@ -29,6 +29,20 @@ public class DiagnosticDescriptorTests
     }
 
     [Theory]
+    [InlineData("PIB1001", null)]
+    [InlineData("PIB2001", null)]
+    [InlineData("PIB3001", null)]
+    [InlineData("PIB4001", DiagnosticCategory.Localization)]
+    [InlineData("PIB5001", DiagnosticCategory.Style)]
+    [InlineData("PIB6001", DiagnosticCategory.Spelling)]
+    public void Category_FromFirstDigit_IsThatDigitsCategory(string code, DiagnosticCategory? category)
+    {
+        var descriptor = new DiagnosticDescriptor(code, DiagnosticSeverity.Info, "A message.");
+
+        Assert.Equal(category, descriptor.Category);
+    }
+
+    [Theory]
     [InlineData("de-DE")]
     [InlineData("fr-FR")]
     public void Create_UnderCultureWithDecimalComma_FormatsNumbersWithDot(string culture)
