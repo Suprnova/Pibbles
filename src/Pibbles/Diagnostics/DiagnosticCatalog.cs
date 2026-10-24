@@ -218,8 +218,8 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor DottedName { get; } = new(
         "PIB1045",
         DiagnosticSeverity.Error,
-        "`{0}` has a dot, but only node names can.",
-        help: "Use a single name, with `_` between words if it needs them.");
+        "I can't use `{0}` as a name here, because only node names can have dots.",
+        help: "Use a new name, with `_` between words if it needs them.");
 
     /// <summary>PIB1046: a required part of a line is missing.</summary>
     /// <remarks>Arguments: what's missing, such as <c>a node name</c>, and the text it should follow.</remarks>
@@ -233,14 +233,14 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor NumberTooLarge { get; } = new(
         "PIB1047",
         DiagnosticSeverity.Error,
-        "`{0}` is too large a number for me.",
+        "`{0}` is too large of a number for me.",
         help: "Numbers go up to 79228162514264337593543950335. Write a smaller one.");
 
     /// <summary>PIB1048: the character U+FFFC in text, which Pibbles uses to stand for an icon.</summary>
     public static DiagnosticDescriptor ObjectReplacementCharacter { get; } = new(
         "PIB1048",
         DiagnosticSeverity.Error,
-        "This text has U+FFFC in it, which Pibbles uses to mark where an icon goes.",
+        "This text has U+FFFC in it, which I use internally to mark where an icon goes.",
         help: "Remove it. To show an icon, write `{{icon name}}`.");
 
     /// <summary>PIB1050: a positional argument after a named one.</summary>
@@ -374,7 +374,7 @@ public static class DiagnosticCatalog
         "PIB2013",
         DiagnosticSeverity.Error,
         "`{0}` takes {1}.",
-        help: "Remove the extra ones.");
+        help: "Remove the extra arguments.");
 
     /// <summary>PIB2014: a named argument for a parameter that doesn't exist.</summary>
     /// <remarks>Arguments: what takes the arguments, such as <c>@show</c>; the name; and the closest parameter, or <see langword="null"/> to leave out the help.</remarks>
@@ -576,7 +576,7 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor ReservedName { get; } = new(
         "PIB2062",
         DiagnosticSeverity.Error,
-        "`{0}` can't name {1}, because Pibbles uses that word {2}.",
+        "`{0}` can't name {1}, because I use that word {2}.",
         help: "Choose another name.");
 
     /// <summary>PIB2063: a declared name with a character outside ASCII.</summary>
@@ -690,7 +690,7 @@ public static class DiagnosticCatalog
         "PIB5003",
         DiagnosticSeverity.Hint,
         "{0} in {1} places.",
-        help: "Put it in a node of its own and `@call` that node from each place, so it's translated and recorded once.");
+        help: "Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line.");
 
     /// <summary>PIB5004: the same <c>[color]</c> value in at least <c>pibbles_min_repeated_colors</c> places.</summary>
     /// <remarks>Arguments: the color, and in how many places it's used.</remarks>

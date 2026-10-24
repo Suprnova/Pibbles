@@ -160,7 +160,7 @@ public class BinderTests
         {
             "@function is_night() -> bool\n\n== a.b\n@if is_night(1)\n    Hm.\n",
             "`is_night()` takes no arguments.",
-            "Remove the extra ones."
+            "Remove the extra arguments."
         },
         {
             "@var $has_key = false\n\n== a.b\n@set $has_kye = true\n",

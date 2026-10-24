@@ -61,10 +61,10 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
-| PIB1045 | Error | `kitchen.door` has a dot, but only node names can. | Use a single name, with `_` between words if it needs them. |
+| PIB1045 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
-| PIB1047 | Error | `99999999999999999999999999999` is too large a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
-| PIB1048 | Error | This text has U+FFFC in it, which Pibbles uses to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
+| PIB1047 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
+| PIB1048 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
@@ -80,7 +80,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2010 | Error | I don't know a command called `@shak`. | Did you mean `@shake_screen`? |
 | PIB2011 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
-| PIB2013 | Error | `has_item()` takes only 1 argument. | Remove the extra ones. |
+| PIB2013 | Error | `has_item()` takes only 1 argument. | Remove the extra arguments. |
 | PIB2014 | Error | `@show` has no parameter called `att`. | Did you mean `at`? |
 | PIB2015 | Error | `near()` needs a value for `where`. | Add it in the brackets, in order. |
 | PIB2016 | Error | `@show` already has a value for `who`. | Remove one of them. |
@@ -105,7 +105,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2048 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
 | PIB2060 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
 | PIB2061 | Error | `happy` is already one of Mira's poses. | Remove the second `happy`, or give it another name. |
-| PIB2062 | Error | `if` can't name a command, because Pibbles uses that word after `@`. | Choose another name. |
+| PIB2062 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
 | PIB2063 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
 | PIB2064 | Error | I don't know a type called `postion`. | Did you mean `position`? |
 | PIB2065 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
@@ -119,7 +119,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB3012 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
 | PIB5001 | Hint | This line is 4 blocks deep, and more than 3 gets hard to follow. | Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`. |
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
-| PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place, so it's translated and recorded once. |
+| PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
 | PIB5010 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
 | PIB5011 | Hint | This pause does nothing, because the end of the line already waits for a click. | Remove it. |
