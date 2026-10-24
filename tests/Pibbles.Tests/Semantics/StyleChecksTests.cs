@@ -34,14 +34,36 @@ public class StyleChecksTests
         Assert.Equal(help, diagnostic.Help);
     }
 
-    [Fact]
-    public void Create_StyleProblemOnLineWithError_ReportsOnlyTheError()
+    [Theory]
+    [InlineData("== a.b\n@if $missing == true\n    Hi.\n@return\n", new[] { "PIB2030", "PIB5014" })]
+    [InlineData("@prefix .a extra\n== a.b\n@return\n", new[] { "PIB1040", "PIB5014" })]
+    public void Create_StyleProblemOnLineWithError_ReportsOnlyTheError(string text, string[] codes)
     {
-        var source = new SourceText("story.pib", "== a.b\n@if $missing == true\n    Hi.\n@return\n");
+        var source = new SourceText("story.pib", text);
 
         IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010");
 
-        Assert.Equal(["PIB2030", "PIB5014"], diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(codes, diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
+    [Fact]
+    public void Create_StyleCategoryOff_TurnsOffRedundantPrefixDot()
+    {
+        var source = new SourceText("story.pib", "@prefix .a\n== a.b\n");
+
+        IEnumerable<Diagnostic> withDefaults = Compilation.Create([source]).Diagnostics;
+        IEnumerable<Diagnostic> withoutStyle = WithoutStyle.Compile(source).Diagnostics;
+
+        Assert.Contains(withDefaults, diagnostic => diagnostic.Code == "PIB5015");
+        Assert.DoesNotContain(withoutStyle, diagnostic => diagnostic.Code == "PIB5015");
+    }
+
+    [Fact]
+    public void Create_PibblesIgnoreComment_SilencesRedundantPrefixDot()
+    {
+        var source = new SourceText("story.pib", "// pibbles-ignore PIB5015\n@prefix .a\n== a.b\n");
+
+        Assert.DoesNotContain(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5015");
     }
 
     [Theory]

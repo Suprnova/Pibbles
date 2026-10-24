@@ -90,7 +90,6 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2020 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
 | PIB2021 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
 | PIB2022 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
-| PIB2023 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB2030 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
 | PIB2031 | Error | `$has_key` holds a `bool`, but this is a `number`. | Use `true` or `false`. |
 | PIB2032 | Error | `$attempts` is a `number`, but a condition has to be true or false. | Did you mean `$attempts > 0`? |
@@ -127,6 +126,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5012 | Hint | This `[b]` is empty. | Remove it. |
 | PIB5013 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
+| PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
 | PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
@@ -135,7 +135,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 
-The style rules (PIB5xxx) are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
+The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
 
 ## Explanations
 
@@ -761,16 +761,6 @@ mira: It hums.
 
 `kitchen.door` names the first node, so it can't also be an old name of the second. Rename one of them. If a node was renamed and another node now has its old name, the old name has to go: keep `#was:` for names no node uses any more.
 
-### PIB2023
-
-**A prefix is a full node name, so a dot at its start does nothing.** `@prefix .kitchen` works just like `@prefix kitchen`: `.door` still means `kitchen.door`. It's reported so the file reads the way it works, but it's never an error.
-
-```text
-@prefix .kitchen
-```
-
-Remove the dot: `@prefix kitchen`.
-
 ### PIB2030
 
 **A variable is declared with `@var` before the story uses it.** Variables hold what the story decides, and saves keep them, so every one is declared once, with its starting value.
@@ -1190,6 +1180,16 @@ This line is shared.
 ```
 
 Remove the `@return`.
+
+### PIB5015
+
+**A prefix is a full node name, so a dot at its start does nothing.** `@prefix .kitchen` works just like `@prefix kitchen`: `.door` still means `kitchen.door`. It's reported so the file reads the way it works, but it's never an error.
+
+```text
+@prefix .kitchen
+```
+
+Remove the dot: `@prefix kitchen`.
 
 ### PIB5020
 

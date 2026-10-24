@@ -6,7 +6,7 @@ Semantic analysis resolves every name in the syntax trees, checks every type, an
 
 `Compilation.Create` takes a story's sources, as `(path, text)` pairs, parses each file and runs the passes below over all of them together. It never throws on bad input. Its diagnostics, from parsing and analysis alike, are grouped by file in the order the files were given, then ordered by position.
 
-1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, one namespace per kind of name, and reports PIB2021–PIB2023 and PIB2060–PIB2067. [Relative node names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
+1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, one namespace per kind of name, and reports PIB2021, PIB2022, PIB2060–PIB2067 and the style rule PIB5015. [Relative node names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
    - **The prelude** is Pibbles source built into the core, parsed like any other file: `@markup b`, `i`, `u`, `s` and `color(value: string)`, and `@function visits(target: node) -> number`, which the core handles itself. Its names are [reserved](language/reference.md#reserved-words), so a story can't declare them again, and its symbols have no source location.
    - **Order:** enums are declared first and variables last, across every file, so declaration order never matters. Every type is known before a parameter, function or tag uses it, and a variable whose initial value is a name can be told which type that name belongs to.
    - **One problem, one diagnostic.** A name that's reserved or not ASCII is reported and still declared, so the places that use it don't report it again. A duplicate is reported at the later declaration, which names where the earlier one is, and the earlier one is the one the story uses. A type that doesn't exist is reported once, and whatever has it gets the error type, which nothing reports on.
@@ -344,6 +344,24 @@ This line is shared.
 ```
 
 `@return` earlier in a node, for example inside an `@if`, is fine.
+
+#### PIB5015 – Redundant `@prefix` dot ⚡
+
+**Level:** info
+
+Flags a `@prefix` that starts with a dot. A prefix is a full node name, so the dot does nothing: `.door` still means `kitchen.door`. The declaration pass reports it, since that's where prefixes are read.
+
+Non-compliant:
+
+```
+@prefix .kitchen
+```
+
+Compliant:
+
+```
+@prefix kitchen
+```
 
 ---
 

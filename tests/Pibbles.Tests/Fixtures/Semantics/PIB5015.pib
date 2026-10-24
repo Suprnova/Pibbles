@@ -1,7 +1,7 @@
 // A prefix is a full name, so it doesn't need a dot.
 
 @prefix .kitchen
-//      ^^^^^^^^ PIB2023
+//      ^^^^^^^^ PIB5015
 
 // Must not trigger
 

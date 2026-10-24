@@ -448,14 +448,6 @@ public static class DiagnosticCatalog
         "There's already a node called `{0}`, {1}.",
         help: "A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them.");
 
-    /// <summary>PIB2023: a <c>@prefix</c> that starts with a dot, which does nothing.</summary>
-    /// <remarks>Arguments: the prefix as written, and without its dot.</remarks>
-    public static DiagnosticDescriptor RelativePrefix { get; } = new(
-        "PIB2023",
-        DiagnosticSeverity.Info,
-        "`@prefix {0}` doesn't need its dot.",
-        help: "Remove it: `@prefix {1}`.");
-
     /// <summary>PIB2030: a variable that isn't declared.</summary>
     /// <remarks>Arguments: the variable, with its <c>$</c>, and the closest variable, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownVariable { get; } = new(
@@ -747,6 +739,14 @@ public static class DiagnosticCatalog
         "This `@return` does nothing, since the end of a node returns anyway.",
         help: "Remove it.");
 
+    /// <summary>PIB5015: a <c>@prefix</c> that starts with a dot, which does nothing.</summary>
+    /// <remarks>Arguments: the prefix as written, and without its dot.</remarks>
+    public static DiagnosticDescriptor RelativePrefix { get; } = new(
+        "PIB5015",
+        DiagnosticSeverity.Info,
+        "`@prefix {0}` doesn't need its dot.",
+        help: "Remove it: `@prefix {1}`.");
+
     /// <summary>PIB5020: a comparison with <c>true</c> or <c>false</c>.</summary>
     /// <remarks>Arguments: the literal, and the condition without the comparison.</remarks>
     public static DiagnosticDescriptor ComparisonWithBool { get; } = new(
@@ -861,7 +861,6 @@ public static class DiagnosticCatalog
         UnknownNode,
         RelativeWithoutPrefix,
         DuplicateNode,
-        RelativePrefix,
         UnknownVariable,
         ValueType,
         NotCondition,
@@ -898,6 +897,7 @@ public static class DiagnosticCatalog
         RedundantMarkup,
         RedundantCondition,
         RedundantReturn,
+        RelativePrefix,
         ComparisonWithBool,
         CompoundAssignment,
         LongText,
