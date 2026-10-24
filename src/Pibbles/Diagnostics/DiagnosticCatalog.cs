@@ -401,12 +401,12 @@ public static class DiagnosticCatalog
         help: "Remove one of them.");
 
     /// <summary>PIB2017: markup that isn't declared or built in.</summary>
-    /// <remarks>Arguments: the markup's name, and what to do instead, such as <c>Did you mean `clue`?</c>, or <see langword="null"/> to leave out the help.</remarks>
+    /// <remarks>Arguments: the markup's name, and what it was probably meant to be, such as <c>clue</c> or <c>{speed}</c>, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownMarkup { get; } = new(
         "PIB2017",
         DiagnosticSeverity.Error,
         "I don't know markup called `{0}`.",
-        help: "{1}");
+        help: "Did you mean `{1}`?");
 
     /// <summary>PIB2018: an icon that isn't declared.</summary>
     /// <remarks>Arguments: the icon's name, and the closest icon, or <see langword="null"/> to leave out the help.</remarks>
@@ -468,12 +468,12 @@ public static class DiagnosticCatalog
         help: "{2}");
 
     /// <summary>PIB2032: a condition that isn't a <c>bool</c>.</summary>
-    /// <remarks>Arguments: the condition as written; its type with its article; and a condition that's probably meant, or <see langword="null"/> to leave out the help.</remarks>
+    /// <remarks>Arguments: the condition as written; its type with its article; and a condition that's probably meant, such as <c>$attempts &gt; 0</c>, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor NotCondition { get; } = new(
         "PIB2032",
         DiagnosticSeverity.Error,
         "`{0}` is {1}, but a condition has to be true or false.",
-        help: "{2}");
+        help: "Did you mean `{2}`?");
 
     /// <summary>PIB2033: an operator used on types it doesn't work on.</summary>
     /// <remarks>Arguments: the operator; the operands' types, such as <c>a `string` and a `number`</c>; and what the operator works on.</remarks>

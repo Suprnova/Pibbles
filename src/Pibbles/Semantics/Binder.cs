@@ -257,7 +257,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         else
         {
             if (!markup.Name.IsMissing)
-                ReportWithOptionalHelp(DiagnosticCatalog.UnknownMarkup, markup.Name.Span, markup.Name.Text, UnknownMarkupHelp(markup.Name.Text));
+                ReportWithOptionalHelp(DiagnosticCatalog.UnknownMarkup, markup.Name.Span, markup.Name.Text, SuggestedMarkup(markup.Name.Text));
 
             BindUnmatched(markup.Arguments);
         }
@@ -265,10 +265,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         BindInline(markup.Content);
     }
 
-    private string? UnknownMarkupHelp(string name) =>
-        name is "speed" ? "Did you mean `{speed}`?"
-        : Suggestions.Closest(name, symbols.Markup.Keys) is { } closest ? $"Did you mean `{closest}`?"
-        : null;
+    private string? SuggestedMarkup(string name) =>
+        name is "speed" ? "{speed}" : Suggestions.Closest(name, symbols.Markup.Keys);
 
     /// <summary>A value shown in text, which is text, a number formatted for the player's language, or an actor's display name.</summary>
     private void BindInterpolation(InterpolationSyntax interpolation)
@@ -408,7 +406,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
 
         string text = TextOf(condition.Span);
-        string? meant = type == TypeSymbol.Number ? $"Did you mean `{text} > 0`?" : type == TypeSymbol.String ? $"Did you mean `{text} != \"\"`?" : null;
+        string? meant = type == TypeSymbol.Number ? $"{text} > 0" : type == TypeSymbol.String ? $"{text} != \"\"" : null;
         ReportWithOptionalHelp(DiagnosticCatalog.NotCondition, condition.Span, text, type.Describe(), meant);
     }
 
