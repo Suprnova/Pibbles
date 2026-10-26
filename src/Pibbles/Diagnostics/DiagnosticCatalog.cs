@@ -693,13 +693,21 @@ public static class DiagnosticCatalog
         "The color `{0}` is used in {1} places.",
         help: "If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place.");
 
-    /// <summary>PIB5010: a pose change nobody sees.</summary>
-    /// <remarks>Arguments: why, as a <see cref="SpeakerMention"/>, and the fix.</remarks>
-    public static DiagnosticDescriptor RedundantPose { get; } = new(
+    /// <summary>PIB5010: a pose-only line whose pose changes again before any line shows.</summary>
+    /// <remarks>Argument: the actor, as a <see cref="SpeakerMention"/>.</remarks>
+    public static DiagnosticDescriptor UnseenPoseChange { get; } = new(
         "PIB5010",
         DiagnosticSeverity.Hint,
-        "This pose change does nothing, because {0}.",
-        help: "{1}");
+        "This pose change does nothing, because {0}'s pose changes again before a line shows.",
+        help: "Remove this line.");
+
+    /// <summary>PIB5016: a pose change to the pose the actor already has.</summary>
+    /// <remarks>Argument: the actor, as a <see cref="SpeakerMention"/>.</remarks>
+    public static DiagnosticDescriptor RepeatedPose { get; } = new(
+        "PIB5016",
+        DiagnosticSeverity.Hint,
+        "This pose change does nothing, because {0} already has that pose.",
+        help: "Leave the pose out of this line.");
 
     /// <summary>PIB5011: a pause that does nothing, or two that could be one.</summary>
     /// <remarks>Arguments: what's wrong with the pause, and the fix.</remarks>
@@ -884,7 +892,8 @@ public static class DiagnosticCatalog
         LongOptionBody,
         RepeatedLine,
         RepeatedColor,
-        RedundantPose,
+        UnseenPoseChange,
+        RepeatedPose,
         RedundantPause,
         RedundantMarkup,
         RedundantCondition,

@@ -9,7 +9,7 @@ namespace Pibbles.Semantics;
 internal sealed partial class StyleChecks
 {
     /// <summary>
-    /// PIB5010: follows each actor's pose down a block, but only while that's certain. Text lines, <c>@set</c> and
+    /// PIB5010 and PIB5016: follows each actor's pose down a block, but only while that's certain. Text lines, <c>@set</c> and
     /// <c>@wait</c> keep what's known; anything else, such as a command, a call or a choice, might change a pose or skip
     /// ahead, so it forgets everything.
     /// </summary>
@@ -49,9 +49,9 @@ internal sealed partial class StyleChecks
         if (line.Pose is { } pose)
         {
             if (unseen.Remove(actor, out TextLineSyntax? hidden))
-                Report(DiagnosticCatalog.RedundantPose, hidden.Span, new SpeakerMention(actor, "{0}'s pose changes again before a line shows"), "Remove this line.");
+                Report(DiagnosticCatalog.UnseenPoseChange, hidden.Span, new SpeakerMention(actor));
             else if (poses.GetValueOrDefault(actor) == pose.Text)
-                Report(DiagnosticCatalog.RedundantPose, pose.Span, new SpeakerMention(actor, "{0} already has that pose"), "Leave the pose out of this line.");
+                Report(DiagnosticCatalog.RepeatedPose, pose.Span, new SpeakerMention(actor));
 
             poses[actor] = pose.Text;
         }

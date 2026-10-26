@@ -120,12 +120,13 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
-| PIB5010 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
+| PIB5010 | Hint | This pose change does nothing, because Mira's pose changes again before a line shows. | Remove this line. |
 | PIB5011 | Hint | This pause does nothing, because the end of the line already waits for a click. | Remove it. |
 | PIB5012 | Hint | This `[b]` is empty. | Remove it. |
 | PIB5013 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
+| PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
 | PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
@@ -1114,14 +1115,14 @@ Declare a markup that says what the color means, such as `@markup clue`, ask who
 
 ### PIB5010
 
-**A pose change nobody sees does nothing:** the actor already has the pose, or a pose-only line's pose changes again before any line shows. It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+**A pose-only line whose pose changes again before any line shows does nothing:** nobody sees the first pose. It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
 
 ```text
-mira (happy): This line sets the pose.
-mira (happy): The pose on this line changes nothing.
+mira (sad):
+mira (happy): The silent pose change above is never seen.
 ```
 
-Leave the pose out, `mira: …`, or remove the pose-only line nobody sees.
+Remove the pose-only line nobody sees.
 
 ### PIB5011
 
@@ -1178,6 +1179,17 @@ Remove the `@return`.
 ```
 
 Remove the dot: `@prefix kitchen`.
+
+### PIB5016
+
+**A pose change to the pose the actor already has does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+
+```text
+mira (happy): This line sets the pose.
+mira (happy): The pose on this line changes nothing.
+```
+
+Leave the pose out: `mira: …`.
 
 ### PIB5020
 

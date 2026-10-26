@@ -219,11 +219,11 @@ There's no quick fix. A new markup only looks right once the game implements its
 
 ### Redundancy
 
-#### PIB5010 – Redundant pose change ⚡
+#### PIB5010 and PIB5016 – Redundant pose change ⚡
 
 **Level:** hint
 
-Flags a pose change that has no visible effect, either because the actor already has that pose or because another change overrides it before any line shows. It only fires when that's certain: in straight-line flow, with nothing but lines, `@set` and `@wait` in between. A command, `@call`, choice, jump or block might change a pose or skip ahead, so after one nothing is known. A `@wait` shows the pose, so a pose-only line before one is seen.
+Flags a pose change that has no visible effect. PIB5010 reports a pose-only line whose pose another change overrides before any line shows. PIB5016 reports a change to the pose the actor already has. They only fire when that's certain: in straight-line flow, with nothing but lines, `@set` and `@wait` in between. A command, `@call`, choice, jump or block might change a pose or skip ahead, so after one nothing is known. A `@wait` shows the pose, so a pose-only line before one is seen.
 
 Non-compliant:
 
