@@ -23,3 +23,31 @@ This line says {if $a}something{/if} or nothing.
     This line appears either way.
 @else
     This line differs.
+@if $a
+    @cycle
+        - One.
+        - Two.
+@else
+    @cycle
+        - One.
+        - Two.
+@if $a
+    @once
+        This line is shown once in each branch.
+@else
+    @once
+        This line is shown once in each branch.
+@if $a
+    -> Go @once
+        Picked.
+@else
+    -> Go @once
+        Picked.
+@if $a
+    @if $a
+        @sequence
+            - One.
+@else
+    @if $a
+        @sequence
+            - One.

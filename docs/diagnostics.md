@@ -1151,7 +1151,7 @@ Remove the span.
 
 ### PIB5013
 
-**An `@if` or `{if}` whose branches are all the same makes no difference,** so the condition is only noise. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Indentation, line IDs, blank lines and comments don't count as differences.
+**An `@if` or `{if}` whose branches are all the same makes no difference,** so the condition is only noise. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Indentation, line IDs, blank lines and comments don't count as differences. An `@if` whose branches hold an `@once`, `@sequence` or `@cycle` block or an `@once` option is not reported, since each copy keeps its own count and one merged copy would share a single one.
 
 ```text
 @if $a

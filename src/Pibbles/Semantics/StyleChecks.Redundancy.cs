@@ -138,7 +138,7 @@ internal sealed partial class StyleChecks
 
     /// <summary>
     /// PIB5013: an <c>@if</c> with an <c>@else</c> whose branches all read the same, apart from indentation, line IDs,
-    /// blank lines and comments.
+    /// blank lines and comments. Branches that count how often they ran are left alone, since merging them would share one count.
     /// </summary>
     private void CheckBranches(IfStatementSyntax @if)
     {
@@ -146,7 +146,7 @@ internal sealed partial class StyleChecks
             return;
 
         IReadOnlyList<StatementSyntax>[] branches = [@if.Body, .. @if.ElseIfs.Select(elseIf => elseIf.Body), @else.Body];
-        if (branches.All(branch => branch.Count > 0) && branches.Select(BlockText).Distinct().Count() == 1)
+        if (branches.All(branch => branch.Count > 0) && !branches.Any(SyntaxWalk.HoldsState) && branches.Select(BlockText).Distinct().Count() == 1)
             Report(DiagnosticCatalog.RedundantCondition, new(@if.Span.Start, @if.Condition.Span.End - @if.Span.Start), "@if");
     }
 

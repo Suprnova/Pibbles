@@ -302,7 +302,7 @@ This line is [b]one span[/b].
 
 **Level:** hint
 
-Flags `@if` blocks and `{if}` text whose branches are all identical, so the condition makes no difference. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Branches compare by their text, apart from indentation, line IDs, blank lines and comments, which never change what runs.
+Flags `@if` blocks and `{if}` text whose branches are all identical, so the condition makes no difference. It needs an `@else` or `{else}`, since without one the branch differs from showing nothing. Branches compare by their text, apart from indentation, line IDs, blank lines and comments, which never change what runs. An `@if` is skipped when a branch holds an `@once`, `@sequence` or `@cycle` block or an `@once` option, at any depth: each keeps its own count, so one merged copy would behave differently.
 
 Non-compliant:
 

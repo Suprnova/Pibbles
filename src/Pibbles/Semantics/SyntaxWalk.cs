@@ -33,6 +33,14 @@ internal static class SyntaxWalk
     public static IEnumerable<StatementSyntax> Statements(IEnumerable<StatementSyntax> block) =>
         block.SelectMany(statement => (IEnumerable<StatementSyntax>)[statement, .. BlocksOf(statement).SelectMany(Statements)]);
 
+    /// <summary>
+    /// Whether a block holds, at any depth, a statement that counts how often it ran: <c>@sequence</c>, <c>@cycle</c>,
+    /// <c>@once</c>, or a choice with an <c>@once</c> option. The count is kept for each block, so two blocks written the
+    /// same don't behave like one.
+    /// </summary>
+    public static bool HoldsState(IEnumerable<StatementSyntax> block) => Statements(block).Any(statement =>
+        statement is VariationStatementSyntax or OnceStatementSyntax || statement is ChoiceSyntax choice && choice.Options.Any(option => option.IsOnce));
+
     /// <summary>The text on a statement's own line: a text line's content, or each option's text.</summary>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> TextOf(StatementSyntax statement) => statement switch
     {
