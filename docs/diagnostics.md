@@ -23,7 +23,7 @@ Severities are error, warning, info and hint. `.editorconfig` can change any of 
 
 ## Writing messages
 
-Most people who read a diagnostic are writers, not programmers. Each catalog entry has a **message**, an optional **label** shown under the marked text, and an optional **help** ([how diagnostics read](syntax.md#how-diagnostics-read)).
+Most people who read a diagnostic are writers, not programmers. Each catalog entry has a **message** and an optional **help** ([how diagnostics read](syntax.md#how-diagnostics-read)).
 
 - **The message says what's wrong, in one plain sentence.** Pibbles speaks as "I", and the reader is "you": *I can't find the end of this `[clue]`.*
 - **No compiler words.** Never "token", "parse", "syntax", "statement", "production", "INDENT" or "invalid". "Unexpected" only says something when the message also says what was expected.

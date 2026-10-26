@@ -9,23 +9,23 @@ public class DiagnosticDescriptorTests
     private readonly SourceLocation location = new SourceText("story.pib", "mira: Hi.").GetLocation(new(0, 4));
 
     [Fact]
-    public void Create_WithAllTemplates_FormatsEachWithArguments()
+    public void Create_WithMessageAndHelp_FormatsEachWithArguments()
     {
-        var descriptor = new DiagnosticDescriptor("PIB1010", DiagnosticSeverity.Error, "I can't find the end of this `[{0}]`.", "opened here", "Close it with `[/{0}]`.");
+        var descriptor = new DiagnosticDescriptor("PIB1010", DiagnosticSeverity.Error, "I can't find the end of this `[{0}]`.", "Close it with `[/{0}]`.");
 
         Diagnostic diagnostic = descriptor.Create(location, "clue");
 
-        Assert.Equal(new("PIB1010", DiagnosticSeverity.Error, location, "I can't find the end of this `[clue]`.", "opened here", "Close it with `[/clue]`."), diagnostic);
+        Assert.Equal(new("PIB1010", DiagnosticSeverity.Error, location, "I can't find the end of this `[clue]`.", "Close it with `[/clue]`."), diagnostic);
     }
 
     [Fact]
-    public void Create_WithoutLabelOrHelp_LeavesThemNull()
+    public void Create_WithoutHelp_LeavesItNull()
     {
         var descriptor = new DiagnosticDescriptor("PIB3001", DiagnosticSeverity.Warning, "This line never runs.");
 
         Diagnostic diagnostic = descriptor.Create(location);
 
-        Assert.Equal((null, null), (diagnostic.Label, diagnostic.Help));
+        Assert.Null(diagnostic.Help);
     }
 
     [Theory]

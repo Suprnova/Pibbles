@@ -28,7 +28,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
     public void WritePretty_ZeroLengthSpan_MarksOneCaret()
     {
         var source = new SourceText("story.pib", "@jump");
-        Diagnostic diagnostic = Problem(source, new(5, 0), label: null, help: null);
+        Diagnostic diagnostic = Problem(source, new(5, 0), help: null);
 
         DiagnosticFormatter.WritePretty(output, source, diagnostic, color: false);
 
@@ -39,7 +39,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
     public void WritePretty_LineWithTabs_ShowsTabsAsFourSpacesAndAlignsCarets()
     {
         var source = new SourceText("story.pib", "\tmira: {if $x}");
-        Diagnostic diagnostic = Problem(source, new(7, 3), label: null, help: null);
+        Diagnostic diagnostic = Problem(source, new(7, 3), help: null);
 
         DiagnosticFormatter.WritePretty(output, source, diagnostic, color: false);
 
@@ -50,7 +50,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
     public void WritePretty_SpanPastEndOfLine_StopsCaretsAtLineEnd()
     {
         var source = new SourceText("story.pib", "mira: [b]Bold\nrex: Hm.");
-        Diagnostic diagnostic = Problem(source, new(6, 12), label: null, help: null);
+        Diagnostic diagnostic = Problem(source, new(6, 12), help: null);
 
         DiagnosticFormatter.WritePretty(output, source, diagnostic, color: false);
 
@@ -64,7 +64,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
     {
         var source = new SourceText("story.pib", "@jump");
 
-        DiagnosticFormatter.WritePretty(output, source, Problem(source, new(5, 0), "label", "help"), color);
+        DiagnosticFormatter.WritePretty(output, source, Problem(source, new(5, 0), "help"), color);
 
         Assert.Equal(color, output.ToString().Contains('\u001b', StringComparison.Ordinal));
     }
@@ -77,7 +77,7 @@ public sealed class DiagnosticFormatterTests : IDisposable
     public void Summary_CountsEachSeverity(int files, DiagnosticSeverity[] severities, string expected)
     {
         var source = new SourceText("story.pib", "");
-        Diagnostic[] diagnostics = [.. severities.Select(severity => Problem(source, new(0, 0), null, null) with { Severity = severity })];
+        Diagnostic[] diagnostics = [.. severities.Select(severity => Problem(source, new(0, 0), null) with { Severity = severity })];
 
         Assert.Equal(expected, DiagnosticFormatter.Summary(files, diagnostics));
     }
@@ -107,8 +107,8 @@ public sealed class DiagnosticFormatterTests : IDisposable
         Assert.Contains("mira: Use `this` ", output.ToString());
     }
 
-    private static Diagnostic Problem(SourceText source, TextSpan span, string? label, string? help) =>
-        new("PIB0000", DiagnosticSeverity.Error, source.GetLocation(span), "message", label, help);
+    private static Diagnostic Problem(SourceText source, TextSpan span, string? help) =>
+        new("PIB0000", DiagnosticSeverity.Error, source.GetLocation(span), "message", help);
 
     /// <summary>The example under "How diagnostics read" in <c>docs/syntax.md</c>, which this rendering must match.</summary>
     private static string DocumentedExample()

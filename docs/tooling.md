@@ -31,7 +31,7 @@ Every diagnostic code is listed in the [diagnostics catalog](diagnostics.md).
 - **Paths in diagnostics** are relative to the current directory, so they point at the right file from an editor's terminal or a CI job, whichever folder the root is.
 - **The readable format** ends with a summary line, such as `Checked 3 files: 2 errors and 1 warning.` The `msbuild` and `json` formats print only the diagnostics.
 - **Missing line IDs (PIB3010)** all share one fix, so when there are more than five, the readable format shows them as one entry after the other problems, with how many each file has and the fix: run `pibbles ids`. Five or fewer are shown one by one, and the summary line counts each one either way. The `msbuild` and `json` formats always list every one, since tools and CI annotations need each location.
-- **JSON** is an array with one object per diagnostic: `path`, `line`, `column`, `endLine` and `endColumn` (1-based), `severity`, `code`, `message`, `label` and `help`.
+- **JSON** is an array with one object per diagnostic: `path`, `line`, `column`, `endLine` and `endColumn` (1-based), `severity`, `code`, `message` and `help`.
 - **Exit codes:** 0 when the check passes, 1 when an error fails it (or a warning, with `--warnaserror`), and 2 when there's nothing to check, such as a missing story folder. `pibbles explain` exits 2 for a code it doesn't know.
 - **In CI,** the workflow registers `.github/pibbles-problem-matcher.json`, which turns `--format msbuild` output into annotations on the changed lines.
 

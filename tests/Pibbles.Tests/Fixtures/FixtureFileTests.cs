@@ -86,5 +86,5 @@ public class FixtureFileTests
     }
 
     private static Diagnostic At(SourceText source, string code, int start, int length) =>
-        new(code, DiagnosticSeverity.Error, source.GetLocation(new(start, length)), "message", null, null);
+        new(code, DiagnosticSeverity.Error, source.GetLocation(new(start, length)), "message", null);
 }

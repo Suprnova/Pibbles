@@ -9,7 +9,6 @@ public static class DiagnosticCatalog
         "PIB1001",
         DiagnosticSeverity.Error,
         "This line indents with {0}, but the file indents with {1}, so I can't tell which block it belongs to.",
-        "this line indents with {0}, but the file indents with {1}",
         "Use only spaces or only tabs in a file. Most editors can convert the whole file for you.");
 
     /// <summary>PIB1001's help when <c>indent_style</c> in <c>.editorconfig</c> says what the project indents with.</summary>
@@ -101,7 +100,6 @@ public static class DiagnosticCatalog
         "PIB1015",
         DiagnosticSeverity.Error,
         "I read `{0}` as a tag, but tags go at the end of the line.",
-        "this starts a tag",
         "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
     /// <summary>PIB1016: a command, <c>{w}</c>, <c>{p}</c> or <c>{speed}</c> in an option's text.</summary>

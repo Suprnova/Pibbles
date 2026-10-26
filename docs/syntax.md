@@ -33,12 +33,12 @@ The front end owns every check that needs only one file's text: indentation, mal
 ## Diagnostics
 
 ```csharp
-public sealed record Diagnostic(string Code, DiagnosticSeverity Severity, SourceLocation Location, string Message, string? Label, string? Help);
+public sealed record Diagnostic(string Code, DiagnosticSeverity Severity, SourceLocation Location, string Message, string? Help);
 public readonly record struct SourceLocation(string Path, TextSpan Span, LinePosition Start, LinePosition End);
 ```
 
 - Codes are stable, and their [ranges](diagnostics.md#ranges) say how they're numbered. A code's first digit gives its category: `PIB4xxx` localization, `PIB5xxx` style ([semantics design](semantics.md)) and `PIB6xxx` spelling ([tooling design](tooling.md#spell-checking)). The other codes have none. `DiagnosticDescriptor.Category` works it out, and settings, `// pibbles-ignore` and the dropping of style on a line with an error read `Category`, never the digits. Severities are error, warning, info and hint. Hints are for pure style: VS Code shows them as faint dots, and the CLI shows them only with `--style`.
-- Every code has one descriptor in `DiagnosticCatalog`, a named static member such as `DiagnosticCatalog.MixedIndentation`: code, default severity, and templates for the message, the label and the help. `docs/diagnostics.md` documents each code. `.editorconfig` can change a code's severity, unless it's an error, per code or per category, and per folder ([tooling design](tooling.md#configuration)).
+- Every code has one descriptor in `DiagnosticCatalog`, a named static member such as `DiagnosticCatalog.MixedIndentation`: code, default severity, and templates for the message and the help. `docs/diagnostics.md` documents each code. `.editorconfig` can change a code's severity, unless it's an error, per code or per category, and per folder ([tooling design](tooling.md#configuration)).
 - A code is registered in the same change as the check that reports it, so every registered code always has a fixture and an entry in `docs/diagnostics.md`.
 - Templates are formatted with the invariant culture. Messages quote Pibbles source, which always writes `0.5` with a dot, and the same diagnostic must read the same on every machine.
 - Positions are 0-based in the core and 1-based wherever a person reads them. A column counts UTF-16 code units, as .NET strings and the language server protocol do, so a tab is one column. A `SourceLocation` carries its line and column, so a consumer needs no source text to print it.
@@ -52,10 +52,10 @@ error[PIB1015]: I read `#winning` as a tag, but tags go at the end of the line.
   --> story/kitchen.pib:12:11
    |
 12 | mira: I'm #winning today.
-   |           ^^^^^^^^ this starts a tag
+   |           ^^^^^^^^
    |
    = help: If `#winning` is part of what Mira says, put a backslash before the `#`:
            mira: I'm \#winning today.
 ```
 
-The **message** is the headline, the **label** sits under the marked span, and the **help** says how to fix it, often with the corrected line on a line of its own. The label and help are optional. Messages talk about the writer's story in the writer's terms: a speaker is named by their display name from `@actor`, as "Mira" here, wherever the analyzer knows it, and by their ID as written otherwise. The parser doesn't know display names, so a `Diagnostic` keeps its descriptor and arguments, and a message that names a speaker in its prose passes the speaker as an argument of its own; the compilation writes such a diagnostic again once it knows the actors. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.
+The **message** is the headline, and the **help** says how to fix it, often with the corrected line on a line of its own. The help is optional. The marker under the source line has no words of its own, since CI annotations and the editor show only the message and help. Messages talk about the writer's story in the writer's terms: a speaker is named by their display name from `@actor`, as "Mira" here, wherever the analyzer knows it, and by their ID as written otherwise. The parser doesn't know display names, so a `Diagnostic` keeps its descriptor and arguments, and a message that names a speaker in its prose passes the speaker as an argument of its own; the compilation writes such a diagnostic again once it knows the actors. This layout is the CLI's default output ([tooling design](tooling.md#cli-pibbles)), and the language server shows the same message and help in hovers.

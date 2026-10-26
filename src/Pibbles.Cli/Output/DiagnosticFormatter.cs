@@ -12,7 +12,7 @@ internal static class DiagnosticFormatter
 
     /// <summary>
     /// Writes a diagnostic for people, as <c>docs/syntax.md</c> shows: a headline, where it is, the source line with the
-    /// problem marked and labeled, and the help. A help's later lines are examples, lined up under its first. With color,
+    /// problem marked, and the help. A help's later lines are examples, lined up under its first. With color,
     /// the problem is highlighted in the source line too, quoted code in the prose is cyan, and the help is green. Tabs in
     /// the line are shown as four spaces.
     /// </summary>
@@ -30,13 +30,12 @@ internal static class DiagnosticFormatter
         string marks = new('^', Math.Max(DisplayWidth(line, markTo) - markStart, 1));
         string tint = Tint(diagnostic.Severity);
         string bar = Paint("|", Blue, color);
-        string label = diagnostic.Label is null ? "" : $" {Markup.Render(diagnostic.Label, color)}";
 
         output.WriteLine($"{Paint($"{Name(diagnostic.Severity)}[{diagnostic.Code}]", tint, color)}{Paint($": {Markup.Render(diagnostic.Message, color)}", Bold, color)}");
         output.WriteLine($"{gutter}{Paint("-->", Blue, color)} {location.Path}:{lineNumber}:{Number(location.Start.Column)}");
         output.WriteLine($"{gutter} {bar}");
         output.WriteLine($"{Paint($"{lineNumber} |", Blue, color)} {Expand(line[..markFrom])}{Paint(Expand(line[markFrom..markTo]), tint, color)}{Expand(line[markTo..])}");
-        output.WriteLine($"{gutter} {bar} {new string(' ', markStart)}{Paint(marks + label, tint, color)}");
+        output.WriteLine($"{gutter} {bar} {new string(' ', markStart)}{Paint(marks, tint, color)}");
 
         if (diagnostic.Help is not null)
         {
@@ -110,7 +109,6 @@ internal static class DiagnosticFormatter
             writer.WriteString("severity", Name(diagnostic.Severity));
             writer.WriteString("code", diagnostic.Code);
             writer.WriteString("message", diagnostic.Message);
-            writer.WriteString("label", diagnostic.Label);
             writer.WriteString("help", diagnostic.Help);
             writer.WriteEndObject();
         }

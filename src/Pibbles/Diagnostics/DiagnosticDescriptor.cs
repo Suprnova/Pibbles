@@ -13,14 +13,12 @@ public sealed class DiagnosticDescriptor
     /// <param name="code">The code, such as <c>PIB1001</c>.</param>
     /// <param name="defaultSeverity">The severity, unless configuration overrides it.</param>
     /// <param name="message">The template for <see cref="Diagnostic.Message"/>.</param>
-    /// <param name="label">The template for <see cref="Diagnostic.Label"/>, if diagnostics with this code have one.</param>
     /// <param name="help">The template for <see cref="Diagnostic.Help"/>, if diagnostics with this code have one.</param>
-    internal DiagnosticDescriptor(string code, DiagnosticSeverity defaultSeverity, string message, string? label = null, string? help = null)
+    internal DiagnosticDescriptor(string code, DiagnosticSeverity defaultSeverity, string message, string? help = null)
     {
         Code = code;
         DefaultSeverity = defaultSeverity;
         Message = message;
-        Label = label;
         Help = help;
     }
 
@@ -45,14 +43,11 @@ public sealed class DiagnosticDescriptor
     /// <summary>The template for <see cref="Diagnostic.Message"/>.</summary>
     public string Message { get; }
 
-    /// <summary>The template for <see cref="Diagnostic.Label"/>, or <see langword="null"/>.</summary>
-    public string? Label { get; }
-
     /// <summary>The template for <see cref="Diagnostic.Help"/>, or <see langword="null"/>.</summary>
     public string? Help { get; }
 
     internal Diagnostic Create(SourceLocation location, params object?[] arguments) =>
-        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Label, arguments), Format(Help, arguments))
+        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Help, arguments))
         {
             Descriptor = this,
             Arguments = arguments,
