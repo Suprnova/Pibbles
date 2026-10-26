@@ -7,7 +7,7 @@ namespace Pibbles.Semantics;
 /// <summary>Readability: long text, names that aren't <c>snake_case</c>, uneven indentation and speaker spacing.</summary>
 internal sealed partial class StyleChecks
 {
-    /// <summary>PIB5030: a line's longest page, or an option's text, past the file's limit.</summary>
+    /// <summary>PIB5030 and PIB5034: a line's longest page, or an option's text, past the file's limit.</summary>
     private void CheckLength(IReadOnlyList<InlineSyntax> content, bool option)
     {
         if (content.Count == 0)
@@ -18,8 +18,7 @@ internal sealed partial class StyleChecks
         if (length <= limit)
             return;
 
-        string help = option ? "Shorten it to what the player picks. The lines after it can say the rest." : "Split it into two lines, or into pages with `{p}`.";
-        Report(DiagnosticCatalog.LongText, SpanOf(content), option ? "option" : "line", length, limit, help);
+        Report(option ? DiagnosticCatalog.LongOption : DiagnosticCatalog.LongLine, SpanOf(content), length, limit);
     }
 
     /// <summary>The length of a line's longest page: the text between page breaks.</summary>

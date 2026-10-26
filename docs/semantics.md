@@ -407,9 +407,9 @@ Compliant:
 
 ### Readability
 
-#### PIB5030 – Long text
+#### PIB5030 and PIB5034 – Long text
 
-**Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters), `pibbles_max_option_length` (default 80)
+**Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters) for lines, PIB5030, and `pibbles_max_option_length` (default 80) for options, PIB5034
 
 Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length, an icon counts as one character, and a value shown with `{…}` counts nothing, since its length isn't known. For conditional text, the longest branch counts. A line counts its longest page, since `{p}` starts a new one. Long options also crowd the choice menu.
 

@@ -1,0 +1,13 @@
+// An option too long to read comfortably at once.
+
+== kitchen.door
+-> This option says far too much. This option says far too much. This option says far too much.
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PIB5034
+    Picked.
+-> Leave
+
+// Must not trigger
+
+-> xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    Picked.
+-> Stay

@@ -136,6 +136,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5031 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
 | PIB5032 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
 | PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
+| PIB5034 | Hint | This option is 120 characters long, more than 80. | Shorten it to what the player picks. The lines after it can say the rest. |
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 | PIB5050 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
 
@@ -1247,13 +1248,13 @@ Write `@set $attempts += 1`.
 
 ### PIB5030
 
-**A line or option too long to read in one go** tires the player, and long options crowd the choice. Markup and pacing don't count, conditional text counts its longest branch, and a value shown with `{…}` counts nothing, since its length isn't known. A line counts its longest page, so `{p}` splits it. `pibbles_max_message_length` (300) and `pibbles_max_option_length` (80) in `.editorconfig` set the limits.
+**A line too long to read in one go** tires the player. Markup and pacing don't count, conditional text counts its longest branch, and a value shown with `{…}` counts nothing, since its length isn't known. A line counts its longest page, so `{p}` splits it. `pibbles_max_message_length` (300) in `.editorconfig` sets the limit.
 
 ```text
--> This option is written as a full sentence that explains everything that will happen if it's picked
+mira: This line keeps going and going, well past the point where it fits comfortably in a text box…
 ```
 
-Split a long line into two lines, or into pages with `{p}`, which keeps one message and one voice clip. Shorten an option to what the player picks, and let the lines after it say the rest.
+Split it into two lines, or into pages with `{p}`, which keeps one message and one voice clip.
 
 ### PIB5031
 
@@ -1290,6 +1291,16 @@ mira : This line has a space before the colon.
 ```
 
 Write `mira (happy):` and `mira:`.
+
+### PIB5034
+
+**An option too long to read in one go** crowds the choice. Markup and pacing don't count, and a value shown with `{…}` counts nothing, since its length isn't known. `pibbles_max_option_length` (80) in `.editorconfig` sets the limit.
+
+```text
+-> This option is written as a full sentence that explains everything that will happen if it's picked
+```
+
+Shorten it to what the player picks, and let the lines after it say the rest.
 
 ### PIB5040
 

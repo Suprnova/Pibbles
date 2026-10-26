@@ -794,13 +794,21 @@ public static class DiagnosticCatalog
         "This can be shorter with `{0}`.",
         help: "Write `{1}`.");
 
-    /// <summary>PIB5030: a line or option longer than <c>pibbles_max_message_length</c> or <c>pibbles_max_option_length</c>.</summary>
-    /// <remarks>Arguments: <c>line</c> or <c>option</c>, its length, the limit, and the fix.</remarks>
-    public static DiagnosticDescriptor LongText { get; } = new(
+    /// <summary>PIB5030: a line whose longest page is longer than <c>pibbles_max_message_length</c>.</summary>
+    /// <remarks>Arguments: the length and the limit.</remarks>
+    public static DiagnosticDescriptor LongLine { get; } = new(
         "PIB5030",
         DiagnosticSeverity.Hint,
-        "This {0} is {1} characters long, more than {2}.",
-        help: "{3}");
+        "This line is {0} characters long, more than {1}.",
+        help: "Split it into two lines, or into pages with `{{p}}`.");
+
+    /// <summary>PIB5034: an option longer than <c>pibbles_max_option_length</c>.</summary>
+    /// <remarks>Arguments: the length and the limit.</remarks>
+    public static DiagnosticDescriptor LongOption { get; } = new(
+        "PIB5034",
+        DiagnosticSeverity.Hint,
+        "This option is {0} characters long, more than {1}.",
+        help: "Shorten it to what the player picks. The lines after it can say the rest.");
 
     /// <summary>PIB5031: a declared name that isn't <c>snake_case</c>.</summary>
     /// <remarks>Arguments: the name as written, and in <c>snake_case</c>.</remarks>
@@ -935,7 +943,8 @@ public static class DiagnosticCatalog
         RedundantPrefixDot,
         ComparisonWithBool,
         CompoundAssignment,
-        LongText,
+        LongLine,
+        LongOption,
         NamingConvention,
         IndentationWidth,
         SpeakerSpacing,

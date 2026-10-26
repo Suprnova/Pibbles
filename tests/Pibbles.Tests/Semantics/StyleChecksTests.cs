@@ -90,7 +90,7 @@ public class StyleChecksTests
     [Theory]
     [InlineData(new[] { "pibbles_max_nesting=1" }, "== a.b\n@if $a\n    @if $a\n        Two deep.\n", "PIB5001")]
     [InlineData(new[] { "pibbles_max_message_length=10" }, "== a.b\nEleven char\n", "PIB5030")]
-    [InlineData(new[] { "pibbles_max_option_length=3" }, "== a.b\n-> Four\n-> Ok\n", "PIB5030")]
+    [InlineData(new[] { "pibbles_max_option_length=3" }, "== a.b\n-> Four\n-> Ok\n", "PIB5034")]
     [InlineData(new[] { "pibbles_max_option_body=1" }, "== a.b\n-> Go\n    One.\n    Two.\n", "PIB5002")]
     [InlineData(new[] { "pibbles_min_repeated_lines=2" }, "== a.b\nTwice.\nTwice.\n", "PIB5003")]
     [InlineData(new[] { "pibbles_min_repeated_colors=1" }, "== a.b\n[color \"red\"]Once[/color].\n", "PIB5004")]
