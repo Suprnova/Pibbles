@@ -11,6 +11,14 @@ public partial class DiagnosticCatalogTests
     private readonly string documentation = File.ReadAllText(Path.Combine(RepositoryRoot.Path, "docs", "diagnostics.md"));
 
     [Fact]
+    public void DidYouMean_Suggestion_ReadsAsTheSentenceWithATrailingSpace() =>
+        Assert.Equal("Did you mean `#thought`? ", DiagnosticCatalog.DidYouMean("#thought"));
+
+    [Fact]
+    public void DidYouMean_NoSuggestion_IsEmpty() =>
+        Assert.Empty(DiagnosticCatalog.DidYouMean(null));
+
+    [Fact]
     public void All_ListsEveryDescriptorInCatalog()
     {
         DiagnosticDescriptor[] declared = [.. typeof(DiagnosticCatalog)

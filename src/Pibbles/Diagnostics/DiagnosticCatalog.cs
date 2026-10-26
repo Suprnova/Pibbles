@@ -17,6 +17,11 @@ public static class DiagnosticCatalog
     internal static string MixedIndentationHelpWithStyle(string indent) =>
         $"Use only {indent} in this file, since `indent_style` in `.editorconfig` asks for {indent}. Most editors can convert the whole file for you.";
 
+    /// <summary>The sentence a help offers when something close to what was written exists, such as <c>Did you mean `mira`? </c>.</summary>
+    /// <param name="suggestion">The closest name, written as it is in a story (with its <c>#</c>, <c>$</c> or <c>@</c>), or <see langword="null"/> if none is close.</param>
+    /// <returns>The sentence with a trailing space, so more text can follow it, or an empty string if there is no suggestion.</returns>
+    internal static string DidYouMean(string? suggestion) => suggestion is null ? "" : $"Did you mean `{suggestion}`? ";
+
     /// <summary>PIB1002: a line is indented less than the line above it, but not as far back as any block it could belong to.</summary>
     public static DiagnosticDescriptor InconsistentIndentation { get; } = new(
         "PIB1002",
@@ -300,7 +305,7 @@ public static class DiagnosticCatalog
 
     /// <summary>PIB2001: a speaker that isn't a declared actor.</summary>
     /// <remarks>
-    /// Arguments: the speaker as written; a suggestion, such as <c>Did you mean `mira`? </c>, or nothing; and the line's
+    /// Arguments: the speaker as written; <see cref="DidYouMean"/>'s sentence for the closest actor, or nothing; and the line's
     /// start up to its colon, which the help escapes.
     /// </remarks>
     public static DiagnosticDescriptor UnknownSpeaker { get; } = new(
@@ -517,7 +522,7 @@ public static class DiagnosticCatalog
         help: "{2}");
 
     /// <summary>PIB2045: a tag that's neither reserved nor declared.</summary>
-    /// <remarks>Arguments: the tag's name, and a suggestion, such as <c>Did you mean `#thought`? </c>, or nothing.</remarks>
+    /// <remarks>Arguments: the tag's name, and <see cref="DidYouMean"/>'s sentence for the closest tag, or nothing.</remarks>
     public static DiagnosticDescriptor UnknownTag { get; } = new(
         "PIB2045",
         DiagnosticSeverity.Error,

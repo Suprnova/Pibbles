@@ -146,7 +146,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     {
         if (!symbols.Actors.TryGetValue(speaker.Text, out ActorSymbol? actor))
         {
-            string meant = Suggestions.Closest(speaker.Text, symbols.Actors.Keys) is { } closest ? $"Did you mean `{closest}`? " : "";
+            string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(speaker.Text, symbols.Actors.Keys));
             Report(DiagnosticCatalog.UnknownSpeaker, speaker.Span, speaker.Text, meant, BeforeColon(line));
             return;
         }
@@ -162,7 +162,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         }
 
         string[] poses = [.. actor.Poses.Select(known => known.Name)];
-        string help = Suggestions.Closest(pose.Text, poses) is { } suggestion ? $"Did you mean `{suggestion}`?"
+        string help = Suggestions.Closest(pose.Text, poses) is { } suggestion ? DiagnosticCatalog.DidYouMean(suggestion).TrimEnd()
             : poses.Length switch
             {
                 0 => $"Give {actor.DisplayName} poses with `poses:` under `@actor {actor.Name}`.",
@@ -306,7 +306,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         {
             if (!symbols.Tags.TryGetValue(tag.Name, out TagSymbol? symbol))
             {
-                string meant = Suggestions.Closest(tag.Name, symbols.Tags.Keys) is { } closest ? $"Did you mean `#{closest}`? " : "";
+                string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(tag.Name, symbols.Tags.Keys) is { } closest ? $"#{closest}" : null);
                 Report(DiagnosticCatalog.UnknownTag, tag.Span, tag.Name, meant);
             }
             else
@@ -346,7 +346,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         }
 
         string[] members = [.. values.Members.Select(member => member.Name)];
-        string help = Suggestions.Closest(tag.Value, members) is { } closest ? $"Did you mean `#{tag.Name}:{closest}`?" : $"Use one of {Phrase.Or(members)}.";
+        string help = Suggestions.Closest(tag.Value, members) is { } closest ? DiagnosticCatalog.DidYouMean($"#{tag.Name}:{closest}").TrimEnd() : $"Use one of {Phrase.Or(members)}.";
         Report(DiagnosticCatalog.TagValueNotMember, tag.Span, tag.Value, values.Describe(), tag.Name, help);
     }
 
@@ -478,7 +478,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return TypeSymbol.Actor;
         }
 
-        string? meant = symbols.Variables.ContainsKey(name.Name) ? $"Did you mean `${name.Name}`?"
+        string? meant = symbols.Variables.ContainsKey(name.Name) ? DiagnosticCatalog.DidYouMean($"${name.Name}").TrimEnd()
             : expected == TypeSymbol.String ? $"If it's text, put it in quotes: `\"{name.Name}\"`."
             : null;
         ReportWithOptionalHelp(DiagnosticCatalog.NameNotAllowed, name.Span, name.Name, meant);
@@ -487,7 +487,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private TypeSymbol NotValueOf(NameExpressionSyntax name, TypeSymbol type, IEnumerable<string> values, string? otherwise)
     {
-        string? help = Suggestions.Closest(name.Name, values) is { } closest ? $"Did you mean `{closest}`?" : otherwise;
+        string? help = Suggestions.Closest(name.Name, values) is { } closest ? DiagnosticCatalog.DidYouMean(closest).TrimEnd() : otherwise;
         ReportWithOptionalHelp(DiagnosticCatalog.NotValueOfType, name.Span, name.Name, type.Describe(), help);
         return TypeSymbol.Error;
     }
