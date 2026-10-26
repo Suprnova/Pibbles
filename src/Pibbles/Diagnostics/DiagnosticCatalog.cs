@@ -741,7 +741,7 @@ public static class DiagnosticCatalog
 
     /// <summary>PIB5015: a <c>@prefix</c> that starts with a dot, which does nothing.</summary>
     /// <remarks>Arguments: the prefix as written, and without its dot.</remarks>
-    public static DiagnosticDescriptor RelativePrefix { get; } = new(
+    public static DiagnosticDescriptor RedundantPrefixDot { get; } = new(
         "PIB5015",
         DiagnosticSeverity.Info,
         "`@prefix {0}` doesn't need its dot.",
@@ -897,7 +897,7 @@ public static class DiagnosticCatalog
         RedundantMarkup,
         RedundantCondition,
         RedundantReturn,
-        RelativePrefix,
+        RedundantPrefixDot,
         ComparisonWithBool,
         CompoundAssignment,
         LongText,

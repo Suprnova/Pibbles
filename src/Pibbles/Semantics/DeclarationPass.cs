@@ -51,7 +51,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     private void DeclareOthers(FileSyntax file)
     {
         if (file.Prefix is { Name: { Text: ['.', ..] } name })
-            Report(DiagnosticCatalog.RelativePrefix, name.Span, name.Text, name.Text[1..]);
+            Report(DiagnosticCatalog.RedundantPrefixDot, name.Span, name.Text, name.Text[1..]);
 
         foreach (DeclarationSyntax declaration in file.Declarations)
         {
