@@ -1,0 +1,36 @@
+// A condition that is always true, so the branches after it never run.
+
+@var $x = true
+
+== kitchen.door
+@if true
+//  ^^^^ PIB3041
+    This always runs.
+@else
+    This never runs.
+@if $x
+    This runs sometimes.
+@elif 1 == 1
+//    ^^^^^^ PIB3041
+    This runs when the first condition is false.
+@elif $x
+    This never runs.
+@if true or $x
+//  ^^^^^^^^^^ PIB3041
+    This always runs.
+@elif $x
+    This never runs.
+@if $x or true
+//  ^^^^^^^^^^ PIB3041
+    This always runs, whatever `$x` is.
+@else
+    This never runs.
+
+// Must not trigger
+
+@if true
+    Nothing follows this condition.
+@if $x or false
+    This can change.
+@else
+    So can this.

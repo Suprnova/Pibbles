@@ -4,14 +4,15 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// Checks what runs in each block: statements that never run, because one above them always leaves the block, and
-/// options with no text.
+/// Checks what runs in each block: statements that never run, because one above them always leaves the block, branches
+/// under a condition that never changes, and options with no text.
 /// </summary>
 /// <remarks>
 /// A statement always leaves when it's <c>@jump</c>, <c>@end</c> or <c>@return</c>, or an <c>@if</c> with an
 /// <c>@else</c> whose every branch always leaves. That's decided from the statements alone: conditions are never
 /// evaluated, so <c>@if false</c> is treated like any other condition. Choices and variations never count, since a
-/// choice is skipped when no option is available, and a variation's block can be skipped too.
+/// choice is skipped when no option is available, and a variation's block can be skipped too. Conditions made only of
+/// constants are a separate check (<see cref="CheckConditions"/>).
 /// </remarks>
 internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(diagnostics, new ReferenceIndex())
 {
@@ -37,10 +38,37 @@ internal sealed class FlowChecks(List<Diagnostic> diagnostics) : AnalysisPass(di
             foreach (IReadOnlyList<StatementSyntax> inner in SyntaxWalk.BlocksOf(statement))
                 CheckBlock(inner);
 
+            if (statement is IfStatementSyntax @if)
+                CheckConditions(@if);
+
             if (statement is ChoiceSyntax choice)
             {
                 foreach (OptionSyntax option in choice.Options.Where(option => option.Text.Count == 0))
                     Report(DiagnosticCatalog.EmptyOption, new(option.Span.Start, 2));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reports each <c>@if</c> or <c>@elif</c> condition that is always false, and the first that is always true when
+    /// an <c>@elif</c> or <c>@else</c> follows it. Nothing after an always-true condition can run, so the rest are left alone.
+    /// </summary>
+    private void CheckConditions(IfStatementSyntax @if)
+    {
+        ExpressionSyntax[] conditions = [@if.Condition, .. @if.ElseIfs.Select(elseIf => elseIf.Condition)];
+        for (int i = 0; i < conditions.Length; i++)
+        {
+            switch (ConstantValue.FoldCondition(conditions[i]))
+            {
+                case false:
+                    Report(DiagnosticCatalog.ConditionNeverTrue, conditions[i].Span);
+                    break;
+
+                case true:
+                    if (i + 1 < conditions.Length || @if.Else is not null)
+                        Report(DiagnosticCatalog.ConditionAlwaysTrue, conditions[i].Span);
+
+                    return;
             }
         }
     }

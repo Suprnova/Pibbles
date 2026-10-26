@@ -116,6 +116,8 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB3010 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
 | PIB3011 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
 | PIB3012 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
+| PIB3040 | Warning | This condition is never true, so the lines under it never run. | Remove them, or write a condition that can change. |
+| PIB3041 | Warning | This condition is always true, so the branches after it never run. | Remove the branches after it, or write a condition that can change. |
 | PIB5001 | Hint | This line is 4 blocks deep, and more than 3 gets hard to follow. | Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`. |
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
@@ -1063,6 +1065,30 @@ mira: Hi. #id:intro
 ```
 
 Delete the ID and run `pibbles ids` to give the line a new one, or write a different ID by hand.
+
+### PIB3040
+
+**A condition that is never true means the lines under it never run.** It's reported for an `@if` or `@elif` whose condition is only constants: `false`, `not true`, `1 > 2`, `false and $x`. A condition that reads a variable or calls a function can change, so it's not reported, unless `and` settles it: `false and $x` and `$x and false` are never true, whatever `$x` is.
+
+```text
+@if false
+    mira: This never runs.
+```
+
+Remove the lines, or write a condition that can change.
+
+### PIB3041
+
+**A condition that is always true means the branches after it never run.** It's reported for an `@if` or `@elif` whose condition is only constants, such as `true`, `1 == 1` or `$x or true`, when an `@elif` or `@else` follows. An `@if true` with nothing after it isn't reported, since no line is left out.
+
+```text
+@if true
+    mira: This always runs.
+@else
+    mira: This never runs.
+```
+
+Remove the branches after it, or write a condition that can change.
 
 ### PIB5001
 

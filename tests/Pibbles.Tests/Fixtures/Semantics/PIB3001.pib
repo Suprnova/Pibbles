@@ -29,5 +29,5 @@ Without an `@else`, this runs when the condition is false.
 -> Go
     @jump kitchen.door
 After a choice, this runs if no option is available.
-@if false
-    The condition is never evaluated.
+@if $door_open
+    A block that doesn't leave is not reported.

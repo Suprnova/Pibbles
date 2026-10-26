@@ -1,0 +1,32 @@
+// A condition that is never true, so the lines under it never run.
+
+@var $x = true
+
+== kitchen.door
+@if false
+//  ^^^^^ PIB3040
+    This never runs.
+@if 1 > 2
+//  ^^^^^ PIB3040
+    This never runs.
+@if not true
+//  ^^^^^^^^ PIB3040
+    This never runs.
+@if $x
+    This runs sometimes.
+@elif false and $x
+//    ^^^^^^^^^^^^ PIB3040
+    This never runs.
+@if $x and false
+//  ^^^^^^^^^^^^ PIB3040
+    This never runs, whatever `$x` is.
+
+// Must not trigger
+
+@if true
+    A condition that is always true has nothing after it to report.
+@if $x
+    This can change.
+@else
+    So can this.
+This line says {if false}nothing{else}something{/if}.

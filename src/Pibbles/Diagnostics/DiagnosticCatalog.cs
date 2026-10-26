@@ -638,6 +638,20 @@ public static class DiagnosticCatalog
         "This option has no text.",
         help: "Write what the player picks after the `->`.");
 
+    /// <summary>PIB3040: an <c>@if</c> or <c>@elif</c> condition that is always false.</summary>
+    public static DiagnosticDescriptor ConditionNeverTrue { get; } = new(
+        "PIB3040",
+        DiagnosticSeverity.Warning,
+        "This condition is never true, so the lines under it never run.",
+        help: "Remove them, or write a condition that can change.");
+
+    /// <summary>PIB3041: an <c>@if</c> or <c>@elif</c> condition that is always true, with branches after it.</summary>
+    public static DiagnosticDescriptor ConditionAlwaysTrue { get; } = new(
+        "PIB3041",
+        DiagnosticSeverity.Warning,
+        "This condition is always true, so the branches after it never run.",
+        help: "Remove the branches after it, or write a condition that can change.");
+
     /// <summary>PIB3010: a line that needs a line ID and has none.</summary>
     public static DiagnosticDescriptor MissingLineId { get; } = new(
         "PIB3010",
@@ -923,6 +937,8 @@ public static class DiagnosticCatalog
         DivisionByZero,
         NeverRuns,
         EmptyOption,
+        ConditionNeverTrue,
+        ConditionAlwaysTrue,
         MissingLineId,
         DuplicateLineId,
         LineIdIsNodeName,
