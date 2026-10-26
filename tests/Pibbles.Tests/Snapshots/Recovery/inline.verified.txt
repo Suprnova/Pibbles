@@ -64,7 +64,7 @@ Diagnostics:
   PIB1012 6:14 `[/b]` closes markup that was never opened.
   PIB1013 7:7 I can't find the `}` that ends this `{`.
   PIB1017 8:7 I don't know what `{they}` means.
-  PIB1015 9:11 This text comes after a tag, but tags go at the end of the line.
+  PIB1015 9:11 I read `#winning` as a tag, but tags go at the end of the line.
   PIB1016 10:9 An option's text can't contain `{w}`.
   PIB1013 11:7 I can't find the `{/if}` that ends this `{if}`.
   PIB1054 12:1 `mira:` has nothing after it.

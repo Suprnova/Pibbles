@@ -28,6 +28,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 - **The message says what's wrong, in one plain sentence.** Pibbles speaks as "I", and the reader is "you": *I can't find the end of this `[clue]`.*
 - **No compiler words.** Never "token", "parse", "syntax", "statement", "production", "INDENT" or "invalid". "Unexpected" only says something when the message also says what was expected.
 - **Quote the reader's own text,** with their names in it, rather than describing it.
+- **The message is about the marked text and says all of it,** since CI annotations and the editor show only the message and help.
 - **The help is a fix, not a rule.** Where a fix exists, write out the corrected text. "Did you mean" suggestions go here.
 - **One problem, one diagnostic.** A message never depends on another one to make sense.
 
@@ -35,7 +36,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 
 | Code | Default | Message | Help |
 | --- | --- | --- | --- |
-| PIB1001 | Error | This file indents with both tabs and spaces, so I can't tell which block this line belongs to. | Use only spaces or only tabs in a file. Most editors can convert the whole file for you. |
+| PIB1001 | Error | This line indents with tabs, but the file indents with spaces, so I can't tell which block it belongs to. | Use only spaces or only tabs in a file. Most editors can convert the whole file for you. |
 | PIB1002 | Error | I can't tell which block this line belongs to: its indentation doesn't line up with any block above it. | Indent it to match the block it belongs to. |
 | PIB1003 | Error | This line is indented, but the line above it doesn't open a block. | Only a block opener such as `@if`, an option (`->`) or an alternative (`- `) can have indented lines under it. |
 | PIB1004 | Error | I expected indented lines under `@if $door_open`. | Put the lines it controls below it, indented. |
@@ -45,7 +46,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1012 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
 | PIB1013 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
 | PIB1014 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
-| PIB1015 | Error | This text comes after a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
+| PIB1015 | Error | I read `#winning` as a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
 | PIB1016 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |

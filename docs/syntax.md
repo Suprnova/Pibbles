@@ -48,7 +48,7 @@ public readonly record struct SourceLocation(string Path, TextSpan Span, LinePos
 Most people who read a diagnostic are writers, not programmers. Every message follows the [writing rules in the catalog](diagnostics.md#writing-messages): a plain headline, the source line with the problem marked, and a concrete fix.
 
 ```text
-error[PIB1015]: This text comes after a tag, but tags go at the end of the line.
+error[PIB1015]: I read `#winning` as a tag, but tags go at the end of the line.
   --> story/kitchen.pib:12:11
    |
 12 | mira: I'm #winning today.

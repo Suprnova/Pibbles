@@ -88,13 +88,13 @@ public class LineClassifierTests
     [InlineData("@if a\n    x\n@if b\n\ty", "tabs", "spaces")]
     [InlineData("@if a\n\tx\n@if b\n    y", "spaces", "tabs")]
     [InlineData("@if a\n    x\n@if b\n \ty", "tabs and spaces", "spaces")]
-    public void Classify_IndentWithOtherCharacter_ReportsWhatEachUses(string text, string line, string file)
+    public void Classify_IndentWithOtherCharacter_MessageSaysWhatEachUses(string text, string line, string file)
     {
         var source = new SourceText("story.pib", text);
 
         Diagnostic diagnostic = Assert.Single(LineClassifier.Classify(source).Diagnostics);
 
-        Assert.Equal(("PIB1001", $"this line indents with {line}, but the file indents with {file}"), (diagnostic.Code, diagnostic.Label));
+        Assert.Equal(("PIB1001", $"This line indents with {line}, but the file indents with {file}, so I can't tell which block it belongs to."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Fact]

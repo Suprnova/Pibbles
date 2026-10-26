@@ -78,7 +78,7 @@ public sealed class CheckTests : IDisposable
         Check.Run([broken], new(OutputFormat.MSBuild), output);
 
         Assert.Equal(
-            "story/broken.pib(2,5): error PIB1015: This text comes after a tag, but tags go at the end of the line.\n" +
+            "story/broken.pib(2,5): error PIB1015: I read `#winning` as a tag, but tags go at the end of the line.\n" +
             "story/broken.pib(3,6): error PIB1046: I expected a node name after `@jump`.\n",
             output.ToString().ReplaceLineEndings("\n"));
     }

@@ -8,7 +8,7 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor MixedIndentation { get; } = new(
         "PIB1001",
         DiagnosticSeverity.Error,
-        "This file indents with both tabs and spaces, so I can't tell which block this line belongs to.",
+        "This line indents with {0}, but the file indents with {1}, so I can't tell which block it belongs to.",
         "this line indents with {0}, but the file indents with {1}",
         "Use only spaces or only tabs in a file. Most editors can convert the whole file for you.");
 
@@ -100,7 +100,7 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor TextAfterTag { get; } = new(
         "PIB1015",
         DiagnosticSeverity.Error,
-        "This text comes after a tag, but tags go at the end of the line.",
+        "I read `{0}` as a tag, but tags go at the end of the line.",
         "this starts a tag",
         "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
