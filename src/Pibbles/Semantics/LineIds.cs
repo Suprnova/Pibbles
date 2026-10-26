@@ -1,3 +1,4 @@
+using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
@@ -17,8 +18,8 @@ public readonly record struct TextEdit(string Path, int Start, int Length, strin
 }
 
 /// <summary>
-/// Makes line IDs for the lines that need one and don't have it: text lines that show text, options, <c>@call</c>, and
-/// variation block openers. This is what <c>pibbles ids</c> does.
+/// Makes line IDs for the lines that need one: text lines that show text, options, <c>@call</c>, and variation block
+/// openers that have none, or whose ID isn't a valid line ID. This is what <c>pibbles ids</c> does.
 /// </summary>
 public static class LineIds
 {
@@ -26,14 +27,21 @@ public static class LineIds
     private const string LettersAndDigits = Letters + "0123456789";
 
     /// <summary>
-    /// Finds every line that needs an ID and doesn't have one, and makes a new ID for each, written as <c> #id:k7qp2x</c>
-    /// at the end of the line, after its tags and before a trailing comment. Files with syntax errors are left out,
-    /// since a misread line could end in the wrong place.
+    /// Whether <see cref="Assign"/> can edit a file: its only problems, if any, are IDs that aren't valid line IDs. Any other
+    /// syntax error could mean a misread line, whose ID would end up in the wrong place.
+    /// </summary>
+    /// <param name="tree">The file's syntax tree.</param>
+    public static bool CanEdit(SyntaxTree tree) => tree.Diagnostics.All(diagnostic => diagnostic.Descriptor == DiagnosticCatalog.InvalidLineId);
+
+    /// <summary>
+    /// Finds every line that needs an ID, and makes a new one for each. A line with none gets <c> #id:k7qp2x</c> at the end
+    /// of the line, after its tags and before a trailing comment; a line whose ID isn't a valid line ID gets its
+    /// <c>#id</c> tag replaced. Files that <see cref="CanEdit"/> says no to are left out.
     /// </summary>
     /// <param name="compilation">The story.</param>
     /// <param name="random">Where new IDs come from. A new ID never matches an ID, node name or old node name already in the story.</param>
-    /// <returns>One edit for each missing ID, in the order the files were given.</returns>
-    public static IReadOnlyList<TextEdit> AddMissing(Compilation compilation, Random random)
+    /// <returns>One edit for each missing or invalid ID, in the order the files were given. A replacement has a length.</returns>
+    public static IReadOnlyList<TextEdit> Assign(Compilation compilation, Random random)
     {
         HashSet<string> taken =
         [
@@ -44,9 +52,16 @@ public static class LineIds
 
         return
         [
-            .. compilation.SyntaxTrees
-                .Where(tree => tree.Diagnostics.Count == 0)
-                .SelectMany(tree => LineIdSites.In(tree).Where(site => site.Id is null).Select(site => new TextEdit(tree.Source.Path, site.Insert, 0, $" #id:{NewId(random, taken)}"))),
+            .. compilation.SyntaxTrees.Where(CanEdit).SelectMany(tree =>
+            {
+                HashSet<TextSpan> invalid = [.. tree.Diagnostics.Select(diagnostic => diagnostic.Location.Span)];
+                return LineIdSites.In(tree).Select(site => site switch
+                {
+                    { Id: null } => new TextEdit(tree.Source.Path, site.Insert, 0, $" #id:{NewId(random, taken)}"),
+                    { Id: { } id } when invalid.Contains(id.Span) => new TextEdit(tree.Source.Path, id.Span.Start, id.Span.Length, $"#id:{NewId(random, taken)}"),
+                    _ => (TextEdit?)null,
+                }).OfType<TextEdit>();
+            }),
         ];
     }
 

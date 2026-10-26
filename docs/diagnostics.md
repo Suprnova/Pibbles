@@ -66,7 +66,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1048 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
-| PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you. |
+| PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
 | PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`. |
 | PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
@@ -496,7 +496,7 @@ Remove the space: `@if has_item("key")`.
 mira: Locked. #id:K7qp2x
 ```
 
-Fix the ID by hand, or delete the tag and run `pibbles ids` to make a new one.
+Run `pibbles ids` to replace it with a new one, or fix it by hand. If a recording or a `#voice:` tag names the old ID, change it to the new one.
 
 ### PIB1053
 

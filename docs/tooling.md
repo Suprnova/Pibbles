@@ -14,7 +14,7 @@ Packaged as a .NET tool (`dotnet tool install Pibbles.Cli`, which installs the `
 | `pibbles play [root] --start <node>` | Plays the story in the terminal, in the transcript's own layout, with color on a terminal. The writer answers choices by number or `#id`, and types the value of any host function call that nothing stubs. `--set`, `--stub` and `--stubs` seed variables and stub functions, and `--record <file>` writes the session as a transcript ([below](#playing-a-story)). | 3 |
 | `pibbles play [root] --script <file>` | Plays a script and prints its transcript, exactly as the transcript tests compare it, so a writer's reproduction of a bug becomes a test by copying files ([below](#scripts-and-transcripts)). | 3 |
 | `pibbles test [root]` | Replays every transcript under the project's `transcripts/` folder against the story, shows where each one that no longer matches first differs, and ends with a summary. `--update` rewrites the ones that don't match ([below](#testing-transcripts)). | 3 |
-| `pibbles ids [root]` | Adds a line ID to every line that needs one and doesn't have it, in place ([below](#line-ids)) | 2 |
+| `pibbles ids [root]` | Gives every line that needs a line ID and has none, or an invalid one, a new one, in place ([below](#line-ids)) | 2 |
 | `pibbles upgrade [root]` | Rewrites the project's `pibbles.json` in the newest schema, keeping its settings ([project settings](#project-settings)). It finds the project the way `check` does, and a file that's already current is left as it is. | 2 |
 | `pibbles loc update [root]` | Adds missing line IDs as `pibbles ids` does, then regenerates `template.pot` and merges it into every `<locale>.po` | 5 |
 | `pibbles voice script` | Exports a recording script per actor, one row per wording variant | Stretch |
@@ -93,12 +93,13 @@ stub has_item = false
 
 ### Line IDs
 
-`pibbles ids` gives every line that needs a [line ID](localization.md#line-ids) and doesn't have one a new one: text lines that show text, options, `@call` and variation block openers. It finds the project the way `check` does.
+`pibbles ids` gives every line that needs a [line ID](localization.md#line-ids) and has none, or one that isn't valid, a new one: text lines that show text, options, `@call` and variation block openers. It finds the project the way `check` does.
 
 - **An ID goes at the end of its line,** after the line's tags, and before a trailing `//` comment on an `@` line: `@call kitchen.stuck #id:r4hc6v // Back down.` Nothing else in the file changes, including its line endings and any byte-order mark.
+- **An invalid `#id:` tag is replaced** where it stands (PIB1052), and the command prints the old and new ID for each, since a recording or a `#voice:` tag that names the old ID needs the new one. A story with an invalid ID doesn't compile, so no save or translation can hold it.
 - **A new ID is a lowercase letter and five lowercase letters or digits,** and never matches an ID, node name or old node name already in the story.
-- **A file with a PIB1xxx mistake,** the kind found while reading its lines, is left alone and listed, since a misread line could get its ID in the wrong place. The other files still get their IDs, and the command exits 1. Mistakes found later, such as an unknown actor, don't stop it.
-- It prints `Added 27 IDs in 1 file.`, or `Every line already has an ID.`, so running it twice changes nothing the second time.
+- **A file with a PIB1xxx mistake other than a bad `#id:`,** the kind found while reading its lines, is left alone and listed, since a misread line could get its ID in the wrong place. The other files still get their IDs, and the command exits 1. Mistakes found later, such as an unknown actor, don't stop it.
+- It prints `Added 27 IDs in 1 file.` (`Added 26 IDs and replaced 1 in 1 file.`, with the replacements listed under it), or `Every line already has an ID.`, so running it twice changes nothing the second time.
 - **`pibbles init`** gives its example story IDs the same way, so a new project passes `pibbles check --warnaserror`.
 
 The core does the work in `LineIds.AddMissing`, which returns the text to insert and touches no files, so the language server can offer the same as a code action.

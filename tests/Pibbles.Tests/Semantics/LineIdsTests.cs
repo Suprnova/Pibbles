@@ -28,7 +28,7 @@ public partial class LineIdsTests
     private readonly Random random = new(1618);
 
     [Fact]
-    public void AddMissing_Story_AddsIdAtEndOfEachLineThatNeedsOne()
+    public void Assign_Story_AddsIdAtEndOfEachLineThatNeedsOne()
     {
         string expected = """
             @actor mira
@@ -55,17 +55,17 @@ public partial class LineIdsTests
     }
 
     [Fact]
-    public void AddMissing_ResultCompiledAgain_HasNoMissingIdsAndNothingToAdd()
+    public void Assign_ResultCompiledAgain_HasNoMissingIdsAndNothingToAdd()
     {
         string result = AddIds(Story);
         var compilation = Compilation.Create([new SourceText("story.pib", result)]);
 
         Assert.Empty(compilation.Diagnostics);
-        Assert.Empty(LineIds.AddMissing(compilation, random));
+        Assert.Empty(LineIds.Assign(compilation, random));
     }
 
     [Fact]
-    public void AddMissing_WindowsLineEndings_KeepsThem()
+    public void Assign_WindowsLineEndings_KeepsThem()
     {
         string story = Story.ReplaceLineEndings("\r\n");
 
@@ -76,24 +76,58 @@ public partial class LineIdsTests
     }
 
     [Fact]
-    public void AddMissing_IdAlreadyTaken_MakesAnother()
+    public void Assign_IdAlreadyTaken_MakesAnother()
     {
         var story = Compilation.Create([new SourceText("story.pib", "== aaaaaa\nNarration.\n")]);
         var sequence = new SequenceRandom([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]);
 
-        TextEdit edit = Assert.Single(LineIds.AddMissing(story, sequence));
+        TextEdit edit = Assert.Single(LineIds.Assign(story, sequence));
 
         Assert.Equal(" #id:bbbbbb", edit.Text);
     }
 
     [Fact]
-    public void AddMissing_FileWithSyntaxError_LeavesItOut()
+    public void Assign_FileWithSyntaxError_LeavesItOut()
     {
         var story = Compilation.Create([new SourceText("broken.pib", "== a.b\nOne.\n@jump\n"), new SourceText("clean.pib", "== a.c\nTwo.\n")]);
 
-        TextEdit edit = Assert.Single(LineIds.AddMissing(story, random));
+        TextEdit edit = Assert.Single(LineIds.Assign(story, random));
 
         Assert.Equal("clean.pib", edit.Path);
+    }
+
+    [Fact]
+    public void Assign_InvalidId_ReplacesTheTagAndKeepsTheRestOfTheLine()
+    {
+        string result = AddIds("== a.b\n@call a.c #thought #id:K7 // Aside.\n");
+
+        Assert.Equal("== a.b\n@call a.c #thought #id:ID // Aside.\n",NewId().Replace(result, "#id:ID"));
+    }
+
+    [Fact]
+    public void Assign_InvalidIdAndMissingId_FixesBothAndCompilesCleanly()
+    {
+        string result = AddIds("== a.b\nOne. #id:K7\nTwo.\n");
+        var compilation = Compilation.Create([new SourceText("story.pib", result)]);
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Empty(LineIds.Assign(compilation, random));
+    }
+
+    [Fact]
+    public void Assign_InvalidIdInFileWithAnotherSyntaxError_LeavesItOut()
+    {
+        var story = Compilation.Create([new SourceText("broken.pib", "== a.b\nOne. #id:K7\n@jump\n")]);
+
+        Assert.Empty(LineIds.Assign(story, random));
+    }
+
+    [Fact]
+    public void Apply_ReplacementAndInsertion_UsePositionsInTheOriginalText()
+    {
+        string result = TextEdit.Apply("abc def", [new("f.pib", 4, 3, "X"), new("f.pib", 2, 0, "-"), new("f.pib", 0, 1, "YY")]);
+
+        Assert.Equal("YYb-c X", result);
     }
 
     [Fact]
@@ -103,7 +137,7 @@ public partial class LineIdsTests
     private string AddIds(string text)
     {
         var compilation = Compilation.Create([new SourceText("story.pib", text)]);
-        return TextEdit.Apply(text, LineIds.AddMissing(compilation, random));
+        return TextEdit.Apply(text, LineIds.Assign(compilation, random));
     }
 
     /// <summary>A generated line ID: every ID but the one the story already had.</summary>

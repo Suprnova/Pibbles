@@ -257,7 +257,7 @@ public static class DiagnosticCatalog
         "PIB1052",
         DiagnosticSeverity.Error,
         "`{0}` isn't a line ID I can use.",
-        help: "Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` makes them for you.");
+        help: "Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one.");
 
     /// <summary>PIB1053: a tag on a line that doesn't take it.</summary>
     /// <remarks>Arguments: the tag, the kind of line it's on, and what that line takes instead.</remarks>

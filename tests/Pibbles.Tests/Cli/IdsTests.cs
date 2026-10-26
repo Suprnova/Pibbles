@@ -63,6 +63,30 @@ public sealed class IdsTests : IDisposable
     }
 
     [Fact]
+    public void Run_InvalidId_ReplacesItAndListsTheOldAndNewId()
+    {
+        string file = Path.Combine(story, "kitchen.pib");
+        File.WriteAllText(file, "== kitchen.door\nLocked. #id:K7\nStill locked.\n");
+
+        int exitCode = Ids.Run(".", root.FullName, random, output, error);
+
+        Assert.Equal(Check.Passed, exitCode);
+        Assert.Matches("^== kitchen.door\nLocked. #id:[a-z0-9]{6}\nStill locked. #id:[a-z0-9]{6}\n$", File.ReadAllText(file));
+        Assert.Matches("^Added 1 ID and replaced 1 ID in 1 file.\nAnything that names a replaced ID, .*:\n  story/kitchen.pib:2  #id:K7 -> #id:[a-z0-9]{6}\n$", output.ToString().ReplaceLineEndings("\n"));
+    }
+
+    [Fact]
+    public void Run_InvalidIdInFileWithAnotherMistake_LeavesItAloneAndFails()
+    {
+        string broken = Path.Combine(story, "broken.pib");
+        File.WriteAllText(broken, "== kitchen.door\nLocked. #id:K7\n@jump\n");
+
+        int exitCode = Ids.Run(".", root.FullName, random, output, error);
+
+        Assert.Equal((Check.Failed, "== kitchen.door\nLocked. #id:K7\n@jump\n"), (exitCode, File.ReadAllText(broken)));
+    }
+
+    [Fact]
     public void Run_NoStoryFolder_CouldNotRun()
     {
         Directory.Delete(story);
