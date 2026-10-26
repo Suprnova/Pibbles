@@ -1,0 +1,9 @@
+// Two timed pauses side by side, which could be one.
+
+== kitchen.door
+This line pauses{w 0.2}{w 0.3} in two steps.
+//              ^^^^^^^^^^^^^^ PIB5018
+
+// Must not trigger
+
+This line pauses{w 0.2} twice{w 0.3} with text between.

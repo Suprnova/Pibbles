@@ -127,6 +127,8 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
+| PIB5017 | Hint | This pause does nothing, because the `{p}` after it already waits. | Remove it. |
+| PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{w 0.5}`. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
 | PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
@@ -1126,14 +1128,13 @@ Remove the pose-only line nobody sees.
 
 ### PIB5011
 
-**A pause that does nothing, or two that could be one:** `{w}` at the very end of a line, where the line already waits for a click; `{w}` just before `{p}`, which already waits; and two timed pauses side by side. A timed pause at the end of a line is fine, since it still delays auto mode.
+**A pause at the very end of a line does nothing,** since the line already waits for a click. A timed pause at the end of a line is fine, since it still delays auto mode.
 
 ```text
 This line waits for a click that happens anyway.{w}
-This line pauses{w 0.2}{w 0.3} in two steps.
 ```
 
-Remove the extra `{w}`, or write one pause: `{w 0.5}`.
+Remove the `{w}`.
 
 ### PIB5012
 
@@ -1190,6 +1191,26 @@ mira (happy): The pose on this line changes nothing.
 ```
 
 Leave the pose out: `mira: …`.
+
+### PIB5017
+
+**A pause just before `{p}` does nothing,** since the page break already waits.
+
+```text
+This line waits twice here.{w}{p}New page.
+```
+
+Remove the `{w}`.
+
+### PIB5018
+
+**Two timed pauses side by side could be one.**
+
+```text
+This line pauses{w 0.2}{w 0.3} in two steps.
+```
+
+Write one pause: `{w 0.5}`. When the durations aren't plain numbers, the message is all it says.
 
 ### PIB5020
 

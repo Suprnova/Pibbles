@@ -709,13 +709,27 @@ public static class DiagnosticCatalog
         "This pose change does nothing, because {0} already has that pose.",
         help: "Leave the pose out of this line.");
 
-    /// <summary>PIB5011: a pause that does nothing, or two that could be one.</summary>
-    /// <remarks>Arguments: what's wrong with the pause, and the fix.</remarks>
-    public static DiagnosticDescriptor RedundantPause { get; } = new(
+    /// <summary>PIB5011: <c>{w}</c> at the very end of a line.</summary>
+    public static DiagnosticDescriptor PauseAtLineEnd { get; } = new(
         "PIB5011",
         DiagnosticSeverity.Hint,
-        "This pause {0}.",
-        help: "{1}");
+        "This pause does nothing, because the end of the line already waits for a click.",
+        help: "Remove it.");
+
+    /// <summary>PIB5017: <c>{w}</c> just before <c>{p}</c>.</summary>
+    public static DiagnosticDescriptor PauseBeforePageBreak { get; } = new(
+        "PIB5017",
+        DiagnosticSeverity.Hint,
+        "This pause does nothing, because the `{{p}}` after it already waits.",
+        help: "Remove it.");
+
+    /// <summary>PIB5018: two timed pauses side by side.</summary>
+    /// <remarks>Argument: the two durations added up, or <see langword="null"/> when that isn't known, which leaves out the help.</remarks>
+    public static DiagnosticDescriptor AdjacentPauses { get; } = new(
+        "PIB5018",
+        DiagnosticSeverity.Hint,
+        "This pause comes right after another one, so the two could be one.",
+        help: "Write one pause: `{{w {0}}}`.");
 
     /// <summary>PIB5012: a markup span that does nothing.</summary>
     /// <remarks>Arguments: the markup's name, what's wrong with the span, and the fix.</remarks>
@@ -894,7 +908,9 @@ public static class DiagnosticCatalog
         RepeatedColor,
         UnseenPoseChange,
         RepeatedPose,
-        RedundantPause,
+        PauseAtLineEnd,
+        PauseBeforePageBreak,
+        AdjacentPauses,
         RedundantMarkup,
         RedundantCondition,
         RedundantReturn,

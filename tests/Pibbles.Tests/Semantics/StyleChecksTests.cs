@@ -8,7 +8,7 @@ namespace Pibbles.Tests.Semantics;
 /// <summary>What the style rules' fixtures can't show: the fixes they suggest, their settings, and <c>// pibbles-ignore</c>.</summary>
 public class StyleChecksTests
 {
-    public static TheoryData<string, string, string> Fixes { get; } = new()
+    public static TheoryData<string, string, string?> Fixes { get; } = new()
     {
         { "@if $a == true\n    Hi.\n", "PIB5020", "Write `$a`." },
         { "@if $a != false\n    Hi.\n", "PIB5020", "Write `$a`." },
@@ -16,16 +16,16 @@ public class StyleChecksTests
         { "@if true != $a\n    Hi.\n", "PIB5020", "Write `not $a`." },
         { "@if ($a and $a) == false\n    Hi.\n", "PIB5020", "Write `not ($a and $a)`." },
         { "@set $n = $n - 2 * 3\n", "PIB5021", "Write `@set $n -= 2 * 3`." },
-        { "Wait.{w 0.2}{w 300ms} Done.\n", "PIB5011", "Write one pause: `{w 0.5}`." },
-        { "Wait.{w 0.10}{w 0.20} Done.\n", "PIB5011", "Write one pause: `{w 0.3}`." },
-        { "Wait.{w 0.1}{w 0.2} Done.\n", "PIB5011", "Write one pause: `{w 0.3}`." },
-        { "Wait.{w}{p}Done.\n", "PIB5011", "Remove it." },
-        { "Wait.{w 79228162514264337593543950335}{w 1} Done.\n", "PIB5011", "Write them as one pause." },
+        { "Wait.{w 0.2}{w 300ms} Done.\n", "PIB5018", "Write one pause: `{w 0.5}`." },
+        { "Wait.{w 0.10}{w 0.20} Done.\n", "PIB5018", "Write one pause: `{w 0.3}`." },
+        { "Wait.{w 0.1}{w 0.2} Done.\n", "PIB5018", "Write one pause: `{w 0.3}`." },
+        { "Wait.{w}{p}Done.\n", "PIB5017", "Remove it." },
+        { "Wait.{w 79228162514264337593543950335}{w 1} Done.\n", "PIB5018", null },
     };
 
     [Theory]
     [MemberData(nameof(Fixes))]
-    public void Create_StyleProblem_SuggestsFix(string body, string code, string help)
+    public void Create_StyleProblem_SuggestsFix(string body, string code, string? help)
     {
         var source = new SourceText("story.pib", $"@var $a = true\n@var $n = 0\n\n== a.b\n{body}");
 

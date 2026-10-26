@@ -62,11 +62,11 @@ internal sealed partial class StyleChecks
             unseen[actor] = line;
     }
 
-    /// <summary>PIB5011: <c>{w}</c> at the end of a line or before <c>{p}</c>, and timed pauses side by side.</summary>
+    /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{p}</c>, and timed pauses side by side.</summary>
     private void CheckPauses(IReadOnlyList<InlineSyntax> content)
     {
         if (content is [.., PauseSyntax { Duration: null } last])
-            Report(DiagnosticCatalog.RedundantPause, last.Span, "does nothing, because the end of the line already waits for a click", "Remove it.");
+            Report(DiagnosticCatalog.PauseAtLineEnd, last.Span);
 
         foreach (IReadOnlyList<InlineSyntax> run in SyntaxWalk.Runs(content))
         {
@@ -75,21 +75,21 @@ internal sealed partial class StyleChecks
                 switch (run[i], run[i + 1])
                 {
                     case (PauseSyntax { Duration: null } pause, PageBreakSyntax):
-                        Report(DiagnosticCatalog.RedundantPause, pause.Span, "does nothing, because the `{p}` after it already waits", "Remove it.");
+                        Report(DiagnosticCatalog.PauseBeforePageBreak, pause.Span);
                         break;
 
                     case (PauseSyntax { Duration: { } first } pause, PauseSyntax { Duration: { } second } next):
-                        Report(DiagnosticCatalog.RedundantPause, new(pause.Span.Start, next.Span.End - pause.Span.Start), "comes right after another one, so the two could be one", CombinedPause(first, second));
+                        ReportWithOptionalHelp(DiagnosticCatalog.AdjacentPauses, new(pause.Span.Start, next.Span.End - pause.Span.Start), CombinedPause(first, second));
                         break;
                 }
             }
         }
     }
 
-    private static string CombinedPause(ExpressionSyntax first, ExpressionSyntax second) =>
+    private static string? CombinedPause(ExpressionSyntax first, ExpressionSyntax second) =>
         Seconds(first) is { } a && Seconds(second) is { } b && ConstantValue.Add(a, b) is { } sum
-            ? $"Write one pause: `{{w {sum.ToString("G29", CultureInfo.InvariantCulture)}}}`."
-            : "Write them as one pause.";
+            ? sum.ToString("G29", CultureInfo.InvariantCulture)
+            : null;
 
     private static decimal? Seconds(ExpressionSyntax duration) => duration switch
     {
