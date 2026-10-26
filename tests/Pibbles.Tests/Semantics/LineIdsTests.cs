@@ -81,9 +81,9 @@ public partial class LineIdsTests
         var story = Compilation.Create([new SourceText("story.pib", "== aaaaaa\nNarration.\n")]);
         var sequence = new SequenceRandom([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]);
 
-        TextInsertion insertion = Assert.Single(LineIds.AddMissing(story, sequence));
+        TextEdit edit = Assert.Single(LineIds.AddMissing(story, sequence));
 
-        Assert.Equal(" #id:bbbbbb", insertion.Text);
+        Assert.Equal(" #id:bbbbbb", edit.Text);
     }
 
     [Fact]
@@ -91,9 +91,9 @@ public partial class LineIdsTests
     {
         var story = Compilation.Create([new SourceText("broken.pib", "== a.b\nOne.\n@jump\n"), new SourceText("clean.pib", "== a.c\nTwo.\n")]);
 
-        TextInsertion insertion = Assert.Single(LineIds.AddMissing(story, random));
+        TextEdit edit = Assert.Single(LineIds.AddMissing(story, random));
 
-        Assert.Equal("clean.pib", insertion.Path);
+        Assert.Equal("clean.pib", edit.Path);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public partial class LineIdsTests
     private string AddIds(string text)
     {
         var compilation = Compilation.Create([new SourceText("story.pib", text)]);
-        return TextInsertion.Apply(text, LineIds.AddMissing(compilation, random));
+        return TextEdit.Apply(text, LineIds.AddMissing(compilation, random));
     }
 
     /// <summary>A generated line ID: every ID but the one the story already had.</summary>

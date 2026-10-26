@@ -19,11 +19,11 @@ internal static class Ids
             return Check.CouldNotRun;
 
         var compilation = Compilation.Create(sources);
-        IGrouping<string, TextInsertion>[] files = [.. LineIds.AddMissing(compilation, random).GroupBy(insertion => insertion.Path)];
-        foreach (IGrouping<string, TextInsertion> file in files)
+        IGrouping<string, TextEdit>[] files = [.. LineIds.AddMissing(compilation, random).GroupBy(edit => edit.Path)];
+        foreach (IGrouping<string, TextEdit> file in files)
         {
             SourceText source = sources.First(source => source.Path == file.Key);
-            Write(Path.GetFullPath(file.Key, currentDirectory), TextInsertion.Apply(source.Text, file));
+            Write(Path.GetFullPath(file.Key, currentDirectory), TextEdit.Apply(source.Text, file));
         }
 
         int added = files.Sum(file => file.Count());
@@ -46,8 +46,8 @@ internal static class Ids
     public static IReadOnlyList<(string File, string Text)> AddTo(IReadOnlyList<(string File, string Text)> files, Random random)
     {
         var compilation = Compilation.Create(files.Select(file => new SourceText(file.File, file.Text)));
-        ILookup<string, TextInsertion> insertions = LineIds.AddMissing(compilation, random).ToLookup(insertion => insertion.Path);
-        return [.. files.Select(file => (file.File, TextInsertion.Apply(file.Text, insertions[file.File])))];
+        ILookup<string, TextEdit> edits = LineIds.AddMissing(compilation, random).ToLookup(edit => edit.Path);
+        return [.. files.Select(file => (file.File, TextEdit.Apply(file.Text, edits[file.File])))];
     }
 
     /// <summary>Writes a file, keeping the byte-order mark it had, if any.</summary>

@@ -2,17 +2,18 @@ using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
 
-/// <summary>Text to insert into a source file at a position.</summary>
+/// <summary>A change to a source file: the text at a position is replaced, or, with no length, text is inserted.</summary>
 /// <param name="Path">The file's path, as given in its <see cref="SourceText"/>.</param>
-/// <param name="Position">Where the text goes, as a character position in the file.</param>
-/// <param name="Text">The text to insert.</param>
-public readonly record struct TextInsertion(string Path, int Position, string Text)
+/// <param name="Start">Where the change starts, as a character position in the file.</param>
+/// <param name="Length">How many characters it replaces, or 0 to insert.</param>
+/// <param name="Text">The text that goes in.</param>
+public readonly record struct TextEdit(string Path, int Start, int Length, string Text)
 {
-    /// <summary>Inserts every insertion for one file into its text. Positions refer to the text before any insertion.</summary>
+    /// <summary>Makes every edit for one file in its text. Positions refer to the text before any edit.</summary>
     /// <param name="text">The file's text.</param>
-    /// <param name="insertions">The insertions for that file.</param>
-    public static string Apply(string text, IEnumerable<TextInsertion> insertions) =>
-        insertions.OrderByDescending(insertion => insertion.Position).Aggregate(text, (result, insertion) => result.Insert(insertion.Position, insertion.Text));
+    /// <param name="edits">The edits for that file, which don't overlap.</param>
+    public static string Apply(string text, IEnumerable<TextEdit> edits) =>
+        edits.OrderByDescending(edit => edit.Start).Aggregate(text, (result, edit) => result.Remove(edit.Start, edit.Length).Insert(edit.Start, edit.Text));
 }
 
 /// <summary>
@@ -31,8 +32,8 @@ public static class LineIds
     /// </summary>
     /// <param name="compilation">The story.</param>
     /// <param name="random">Where new IDs come from. A new ID never matches an ID, node name or old node name already in the story.</param>
-    /// <returns>One insertion for each missing ID, in the order the files were given.</returns>
-    public static IReadOnlyList<TextInsertion> AddMissing(Compilation compilation, Random random)
+    /// <returns>One edit for each missing ID, in the order the files were given.</returns>
+    public static IReadOnlyList<TextEdit> AddMissing(Compilation compilation, Random random)
     {
         HashSet<string> taken =
         [
@@ -45,7 +46,7 @@ public static class LineIds
         [
             .. compilation.SyntaxTrees
                 .Where(tree => tree.Diagnostics.Count == 0)
-                .SelectMany(tree => LineIdSites.In(tree).Where(site => site.Id is null).Select(site => new TextInsertion(tree.Source.Path, site.Insert, $" #id:{NewId(random, taken)}"))),
+                .SelectMany(tree => LineIdSites.In(tree).Where(site => site.Id is null).Select(site => new TextEdit(tree.Source.Path, site.Insert, 0, $" #id:{NewId(random, taken)}"))),
         ];
     }
 
