@@ -206,13 +206,6 @@ public static class DiagnosticCatalog
         "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
         help: "Write `{1}`.");
 
-    /// <summary>PIB1044: a display name holding <c>[</c>, <c>{</c> or <c>\</c>.</summary>
-    public static DiagnosticDescriptor InvalidDisplayName { get; } = new(
-        "PIB1044",
-        DiagnosticSeverity.Error,
-        @"A display name can't contain `[`, `{{` or `\`.",
-        help: "Write the name as plain text.");
-
     /// <summary>PIB1045: a dotted or relative name where a single identifier is being declared.</summary>
     /// <remarks>Argument: the name as written.</remarks>
     public static DiagnosticDescriptor DottedName { get; } = new(
@@ -831,7 +824,6 @@ public static class DiagnosticCatalog
         UnterminatedString,
         MalformedNumber,
         MalformedTagName,
-        InvalidDisplayName,
         DottedName,
         Missing,
         NumberTooLarge,

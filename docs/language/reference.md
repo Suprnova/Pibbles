@@ -97,7 +97,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 | Declaration | Meaning |
 | --- | --- |
-| `@actor id` | A character. `name:` is the display name, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
+| `@actor id` | A character. `name:` is the display name, plain text in which every character counts, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
 | `@enum name: a, b, c` | A closed set of values. Use it for positions, rooms, sound IDs, anything that should be typo-proof. |
 | `@var $name [: type] = literal` | A variable, saved with the game. The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
 | `@command name(params) [inline] [waits]` | A host instruction. `inline` allows it inside a line's text ([below](#commands)). `waits` means the story waits for it to finish by default. |

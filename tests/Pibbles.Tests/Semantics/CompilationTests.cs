@@ -57,6 +57,15 @@ public class CompilationTests
     }
 
     [Fact]
+    public void Create_DisplayNameWithBracketBraceAndBackslash_KeepsThemAsText()
+    {
+        var compilation = Compile("@actor mira\n    name: Mira [the {brave}] \\ #1\n");
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Equal(@"Mira [the {brave}] \ #1", compilation.Symbols.Actors["mira"].DisplayName);
+    }
+
+    [Fact]
     public void Create_SeveralFiles_OrdersDiagnosticsByFileThenPosition()
     {
         var compilation = WithoutStyle.Compile(

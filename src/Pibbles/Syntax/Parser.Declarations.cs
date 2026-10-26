@@ -108,8 +108,6 @@ internal sealed partial class Parser
         var value = new TextSpan(valueStart, inlineEnd - valueStart);
         if (value.Length == 0)
             Fail(DiagnosticCatalog.Missing, new(colon + 1, 0), "a display name", "name:");
-        else if (TextOf(value).AsSpan().IndexOfAny("[{\\") >= 0)
-            Fail(DiagnosticCatalog.InvalidDisplayName, value);
 
         displayName = TextOf(value);
         displayNameSpan = value;

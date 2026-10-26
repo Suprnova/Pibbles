@@ -60,7 +60,6 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
-| PIB1044 | Error | A display name can't contain `[`, `{` or `\`. | Write the name as plain text. |
 | PIB1045 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1047 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
@@ -428,17 +427,6 @@ Write `@wait 2s`.
 ```
 
 Write `#show_disabled`, and declare it that way with `@tag`.
-
-### PIB1044
-
-**An actor's display name, after `name:`, is plain text.** `[`, `{` and `\` are reserved there, so that display names can hold markup in a later version without changing any story. Everything else, including `#`, `//` and quotes, is part of the name.
-
-```text
-@actor mira
-    name: Mira [the brave]
-```
-
-Write the name as plain text: `name: Mira the Brave`.
 
 ### PIB1045
 

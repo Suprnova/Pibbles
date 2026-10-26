@@ -59,7 +59,6 @@ Comments:
   1:1-1:67 "Broken variations and declarations still leave a complete tree."
 Diagnostics:
   PIB1033 3:12 I didn't expect a `:` on this `@actor` line.
-  PIB1044 4:11 A display name can't contain `[`, `{` or `\`.
   PIB1045 5:7 I can't use `rooms.kitchen` as a name here, because only node names can have dots.
   PIB1031 8:5 A `@cycle:` block can only hold alternatives.
   PIB1032 12:7 `@if` can't start an alternative.
