@@ -99,7 +99,7 @@ internal sealed partial class StyleChecks
     };
 
     /// <summary>
-    /// PIB5012: empty spans, a span inside one just like it, and two like spans side by side. Spans are alike when they
+    /// PIB5012, PIB5019 and PIB5050: empty spans, a span inside one just like it, and two like spans side by side. Spans are alike when they
     /// have the same name and the same arguments.
     /// </summary>
     private void CheckMarkup(IReadOnlyList<InlineSyntax> run, IReadOnlySet<string> outer)
@@ -117,11 +117,11 @@ internal sealed partial class StyleChecks
             string name = markup.Name.Text;
             string key = MarkupKey(markup);
             if (markup.Content.Count == 0)
-                Report(DiagnosticCatalog.RedundantMarkup, Opening(markup), name, "is empty", "Remove it.");
+                Report(DiagnosticCatalog.EmptyMarkup, Opening(markup), name);
             else if (outer.Contains(key))
-                Report(DiagnosticCatalog.RedundantMarkup, Opening(markup), name, "is inside another one just like it, so it changes nothing", $"Remove the inner `[{name}]` and its `[/{name}]`.");
+                Report(DiagnosticCatalog.NestedMarkup, Opening(markup), name);
             else if (i > 0 && run[i - 1] is MarkupSyntax previous && MarkupKey(previous) == key)
-                Report(DiagnosticCatalog.RedundantMarkup, Opening(markup), name, "starts right where one just like it ends, so the two could be one", "Join them into one span.");
+                Report(DiagnosticCatalog.AdjacentMarkup, Opening(markup), name);
 
             CheckMarkup(markup.Content, new HashSet<string>(outer) { key });
         }

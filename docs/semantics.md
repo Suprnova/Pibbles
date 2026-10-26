@@ -271,14 +271,14 @@ This line waits once here.{p}New page.
 This line pauses{w 0.5} in one step.
 ```
 
-#### PIB5012 – Redundant markup ⚡
+#### PIB5012, PIB5019 and PIB5050 – Redundant markup ⚡
 
 **Level:** hint
 
 Flags markup that does nothing:
-- empty spans
-- a span nested inside one just like it
-- two like spans side by side, which could be one
+- PIB5012: empty spans
+- PIB5019: a span nested inside one just like it
+- PIB5050: two like spans side by side, which could be one
 
 Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't flagged.
 

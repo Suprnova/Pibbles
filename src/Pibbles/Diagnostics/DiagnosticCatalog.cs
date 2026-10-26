@@ -731,13 +731,29 @@ public static class DiagnosticCatalog
         "This pause comes right after another one, so the two could be one.",
         help: "Write one pause: `{{w {0}}}`.");
 
-    /// <summary>PIB5012: a markup span that does nothing.</summary>
-    /// <remarks>Arguments: the markup's name, what's wrong with the span, and the fix.</remarks>
-    public static DiagnosticDescriptor RedundantMarkup { get; } = new(
+    /// <summary>PIB5012: a markup span with nothing inside it.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor EmptyMarkup { get; } = new(
         "PIB5012",
         DiagnosticSeverity.Hint,
-        "This `[{0}]` {1}.",
-        help: "{2}");
+        "This `[{0}]` is empty.",
+        help: "Remove it.");
+
+    /// <summary>PIB5019: a markup span inside another one just like it.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor NestedMarkup { get; } = new(
+        "PIB5019",
+        DiagnosticSeverity.Hint,
+        "This `[{0}]` is inside another one just like it, so it changes nothing.",
+        help: "Remove the inner `[{0}]` and its `[/{0}]`.");
+
+    /// <summary>PIB5050: a markup span that starts right where one just like it ends.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor AdjacentMarkup { get; } = new(
+        "PIB5050",
+        DiagnosticSeverity.Hint,
+        "This `[{0}]` starts right where one just like it ends, so the two could be one.",
+        help: "Join them into one span.");
 
     /// <summary>PIB5013: an <c>@if</c> or <c>{if}</c> whose branches are all the same.</summary>
     /// <remarks>Argument: <c>@if</c> or <c>{if}</c>.</remarks>
@@ -911,7 +927,9 @@ public static class DiagnosticCatalog
         PauseAtLineEnd,
         PauseBeforePageBreak,
         AdjacentPauses,
-        RedundantMarkup,
+        EmptyMarkup,
+        NestedMarkup,
+        AdjacentMarkup,
         RedundantCondition,
         RedundantReturn,
         RedundantPrefixDot,

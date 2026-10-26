@@ -1,0 +1,10 @@
+// A markup span inside another one just like it.
+
+== kitchen.door
+This line is [b]bold and [b]still just bold[/b][/b].
+//                       ^^^ PIB5019
+
+// Must not trigger
+
+This line is [b]bold and [i]italic[/i][/b].
+This line is [color "#ff0000"]red and [color "#0000ff"]blue[/color][/color].

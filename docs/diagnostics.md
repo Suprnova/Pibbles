@@ -129,6 +129,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
 | PIB5017 | Hint | This pause does nothing, because the `{p}` after it already waits. | Remove it. |
 | PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{w 0.5}`. |
+| PIB5019 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
 | PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
@@ -136,6 +137,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5032 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
 | PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
+| PIB5050 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
 
 The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
 
@@ -1138,13 +1140,13 @@ Remove the `{w}`.
 
 ### PIB5012
 
-**Markup that does nothing:** an empty span, a span inside one just like it, and two like spans side by side, which could be one. Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't reported.
+**An empty span does nothing,** since there is no text for it to style.
 
 ```text
-This line is [b]split into[/b][b] two spans[/b].
+This line has an empty span: [b][/b]
 ```
 
-Remove the empty or inner span, or join the two: `[b]one span[/b]`.
+Remove the span.
 
 ### PIB5013
 
@@ -1211,6 +1213,16 @@ This line pauses{w 0.2}{w 0.3} in two steps.
 ```
 
 Write one pause: `{w 0.5}`. When the durations aren't plain numbers, the message is all it says.
+
+### PIB5019
+
+**A span inside another one just like it changes nothing.** Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't reported.
+
+```text
+This line is [b]bold and [b]still just bold[/b][/b].
+```
+
+Remove the inner span and its closing tag.
 
 ### PIB5020
 
@@ -1288,6 +1300,16 @@ Write `mira (happy):` and `mira:`.
 ```
 
 Remove the `@var`, or use the variable.
+
+### PIB5050
+
+**Two like spans side by side could be one.** Spans are alike when they have the same name and the same arguments.
+
+```text
+This line is [b]split into[/b][b] two spans[/b].
+```
+
+Join them into one span: `[b]one span[/b]`.
 
 ## With extensions
 

@@ -1,0 +1,9 @@
+// Two like markup spans side by side, which could be one.
+
+== kitchen.door
+This line is [b]split into[/b][b] two spans[/b].
+//                            ^^^ PIB5050
+
+// Must not trigger
+
+This line is [b]bold[/b] and then [b]bold again[/b].
