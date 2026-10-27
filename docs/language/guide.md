@@ -43,7 +43,7 @@ So does this one.
 This line belongs to the second node.
 ```
 
-- Names use lowercase letters, numbers and underscores. Dots let you group related nodes (`kitchen.fridge`, `kitchen.door`). A file can [set a prefix](#shorter-names-with-a-prefix) so you don't have to repeat the group name.
+- Names use lowercase letters, numbers and underscores. Dots let you group related nodes and variables (`kitchen.fridge`, `$kitchen.door_open`). A file can [set a prefix](#shorter-names-with-a-prefix) so you don't have to repeat the group name.
 - Every name must be unique across the whole story.
 - The game starts a node when something happens, such as the player walking into a room or clicking an object. When a node runs out of lines, the conversation ends.
 
@@ -113,6 +113,7 @@ Variables remember things: whether the player found a key, how many times they t
 - A variable holds yes/no (`true` or `false`), a number, or text (in quotes).
 - `+=` and `-=` add to or subtract from a number. `+=` also adds text to the end of a text variable: `@set $title += " the Brave"`.
 - Every variable is listed in the cast list first, with its starting value. Pibbles catches typos like `$has_kye`.
+- A variable's name can have dots to group it, like a node's: `$kitchen.door_open` is the kitchen's `door_open`. A [prefix](#shorter-names-with-a-prefix) saves repeating the group name.
 
 To show a variable in a line, put it in curly braces:
 
@@ -443,16 +444,17 @@ story/
 
 - **Everything is shared.** A node in one file can jump to or call a node in any other file, and every file can use every character, variable and command, wherever it was declared. There's nothing to "include" or "import".
 - **Files are just for you.** Moving a node to another file, or renaming a file or folder, changes nothing for the game or for other files, as long as the node's full name stays the same ([prefixes](#shorter-names-with-a-prefix)).
-- **Declarations can sit next to the story that uses them.** A room's file can declare that room's variables at the top, above its first node. They still work everywhere.
-- **Names are shared too,** so every node name must be unique across all files. Starting node names with the room or chapter (`kitchen.`, `cellar.`) keeps them apart. If two files use the same name, Pibbles points out both places.
+- **Declarations can sit next to the story that uses them.** A room's file can declare that room's variables at the top, above its first node. They still work everywhere, and a [prefix](#shorter-names-with-a-prefix) gives them the room's name, so two rooms can each have their own `$.attempts`.
+- **Names are shared too,** so every node and variable name must be unique across all files. Starting them with the room or chapter (`kitchen.`, `cellar.`) keeps them apart. If two files use the same name, Pibbles points out both places.
 
 ```pib
 // rooms/kitchen.pib
-// A variable only the kitchen uses, declared above the first node.
-@var $drawer_open = false
+@prefix kitchen
+// The kitchen's own variable, declared above the first node. Its full name is $kitchen.drawer_open.
+@var $.drawer_open = false
 
-== kitchen.drawer
-@set $drawer_open = true
+== .drawer
+@set $.drawer_open = true
 This node continues in a node from another file.
 @jump cellar.stairs
 ```
@@ -464,9 +466,11 @@ When most nodes in a file start with the same group name, put a `@prefix` line a
 ```pib
 // rooms/kitchen.pib
 @prefix kitchen
+@var $.attempts = 0
 
 == .drawer
 This node's full name is kitchen.drawer.
+@set $.attempts += 1
 @jump .window
 
 == .window
@@ -477,9 +481,10 @@ This node's full name is kitchen.window.
 This node's full name is common.stuck, because it doesn't start with a dot.
 ```
 
-- **Only names that start with a dot get the prefix.** Every other name is already complete, so `@jump cellar.stairs` still reaches the cellar, and `kitchen.window` works as well as `.window`.
-- **The game and error messages always use the full name,** like `kitchen.drawer`.
-- **The prefix is part of the name.** Changing the prefix, or moving a dot-named node into a file with a different prefix, renames the node. To move a node without renaming it, write its full name in the header. Otherwise, see [Renaming a node](#renaming-a-node).
+- **Only names that start with a dot get the prefix.** Every other name is already complete, so `@jump cellar.stairs` still reaches the cellar, and `kitchen.window` works as well as `.window`. Variables follow the same rule: `$.attempts` is `$kitchen.attempts`, and a plain `$attempts` is a different, story-wide variable.
+- **The dot stands for the prefix. It doesn't mean "local".** `$.attempts` is the ordinary variable `$kitchen.attempts`: any file can reach it by that name, and every file with the prefix `kitchen` shares it, the way they share `.window`. The cellar's `$.attempts` is a different variable.
+- **The game and error messages always use the full name,** like `kitchen.drawer` and `kitchen.attempts`.
+- **The prefix is part of the name.** Changing the prefix, or moving a dot-named node into a file with a different prefix, renames the node. To move a node without renaming it, write its full name in the header. Otherwise, see [Renaming a node](#renaming-a-node). A variable works the same way: changing the prefix renames it, and a game saved under the old name starts it again from its starting value. A moved node that uses `$.attempts` reads the new prefix's `$.attempts`, so write `$kitchen.attempts` to keep reading the kitchen's.
 
 ## Renaming a node
 
@@ -508,7 +513,7 @@ This node used to be called kitchen.door.
 | Write | Meaning |
 | --- | --- |
 | `== area.name` | Start a node |
-| `@prefix area` then `== .name` | At the top of a file: `.name` means `area.name` |
+| `@prefix area` then `== .name` | At the top of a file: `.name` means `area.name`, and `$.name` means `$area.name` |
 | `== area.name #was:area.old_name` | Rename a node without breaking the game or old saves |
 | `mira: text` | Mira says a line |
 | `mira (happy): text` | Change Mira's pose, then she speaks |
