@@ -27,6 +27,17 @@ public class ParserTests
         Assert.Equal(expected, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
+    [Fact]
+    public void Parse_AtWait_IsAnOrdinaryCommand()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@wait 1s\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Empty(tree.Diagnostics);
+        Assert.Equal("wait", Assert.IsType<CommandStatementSyntax>(tree.Root.Nodes[0].Body[0]).Command.Text);
+    }
+
     [Theory]
     [InlineData("@pause 79228162514264337593543950336")]
     [InlineData("@pause 100000000000000000000000000000s")]

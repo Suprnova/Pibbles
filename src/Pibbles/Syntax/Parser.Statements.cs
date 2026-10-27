@@ -66,7 +66,7 @@ internal sealed partial class Parser
                 statements.Add(ParseSet(start));
                 return;
 
-            case "@pause" or "@wait":
+            case "@pause":
                 Advance();
                 ExpressionSyntax duration = ParseExpression();
                 statements.Add(FinishStatement(new PauseStatementSyntax(duration) { Span = SpanFrom(start) }));
