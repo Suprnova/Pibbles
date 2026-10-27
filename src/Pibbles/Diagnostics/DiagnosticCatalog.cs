@@ -118,6 +118,14 @@ public static class DiagnosticCatalog
         "I don't know what `{0}` means.",
         help: "To show a variable, write `{{$name}}`. To call a function, write `{{name()}}`. If the braces are part of the text, put a backslash before the `{{`.");
 
+    /// <summary>PIB1018: a value after a point that takes none, such as <c>{w 0.5}</c>.</summary>
+    /// <remarks>Arguments: the point's keyword, such as <c>w</c>; the value as written; and how to fix it.</remarks>
+    public static DiagnosticDescriptor PointTakesNoValue { get; } = new(
+        "PIB1018",
+        DiagnosticSeverity.Error,
+        "`{{{0}}}` takes no value, so I can't use `{1}` after it.",
+        help: "{2}");
+
     /// <summary>PIB1020: a file's only <c>@prefix</c> line, after something other than comments.</summary>
     public static DiagnosticDescriptor MisplacedPrefix { get; } = new(
         "PIB1020",
@@ -875,6 +883,7 @@ public static class DiagnosticCatalog
         TextAfterTag,
         NotInOption,
         UnknownPoint,
+        PointTakesNoValue,
         MisplacedPrefix,
         DeclarationInNode,
         OutsideNode,

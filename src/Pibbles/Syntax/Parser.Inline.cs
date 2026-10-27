@@ -217,9 +217,8 @@ internal sealed partial class Parser
 
             case TokenKind.Name when text is "w":
                 Advance();
-                ExpressionSyntax? timed = token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? null : ParseArgumentValue();
-                InlineSyntax waitPoint = timed is null ? new InputWaitSyntax { Span = default } : new PauseSyntax(timed) { Span = default };
-                return (waitPoint, "{w}");
+                RejectValue("w");
+                return (new InputWaitSyntax { Span = default }, "{w}");
 
             case TokenKind.Name when text is "pause":
                 Advance();
@@ -233,10 +232,12 @@ internal sealed partial class Parser
 
             case TokenKind.Name when text is "p":
                 Advance();
+                RejectValue("p");
                 return (new PageBreakSyntax { Span = default }, "{p}");
 
             case TokenKind.Name when text is "br":
                 Advance();
+                RejectValue("br");
                 return (new LineBreakSyntax { Span = default }, null);
 
             case TokenKind.Name when text is "icon":
@@ -257,7 +258,21 @@ internal sealed partial class Parser
         }
     }
 
-    private TextSpan PointSpan(int open) => new(open, FindCloser('}', open) - open);
+    /// <summary>Reports a value written after a point that takes none, such as <c>{w 0.5}</c>, and reads it so the point still closes.</summary>
+    private void RejectValue(string point)
+    {
+        if (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine)
+            return;
+
+        int start = token.Span.Start;
+        ParseArgumentValue();
+        var value = new TextSpan(start, Math.Max(previousEnd - start, 0));
+        string written = TextOf(value);
+        string help = point is "w" ? $"To pause for that long, write `{{pause {written}}}`." : $"Remove `{written}`.";
+        Fail(DiagnosticCatalog.PointTakesNoValue, value, point, written, help);
+    }
+
+    private TextSpan PointSpan(int open) =>new(open, FindCloser('}', open) - open);
 
     private ConditionalTextSyntax ParseConditionalText()
     {

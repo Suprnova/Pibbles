@@ -1,6 +1,6 @@
-File 1:1-14:1
+File 1:1-15:1
   Nodes:
-    Node 3:1-13:35
+    Node 3:1-14:33
       Name: Name 3:4-3:19 Text="snapshot.inline"
       Body:
         TextLine 4:1-4:26
@@ -63,6 +63,12 @@ File 1:1-14:1
             Pause 13:14-13:21
               Duration: ErrorExpression 13:20-13:20
             TextRun 13:21-13:35 Text=" with no time."
+        TextLine 14:1-14:33
+          Speaker: Name 14:1-14:5 Text="mira"
+          Content:
+            TextRun 14:7-14:13 Text="A wait"
+            InputWait 14:13-14:20
+            TextRun 14:20-14:33 Text=" with a time."
 Comments:
   1:1-1:52 "Broken inline text still leaves a complete tree."
 Diagnostics:
@@ -76,3 +82,4 @@ Diagnostics:
   PIB1013 11:7 I can't find the `{/if}` that ends this `{if}`.
   PIB1054 12:1 `mira:` has nothing after it.
   PIB1046 13:20 I expected a value after `pause`.
+  PIB1018 14:16 `{w}` takes no value, so I can't use `0.5` after it.

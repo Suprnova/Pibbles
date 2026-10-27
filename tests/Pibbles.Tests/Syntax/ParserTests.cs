@@ -90,6 +90,32 @@ public class ParserTests
         Assert.Equal(($"An option's text can't contain `{point}`.", "PIB1016"), (diagnostic.Message, diagnostic.Code));
     }
 
+    [Theory]
+    [InlineData("w", "0.5", "To pause for that long, write `{pause 0.5}`.")]
+    [InlineData("w", "$delay", "To pause for that long, write `{pause $delay}`.")]
+    [InlineData("p", "2", "Remove `2`.")]
+    [InlineData("br", "(1 + 1)", "Remove `(1 + 1)`.")]
+    public void Parse_ValueAfterPointThatTakesNone_NamesThePointAndOffersAFix(string point, string value, string help)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi{{{point} {value}}} there\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1018", $"`{{{point}}}` takes no value, so I can't use `{value}` after it.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+    }
+
+    [Theory]
+    [InlineData("{speed 2 3}")]
+    [InlineData("{pause 1 2}")]
+    public void Parse_SecondValueAfterPointThatTakesOne_IsUnexpectedNotPointTakesNoValue(string point)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi{point} there\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal("PIB1040", diagnostic.Code);
+    }
+
     [Fact]
     public void Parse_PauseWithoutDuration_ReportsMissingValueAndKeepsThePoint()
     {

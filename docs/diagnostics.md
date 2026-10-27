@@ -49,6 +49,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1015 | Error | I read `#winning` as a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
 | PIB1016 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
+| PIB1018 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1021 | Error | Declarations have to come before the file's first node. | Move this above the first `==` line, or into another file. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
@@ -291,6 +292,22 @@ mira: Hi, {name}.
 ```
 
 Write `{$name}` for a variable, or `{name()}` for a function. If the braces are meant as text, escape the first one: `\{name}`.
+
+### PIB1018
+
+**Some points take no value.** `{w}` waits for the player, `{p}` breaks the page and `{br}` breaks the line, so there is nothing for a value to say. A time belongs to `{pause}`.
+
+```text
+mira: Locked.{w 0.5} Of course it's locked.
+```
+
+Write the time with `{pause}`:
+
+```text
+mira: Locked.{pause 0.5} Of course it's locked.
+```
+
+For `{p}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
 
 ### PIB1020
 
