@@ -152,7 +152,7 @@ Comparisons you can use:
 | `@call example.shared_node` | Runs another node, then comes back here and continues. Good for lines several scenes share. |
 | `@return` | Inside a node that was called, goes back early. |
 | `@end` | Ends the conversation right away. |
-| `@wait 1s` | Pauses for a moment with no text. Write times like `2s` or `500ms`. |
+| `@pause 1s` | Pauses for a moment with no text. Write times like `2s` or `500ms`. |
 
 ```pib
 == example.start
@@ -522,7 +522,7 @@ This node used to be called kitchen.door.
 | `@jump node` | Go to another node |
 | `@call node` / `@return` | Run another node and come back |
 | `@end` | End the conversation |
-| `@wait 1s` | Pause without text |
+| `@pause 1s` | Pause without text |
 | `@sequence` `@cycle` `@once` | Vary lines on repeat visits |
 | `@command args` | Stage direction or game event |
 | `[b]…[/b]` `[i]` `[u]` `[s]` `[color "#hex"]` | Formatting |

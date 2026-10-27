@@ -146,7 +146,7 @@ Two more variation blocks join `@sequence`, `@cycle` and `@once`, with their row
 ```
 
 - **`random(min, max) -> number`** is a built-in function: an inclusive integer from the seeded random generator.
-- **`random()` only runs in statements** that execute once: `@set`, `@if`, `@elif`, `@wait` and command arguments. Inline text, terms, option conditions and persona conditions are evaluated again when a restored line or choice is shown, or after every state change, so a roll there would change on load. To use a random value in text, roll it into a variable with `@set` first.
+- **`random()` only runs in statements** that execute once: `@set`, `@if`, `@elif`, `@pause` and command arguments. Inline text, terms, option conditions and persona conditions are evaluated again when a restored line or choice is shown, or after every state change, so a roll there would change on load. To use a random value in text, roll it into a variable with `@set` first.
 - **Shuffle state and the random generator's state** live in the story state and are saved with it ([runtime design](../runtime.md#randomness)).
 
 **Grammar:**

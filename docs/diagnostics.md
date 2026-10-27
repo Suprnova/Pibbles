@@ -386,7 +386,7 @@ Start each alternative with `- `: `- mira: Hm.`
 
 ### PIB1032
 
-**After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@wait` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
+**After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@pause` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
 
 ```text
 @cycle
@@ -439,10 +439,10 @@ Add the closing `"` where the text should end: `@enter_room "kitchen" on_exit=ki
 **A number is digits with at most one `.`, and a duration is a number followed by `s` or `ms`.** `3`, `0.5`, `.5`, `1.`, `0.5s` and `300ms` are all fine. Exponents (`1e5`) and digit separators (`1_000`) aren't supported, and anything written directly after a number, other than `s` or `ms`, is reported as part of it.
 
 ```text
-@wait 2sec
+@pause 2sec
 ```
 
-Write `@wait 2s`.
+Write `@pause 2s`.
 
 ### PIB1043
 
@@ -620,7 +620,7 @@ Add the space, `mira: Hi.`, or escape the colon if the line really is narration:
 
 ### PIB2010
 
-**A command is declared with `@command` before the story uses it,** since the game has to carry out every command the story uses. The help suggests the closest command.
+**A command is declared with `@command` before the story uses it,** since the game has to carry out every command the story uses. The help suggests the closest command. For `@wait`, which is now `@pause`, it suggests `@pause`.
 
 ```text
 @command shake_screen(strength: number = 1)
@@ -789,7 +789,7 @@ Fix the spelling, or declare the variable.
 
 ### PIB2031
 
-**A value has the type of what it's for:** a variable keeps the type it's declared with, a parameter's default has the parameter's type, and `@wait` takes a duration. A number works where a duration is expected, as seconds.
+**A value has the type of what it's for:** a variable keeps the type it's declared with, a parameter's default has the parameter's type, and `@pause` takes a duration. A number works where a duration is expected, as seconds.
 
 ```text
 @var $has_key = false
@@ -871,7 +871,7 @@ Write the words for each case: `You {if $has_key}have{else}don't have{/if} the k
 
 ### PIB2039
 
-**A speed, a pause or a wait has to be more than zero,** because a speed of zero would never show the next character, and a pause of nothing or less does nothing. This covers the value in `{speed x}`, `{pause d}` and `@wait d`, when it's a constant: a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(0.5s - 1s)`. A value that depends on a variable or a function call isn't checked here: if it isn't more than zero when the story runs, that speed, pause or wait is skipped with a warning.
+**A speed or a pause has to be more than zero,** because a speed of zero would never show the next character, and a pause of nothing or less does nothing. This covers the value in `{speed x}`, `{pause d}` and `@pause d`, when it's a constant: a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(0.5s - 1s)`. A value that depends on a variable or a function call isn't checked here: if it isn't more than zero when the story runs, that speed or pause is skipped with a warning.
 
 ```text
 mira: Wait.{pause 0} What?
@@ -1164,7 +1164,7 @@ Declare a markup that says what the color means, such as `@markup clue`, ask who
 
 ### PIB5010
 
-**A pose-only line whose pose changes again before any line shows does nothing:** nobody sees the first pose. It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+**A pose-only line whose pose changes again before any line shows does nothing:** nobody sees the first pose. It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
 
 ```text
 mira (sad):
@@ -1230,7 +1230,7 @@ Remove the dot: `@prefix kitchen`.
 
 ### PIB5016
 
-**A pose change to the pose the actor already has does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@wait` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+**A pose change to the pose the actor already has does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
 
 ```text
 mira (happy): This line sets the pose.

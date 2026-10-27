@@ -233,7 +233,7 @@ The value's type must match the variable's declared type.
 | `@call node` | Run `node`, then come back here. A call carries an `#id` like a line does, since a save can be waiting inside the called node. |
 | `@return` | Return from the current `@call`. At the top level it acts as `@end`. |
 | `@end` | End the dialogue and clear the call stack. |
-| `@wait duration` | Pause the story for a moment without showing text (`@wait 1s`). |
+| `@pause duration` | Pause the story for a moment without showing text (`@pause 1s`). |
 
 ### Variations
 
@@ -252,7 +252,7 @@ The value's type must match the variable's declared type.
     @set $found_panel = true
 ```
 
-An alternative starts with `- ` followed by a single-line statement: a text line, `@set`, `@jump`, `@call`, `@return`, `@end`, `@wait` or a command. Lines indented more deeply below it continue the same alternative. A `-` on its own line starts an alternative that is entirely the indented block below it, so an alternative can begin with a block opener such as `@if`:
+An alternative starts with `- ` followed by a single-line statement: a text line, `@set`, `@jump`, `@call`, `@return`, `@end`, `@pause` or a command. Lines indented more deeply below it continue the same alternative. A `-` on its own line starts an alternative that is entirely the indented block below it, so an alternative can begin with a block opener such as `@if`:
 
 ```pib
 @cycle
@@ -398,7 +398,7 @@ mira: Very... {speed 0.3}slowly...{speed} there.
 
 Speed resets to the player's setting at the start of every line. Each speed point stands alone, so there's nothing to nest: the last one before a character decides how fast it appears.
 
-**Pacing values** are the value of `{speed x}` and the durations of `{pause d}` and `@wait d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
+**Pacing values** are the value of `{speed x}` and the durations of `{pause d}` and `@pause d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
 
 ```pib-error PIB2039
 mira: Wait.{pause 0} What?
@@ -424,7 +424,7 @@ The branches can contain any inline text, including markup and points. Only the 
 
 ## Runtime semantics summary
 
-- **Dialogues are pull-based.** The host starts a node and repeatedly asks for the next step: a line, a choice, a command, a pose change, a wait, or the end. See [runtime design](../runtime.md#runtime-model).
+- **Dialogues are pull-based.** The host starts a node and repeatedly asks for the next step: a line, a choice, a command, a pose change, a pause, or the end. See [runtime design](../runtime.md#runtime-model).
 - **A statement-level command is a step.** The host carries it out and asks for the next step, either right away or after it finishes, depending on the wait flag.
 - **An inline command is a marker** at a character position in the line. The reveal helper fires it when the reveal reaches that position. If the player skips the reveal, the command markers it skipped past still fire, in order. Timing markers (pauses, speed) are dropped.
 - **Skipping never changes the outcome.** Every `@set`, command and effect still happens, in order. Only timing is dropped.
@@ -438,7 +438,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 
 | Group | Words |
 | --- | --- |
-| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `wait`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
+| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
 | Brace keywords (after `{`) | `w`, `pause`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |
@@ -627,7 +627,7 @@ param           ::= NAME ":" type ("=" constant)?
 
 ```ebnf
 statement       ::= text_line | choice | if_stmt | set_stmt | flow_stmt
-                  | wait_stmt | variation | command_stmt
+                  | pause_stmt | variation | command_stmt
 text_line       ::= SPEAKER? inline_text TAG* EOL
 choice          ::= option+                          /* greedy: consecutive options are one choice */
 option          ::= "->" inline_text option_modifier* TAG* EOL block?
@@ -638,11 +638,11 @@ else_clause     ::= "@else" EOL block
 set_stmt        ::= "@set" VARIABLE assign_op expr EOL
 assign_op       ::= "=" | "+=" | "-="
 flow_stmt       ::= "@jump" NAME EOL | "@call" NAME TAG* EOL | "@return" EOL | "@end" EOL
-wait_stmt       ::= "@wait" expr EOL
+pause_stmt      ::= "@pause" expr EOL
 variation       ::= ("@sequence" | "@cycle") TAG* EOL INDENT alternative+ DEDENT
                   | "@once" TAG* EOL block
 alternative     ::= "-" (alternative_line block? | EOL block)
-alternative_line ::= text_line | set_stmt | flow_stmt | wait_stmt | command_stmt
+alternative_line ::= text_line | set_stmt | flow_stmt | pause_stmt | command_stmt
 command_stmt    ::= AT_WORD arg* wait_flag? EOL
 arg             ::= NAME arg_tail? | VARIABLE | literal | "(" expr ")"
 arg_tail        ::= "=" value | call_args
@@ -742,7 +742,7 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 22 | `text_line` |
 | 23 | `choice`, `option`, `option_modifier` |
 | 24 | `if_stmt`, `elif_clause`, `else_clause` |
-| 25 | `set_stmt`, `assign_op`, `flow_stmt`, `wait_stmt` |
+| 25 | `set_stmt`, `assign_op`, `flow_stmt`, `pause_stmt` |
 | 26 | `variation`, `alternative`, `alternative_line` |
 | 27 | `command_stmt`, `arg`, `arg_tail`, `value`, `call_args`, `wait_flag` |
 | 28 | `inline_text`, `inline_item` |
