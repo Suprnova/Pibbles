@@ -7,6 +7,8 @@
 //       ^^^^^^^^^^^ PIB1016
 -> A new page{p}
 //           ^^^ PIB1016
+-> A newer page{page}
+//             ^^^^^^ PIB1016
 -> Jolt {@jolt mira}
 //      ^^^^^^^^^^^^ PIB1016
 -> {if $a}Wait{w}{/if}

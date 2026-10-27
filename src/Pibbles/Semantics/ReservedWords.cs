@@ -12,7 +12,7 @@ internal static class ReservedWords
         ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
         ["term", "resume", "shuffle"]);
 
-    private static readonly Group Brace = new("inside `{…}`", ["w", "pause", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
+    private static readonly Group Brace = new("inside `{…}`", ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
 
     private static readonly Group Value = new("in expressions", ["true", "false", "and", "or", "not"], []);
 

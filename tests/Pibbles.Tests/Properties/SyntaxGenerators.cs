@@ -19,7 +19,7 @@ internal static class SyntaxGenerators
     private static readonly HashSet<string> Reserved =
     [
         "prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
-        "call", "return", "end", "wait", "pause", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "p", "br", "auto",
+        "call", "return", "end", "wait", "pause", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "page", "p", "br", "auto",
         "true", "false", "and", "or", "not", "nowait", "speaker", "visits", "random", "bool", "number", "string", "duration",
         "node", "speed", "b", "i", "u", "s", "color", "name", "poses", "inline", "waits", "required", "persona", "id", "was",
         "migrates", "draft", "voice", "unvoiced", "default",

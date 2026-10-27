@@ -11,7 +11,7 @@ public class ReservedWordsTests
         ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause",
          "sequence", "cycle", "once", "term", "resume", "shuffle"];
 
-    private static readonly string[] Brace = ["w", "pause", "p", "br", "speed", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];
+    private static readonly string[] Brace = ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];
 
     private static readonly string[] Value = ["true", "false", "and", "or", "not"];
 

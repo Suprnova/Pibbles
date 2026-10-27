@@ -92,6 +92,7 @@ public class ParserTests
     [Theory]
     [InlineData("-> Knock{w}", "{w}")]
     [InlineData("-> Knock{pause 0.5}", "{pause}")]
+    [InlineData("-> Knock{page}", "{page}")]
     public void Parse_WaitOrPauseInOption_NamesThePointWritten(string line, string point)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n    mira: Hi\n");
@@ -105,6 +106,7 @@ public class ParserTests
     [InlineData("w", "0.5", "To pause for that long, write `{pause 0.5}`.")]
     [InlineData("w", "$delay", "To pause for that long, write `{pause $delay}`.")]
     [InlineData("p", "2", "Remove `2`.")]
+    [InlineData("page", "2", "Remove `2`.")]
     [InlineData("br", "(1 + 1)", "Remove `(1 + 1)`.")]
     public void Parse_ValueAfterPointThatTakesNone_NamesThePointAndOffersAFix(string point, string value, string help)
     {

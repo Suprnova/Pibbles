@@ -232,7 +232,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         InputWaitSyntax => "{w}",
         PauseSyntax pause => $"{{pause {Expression(pause.Duration)}}}",
         SpeedSyntax speed => speed.Factor is null ? "{speed}" : $"{{speed {Expression(speed.Factor)}}}",
-        PageBreakSyntax => "{p}",
+        PageBreakSyntax => "{page}",
         LineBreakSyntax => "{br}",
         IconSyntax icon => $"{{icon {icon.Name.Text}}}",
         ConditionalTextSyntax conditional =>

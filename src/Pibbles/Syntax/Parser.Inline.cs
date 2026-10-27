@@ -230,6 +230,11 @@ internal sealed partial class Parser
                 ExpressionSyntax? factor = token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? null : ParseArgumentValue();
                 return (new SpeedSyntax(factor) { Span = default }, "{speed}");
 
+            case TokenKind.Name when text is "page":
+                Advance();
+                RejectValue("page");
+                return (new PageBreakSyntax { Span = default }, "{page}");
+
             case TokenKind.Name when text is "p":
                 Advance();
                 RejectValue("p");
