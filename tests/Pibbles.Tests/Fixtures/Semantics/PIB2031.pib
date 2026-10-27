@@ -10,12 +10,12 @@
 == kitchen.door
 @set $has_key = 3
 //              ^ PIB2031
-@wait "soon"
-//    ^^^^^^ PIB2031
+@pause "soon"
+//     ^^^^^^ PIB2031
 @set $count += 1s
 //             ^^ PIB2031
 
 // Must not trigger
 
-@wait 1
+@pause 1
 @set $count += 2

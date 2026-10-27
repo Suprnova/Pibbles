@@ -13,4 +13,4 @@
 @shake_screen (-1)
 @shake_screen strength=(-0.5)
 @set $x = -1
-@wait -1s - -2s
+@pause -1s - -2s

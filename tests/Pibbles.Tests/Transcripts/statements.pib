@@ -1,4 +1,4 @@
-// Every kind of statement: text lines, poses, commands, @set, @wait, @if, @call, @return, @jump, variations and a choice.
+// Every kind of statement: text lines, poses, commands, @set, @pause, @if, @call, @return, @jump, variations and a choice.
 
 @actor mira
     name: Mira
@@ -29,8 +29,8 @@ rex: {w} #id:l04
 @set $count += 2
 @set $count -= 1
 @set $delay += 1
-@wait 0.5s
-@wait $delay
+@pause 0.5s
+@pause $delay
 @if $count > 10
     rex: Many. #id:l05
 @elif $count > 3

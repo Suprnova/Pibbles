@@ -1,4 +1,4 @@
-// @set with =, += and -=, durations and numbers together, and @wait.
+// @set with =, += and -=, durations and numbers together, and @pause.
 
 == snap.variables
 @set $count = 5
@@ -10,8 +10,8 @@
 @set $has_key = not $has_key
 @set $where = right
 @set $delay = $delay * 2
-@wait 1
-@wait 0.5s + (1 + 2)
-@wait $delay
+@pause 1
+@pause 0.5s + (1 + 2)
+@pause $delay
 @if $delay > 2
-    @wait ($delay / 2)
+    @pause ($delay / 2)

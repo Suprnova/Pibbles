@@ -1,4 +1,4 @@
-// Host functions in conditions, text, @set and @wait, with their stubs.
+// Host functions in conditions, text, @set and @pause, with their stubs.
 
 @actor mira
     name: Mira
@@ -21,5 +21,5 @@ mira: The key costs {price("key")}, the rope {price("rope")}. #id:f01
     mira: Missing. #id:f03
 @set $total = price("key") + price("rope")
 mira: Total {$total}. #id:f04
-@wait delay()
+@pause delay()
 mira: Mood {if pick_mood() == tense}tense{else}calm{/if}, {who()}. #id:f05

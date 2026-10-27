@@ -7,12 +7,11 @@ public class ParserTests
 {
     [Theory]
     [InlineData("@pause 0.1", "0.1")]
-    [InlineData("@wait 0.1", "0.1")]
-    [InlineData("@wait 1.50", "1.50")]
-    [InlineData("@wait 300ms", "0.3")]
-    [InlineData("@wait 1.5s", "1.5")]
-    [InlineData("@wait 79228162514264337593543950335", "79228162514264337593543950335")]
-    [InlineData("@wait 1.12345678901234567890123456789", "1.1234567890123456789012345679")]
+    [InlineData("@pause 1.50", "1.50")]
+    [InlineData("@pause 300ms", "0.3")]
+    [InlineData("@pause 1.5s", "1.5")]
+    [InlineData("@pause 79228162514264337593543950335", "79228162514264337593543950335")]
+    [InlineData("@pause 1.12345678901234567890123456789", "1.1234567890123456789012345679")]
     public void Parse_NumberOrDuration_IsExactDecimalWithItsScale(string text, string expected)
     {
         var source = new SourceText("story.pib", $"== a.b\n{text}\n");
@@ -29,8 +28,8 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("@wait 79228162514264337593543950336")]
-    [InlineData("@wait 100000000000000000000000000000s")]
+    [InlineData("@pause 79228162514264337593543950336")]
+    [InlineData("@pause 100000000000000000000000000000s")]
     public void Parse_NumberTooLarge_ReportsItAndMakesAnErrorNode(string text)
     {
         var source = new SourceText("story.pib", $"== a.b\n{text}\n");

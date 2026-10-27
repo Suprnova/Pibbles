@@ -32,13 +32,13 @@ File 1:1-24:1
               SetStatement 12:5-12:23 Operator=Subtract OperatorSpan=12:19-12:21
                 Variable: VariableExpression 12:10-12:18 Name="bravery"
                 Value: NumberLiteral 12:22-12:23 Value=1
-        PauseStatement 13:1-13:9
-          Duration: DurationLiteral 13:7-13:9 Seconds=1
-        PauseStatement 14:1-14:19
-          Duration: ParenthesizedExpression 14:7-14:19
-            Expression: BinaryExpression 14:8-14:18 Operator=Multiply OperatorSpan=14:15-14:16
-              Left: VariableExpression 14:8-14:14 Name="delay"
-              Right: NumberLiteral 14:17-14:18 Value=2
+        PauseStatement 13:1-13:10
+          Duration: DurationLiteral 13:8-13:10 Seconds=1
+        PauseStatement 14:1-14:20
+          Duration: ParenthesizedExpression 14:8-14:20
+            Expression: BinaryExpression 14:9-14:19 Operator=Multiply OperatorSpan=14:16-14:17
+              Left: VariableExpression 14:9-14:15 Name="delay"
+              Right: NumberLiteral 14:18-14:19 Value=2
         CommandStatement 15:1-15:6 Wait=Default
           Command: Name 15:2-15:6 Text="hide"
         CommandStatement 16:1-16:16 Wait=Default

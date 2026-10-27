@@ -17,7 +17,7 @@ public class BindingsTests
 
         == .door
         @show mira left 1
-        @wait 1
+        @pause 1
         @set $count += 1
         @set $wait += 1
         @if has_item("key") and $count > 0

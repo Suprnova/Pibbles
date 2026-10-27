@@ -98,7 +98,7 @@ public class RunnerSnapshotTests
     [Theory]
     [InlineData("@show mira")]
     [InlineData("mira (happy):")]
-    [InlineData("@wait 1")]
+    [InlineData("@pause 1")]
     public void CreateSnapshot_AfterAStepThatIsNotASavePoint_Throws(string statement)
     {
         Game game = Game.Of($"== t.n\n{statement}\nmira: Line. #id:l1\n");
@@ -275,7 +275,7 @@ public class RunnerSnapshotTests
     [Fact]
     public void FastForward_AcrossCommandsPosesAndWaits_StopsAtTheNextLine()
     {
-        Game game = Game.Of("== t.n\n@show mira\n@wait 1\nmira (happy): Next. #id:l1\nmira: Later. #id:l2\n");
+        Game game = Game.Of("== t.n\n@show mira\n@pause 1\nmira (happy): Next. #id:l1\nmira: Later. #id:l2\n");
         game.Runner.Start("t.n");
         game.Runner.Next();
 
@@ -314,7 +314,7 @@ public class RunnerSnapshotTests
     [Fact]
     public void FastForward_InsideACall_SavesTheCall()
     {
-        Game game = Game.Of("== t.n\n@call t.sub #id:c1\n== t.sub\n@show mira\n@wait 1\nmira: In. #id:l1\n");
+        Game game = Game.Of("== t.n\n@call t.sub #id:c1\n== t.sub\n@show mira\n@pause 1\nmira: In. #id:l1\n");
         game.Runner.Start("t.n");
         game.Runner.Next();
 

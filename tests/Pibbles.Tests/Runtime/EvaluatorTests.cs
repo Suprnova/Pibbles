@@ -204,7 +204,7 @@ public class EvaluatorTests
     /// <summary>The warnings the runner raises: a wait that isn't for more than zero, and a loop that never shows anything.</summary>
     private static IEnumerable<RuntimeWarning> RunnerWarnings()
     {
-        Game wait = Game.Of("== t.n\n@wait $count\n");
+        Game wait = Game.Of("== t.n\n@pause $count\n");
         wait.Play("t.n");
         Game loop = Game.Of("== t.n\n@jump t.n\n", budget: 20);
         loop.Play("t.n");

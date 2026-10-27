@@ -67,7 +67,7 @@ public class DialogueRunnerTests
     [Fact]
     public void Wait_NotMoreThanZero_IsSkippedWithAWarning()
     {
-        Game game = Game.Of("== t.n\n@wait 0.5s\n@wait $count\n@wait $delay\n@wait 1\n");
+        Game game = Game.Of("== t.n\n@pause 0.5s\n@pause $count\n@pause $delay\n@pause 1\n");
 
         string[] run = game.Play("t.n");
 
@@ -422,7 +422,7 @@ public class DialogueRunnerTests
     public void Warnings_RaisedByAnInstructionThatThrows_AreDropped()
     {
         bool fail = true;
-        Game game = Game.Of("== t.n\n@wait 1 / $count + risky()\n", register: functions => functions.Add("risky", () => fail ? throw new TimeoutException() : 1m));
+        Game game = Game.Of("== t.n\n@pause 1 / $count + risky()\n", register: functions => functions.Add("risky", () => fail ? throw new TimeoutException() : 1m));
         game.Runner.Start("t.n");
 
         Assert.Throws<HostFunctionException>(() => game.Runner.Next());

@@ -22,4 +22,4 @@
     Comparisons.
 @set $count = $count * 2 % 3
 @set $name += "!"
-@wait 0.5s * 2
+@pause 0.5s * 2

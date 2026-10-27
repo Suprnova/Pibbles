@@ -1,4 +1,4 @@
-// A speed, a pause or a wait written as a constant has to be more than zero.
+// A speed or a pause written as a constant has to be more than zero.
 
 @var $s = 1
 @var $d = 1s
@@ -16,11 +16,11 @@ A {pause 0s} B.
 //       ^^ PIB2039
 A {pause (0.5s - 1s)} B.
 //       ^^^^^^^^^^^ PIB2039
-@wait 0s
-//    ^^ PIB2039
+@pause 0s
+//     ^^ PIB2039
 
 // Must not trigger
 
 A {pause 0.1} B {speed $s} C {pause $d} D {speed 0.5} E {speed} F.
 A {pause (79228162514264337593543950335 * 2)} B {speed (79228162514264337593543950335 * 2)} C.
-@wait 0.5s
+@pause 0.5s

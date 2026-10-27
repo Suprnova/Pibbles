@@ -10,8 +10,8 @@
 @else
     @set $bravery += 1
     @set $bravery -= 1
-@wait 1s
-@wait ($delay * 2)
+@pause 1s
+@pause ($delay * 2)
 @hide
 @show mira left
 @show mira at=left

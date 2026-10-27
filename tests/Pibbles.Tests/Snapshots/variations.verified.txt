@@ -40,8 +40,8 @@ File 1:1-26:1
                   Speaker: Name 10:7-10:11 Text="mira"
                   Content:
                     TextRun 10:13-10:24 Text="Very dusty."
-                PauseStatement 11:9-11:19
-                  Duration: DurationLiteral 11:15-11:19 Seconds=0.5
+                PauseStatement 11:9-11:20
+                  Duration: DurationLiteral 11:16-11:20 Seconds=0.5
                 CommandStatement 12:9-12:20 Wait=Default
                   Command: Name 12:10-12:13 Text="sfx"
                   Arguments:

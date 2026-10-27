@@ -116,7 +116,7 @@ public sealed class StoryGenerator(int seed)
         text.Append(CultureInfo.InvariantCulture, $"@cycle #id:{Id()}\n    - {Line("").TrimEnd('\n')}\n    - {Line("").TrimEnd('\n')}\n    - {Line("").TrimEnd('\n')}\n");
         text.Append(CultureInfo.InvariantCulture, $"@once #id:{Id()}\n{Line("    ")}    @set {flag} = true\n");
         text.Append(CultureInfo.InvariantCulture, $"@move {actor} {Pick(Places)}{(random.Next(2) == 0 ? " nowait" : "")}\n");
-        text.Append(CultureInfo.InvariantCulture, $"@wait {(random.Next(2) == 0 ? "0.3s" : "$delay")}\n");
+        text.Append(CultureInfo.InvariantCulture, $"@pause {(random.Next(2) == 0 ? "0.3s" : "$delay")}\n");
         text.Append(CultureInfo.InvariantCulture, $"@call ch{chapter}.aside #id:{Id()}\n");
         text.Append(CultureInfo.InvariantCulture, $"@if visits({name}) > 1 and has_item(\"key\")\n{Line("    ")}");
         for (int line = random.Next(6, 12); line > 0; line--)

@@ -8,7 +8,7 @@
 @cycle #id:c9wq2a
     - mira: Dusty.
     - mira: Very dusty.
-        @wait 0.5s
+        @pause 0.5s
         @sfx sneeze
     - @jump snapshot.elsewhere
     -

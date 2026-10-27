@@ -37,7 +37,7 @@ public class HostApiTests
         == t.f
         @if has_item("key")
             mira: have #id:f1
-        @wait delay(1, 0.5s)
+        @pause delay(1, 0.5s)
         mira: {if seen(t.n, rex) == tense}tense{else}calm{/if} #id:f2
         """;
 

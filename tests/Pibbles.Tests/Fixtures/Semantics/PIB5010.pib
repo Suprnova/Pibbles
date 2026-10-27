@@ -13,7 +13,7 @@ mira (happy): The silent pose change above is never seen.
 
 == kitchen.cellar
 mira (sad):
-@wait 1s
+@pause 1s
 mira (happy): The sad pose showed during the wait.
 mira (sad):
 mira: Someone speaks, so the sad pose shows.

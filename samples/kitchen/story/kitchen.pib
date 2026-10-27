@@ -39,7 +39,7 @@ mira: Just spoons now. #id:ds4oao
 @cycle #id:skmne3
     - mira: Dusty. #id:i6f2vr
     - mira: Very dusty. #id:xj5acx
-        @wait 0.5s
+        @pause 0.5s
         @sfx sneeze
         mira (angry): Ugh. #id:wdsl43
     - mira: When did anyone last clean this? #id:ytr2cv

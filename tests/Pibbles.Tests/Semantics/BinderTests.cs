@@ -274,7 +274,7 @@ public class BinderTests
     [Theory]
     [InlineData("== a.b\nSlow.{speed 0s} Done.\n")]
     [InlineData("== a.b\nSlow.{pause \"0\"} Done.\n")]
-    [InlineData("== a.b\n@wait \"0\"\n")]
+    [InlineData("== a.b\n@pause \"0\"\n")]
     public void Compile_PacingValueOfWrongType_ReportsOnlyTheType(string text) =>
         Assert.Equal(["PIB2031"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
