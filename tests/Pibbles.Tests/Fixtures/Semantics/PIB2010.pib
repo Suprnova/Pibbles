@@ -7,8 +7,13 @@
 // PIB2010
 The room shakes.{@quake}
 //                ^^^^^ PIB2010
+@wait 1s
+// PIB2010
 
 // Must not trigger
 
 @shake_screen
 The room shakes.{@shake_screen 2}
+
+== kitchen.sink
+@pause 1s

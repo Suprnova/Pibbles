@@ -282,12 +282,15 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         Report(DiagnosticCatalog.NotShowable, interpolation.Span, text, type.Describe(), help);
     }
 
+    private string? SuggestedCommand(string name, bool inline) =>
+        name is "wait" && !inline ? "pause" : Suggestions.Closest(name, symbols.Commands.Keys);
+
     private void BindCommand(NameSyntax name, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool inline)
     {
         if (!symbols.Commands.TryGetValue(name.Text, out CommandSymbol? command))
         {
             if (!name.IsMissing)
-                ReportWithOptionalHelp(DiagnosticCatalog.UnknownCommand, name.Span, name.Text, Suggestions.Closest(name.Text, symbols.Commands.Keys));
+                ReportWithOptionalHelp(DiagnosticCatalog.UnknownCommand, name.Span, name.Text, SuggestedCommand(name.Text, inline));
 
             BindUnmatched(arguments);
             return;

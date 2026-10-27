@@ -8,7 +8,7 @@ namespace Pibbles.Tests.Semantics;
 public class ReservedWordsTests
 {
     private static readonly string[] Statement =
-        ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "wait", "pause",
+        ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause",
          "sequence", "cycle", "once", "term", "resume", "shuffle"];
 
     private static readonly string[] Brace = ["w", "pause", "p", "br", "speed", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];

@@ -113,6 +113,11 @@ public class BinderTests
             "Write a time longer than zero, like `@pause 0.5s`."
         },
         {
+            "== a.b\n@wait 1s\n",
+            "I don't know a command called `@wait`.",
+            "Did you mean `@pause`?"
+        },
+        {
             "@prefix kitchen\n\n== .door\n@if visits(.dor) > 0\n    Hm.\n",
             "I can't find a node called `.dor`.",
             "Did you mean `.door`?"
