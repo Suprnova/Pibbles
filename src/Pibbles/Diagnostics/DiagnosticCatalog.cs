@@ -745,7 +745,7 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor PauseBeforePageBreak { get; } = new(
         "PIB5017",
         DiagnosticSeverity.Hint,
-        "This wait does nothing, because the `{{p}}` after it already waits.",
+        "This wait does nothing, because the `{{page}}` after it already waits.",
         help: "Remove it.");
 
     /// <summary>PIB5018: two timed pauses side by side.</summary>
@@ -825,7 +825,7 @@ public static class DiagnosticCatalog
         "PIB5030",
         DiagnosticSeverity.Hint,
         "This line is {0} characters long, more than {1}.",
-        help: "Split it into two lines, or into pages with `{{p}}`.");
+        help: "Split it into two lines, or into pages with `{{page}}`.");
 
     /// <summary>PIB5034: an option longer than <c>pibbles_max_option_length</c>.</summary>
     /// <remarks>Arguments: the length and the limit.</remarks>
