@@ -30,6 +30,10 @@ mira: Hi, {$player_name}. You have {item_name("key")}.{w}{w 0.5}{p}{br}
 //                                                        ^ keyword.other.point.pibbles
 //                                                               ^ keyword.other.point.pibbles
 //                                                                  ^^ keyword.other.point.pibbles
+mira: Hm.{pause 0.5}
+//       ^ punctuation.definition.point.pibbles
+//        ^^^^^ keyword.other.point.pibbles
+//              ^^^ constant.numeric.pibbles
 mira: Press {icon interact}.{@jolt mira wait}
 //           ^^^^ keyword.other.point.pibbles
 //                ^^^^^^^^ constant.other.icon.pibbles

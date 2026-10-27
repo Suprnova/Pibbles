@@ -65,7 +65,7 @@ internal sealed partial class StyleChecks
     /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{p}</c>, and timed pauses side by side.</summary>
     private void CheckPauses(IReadOnlyList<InlineSyntax> content)
     {
-        if (content is [.., PauseSyntax { Duration: null } last])
+        if (content is [.., InputWaitSyntax last])
             Report(DiagnosticCatalog.PauseAtLineEnd, last.Span);
 
         foreach (IReadOnlyList<InlineSyntax> run in SyntaxWalk.Runs(content))
@@ -74,12 +74,12 @@ internal sealed partial class StyleChecks
             {
                 switch (run[i], run[i + 1])
                 {
-                    case (PauseSyntax { Duration: null } pause, PageBreakSyntax):
-                        Report(DiagnosticCatalog.PauseBeforePageBreak, pause.Span);
+                    case (InputWaitSyntax wait, PageBreakSyntax):
+                        Report(DiagnosticCatalog.PauseBeforePageBreak, wait.Span);
                         break;
 
-                    case (PauseSyntax { Duration: { } first } pause, PauseSyntax { Duration: { } second } next):
-                        ReportWithOptionalHelp(DiagnosticCatalog.AdjacentPauses, new(pause.Span.Start, next.Span.End - pause.Span.Start), CombinedPause(first, second));
+                    case (PauseSyntax pause, PauseSyntax next):
+                        ReportWithOptionalHelp(DiagnosticCatalog.AdjacentPauses, new(pause.Span.Start, next.Span.End - pause.Span.Start), CombinedPause(pause.Duration, next.Duration));
                         break;
                 }
             }

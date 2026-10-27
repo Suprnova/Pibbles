@@ -27,7 +27,7 @@ public class EvaluatorTests
         @var $out_node: node = t.n
         @function ping() -> bool
         @function twice(n: number) -> number
-        @function pause(d: duration) -> duration
+        @function delay(d: duration) -> duration
 
         == t.n
         @set $out_number = 0
@@ -90,8 +90,8 @@ public class EvaluatorTests
         { "duration", "2 * $d", "4s" },
         { "duration", "$d / 4", "0.5s" },
         { "duration", "-$d", "-2s" },
-        { "duration", "pause(1)", "1s" },
-        { "duration", "pause($d)", "2s" },
+        { "duration", "delay(1)", "1s" },
+        { "duration", "delay($d)", "2s" },
         { "string", "$s + \"!\"", "\"Sam!\"" },
         { "string", "$s + $s", "\"SamSam\"" },
         { "position", "$e", "left" },

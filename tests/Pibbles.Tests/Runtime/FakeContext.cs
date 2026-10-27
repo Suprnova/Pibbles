@@ -20,7 +20,7 @@ internal sealed class FakeContext : IEvaluationContext
                 return true;
             })
             .Add("twice", (decimal n) => n * 2)
-            .Add("pause", (TimeSpan d) => d);
+            .Add("delay", (TimeSpan d) => d);
     }
 
     public Dictionary<VariableSymbol, Value> Variables { get; } = [];

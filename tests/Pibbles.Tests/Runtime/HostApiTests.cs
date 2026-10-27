@@ -25,7 +25,7 @@ public class HostApiTests
         @markup shout(volume: number = 3)
         @function has_item(id: string) -> bool
         @function seen(at: node, by: actor) -> mood
-        @function pause(n: number, d: duration) -> duration
+        @function delay(n: number, d: duration) -> duration
 
         == t.n #was:t.old
         -> One #id:o1
@@ -37,7 +37,7 @@ public class HostApiTests
         == t.f
         @if has_item("key")
             mira: have #id:f1
-        @wait pause(1, 0.5s)
+        @wait delay(1, 0.5s)
         mira: {if seen(t.n, rex) == tense}tense{else}calm{/if} #id:f2
         """;
 
@@ -48,7 +48,7 @@ public class HostApiTests
     {
         Story story = Make().Story;
 
-        Assert.Equal(["has_item", "seen", "pause"], story.Functions.Select(function => function.Name));
+        Assert.Equal(["has_item", "seen", "delay"], story.Functions.Select(function => function.Name));
         FunctionInfo seen = story.Functions[1];
         Assert.Equal(
             [("at", StoryTypeKind.Node), ("by", StoryTypeKind.Actor)],
@@ -157,7 +157,7 @@ public class HostApiTests
                 calls.Add(arguments);
                 return "tense";
             })
-            .AddDynamic("pause", [typeof(decimal), typeof(TimeSpan)], typeof(TimeSpan), arguments => (TimeSpan)arguments[1]!);
+            .AddDynamic("delay", [typeof(decimal), typeof(TimeSpan)], typeof(TimeSpan), arguments => (TimeSpan)arguments[1]!);
         Game game = Make();
         var runner = new DialogueRunner(game.Story, game.State, functions);
 
@@ -189,7 +189,7 @@ public class HostApiTests
         HostFunctions functions = new HostFunctions()
             .AddDynamic("has_item", [typeof(decimal)], typeof(bool), _ => true)
             .AddDynamic("seen", [typeof(string), typeof(string)], typeof(string), _ => "calm")
-            .AddDynamic("pause", [typeof(decimal), typeof(TimeSpan)], typeof(TimeSpan), _ => TimeSpan.Zero);
+            .AddDynamic("delay", [typeof(decimal), typeof(TimeSpan)], typeof(TimeSpan), _ => TimeSpan.Zero);
 
         HostFunctionProblem problem = Assert.Single(functions.Validate(game.Story));
 

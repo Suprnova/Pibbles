@@ -67,6 +67,41 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: Hi{w}", typeof(InputWaitSyntax))]
+    [InlineData("mira: Hi{pause 0.5}", typeof(PauseSyntax))]
+    public void Parse_WaitOrPausePoint_MakesItsOwnNode(string line, Type expected)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        var text = (TextLineSyntax)SyntaxTree.Parse(source).Root.Nodes[0].Body[0];
+
+        Assert.IsType(expected, text.Content[^1]);
+    }
+
+    [Theory]
+    [InlineData("-> Knock{w}", "{w}")]
+    [InlineData("-> Knock{pause 0.5}", "{pause}")]
+    public void Parse_WaitOrPauseInOption_NamesThePointWritten(string line, string point)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n    mira: Hi\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(($"An option's text can't contain `{point}`.", "PIB1016"), (diagnostic.Message, diagnostic.Code));
+    }
+
+    [Fact]
+    public void Parse_PauseWithoutDuration_ReportsMissingValueAndKeepsThePoint()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\nmira: Hi{pause}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var pause = (PauseSyntax)((TextLineSyntax)tree.Root.Nodes[0].Body[0]).Content[^1];
+        Assert.Equal(("PIB1046", true), (Assert.Single(tree.Diagnostics).Code, pause.Duration is ErrorExpressionSyntax));
+    }
+
+    [Theory]
     [InlineData("mira: [b]unclosed")]
     [InlineData("mira: {$unclosed")]
     [InlineData("-> [b]unclosed")]

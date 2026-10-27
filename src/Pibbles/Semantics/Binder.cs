@@ -216,8 +216,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     BindCommand(command.Command, command.Arguments, command.Span, inline: true);
                     break;
 
-                case PauseSyntax { Duration: { } duration }:
-                    BindPacing(duration, TypeSymbol.Duration, "`{w}` takes a `duration`", "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
+                case PauseSyntax pause:
+                    BindPacing(pause.Duration, TypeSymbol.Duration, "`{w}` takes a `duration`", "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
                     break;
 
                 case SpeedSyntax { Factor: { } factor }:

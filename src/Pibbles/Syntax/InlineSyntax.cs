@@ -24,9 +24,12 @@ public sealed record InterpolationSyntax(ExpressionSyntax Value) : InlineSyntax;
 /// <param name="Wait">Whether the point overrides the command's declared waiting.</param>
 public sealed record InlineCommandSyntax(NameSyntax Command, IReadOnlyList<ArgumentSyntax> Arguments, CommandWait Wait) : InlineSyntax;
 
-/// <summary><c>{w}</c>, which waits for the player, or <c>{w 0.5}</c>, which pauses the reveal.</summary>
-/// <param name="Duration">How long to pause, or <see langword="null"/> to wait for the player.</param>
-public sealed record PauseSyntax(ExpressionSyntax? Duration) : InlineSyntax;
+/// <summary><c>{w}</c>: waits for the player, then continues on the same page.</summary>
+public sealed record InputWaitSyntax : InlineSyntax;
+
+/// <summary><c>{pause 0.5}</c>: holds the reveal for a time.</summary>
+/// <param name="Duration">How long to pause. A missing value is an <see cref="ErrorExpressionSyntax"/>.</param>
+public sealed record PauseSyntax(ExpressionSyntax Duration) : InlineSyntax;
 
 /// <summary><c>{speed 2}</c>, which sets the reveal speed from this point on, or <c>{speed}</c>, which returns to the player's setting.</summary>
 /// <param name="Factor">The speed relative to the player's setting, or <see langword="null"/> to return to it.</param>

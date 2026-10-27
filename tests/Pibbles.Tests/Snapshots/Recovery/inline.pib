@@ -10,3 +10,4 @@ mira: I'm #winning today.
 -> Wait {w} here
 mira: {if $a}never closed
 mira:
+mira: A pause{pause} with no time.
