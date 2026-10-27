@@ -189,7 +189,7 @@ This text [wave]wobbles[/wave].
 Curly braces mark a point in the line. These ones control timing as the text types out:
 
 ```pib
-This line pauses briefly here,{w 0.5} then keeps going.
+This line pauses briefly here,{pause 0.5} then keeps going.
 This line waits for the player to click here,{w} then keeps going.
 This line fills one box.{p}This part starts on a fresh page after a click.
 This line has a line break here{br}and continues on the next line.
@@ -198,7 +198,7 @@ This part types at normal speed, {speed 0.3}this part types slowly,{speed 3} and
 
 | Write | Effect |
 | --- | --- |
-| `{w 0.5}` | Pause for that many seconds |
+| `{pause 0.5}` | Pause for that many seconds |
 | `{w}` | Wait for a click, then continue on the same page |
 | `{p}` | Wait for a click, clear the box, continue |
 | `{br}` | Start a new line |
@@ -528,7 +528,7 @@ This node used to be called kitchen.door.
 | `[b]…[/b]` `[i]` `[u]` `[s]` `[color "#hex"]` | Formatting |
 | `{speed 0.5}` / `{speed}` | Slower or faster typing / back to normal |
 | `{$x}` | Show a variable's value |
-| `{w 0.5}` / `{w}` | Timed pause / wait for click |
+| `{pause 0.5}` / `{w}` | Timed pause / wait for click |
 | `{p}` / `{br}` | New page / new line |
 | `{@command}` | Effect at this point in the line (`inline` commands only) |
 | `{icon name}` | Inline icon |

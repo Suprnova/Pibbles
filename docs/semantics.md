@@ -31,7 +31,7 @@ Once every pass has run, each diagnostic gets the severity its file's settings g
 `Compilation.Bindings` is internal, for the compiler. The binder fills it as it goes:
 
 - **The symbol each name refers to.** Names are keyed by the syntax node that spells them: the name of a speaker, pose, command, markup, icon, called function, named argument, or `@jump` and `@call` target; a variable; a bare name (an enum member, an actor or a node); and a tag, whose enum value is kept separately. A name that doesn't resolve has no entry.
-- **Each expression's type, and its converted type.** Every expression the binder reaches has an entry, nested ones included, and variables' starting values and parameters' defaults too. The converted type is the type the context uses the expression as, which differs from its type only for a number where a duration is expected (`@wait 1`, `{w 1}`, a `duration` argument, `@set $d += 1`, the number beside a duration in `+`, `-` and the comparisons). An expression whose type can't be known has the error type.
+- **Each expression's type, and its converted type.** Every expression the binder reaches has an entry, nested ones included, and variables' starting values and parameters' defaults too. The converted type is the type the context uses the expression as, which differs from its type only for a number where a duration is expected (`@wait 1`, `{pause 1}`, a `duration` argument, `@set $d += 1`, the number beside a duration in `+`, `-` and the comparisons). An expression whose type can't be known has the error type.
 
 - **The parameter each argument fills,** for commands (statement and inline), markup and function calls, positional and named alike, keyed by the argument's value expression. An argument that fills no parameter (an extra one, a repeat, or one for something that doesn't exist) has no entry.
 - **Defaults and starting values.** A `ParameterSymbol` keeps the expression after its `=`, and a `VariableSymbol` its starting value (the first declaration's, for a duplicate). Both are bound like any other expression, so their types and conversions are in the bindings.
@@ -261,7 +261,7 @@ Non-compliant:
 ```
 This line waits for a click that happens anyway.{w}
 This line waits twice here.{w}{p}New page.
-This line pauses{w 0.2}{w 0.3} in two steps.
+This line pauses{pause 0.2}{pause 0.3} in two steps.
 ```
 
 Compliant:
@@ -269,7 +269,7 @@ Compliant:
 ```
 This line ends normally.
 This line waits once here.{p}New page.
-This line pauses{w 0.5} in one step.
+This line pauses{pause 0.5} in one step.
 ```
 
 #### PIB5012, PIB5019 and PIB5050 – Redundant markup ⚡

@@ -39,7 +39,7 @@ Why a flat instruction list instead of walking the tree:
 
 **Expressions** stay as small trees, evaluated recursively. They never pause, so a stack machine would gain nothing. Lowering builds them from the syntax and the bindings, so evaluating one needs neither: every name is already its symbol, and every node knows its type. The nodes are constants (number, duration in seconds, string, bool, and an enum member, actor or node as its symbol, a node by its current name), variables, calls to host functions (arguments in parameter order, defaults filled), `visits(node)` as a node of its own, unary and binary operators, and an explicit conversion. Every node carries its `Type`, so an operator's operand types (`Left.Type`, `Right.Type`) say whether `+` adds numbers, adds durations or joins text. Where the bindings say the context uses a number as a duration, lowering wraps that expression in a `ToDuration`: for `0.5s + (1 + 2)` the wrapper goes around the parenthesized sum. Nothing is folded or evaluated at this stage; division by zero, `%` and overflow are the evaluator's.
 
-**Line templates** are the lowered inline text of each line and option, stored by ID. A template has the speaker (an actor or none), every tag with its name, raw value and, for an enum-typed tag, the member, and its content: a list of elements, each of which is text, a markup span (with its arguments in parameter order and its children), a shown value (a `string`, `number` or `actor` expression), an inline command (with its resolved `waits`), `{w}` (input wait), `{w d}` (timed pause), `{speed x}`, `{speed}` (reset), `{p}`, `{br}`, `{icon name}`, or conditional text with its `{if}`/`{elif}` branches and `{else}`. Speed is a point: `{speed x}` sets a factor relative to the player's setting from there on, and `{speed}` returns to it. Whether a computed pacing value is greater than zero is checked when the line is rendered, not here.
+**Line templates** are the lowered inline text of each line and option, stored by ID. A template has the speaker (an actor or none), every tag with its name, raw value and, for an enum-typed tag, the member, and its content: a list of elements, each of which is text, a markup span (with its arguments in parameter order and its children), a shown value (a `string`, `number` or `actor` expression), an inline command (with its resolved `waits`), `{w}` (input wait), `{pause d}` (timed pause), `{speed x}`, `{speed}` (reset), `{p}`, `{br}`, `{icon name}`, or conditional text with its `{if}`/`{elif}` branches and `{else}`. Speed is a point: `{speed x}` sets a factor relative to the player's setting from there on, and `{speed}` returns to it. Whether a computed pacing value is greater than zero is checked when the line is rendered, not here.
 
 **IDs.** Lines that show text, options, `@call` and the openers of `@sequence`, `@cycle` and `@once` have an ID, from their `#id` tag. Pose-only lines have none. A site with no `#id` gets a **fallback ID**, `~<path>:<line>`, where `path` is the source's path as given and `line` is the 1-based line of the site. No written ID can start with `~`, and the same sources always give the same fallback IDs. The story records which IDs are fallbacks, because a snapshot can't keep state keyed by one ([localization](localization.md#when-theyre-required)).
 
@@ -159,7 +159,7 @@ Three kinds of problem, three channels:
 | Kind | When it happens | What the story does instead | How to fix the script |
 | --- | --- | --- | --- |
 | `DivisionByZero` | `/` or `%` with a divisor that is zero at run time | The result is `0` | Check the divisor first, or divide by something that can't be zero |
-| `NonPositivePause` | A `{w d}` in a line whose duration, computed at run time, isn't more than zero | The pause is left out of the line | Make sure the duration can't be zero or negative |
+| `NonPositivePause` | A `{pause d}` in a line whose duration, computed at run time, isn't more than zero | The pause is left out of the line | Make sure the duration can't be zero or negative |
 | `NonPositiveSpeed` | A `{speed x}` in a line whose factor, computed at run time, isn't more than zero | The speed change is left out of the line | Make sure the factor can't be zero or negative |
 | `NonPositiveWait` | An `@wait` whose duration, computed at run time, isn't more than zero | The wait is skipped and the story carries on | Make sure the duration can't be zero or negative |
 | `InfiniteLoop` | A dialogue runs through the instruction budget without showing anything | The runner ends the dialogue | Give the loop a way out, such as a condition on a variable it changes |
@@ -190,12 +190,12 @@ Rendering a template resolves the interpolation and conditionals against the sta
   | Source | Marker | Payload |
   | --- | --- | --- |
   | `{w}` | `InputWaitMarker` | |
-  | `{w d}` | `PauseMarker` | `TimeSpan`, clamped like host function durations |
+  | `{pause d}` | `PauseMarker` | `TimeSpan`, clamped like host function durations |
   | `{p}` | `PageBreakMarker` | |
   | `{speed x}`, `{speed}` | `SpeedMarker` | The factor in effect after the marker: `x`, or 1 for `{speed}`. Speed resets to 1 at the start of every line, with no marker. |
   | `{@command args}` | `CommandMarker` | A `CommandInvocation` and `Waits`, resolved like a statement command's |
 
-- **A `{w d}` or `{speed x}` whose value isn't more than zero** produces no marker and a `NonPositivePause` or `NonPositiveSpeed` [warning](#runtime-warnings). Constants are rejected when the story is checked (PIB2039); this covers values computed at run time.
+- **A `{pause d}` or `{speed x}` whose value isn't more than zero** produces no marker and a `NonPositivePause` or `NonPositiveSpeed` [warning](#runtime-warnings). Constants are rejected when the story is checked (PIB2039); this covers values computed at run time.
 - **Only the chosen branch** of conditional text contributes spans, markers and icons. Inline commands fire again when a line is rendered again after a load, which is why only commands declared `inline` can appear in text.
 - **Icons** are in their own array, not among the markers: markers are things the reveal does, and an icon is neither timing nor an effect. A literal U+FFFC can't be written in a story (PIB1048), and one in a shown value shows as U+FFFD, so the character in `Text` always means an icon.
 - **Option text** is a `Line` too, with spans, icons and tags. It can't hold commands, `{w}`, `{p}` or `{speed}`, so its markers are always empty.

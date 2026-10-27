@@ -385,7 +385,7 @@ rex: [wave amplitude=2]Spooooky.[/wave]
 | `{$var}`, `{fn(args)}` | Interpolates the value. A `string` shows as written, a `number` is formatted with the current locale's culture, and an `actor` shows its display name. Other types (`bool`, enums, `node`, `duration`) can't be interpolated: they aren't player-facing text. Use conditional text (`{if $has_key}…{/if}`), or a host function that returns a string. |
 | `{@command args}` | Runs a command declared `inline` at this point in the reveal. `{@jolt mira wait}` holds the reveal until the host finishes. |
 | `{w}` | Waits for player input, then continues on the same page. |
-| `{w 0.5}` | Pauses the reveal for this long (a duration). |
+| `{pause 0.5}` | Pauses the reveal for this long (a duration). |
 | `{speed 0.3}` | Sets the reveal speed from this point on, relative to the player's speed setting (a `number`: `2` is twice as fast, `0.5` is half). |
 | `{speed}` | Returns to the player's speed setting. The reveal reads each speed point as the factor in effect after it: `x`, or 1 for `{speed}`. |
 | `{p}` | Page break: waits for input, clears the box, continues. |
@@ -398,10 +398,10 @@ mira: Very... {speed 0.3}slowly...{speed} there.
 
 Speed resets to the player's setting at the start of every line. Each speed point stands alone, so there's nothing to nest: the last one before a character decides how fast it appears.
 
-**Pacing values** are the value of `{speed x}` and the durations of `{w d}` and `@wait d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
+**Pacing values** are the value of `{speed x}` and the durations of `{pause d}` and `@wait d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
 
 ```pib-error PIB2039
-mira: Wait.{w 0} What?
+mira: Wait.{pause 0} What?
 ```
 
 A value computed at run time (anything involving a variable or a function call) that isn't greater than zero isn't an error: the runtime skips that point and reports a warning.

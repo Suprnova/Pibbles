@@ -92,7 +92,7 @@ A PO entry:
 #: kitchen.pib:12
 msgctxt "k7qp2x"
 msgid "Locked.{w} Of course it's locked."
-msgstr "Cerrada.{w 0.3} Cómo no, está cerrada."
+msgstr "Cerrada.{pause 0.3} Cómo no, está cerrada."
 ```
 
 - `msgctxt` holds the line ID. `msgid` holds the source inline text, with the speaker prefix, tags and modifiers stripped. Notes (`///`), the speaker and the source location become extracted comments.
