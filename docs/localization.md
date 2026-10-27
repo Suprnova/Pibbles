@@ -21,7 +21,7 @@ mira (worried): Locked.{w} Of course it's locked. #id:k7qp2x
 
 Everything below applies to the real story. [Drafts](language/design.md#drafts) need no IDs and are never extracted for translation or recording.
 
-Every text line and option, since those are what's shown, translated, voiced or saved at. Also every `@call`, because a save can be waiting inside the called node. Pose-only lines (`mira (sad):`) take no ID: they show nothing and complete at once, so a save never waits on one. Variation blocks also get an ID on their opener (`@once #id:b8k2qd`), which keys how many times the block has run, so it survives blocks being inserted, reordered or moved. Other translatable text gets an implicit ID from its declaration: actor and persona names (`actor.mira`, `actor.rex.stranger`) and term bodies (`term.they`). IDs must be unique across the story, and a duplicate is an error.
+Every text line and option, since those are what's shown, translated, voiced or saved at. Also every `@call`, because a save can be waiting inside the called node. Lines that only set values (`mira (sad):`) take no ID: they show nothing and complete at once, so a save never waits on one. Variation blocks also get an ID on their opener (`@once #id:b8k2qd`), which keys how many times the block has run, so it survives blocks being inserted, reordered or moved. Other translatable text gets an implicit ID from its declaration: actor and persona names (`actor.mira`, `actor.rex.stranger`), the name shown with narration (`narration`), and term bodies (`term.they`). IDs must be unique across the story, and a duplicate is an error.
 
 IDs are what everything else keys on:
 
@@ -88,14 +88,14 @@ A PO entry:
 
 ```
 #. Sarcastic. She's said this about every door so far.
-#. Speaker: Mira (worried)
+#. Speaker: Mira (worried, shake)
 #: kitchen.pib:12
 msgctxt "k7qp2x"
 msgid "Locked.{w} Of course it's locked."
 msgstr "Cerrada.{pause 0.3} Cómo no, está cerrada."
 ```
 
-- `msgctxt` holds the line ID. `msgid` holds the source inline text, with the speaker prefix, tags, modifiers and trailing comment stripped. Notes (`///`), the speaker and the source location become extracted comments. A `msgstr` takes the source's escapes, `\//` included, since the same inline parser reads it. An unescaped `//` in one is an error, because a translation holds only a line's text and has nothing to comment on.
+- `msgctxt` holds the line ID. `msgid` holds the source inline text, with the speaker prefix and the values in its parenthesis, tags, modifiers and trailing comment stripped, so translators never see the values. Notes (`///`), the speaker, its values and the source location become extracted comments. A `msgstr` takes the source's escapes, `\//` included, since the same inline parser reads it. An unescaped `//` in one is an error, because a translation holds only a line's text and has nothing to comment on.
 - The core reads and writes PO itself. The format is small, and the core stays free of dependencies.
 
 **Why PO:** it's the format translation tools and services support best. It carries context, notes and fuzzy state. Godot also uses PO for UI strings, so the game's UI text and story text can share one translation pipeline and one vendor.
@@ -108,7 +108,7 @@ Translators need freedom. Word order changes, emphasis moves, and pauses land so
 
 | Category | Elements | Rule | On violation |
 | --- | --- | --- | --- |
-| Effects | `{@command}`, pose changes, `{auto}` | Same multiset (same elements with the same arguments). Position may change. | Error |
+| Effects | `{@command}`, the values a line sets (`mira (sad):`, which a translation never carries, since the translator sees only the text), `{auto}` | Same multiset (same elements with the same arguments). Position may change. | Error |
 | Information | `{icon}`, `required` markup | Same multiset. Position and extent may change. | Error |
 | Values | `{$var}`, `{fn()}` interpolations | Same multiset | Warning |
 | Logic | `{if}`, variations, `{plural}`, term references | Free to add, remove or restructure. Must bind: only declared variables and functions, correct types. | Normal binding errors |

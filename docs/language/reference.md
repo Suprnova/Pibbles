@@ -54,7 +54,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 ## Lexical basics
 
-- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
+- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
 - **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
@@ -63,7 +63,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 - **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\/`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
 - **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
-- **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
+- **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A line that only sets values (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
 
 ## Declarations
 
@@ -73,9 +73,13 @@ Declarations make up the contract between the story and the host ([boundaries](.
 @channel pose: neutral, happy, sad, worried
 @channel effect: still, shake
 
+@narration
+    no pose
+
 @actor mira
     name: Mira
     pose += smug, angry
+    no effect
 
 @enum position: left, center, right, offscreen
 @enum room: kitchen, cellar
@@ -100,7 +104,9 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 | Declaration | Meaning |
 | --- | --- |
-| `@actor id` | A character. `name:` is the display name, plain text in which every character counts up to a `//` comment, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
+| `@channel name [: a, b, c]` | Something a line sets for its speaker, such as a pose, an effect or a camera move. `a, b, c` are the values every actor and narration start with, the first being where each starts; without them, each speaker lists its own. A value is a name of its own, not an enum member. A speaker's values are all different across its channels, so a line names a value without its channel. |
+| `@actor id` | A character. `name:` is the display name, plain text in which every character counts up to a `//` comment, and defaults to the ID. The block's other lines change what the actor gets of each channel: `pose: a, b` replaces the channel's values with the actor's own, `pose += c` adds to them, and `no camera, effect` drops channels, so the actor's lines can't set them. A block mentions a channel once, and only channels the story declares. |
+| `@narration` | What narration has, since narration isn't an actor: no line names it, and it's never an `actor` value. The block takes the same lines as an actor's, and `name:` is a name shown with narration's lines. Without the block, narration has every channel's defaults and no name. A story has one. |
 | `@enum name: a, b, c` | A closed set of values. Use it for positions, rooms, sound IDs, anything that should be typo-proof. |
 | `@var $name [: type] = literal` | A variable, saved with the game. The name may be dotted or [relative](#prefixes). The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
 | `@command name(params) [inline] [waits]` | A host instruction. `inline` allows it inside a line's text ([below](#commands)). `waits` means the story waits for it to finish by default. |
@@ -172,15 +178,18 @@ The prefix is written in the file, not derived from its name or folder, so renam
 ```pib
 mira: Hello there.
 mira (smug): I knew you'd come.
+mira (angry, shake): A value in each of two channels, in any order.
+(shake): Narration sets values too.
 The kitchen smells of old coffee.
 mira (sad):
 ```
 
-- **`speaker:`** where `speaker` is a declared actor, followed by a space or the end of the line. Spaces between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):`. Anything else is narration.
-- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds more than one name (`mira (to Rex): Fine.`) is an error, since a pose is a single name. So is anything between a declared actor's pose and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
-- **`speaker (pose):`** sets the actor's pose, then shows the line. The pose stays until it's changed again.
-- **`speaker (pose):` with no text** changes the pose without showing a line.
-- **`speaker:` with neither a pose nor text** is an error. For a box that shows only the speaker's name, write a point and no text: `mira: {w}`.
+- **`speaker:`** where `speaker` is a declared actor, followed by a space or the end of the line. Spaces between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):` and `mira (happy, shake):`. Anything else is narration.
+- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds anything but names separated by commas (`mira (to Rex): Fine.`, `(to the room): Fine.`) is an error, so a stage direction is never read as values. So is anything between a declared actor's values and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
+- **`speaker (a, b):`** sets the speaker's values, then shows the line. A value is one of the speaker's values in any of its channels, and names its channel by itself. A line sets at most one value in each channel, in any order. A value stays until a line of the same speaker changes it again, and it goes to the host on the line that set it.
+- **`(a, b):` at the start of a line,** with no name before the parenthesis, sets narration's values the same way. A narration line that starts with a parenthesis and a colon is read as values: `(Meanwhile): …` reports an unknown value, and a backslash before the `(` makes it text.
+- **A parenthesis with no text** sets the values without showing a line.
+- **`speaker:` with neither values nor text** is an error. For a box that shows only the speaker's name, write a point and no text: `mira: {w}`.
 - Each line is shown as one message, and its text is inline-markup text ([below](#inline-text)).
 - **Leading and trailing whitespace is trimmed from what the line shows,** not only from what you typed. A conditional that renders nothing, a shown value's own spaces and a `{br}` at either end don't leave blank space at the ends of the box, and the `{if $key}Ah, {/if}there.` case shows `there.` Spaces inside the text stay as they are. A point that falls in the trimmed space moves to the nearest end of the text.
 - **The character U+FFFC (the object replacement character) can't appear in text** (PIB1048), because the runtime uses it to mark where each icon goes in a line's text. One in a shown value shows as U+FFFD.
@@ -430,7 +439,7 @@ The branches can contain any inline text, including markup and points. Only the 
 
 ## Runtime semantics summary
 
-- **Dialogues are pull-based.** The host starts a node and repeatedly asks for the next step: a line, a choice, a command, a pose change, a pause, or the end. See [runtime design](../runtime.md#runtime-model).
+- **Dialogues are pull-based.** The host starts a node and repeatedly asks for the next step: a line, a choice, a command, values set with no line, a pause, or the end. See [runtime design](../runtime.md#runtime-model).
 - **A statement-level command is a step.** The host carries it out and asks for the next step, either right away or after it finishes, depending on the wait flag.
 - **An inline command is a marker** at a character position in the line. The reveal helper fires it when the reveal reaches that position. If the player skips the reveal, the command markers it skipped past still fire, in order. Timing markers (pauses, speed) are dropped.
 - **Skipping never changes the outcome.** Every `@set`, command and effect still happens, in order. Only timing is dropped.
@@ -444,7 +453,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 
 | Group | Words |
 | --- | --- |
-| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
+| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `channel`, `narration`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
 | Brace keywords (after `{`) | `w`, `pause`, `page`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |
@@ -461,15 +470,16 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Function | In expressions and `{name(…)}` | A brace keyword, value word or built-in function |
 | Enum | In types | A built-in type |
 | Enum member, single-segment node name | Bare in arguments and expressions | A value word or argument word |
-| Actor | Bare in arguments and expressions, and *(ext)* `{actor (pose)}` | A value word, argument word or brace keyword |
+| Actor | Bare in arguments and expressions, and *(ext)* `{actor (value)}` | A value word, argument word or brace keyword |
+| Channel | In an actor's or narration's block | `name` or `no` |
 | Parameter | In `name=value` | `wait` or `nowait` |
 | *(ext)* Term | `{name}` | A brace keyword or function |
 | *(ext)* Persona | Inside `@actor` | `default`, the name of the base presentation |
-| Pose, icon, tag, variable, segment of a dotted node name | Only in their own positions | Nothing reserved |
+| Channel value, icon, tag, variable, segment of a dotted node name | Only in their own positions | Nothing reserved |
 
 A clash is reported at the declaration (or node header). Declared names share one namespace per kind: two kinds may use the same name, such as `@enum sfx` and `@command sfx`, because their positions never overlap.
 
-**Contextual words** are keywords only where the syntax lists them, and are never reserved: `name`, `poses`, `inline`, `waits`, and *(ext)* `required` and `persona`.
+**Contextual words** are keywords only where the syntax lists them, and are never reserved: `name`, `no`, `inline`, `waits`, and *(ext)* `required` and `persona`.
 
 **Reserved tags:** `#id` and `#was`; *(ext)* `#migrates`, `#draft`, and `#voice` and `#unvoiced` ([voice](../localization.md#recorded-lines)). A tag can't be declared with one of these names.
 
@@ -560,13 +570,13 @@ PUNCT           ::= "(" | ")" | "," | ":" | "?" | "=" | "+=" | "-=" | "->"
                   | "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" | "%"
 ```
 
-**Keywords.** Where the syntax lists a [reserved word](#reserved-words) as a literal, a NAME spelled that way is that keyword. An AT_WORD is a statement or declaration keyword when its word is one, and a command otherwise. Declarations can't use a reserved word where it would be read as the keyword, so no valid story can mean anything else by it. [Contextual words](#reserved-words) (`name`, `poses`, `inline`, `waits`) are keywords only where the syntax lists them.
+**Keywords.** Where the syntax lists a [reserved word](#reserved-words) as a literal, a NAME spelled that way is that keyword. An AT_WORD is a statement or declaration keyword when its word is one, and a command otherwise. Declarations can't use a reserved word where it would be read as the keyword, so no valid story can mean anything else by it. [Contextual words](#reserved-words) (`name`, `no`, `inline`, `waits`) are keywords only where the syntax lists them.
 
 Inline mode:
 
 ```ebnf
-SPEAKER         ::= ident (ws* pose)? ws* ":"      /* followed by ws or the end of the line */
-pose            ::= "(" ws* ident ws* ")"
+SPEAKER         ::= (ident ws* values? | values) ws* ":"      /* followed by ws or the end of the line; no name means narration */
+values          ::= "(" ws* ident (ws* "," ws* ident)* ws* ")"
 TEXT            ::= text_char+
 text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag, a COMMENT or, in option text, a modifier starts */
 ESCAPE          ::= #x5C escapable
@@ -607,12 +617,15 @@ block           ::= INDENT statement+ DEDENT
 ### Declarations
 
 ```ebnf
-declaration     ::= actor_decl | enum_decl | var_decl | command_decl
-                  | markup_decl | icon_decl | tag_decl | function_decl
+declaration     ::= actor_decl | narration_decl | channel_decl | enum_decl | var_decl
+                  | command_decl | markup_decl | icon_decl | tag_decl | function_decl
+channel_decl    ::= "@channel" NAME (":" name_list)? EOL
 actor_decl      ::= "@actor" NAME EOL INDENT actor_prop+ DEDENT
-actor_prop      ::= name_prop | poses_prop
+narration_decl  ::= "@narration" EOL INDENT actor_prop+ DEDENT
+actor_prop      ::= name_prop | channel_prop | no_prop
 name_prop       ::= "name" ":" RAW EOL
-poses_prop      ::= "poses" ":" name_list EOL
+channel_prop    ::= NAME (":" | "+=") name_list EOL
+no_prop         ::= "no" name_list EOL
 enum_decl       ::= "@enum" NAME ":" name_list EOL
 icon_decl       ::= "@icon" name_list EOL
 tag_decl        ::= "@tag" tag_entry ("," tag_entry)* EOL
@@ -709,7 +722,9 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - Declarations come before a file's first node, and `@prefix` comes before everything but comments.
 - A variation block holds only alternatives.
 - A speaker is a declared actor. Otherwise the analyzer suggests escaping the colon.
-- A text line that starts with a name, then a parenthesis that isn't a single identifier, then a colon (`mira (to Rex):`) is an error. So is a text line that starts with a declared actor and its pose, then more parentheses or a word, then a colon (`mira (mad) (shake):`, `mira (mad) shake:`). A text line that starts with a declared actor directly followed by a colon and a character other than whitespace (`mira:Hi`) is a warning. All three suggest escaping the colon if the line is narration.
+- Each value in a speaker's parenthesis is one of the speaker's values, and a line sets at most one value in each channel. Narration's parenthesis takes narration's values.
+- A block names only declared channels, and mentions each once. `@narration` appears once in a story. A speaker's values are all different across its channels.
+- A text line that starts with a name, then a parenthesis that isn't a list of identifiers, then a colon (`mira (to Rex):`, or `(to the room):` for narration) is an error. So is a text line that starts with a declared actor and its values, then more parentheses or a word, then a colon (`mira (mad) (shake):`, `mira (mad) shake:`). A text line that starts with a declared actor directly followed by a colon and a character other than whitespace (`mira:Hi`) is a warning. All three suggest escaping the colon if the line is narration.
 - A tag is reserved or declared with `@tag`. An unknown tag suggests the closest declared name, or escaping the `#` if it's meant as text.
 - A flag tag has no `:`. A value tag has one, followed by a value of its type. The value may be empty only if the type is marked `?`. A tag type is `string` or a declared enum.
 - `#id` has the [line ID](#lexical-basics) shape, at most once, only on a text line that shows text, an option, `@call` or a variation block opener. A block opener takes no other tag.
@@ -734,15 +749,15 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 7 | `TAG` |
 | 8 | `COMMENT` |
 | 9 | `AT_WORD`, `CALL_OPEN`, `PUNCT`, keywords |
-| 10 | `SPEAKER`, `pose` |
+| 10 | `SPEAKER`, `values` |
 | 11 | `TEXT`, `text_char` |
 | 12 | `ESCAPE` |
 | 13 | `SPAN_OPEN`, `SPAN_CLOSE`, `BRACE`, `BRACE_IF`, `BRACE_ELIF`, `BRACE_ELSE`, `BRACE_CLOSE` |
 | 14 | `RAW` |
 | 15 | `file`, `prefix_line`, `node`, `header_line`, `block` |
 | 16 | `declaration` |
-| 17 | `actor_decl`, `actor_prop`, `name_prop`, `poses_prop` |
-| 18 | `enum_decl`, `icon_decl`, `tag_decl`, `tag_entry`, `name_list` |
+| 17 | `actor_decl`, `narration_decl`, `actor_prop`, `name_prop`, `channel_prop`, `no_prop` |
+| 18 | `channel_decl`, `enum_decl`, `icon_decl`, `tag_decl`, `tag_entry`, `name_list` |
 | 19 | `var_decl`, `type`, `constant`, `literal` |
 | 20 | `command_decl`, `command_flag`, `markup_decl`, `function_decl`, `params`, `param` |
 | 21 | `statement` |
@@ -764,7 +779,7 @@ The [grammar extensions](design.md#grammar-extensions), and the notes and `requi
 
 - A letter or digit after `\` is an error, so new escapes (`\n`, `\u1234`) can be added.
 - v1 [reserves](#reserved-words) every word, tag and line marker the extensions use, in the positions the extensions will use them, so no valid v1 story can already mean something by them.
-- v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (pose)}` free for the [mid-line pose extension](design.md#pose-changes-partway-through-a-line).
+- v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (value)}` free for the [mid-line value extension](design.md#values-set-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
 - **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) isn't reserved. Its keyword and case markers (`plural`, `zero`, `one`, `two`, `few`, `many`, `other`) are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their syntax is chosen to avoid names stories already use, or the change is announced as breaking.
 - `[`, `{` and `\` in a display name are errors, so display names can later hold markup.

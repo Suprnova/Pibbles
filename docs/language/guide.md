@@ -72,9 +72,29 @@ mira (sad): Now her pose is "sad".
 mira (neutral):
 ```
 
-The last line has no text. It changes Mira's pose without showing a message. A name and a colon with nothing at all after it, `mira:`, is an error. For a message box with only Mira's name in it, write `mira: {w}`. Each character's poses are listed in the cast list, and Pibbles tells you if you use one that doesn't exist.
+The last line has no text. It changes Mira's pose without showing a message. A name and a colon with nothing at all after it, `mira:`, is an error. For a message box with only Mira's name in it, write `mira: {w}`. Each character's poses are listed in the cast list, and Pibbles tells you if you use one the character doesn't have.
 
-The parentheses hold a single pose name, not a stage direction. `mira (to Rex): Fine.` is an error. To note how a line should be said, put a `//` comment above it.
+The parentheses hold names from the cast list, not a stage direction. `mira (to Rex): Fine.` is an error. To note how a line should be said, put a `//` comment above it.
+
+## Channels: more than a pose
+
+A pose is one of the things a line can set for its speaker. The game can declare others, called channels: a sprite effect, a camera move, anything it wants to change from line to line. Put the values you want in the same parentheses, in any order, with at most one for each channel. Each value belongs to one channel, so you never write which.
+
+```pib
+mira (angry, shake): I AM YELLING NOW!!!
+mira: Still angry, and still shaking.
+mira (neutral, still): Better.
+```
+
+A value stays until the character's next line changes it, in its own channel. The lines in between don't touch the others. The game decides what each value looks like.
+
+Narration can set values too. Start the line with the parentheses:
+
+```pib
+(shake): The whole kitchen rattles.
+```
+
+Which values a character can use is up to the cast list ([below](#declarations-the-cast-and-vocabulary)). Every character starts with the same values for a channel, a character can add to them or have its own, and a character who has no use for a channel, such as a voice from offstage with no camera, doesn't have it. Pibbles tells you if you use a value the character doesn't have.
 
 ## Choices
 
@@ -399,10 +419,20 @@ One or more files (usually a single file like `defs.pib`) list everything the st
 ```pib-standalone
 // What a line can set for its speaker, and the values every character starts with
 @channel pose: neutral, happy, sad
+@channel effect: still, shake
+
+// Narration is declared like a character, but it isn't one. This one has no pose.
+@narration
+    no pose
 
 // Characters
 @actor mira
     name: Mira
+    pose += smug       // Adds to the shared poses
+@actor rex
+    name: Rex
+    pose: neutral, grumpy // Replaces them with its own
+    no effect          // Has no effect channel
 
 // Fixed lists of names, used by commands and variables
 @enum position: left, center, right
@@ -426,6 +456,12 @@ One or more files (usually a single file like `defs.pib`) list everything the st
 @function has_item(id: string) -> bool
 @function item_name(id: string) -> string
 ```
+
+To read the channels and characters:
+
+- `@channel pose: neutral, happy, sad` gives every character, and narration, these poses. The first is where they start. A channel with no values, `@channel pose`, is one each character lists for itself.
+- `pose += smug` adds to the shared values, `pose: neutral, grumpy` replaces them with the character's own, and `no effect` drops the channel, so that character's lines can't set it.
+- `@narration` works the same way for narration. Add `name: Narrator` to show a name with narration's lines.
 
 To read a command declaration:
 
@@ -513,8 +549,8 @@ This node used to be called kitchen.door.
 
 ## Checking your work
 
-- **`pibbles check`** checks the whole story at once and lists every problem with its file and line: unknown characters or poses, misspelled variables or commands, missing node names, unclosed styles.
-- **`pibbles check --style`** also shows style hints: places that work, but could read better or be easier to translate, such as a line said word for word in three places, or a pose that's already set. They're only suggestions. To silence one you mean to keep, put `// pibbles-ignore` and its code on the line above it, such as `// pibbles-ignore PIB5003`.
+- **`pibbles check`** checks the whole story at once and lists every problem with its file and line: unknown characters or values, misspelled variables or commands, missing node names, unclosed styles.
+- **`pibbles check --style`** also shows style hints: places that work, but could read better or be easier to translate, such as a line said word for word in three places, or a value that's already set. They're only suggestions. To silence one you mean to keep, put `// pibbles-ignore` and its code on the line above it, such as `// pibbles-ignore PIB5003`.
 - **`pibbles play --start kitchen.door`** plays the story as text in a terminal, with numbered choices and effects shown in place, so you can test a branch without launching the game. When the story asks the game something, such as whether the player has an item, it asks you instead. Add `--record bug.transcript` to save what happened, so a bug you found can be played again exactly.
 - **`pibbles test`** plays every saved transcript in your project's `transcripts` folder again, and shows any whose story has changed since. If the change is what you meant, `pibbles test --update` saves the new version.
 
@@ -529,8 +565,10 @@ This node used to be called kitchen.door.
 | `== area.name #was:area.old_name` | Rename a node without breaking the game or old saves |
 | `mira: text` | Mira says a line |
 | `mira (happy): text` | Change Mira's pose, then she speaks |
+| `mira (happy, shake): text` | Set a value in each of two channels, in any order, then she speaks |
 | `mira (happy):` | Change Mira's pose silently |
 | `text` | Narration |
+| `(shake): text` | Narration that sets a value |
 | `-> text` | Choice option |
 | `-> text  @if $x` | Option only available if `$x` is true |
 | `-> text  @once` | Option disappears after it's picked |

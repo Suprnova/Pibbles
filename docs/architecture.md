@@ -9,7 +9,7 @@ How the pieces of Pibbles fit together, how the solution is laid out, which fram
  (path, text)     (per line, INDENT/  (statement  (per file,      (symbols,   (types, refs,               (IR + line
                   DEDENT, kind)       + inline)   spans, errors)  types)      diagnostics)                templates)
                                                                                                              │
-       Host ◄── Steps (Line, Choice, Command, Pose, Wait, End) ◄── DialogueRunner ◄── StoryState ◄───────────┘
+       Host ◄── Steps (Line, Choice, Command, Channel, Wait, End) ◄── DialogueRunner ◄── StoryState ◄───────────┘
         │                                                                 ▲
         └── LineReveal (optional): timing and markers for one Line        └── Host functions (delegates)
 ```

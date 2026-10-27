@@ -4,9 +4,9 @@
 
 **Core (v1)** is what a game needs before content production can scale. Its language is the [language reference](language/reference.md), and writers learn it from the [writer's guide](language/guide.md).
 
-- Declarations: actors with poses, enums, variables, commands (with `inline` and `waits`), markup, icons, tags, functions
+- Declarations: actors, channels (a pose is one), narration, enums, variables, commands (with `inline` and `waits`), markup, icons, tags, functions
 - Nodes with tags, `#was:` aliases, and `@prefix`. `@jump`, `@call`, `@return`, `@end`, `@pause`
-- Text lines with speaker, pose and narration. Pose-only lines
+- Text lines with a speaker, the channel values it sets, and narration. Lines with values and no text
 - Choices with `@if`, `@once`, tags and gather
 - `@if`/`@elif`/`@else`, `@set`, expressions, `visits()`
 - Block variations: `@sequence`, `@cycle`, `@once`

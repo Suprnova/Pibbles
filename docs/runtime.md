@@ -11,7 +11,7 @@ The compiler lowers each node's syntax tree to a **flat list of instructions**, 
 | Instruction | Lowered from |
 | --- | --- |
 | `Line(id)` | A text line that shows text, with or without a speaker. `mira: {w}` is one too. The line's template is stored under `id`. |
-| `Pose(actor, pose)` | A pose-only line (`mira (sad):`), and, before the `Line`, every posed line (`mira (happy): Hi`), every time, even if the actor already has that pose. A host treats a repeat as a no-op, and a host redrawing after a load can trust it. |
+| `Channel(speaker, values, tags)` | A parenthesis with no text (`mira (sad, shake):`, `(orbit):`): the values it sets, with its actor or none, and its tags. A line that shows text sets its values itself, in its template, so nothing comes before it. A value is sent every time, even if the speaker already has it. |
 | `Choice(options, join)` | Consecutive `->` options. Each option has its ID, its text template, its condition (from `@if`, or none), whether it is `@once`, its tags (in the template), and the index where its body starts. Options keep source order. |
 | `BranchIfFalse(condition, target)`, `Branch(target)` | `@if` / `@elif` / `@else`, and the branches that join them. A target is an index in the same node. |
 | `Set(variable, value)` | `@set`. `+=` and `-=` are lowered to a plain `Set` of a sum or difference, so `$x -= 1` is `Set($x, $x - 1)`. |
@@ -41,7 +41,7 @@ Why a flat instruction list instead of walking the tree:
 
 **Line templates** are the lowered inline text of each line and option, stored by ID. A template has the speaker (an actor or none), every tag with its name, raw value and, for an enum-typed tag, the member, and its content: a list of elements, each of which is text, a markup span (with its arguments in parameter order and its children), a shown value (a `string`, `number` or `actor` expression), an inline command (with its resolved `waits`), `{w}` (input wait), `{pause d}` (timed pause), `{speed x}`, `{speed}` (reset), `{page}`, `{br}`, `{icon name}`, or conditional text with its `{if}`/`{elif}` branches and `{else}`. Speed is a point: `{speed x}` sets a factor relative to the player's setting from there on, and `{speed}` returns to it. Whether a computed pacing value is greater than zero is checked when the line is rendered, not here.
 
-**IDs.** Lines that show text, options, `@call` and the openers of `@sequence`, `@cycle` and `@once` have an ID, from their `#id` tag. Pose-only lines have none. A site with no `#id` gets a **fallback ID**, `~<path>:<line>`, where `path` is the source's path as given and `line` is the 1-based line of the site. No written ID can start with `~`, and the same sources always give the same fallback IDs. The story records which IDs are fallbacks, because a snapshot can't keep state keyed by one ([localization](localization.md#when-theyre-required)).
+**IDs.** Lines that show text, options, `@call` and the openers of `@sequence`, `@cycle` and `@once` have an ID, from their `#id` tag. Lines that only set values have none. A site with no `#id` gets a **fallback ID**, `~<path>:<line>`, where `path` is the source's path as given and `line` is the 1-based line of the site. No written ID can start with `~`, and the same sources always give the same fallback IDs. The story records which IDs are fallbacks, because a snapshot can't keep state keyed by one ([localization](localization.md#when-theyre-required)).
 
 **The `Story`** holds everything the runner needs and nothing from the sources: it doesn't keep the compilation. It has the nodes by name; each `#was:` name mapped to the node's current name, so a host can start a node by either; the variables with their starting values as expressions; the templates by ID; and, for restoring saves, a table from each ID to where it lives, `(node, index)`. An option's site is its choice. All of it is internal, and the `Story` itself has no public members yet.
 
@@ -67,7 +67,7 @@ while (true)
         case LineStep { Line: var line }: /* show, wait for player */ break;
         case ChoiceStep { Options: var options }: runner.Choose(/* an option, or its ID */); break;
         case CommandStep { Command: var command, Waits: var waits }: /* run; await if waits */ break;
-        case PoseStep { Actor: var actor, Pose: var pose }: /* swap sprite */ break;
+        case ChannelStep { Actor: var actor, Values: var values }: /* swap sprite, start effect */ break;
         case PauseStep { Duration: var duration }: /* delay */ break;
         case EndStep: return;
         default: break;                                 // step kinds added by extensions
@@ -91,7 +91,7 @@ while (true)
 | `LineStep(Line)` | Shows the line and waits for the player. | Rendered the line's text. |
 | `ChoiceStep(Options)` | Shows the options, and answers with `Choose(option)` or `Choose(id)`, never an index. | Evaluated the options' conditions and texts. |
 | `CommandStep(Command, Waits)` | Carries the command out, and waits for it to finish if `Waits`. | Evaluated the arguments, in parameter order with defaults. |
-| `PoseStep(Actor, Pose)` | Changes the actor's pose. It's sent every time, even for the pose the actor already has, so a host that redraws can trust it. | Set the pose in the state. |
+| `ChannelStep(Actor, Values, Tags)` | Sets values without showing a line, from a parenthesis with no text. `Actor` is null for narration, `Values` are `(Channel, Value)` pairs in the order written, and `Tags` are the line's. It's sent every time, even for a value the speaker already has, so a host that redraws can trust it. A line that shows text carries its values in `Line.Values` instead. | Set the values in the state. |
 | `PauseStep(Duration)` | Pauses. | Evaluated the duration. One that isn't more than zero is skipped with a `NonPositivePause` warning. |
 | `EndStep` | Ends the dialogue. | Cleared the call stack. |
 
@@ -103,7 +103,7 @@ Everything else (`@set`, branches, `@jump`, `@call`, `@return`, variations) the 
 
 **Visits.** A node's visit count goes up on `Start`, `@jump` and `@call` into it, before its first statement, so a node that jumps to itself counts its rounds. It doesn't go up on `@return`, or when a save is restored.
 
-**`StoryState`** holds what a save slot holds: variable values (starting from their declared starting values), visit counts by node name, variation block entry counts by block ID, the IDs of chosen options, each actor's current pose (`GetPose(actor)`, which is the actor's first pose until the story sets one), and the seed. A variable's starting value can read variables declared before it, but not call a function.
+**`StoryState`** holds what a save slot holds: variable values (starting from their declared starting values), visit counts by node name, variation block entry counts by block ID, the IDs of chosen options, each speaker's current value in each channel (`GetChannel(actor, channel)`, with a null actor for narration, which is the speaker's first value in the channel until the story sets one), and the seed. A variable's starting value can read variables declared before it, but not call a function.
 
 **Atomicity.** An instruction evaluates everything it needs before it changes anything. When one throws, such as a `HostFunctionException` from a condition, a command argument or a line's text, the state and the runner's position are unchanged, so the host can recover and call `Next()` again to retry it. Instructions that finished earlier in the same call stay finished, and warnings the failed instruction raised are dropped.
 
@@ -144,7 +144,7 @@ That is the mapping for function arguments and results, for a command's and a sp
 
 ### Story metadata and variables
 
-A compiled story describes itself to hosts, read-only: `story.Functions` (each with its parameters' names and types and its return type), `story.Variables` (name and type), `story.Actors` (ID, display name and poses, the first being the default), `story.Enums` (name and members) and `story.Nodes` (current name and `#was:` names). A type is a `StoryType`: a kind (`Bool`, `Number`, `Text`, `Duration`, `Enum`, `Actor` or `Node`), plus the enum's name for an enum.
+A compiled story describes itself to hosts, read-only: `story.Functions` (each with its parameters' names and types and its return type), `story.Variables` (name and type), `story.Channels` (each channel's name and the values every actor starts with), `story.Actors` (ID, display name and the channels the actor has, each with its values, the first being the default), `story.Narration` (the name shown with narration's lines, if any, and the channels it has), `story.Enums` (name and members) and `story.Nodes` (current name and `#was:` names). A type is a `StoryType`: a kind (`Bool`, `Number`, `Text`, `Duration`, `Enum`, `Actor` or `Node`), plus the enum's name for an enum.
 
 `StoryState.GetVariable(name)` reads a variable as a host value (a duration variable beyond `TimeSpan`'s range clamps silently without a warning, because the state has nowhere to send one), and `SetVariable(name, value)` sets one, checked against its type: a wrong .NET type, a string that names no member, actor or node, or an unknown variable throws `ArgumentException`. Hosts use them for debug overlays and seeding. `CommandInvocation` and a span's `Arguments` list their `Parameters` (names and types) and give any value with `GetValue(name)`, so a host can forward a command it doesn't know at compile time, for example as a dictionary to GDScript. A `Line` says whether its ID is a fallback (`IsFallbackId`), which a host that records the lines the player has seen must skip, because a fallback ID changes whenever the file is edited. A `ChoiceOption` has a `Number`, its place among the choice's options in the source, counting options `@once` has removed, so it is the same on every visit; it is for display and tools, and `Choose` still takes the option or its ID.
 
@@ -172,11 +172,12 @@ The runner [reports warnings](#steps) to the host through its options.
 public sealed record Line(
     string Id,
     string? Speaker,                 // actor ID; null for narration and options
-    string? SpeakerName,             // the actor's display name
+    string? SpeakerName,             // the actor's display name; for narration, the name its @narration block gives it
     string Text,                     // plain text, fully resolved; an icon is U+FFFC, {br} is \n
     ImmutableArray<Span> Spans,      // (Name, Start, Length, Arguments)
     ImmutableArray<Marker> Markers,  // closed set of records, each with a Position
     ImmutableArray<Icon> Icons,      // (Position, Name), one for each U+FFFC in Text
+    ImmutableArray<ChannelValue> Values, // (Channel, Value) in the order written; a restored line has them again
     TagCollection Tags);
 ```
 
@@ -237,7 +238,7 @@ reveal.Resume();                             // continue after an input wait, pa
 - Node visit counts
 - Variation block entry counts (by block ID)
 - Options already chosen (by option ID), for `WasChosen` and `@once`
-- Current pose of each actor
+- The value each actor and narration last had in each channel
 - The seed
 
 State that outlives a save slot, such as unlocks or read tracking, belongs to the game ([boundaries](boundaries.md)).
@@ -265,13 +266,13 @@ var (restoredRunner, runnerLoadProblems) = DialogueRunner.Restore(story, restore
   | Visit counts | The node's name | On restore, a saved name resolves through `#was:` aliases, so a renamed node keeps its count |
   | Variation block entry counts | Block ID | A block keeps its count when blocks are inserted, reordered or moved to another node |
   | Chosen options | Option ID | `WasChosen` and `@once` removal survive rewording and reordering |
-  | Poses | Actor ID, to the pose's name | |
+  | Channel values | Actor ID, then channel name, to the value's name; narration's under its own key | |
   | Seed | | Stored, unused in v1 |
 
 - **Values are typed and exact.** A `SavedValue` holds the variable's type as the story writes it (`number`, `mood`) and one of `Bool`, `Number` (a number, or a duration in seconds, as its `decimal`) and `Text` (a string as written, or an enum member, actor or node by name).
 - **Variation blocks store an entry count, not a position.** Each block records how many times execution has entered it, and its kind derives what to run from that count ([reference](language/reference.md#variations)). A saved count therefore has a defined meaning whatever happens to the block afterwards: alternatives added or removed, or its kind changed. There's nothing to convert.
 - **Fallback IDs are never saved.** A line, option, call or block without an `#id` has an ID the compiler made up, which changes when the file is edited ([localization design](localization.md#when-theyre-required)), so saving it could hand one line's state to another. A snapshot leaves out a chosen option or block entry count keyed by one, and reports it. This only happens in development, since `pibbles check --warnaserror` rejects missing IDs.
-- **Restoring drops what no longer fits, and reports it,** so an old save still loads after a patch. It never throws for content: a variable that no longer exists or whose type changed (it keeps its starting value), a value that names something that's gone (an enum member, actor or node), visit counts for a node that no longer exists under any name, entry counts for a block that's gone, a chosen option that's gone, and a pose for an actor or pose that's gone. Variables the snapshot doesn't have get their starting values.
+- **Restoring drops what no longer fits, and reports it,** so an old save still loads after a patch. It never throws for content: a variable that no longer exists or whose type changed (it keeps its starting value), a value that names something that's gone (an enum member, actor or node), visit counts for a node that no longer exists under any name, entry counts for a block that's gone, a chosen option that's gone, and a channel value for an actor, channel or value that's gone. Variables the snapshot doesn't have get their starting values.
 - **Two saved names can land on one node,** when a node takes the other's name as a `#was:` alias. Its visit count is their sum, since both counted entries to what is now that node, and the report says so.
 - **Snapshots carry a format version,** `Format`, which says what the snapshot holds and is about Pibbles, not the story. Both snapshots start at format 1 (`StateSnapshot.CurrentFormat`, `RunnerSnapshot.CurrentFormat`), separately. The language grows by [extensions](language/design.md#grammar-extensions) that add state ([below](#with-extensions)), so a newer core restores every older format, filling new state with its defaults. A format newer than the core reads, which means the game was downgraded, is host misuse and throws `ArgumentException`.
 - **JSON.** `SnapshotJson.Serialize` writes either snapshot, and `SnapshotJson.DeserializeState` and `DeserializeRunner` read them, throwing `JsonException` for JSON that isn't one, including a `null` where a value must be: save files come from the host's disk, and a corrupted or hand-edited one must fail clearly. `Restore` rejects a snapshot with such a `null` too, with `ArgumentException`, since a host can build one in code. Both messages name where the `null` is. They're built on `System.Text.Json` source generation, which is part of the BCL and AOT-safe, and they keep every digit of a `decimal`. The JSON is a save-file format, so a test pins its shape. The host decides where snapshots are stored.
@@ -283,12 +284,12 @@ Hosts save during dialogue, so the position of a running dialogue is part of a s
 #### Save points
 
 - **A dialogue's position is always a line or a choice.** Those are the moments it waits on the player.
-- **`runner.CreateSnapshot()`** can be taken right after `Next()` returned a `LineStep` (the host is showing that line), while a choice is waiting, right after `Restore` landed on a line or a choice (so a game can autosave on load), or when no dialogue is running (never started, or ended), which gives `RunnerSnapshot.Empty`. A runner restored past a lost line, or past a restored choice it had to skip, isn't at a save point. At any other moment, just after a `CommandStep`, `PoseStep` or `PauseStep`, or between `Start` or `Choose` and the next `Next()`, it throws `InvalidOperationException`, saying to fast-forward first. The runner remembers the ID of the line it last delivered, because its own position has already moved past the line.
-- **The player can still save at any time,** because the host **fast-forwards** first. `runner.FastForward()` calls `Next()` until it gets a `LineStep`, a `ChoiceStep` or an `EndStep`, and returns every step it passed, in order, the last one included. The host carries out the passed commands instantly (a command handler's skip variant), applies the poses, drops the pauses, and shows the final line or choice, then takes the snapshot. This is the same mechanism as [skip mode](godot.md#skipping), so it adds nothing new for the host. If the dialogue ends first, the save has no dialogue in progress. At a save point already, `FastForward()` returns an empty list and changes nothing, so a host can always call it before saving. The instruction budget covers the whole fast-forward, so a story that loops forever giving commands still ends with an `InfiniteLoop` warning instead of hanging the game. If an instruction throws partway, such as a host function failing in a condition, the steps already passed have run (their `@set`s happened and the runner has moved), so `FastForward()` throws a `FastForwardException` whose `Passed` holds them, with the original exception as its `InnerException`. The host carries them out before handling the error, or the stage and the story go out of step. The instruction that threw changed nothing, as with `Next()`.
+- **`runner.CreateSnapshot()`** can be taken right after `Next()` returned a `LineStep` (the host is showing that line), while a choice is waiting, right after `Restore` landed on a line or a choice (so a game can autosave on load), or when no dialogue is running (never started, or ended), which gives `RunnerSnapshot.Empty`. A runner restored past a lost line, or past a restored choice it had to skip, isn't at a save point. At any other moment, just after a `CommandStep`, `ChannelStep` or `PauseStep`, or between `Start` or `Choose` and the next `Next()`, it throws `InvalidOperationException`, saying to fast-forward first. The runner remembers the ID of the line it last delivered, because its own position has already moved past the line.
+- **The player can still save at any time,** because the host **fast-forwards** first. `runner.FastForward()` calls `Next()` until it gets a `LineStep`, a `ChoiceStep` or an `EndStep`, and returns every step it passed, in order, the last one included. The host carries out the passed commands instantly (a command handler's skip variant), applies the channel values, drops the pauses, and shows the final line or choice, then takes the snapshot. This is the same mechanism as [skip mode](godot.md#skipping), so it adds nothing new for the host. If the dialogue ends first, the save has no dialogue in progress. At a save point already, `FastForward()` returns an empty list and changes nothing, so a host can always call it before saving. The instruction budget covers the whole fast-forward, so a story that loops forever giving commands still ends with an `InfiniteLoop` warning instead of hanging the game. If an instruction throws partway, such as a host function failing in a condition, the steps already passed have run (their `@set`s happened and the runner has moved), so `FastForward()` throws a `FastForwardException` whose `Passed` holds them, with the original exception as its `InnerException`. The host carries them out before handling the error, or the stage and the story go out of step. The instruction that threw changed nothing, as with `Next()`.
 - **The runner snapshot is separate from the state snapshot,** because several runners can share one state. The host stores both in its save file. A `RunnerSnapshot` holds the format version and the call stack as IDs: `Calls`, the IDs of the `@call`s the dialogue is inside, outermost first, since calls carry IDs ([localization design](localization.md#what-needs-an-id)); and either `Line`, the ID of the line, or `Choice`, the IDs of all its options in source order, including any that were hidden, unavailable or already used up. A choice has no ID of its own, so the whole set identifies it, and any one survivor is enough to find it again. `HasDialogue` says whether it has either.
 - **A dialogue waiting on a fallback ID saves as no dialogue in progress,** and the report says so: a line or a call whose ID is a fallback, or a choice whose option IDs all are. A choice that has some options with real IDs saves those.
 - **Loading:** `DialogueRunner.Restore(story, state, functions, snapshot, options)`, followed by `Next()` as usual.
-  - A line resumes at its `Line` instruction, so the next `Next()` shows it again, rendered afresh. Text that depends on host functions can differ, since the game's own state may have changed. The `Pose` before a posed line isn't replayed: the host redraws poses from `StoryState.GetPose`. The reveal starts over and the line's inline command markers fire again, which is why only commands declared `inline` may appear in text ([reference](language/reference.md#commands)). With inline variations, the line is rendered without bumping its show count, so it picks the same alternatives as before.
+  - A line resumes at its `Line` instruction, so the next `Next()` shows it again, rendered afresh. Text that depends on host functions can differ, since the game's own state may have changed. The line carries its own values again, and a `ChannelStep` before it isn't replayed: the host redraws channels from `StoryState.GetChannel`. The reveal starts over and the line's inline command markers fire again, which is why only commands declared `inline` may appear in text ([reference](language/reference.md#commands)). With inline variations, the line is rendered without bumping its show count, so it picks the same alternatives as before.
   - A choice resumes at its `Choice` instruction, so the next `Next()` evaluates its options' conditions again against the current state. If none is available, it's skipped like any other choice, and the report says so. `Restore` checks this as it loads, so a host function that fails there throws `HostFunctionException`, as it would from `Next()`.
   - A call frame resumes at the instruction after its `@call`.
   - **Visits never count on restore.**
@@ -296,7 +297,7 @@ Hosts save during dialogue, so the position of a running dialogue is part of a s
 
 #### What the host saves
 
-- **The host restores what's on screen.** Pibbles restores what it owns: variables and poses. Which actors are staged where, the background and the music are host state, and the host saves them alongside. The host already has this state in its stage manager, so serializing it there is simpler than having Pibbles rebuild the stage.
+- **The host restores what's on screen.** Pibbles restores what it owns: variables and channel values. Which actors are staged where, the background and the music are host state, and the host saves them alongside. The host already has this state in its stage manager, so serializing it there is simpler than having Pibbles rebuild the stage.
 - **The host saves its intended state, not animation in progress.** A stage manager that records each command's target when the command is issued is already consistent after a fast-forward.
 - **Long gameplay handoffs aren't blocking commands.** Fast-forwarding would skip a command that waits for a whole minigame. Handoffs like that end the dialogue and give a continuation node instead (`@enter_room kitchen on_exit=kitchen.leave`), and the game saves its own gameplay state.
 
@@ -324,7 +325,7 @@ Taking and restoring snapshots report what they couldn't carry over as a list of
 | `VisitsMerged` | `StoryState.Restore` | Two saved names are now one node; its count is their sum |
 | `UnknownBlock` | `StoryState.Restore` | Entries to a block that's gone are dropped |
 | `UnknownOption` | `StoryState.Restore` | A chosen option that's gone is dropped |
-| `UnknownActor`, `UnknownPose` | `StoryState.Restore` | The pose is dropped, and the actor keeps its default pose |
+| `UnknownActor`, `UnknownChannel`, `UnknownChannelValue` | `StoryState.Restore` | The value is dropped, and the speaker keeps the channel's first value |
 | `LostFrame` | `DialogueRunner.Restore` | The frame is dropped, and the dialogue unwinds |
 | `ChoiceSplit` | `DialogueRunner.Restore` | The dialogue resumes at the choice with the most saved options |
 | `NoOptionAvailable` | `DialogueRunner.Restore` | The restored choice is skipped |
@@ -372,9 +373,9 @@ What the [grammar extensions](language/design.md#grammar-extensions) and later t
 - `Line` gains `Persona` (the active persona, null for the base presentation), and `SpeakerName` comes from the persona when it overrides the name.
 - Personas aren't stored. They're worked out from variables, so they restore automatically.
 
-### Mid-line poses and `{auto}`
+### Mid-line values and `{auto}`
 
-`Line.Markers` gain `pose` and `auto` kinds. The flow checks report `{auto}` anywhere but the end of a line.
+`Line.Markers` gain `value` and `auto` kinds. The flow checks report `{auto}` anywhere but the end of a line.
 
 ### Randomness
 

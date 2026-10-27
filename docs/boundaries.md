@@ -29,17 +29,17 @@ The host **implements** it.
 | Inline images and controller glyphs | `{icon interact}`: a declared, one-character inline object | Resolves the icon for the current input device and renders it |
 | Custom fonts | Nothing | Everything |
 | Conditional text and branches | Everything | Nothing |
-| Actors | Identity, display name, declared poses, current pose of each actor | Sprites, nameplates, colors, voice blips |
+| Actors | Identity, display name, the channels each actor has and the values it can set in them, the last value of each | Sprites, nameplates, colors, voice blips |
 | Placement and staging | Host-declared commands with typed arguments (`@show mira left`, where `left` is a declared enum value) | Positions, layout, transitions |
-| Pose / sprite swaps | `mira (smug):` changes a pose. Pibbles validates the pose against the actor and tracks it. | Swaps textures and animates the swap |
-| Sprite animations (bounce, jolt) | Host-declared commands, run as a statement or (when declared `inline`) at a position in a line, with wait semantics | Implements the animation |
+| Pose / sprite swaps | `mira (smug):` sets a value of the `pose` channel. Pibbles validates the value against the actor, sends it with the line, and tracks it. | Swaps textures and animates the swap |
+| Sprite animations (bounce, jolt) | A channel the game declares (`mira (angry, shake):`), whose value goes to the host with the line, or host-declared commands, run as a statement or (when declared `inline`) at a position in a line, with wait semantics | Implements the animation |
 | Screen effects | Same as sprite animations | Same as sprite animations |
 | Text speed | `{speed 0.5}` sets a multiplier relative to the player's setting, until `{speed}` or the end of the line. The reveal helper does the timing. | Player speed setting, rendering visible characters |
 | Pauses and input waits | `{pause 0.5}`, `{w}` and `@pause 1s` produce timing markers and steps | Drives the clock and input |
 | Newlines and page breaks | `{br}` and `{page}` produce markers | Renders them. Paginates text that overflows, since only the host knows box size and font. |
 | Choices | Which options exist, whether each is available, which have been chosen before, `@once`, where flow goes next | Choice UI. Whether unavailable or already-chosen options are hidden or shown greyed out (based on option tags and flags). Choice timers. |
 | Variables and flags | Declared, type-checked variables for facts the story decides, stored in a serializable state | Reads and writes variables from game code, and persists the state. Owns facts from gameplay and anything that outlives a save slot (unlocks), exposed through functions and commands. |
-| Game events (camera, switching to other gameplay) | Host-declared commands. Typed parameters include `node`, so continuations are validated. | Implements them |
+| Game events (camera, switching to other gameplay) | A camera move that lasts until the next one can be a channel value, including narration's (`(orbit_scene):`). Anything else is a host-declared command. Typed parameters include `node`, so continuations are validated. | Implements them |
 | Puzzle and inventory state | Calls host functions (`has_item("key")`) declared with signatures | Implements the functions |
 | Entry points from gameplay | Nodes are addressable by name. `#was:` aliases keep old names working after a rename. | Decides which node to start, and when |
 | Save and load | Serializable snapshots of the story state and of a dialogue's position (always a line or choice, fast-forwarding to one if needed), keyed by IDs and names that survive edits | Storage and save slots. Saving and restoring its own stage state (who is shown where, background, music), as intended end states rather than animation in progress. |
@@ -60,9 +60,11 @@ The core outputs plain text plus a list of `(tag, arguments, start, end)` spans 
 
 `[color "#ff8800"]` works (it's in the prelude), but `[clue]` is better. The game can restyle every clue in one place, and colorblind modes are a host setting instead of a script rewrite. Once localization arrives, `clue` can also be marked `required`, so no translation loses a gameplay hint. Raw colors are for one-offs.
 
-### Why actors and poses are first-class but staging is not
+### Why actors and their channels are first-class but staging is not
 
-Actors show up on almost every line, both as speaker and pose. Making them first-class buys three things. Writers get compact syntax (`mira (smug): …`). The analyzer can check a pose against that actor's declared poses. And the runtime can track each actor's current pose, so a save made mid-scene restores faces correctly.
+Actors show up on almost every line, and so do the values a line sets for its speaker, such as a pose, a sprite effect or a camera move. The game declares those as channels, the pose among them, and each actor adapts what it gets: most poses are shared, some are an actor's own, and an actor with no presence in the game world has no camera. Making actors and channels first-class buys three things. Writers get compact syntax (`mira (smug, shake): …`). The analyzer can check each value against that actor's declared values. And the runtime sends the values on their line and tracks each speaker's last one, so a save made mid-scene restores faces and effects correctly, and a restored line looks as it did in play.
+
+What a value does after its line is the game's to decide: whether it lasts until it's overwritten, resets when the actor stops talking, or belongs to the whole scene. Pibbles keeps each speaker's last value in its state, and the host applies any other rule to what each line set.
 
 Staging (positions, entrances, exits, transitions) varies a lot from game to game. Host-declared commands with typed arguments (`@show mira left`) get the same validation without Pibbles having to model a stage. If a second game ever needs a richer stage model, it can be added then.
 
@@ -97,7 +99,7 @@ It is optional. A host that wants different behavior can read the markers itself
 Declarations are a contract between writers and programmers:
 
 - **Writers** fix what the analyzer reports. It checks that scripts only use what is declared, with the right types.
-- **The game developer** implements and registers a handler for every declared command, markup, icon and function, and keeps story names used in game code (nodes, actors, poses) in step with the story. Keeping declarations in predictable places, such as `defs.pib` or `story/commands/`, makes changes easy to spot in review, and a test that calls the registries' `Validate` catches a missing handler before it ships. Their CI runs `pibbles check --release --warnaserror`. Failures reported in release builds are theirs to handle.
+- **The game developer** implements and registers a handler for every declared command, markup, icon and function, and keeps story names used in game code (nodes, actors, channels and their values) in step with the story. Keeping declarations in predictable places, such as `defs.pib` or `story/commands/`, makes changes easy to spot in review, and a test that calls the registries' `Validate` catches a missing handler before it ships. Their CI runs `pibbles check --release --warnaserror`. Failures reported in release builds are theirs to handle.
 - **Pibbles** catches every mismatch it can, as early as it can: in the editor, in the CLI, at export and on launch. It gives every failure a safe fallback, so story content never crashes or hangs the game ([Godot design](godot.md#failures)).
 
 ## What the host always provides
@@ -106,7 +108,7 @@ To run a story, a host provides:
 
 1. The source files (or a compiled story, once that format exists).
 2. Implementations of the declared host functions, registered as delegates.
-3. A handler for each kind of step: lines, choices, commands, pose changes, waits and the end.
+3. A handler for each kind of step: lines, choices, commands, values set with no line, waits and the end.
 4. Persistence for the state and runner snapshots, together with its own stage state, if the game saves.
 5. The current locale, once the game is localized ([below](#with-extensions)).
 
@@ -120,7 +122,7 @@ What the [grammar extensions](language/design.md#grammar-extensions) and later t
 | Recorded voice lines | Localization, voice tooling | Clips are keyed by locale too. `#voice:` points a line at another line's recording, and `#unvoiced` excludes one. Recordings are tracked for staleness. | Plays the clip for the current locale |
 | Voice barks | `speaker` parameter defaults | `{@bark sigh}` defaults to the speaker | Plays barks in the dub language |
 | Mystery characters and disguises | Personas | Which persona is active, worked out from state, with a localized name override | Silhouettes, alternate sprites, masked voices, keyed by persona |
-| Pose changes partway through a line | Mid-line poses | `{(sad)}` and `{rex (sad)}` change a pose at a point in the line | Swaps the sprite when the reveal reaches it |
+| Values set partway through a line | Mid-line values | `{(sad)}` and `{rex (sad)}` set a channel value at a point in the line | Swaps the sprite when the reveal reaches it |
 | Auto-advance | `{auto}` | `{auto}` produces a marker | Advances without waiting for input |
 | Randomness | `@shuffle` and `random()` | Seeded generator kept in the state | Chooses the seed for a new game |
 | Save and load across releases | Release manifests and migrations | Release checks guarantee old saves still resolve after updates | Nothing |

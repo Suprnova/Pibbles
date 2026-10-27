@@ -65,9 +65,9 @@ The Godot adapter watches the story folder in the editor and recompiles on chang
 
 ### Story names in scenes (stretch)
 
-Games often name story nodes, actors and poses on scene objects rather than in code: a door whose `StartNode` is `kitchen.door`, or a portrait table keyed by pose. These are plain strings, so a typo or a writer's rename only shows up when someone clicks the door. With the story compiled in the editor (the same work as hot reload), the adapter's editor plugin checks them:
+Games often name story nodes, actors and channel values on scene objects rather than in code: a door whose `StartNode` is `kitchen.door`, or a portrait table keyed by pose, a value of the `pose` channel. These are plain strings, so a typo or a writer's rename only shows up when someone clicks the door. With the story compiled in the editor (the same work as hot reload), the adapter's editor plugin checks them:
 
-- **A picker.** The game marks an exported string with a hint, such as `[Export(PropertyHint.None, "pibbles:node")]`, and an `EditorInspectorPlugin` replaces the text box with a searchable list of the story's nodes. `pibbles:actor` and `pibbles:pose` work the same way.
+- **A picker.** The game marks an exported string with a hint, such as `[Export(PropertyHint.None, "pibbles:node")]`, and an `EditorInspectorPlugin` replaces the text box with a searchable list of the story's nodes. `pibbles:actor` and `pibbles:channel:<name>`, such as `pibbles:channel:pose`, work the same way.
 - **Warnings in the scene tree.** A helper that game scripts call from `_GetConfigurationWarnings` shows Godot's warning icon on an object whose marked property names something that no longer exists.
 - **An export check.** The export plugin scans scenes and resources for marked properties, and fails the export if one doesn't resolve.
 

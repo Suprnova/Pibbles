@@ -26,7 +26,7 @@ Pibbles itself knows nothing about any engine or genre. Godot is the first suppo
 ## Goals
 
 1. **Writer-first syntax.** A page of Pibbles should read like a screenplay with a few annotations. Writers aren't programmers, and the common case (a character says a line) needs no ceremony.
-2. **Catch mistakes while editing.** Anything that can be checked statically is checked: unknown actors, poses, commands, argument types, variables, jump targets, unclosed markup, broken translations. The same checks power the CLI, CI and the editor.
+2. **Catch mistakes while editing.** Anything that can be checked statically is checked: unknown actors, channel values, commands, argument types, variables, jump targets, unclosed markup, broken translations. The same checks power the CLI, CI and the editor.
 3. **Engine-agnostic core.** The core library depends only on the .NET base class library. It knows nothing about Godot, rendering, audio or input. Engine integration is a thin adapter.
 4. **Rich enough for a real VN.** Styled text, timed pauses, variable speed, events at exact spots in a line, voice lines, choices, conditions, variations, subroutines and stage directions.
 5. **Localization-ready from the first line.** Stable line IDs and a strict model for what a translation may and may not change are part of the foundation, even if the translation tooling ships later.
@@ -48,9 +48,9 @@ These are the tie-breakers for decisions the docs don't cover.
 
 1. **Text first.** An unmarked line is dialogue or narration. Every piece of logic is marked with `@` (statements) or sits inside `{}` / `[]` (inline). A writer never has to escape a normal sentence because it happens to start with *If*.
 2. **The story says what and when; the host says how.** Pibbles decides that Mira jolts at the fourth character of this line. The game decides what a jolt looks like.
-3. **Declared, therefore checked.** Everything the host provides (actors, poses, commands, markup, icons, tags, enums, functions) is declared in `.pib` files. The declarations are the contract between writers and programmers, and the analyzer enforces it.
+3. **Declared, therefore checked.** Everything the host provides (actors, channels, commands, markup, icons, tags, enums, functions) is declared in `.pib` files. The declarations are the contract between writers and programmers, and the analyzer enforces it.
 4. **Fail at edit time, not play time.** A problem the analyzer could have found should never first show up in a playtest.
-5. **Effects are sacred, information is protected, presentation is negotiable.** A translation must keep every effect (commands, pose changes) and every piece of player-facing information (icons, required markup). It may freely re-time pauses and move emphasis. See the [localization design](../localization.md#what-a-translation-may-change).
+5. **Effects are sacred, information is protected, presentation is negotiable.** A translation must keep every effect (commands, values a line sets) and every piece of player-facing information (icons, required markup). It may freely re-time pauses and move emphasis. See the [localization design](../localization.md#what-a-translation-may-change).
 6. **Line-oriented and error-tolerant.** Each source line is classified on its own. A mistake on one line produces one diagnostic and never cascades. This is what makes live editor feedback practical.
 7. **Deterministic: no hidden inputs.** Output depends only on the story, the saved state and explicit inputs: the player's choices, host function results and the locale. Randomness comes from a seeded generator stored in the state. So a transcript replays exactly, a save reloads without rerolling, and skipping never changes the outcome.
 8. **Small language, open vocabulary.** New needs are met by host declarations, not new keywords. Adding a keyword needs a strong reason.
@@ -67,7 +67,7 @@ Pibbles borrows ideas freely from both:
 
 What Pibbles is tailored for:
 
-- **A fully declared, statically checked contract with the host.** Commands have typed parameters, and poses, markup and icons are all declared and checked while editing.
+- **A fully declared, statically checked contract with the host.** Commands have typed parameters, and channels, markup and icons are all declared and checked while editing.
 - **A strict translation model.** Translations are checked element by element against the source: effects must be preserved, presentation is free.
 - **An inline timing model** built for visual-novel pacing.
 
@@ -80,7 +80,9 @@ What Pibbles is tailored for:
 | **Line** | One message shown to the player: an optional speaker, text with inline markup, and tags. |
 | **Option** | One entry of a choice (`-> Use the key`). Consecutive options form a **choice**. |
 | **Actor** | A declared character who can speak and be staged. |
-| **Pose** | A named sprite variant of an actor: facial expressions, body poses, anything the host swaps. `mira (smug):` sets Mira's pose to `smug`. "Pose" rather than "expression" avoids a clash with code expressions. |
+| **Channel** | Something a line sets for its speaker and the game presents until something changes it: a pose, an effect, a camera move. A game declares its channels with `@channel`, each with the values every actor starts with. An actor adds to them, replaces them or drops the channel. `mira (smug, shake):` sets Mira's `pose` to `smug` and her `effect` to `shake`; each value names its channel by itself. |
+| **Pose** | The usual channel: a named sprite variant of an actor, such as a facial expression or a body pose. A game that has poses declares `@channel pose`, as the `pibbles init` cast list does. |
+| **Narration** | The lines with no speaker. It isn't an actor, but it has channels and can show a name. `@narration` declares what it has, and `(shake):` at the start of a line sets its values. |
 | **Persona** | An alternate presentation of an actor that turns on automatically from story state, such as "???" before Rex is introduced, or Mira in disguise. The actor's identity stays the same. ([Personas](#personas) are a grammar extension.) |
 | **Command** | A host-declared instruction (`@shake_screen`, `{@sfx thud}`) that Pibbles schedules and the host carries out. |
 | **Markup** | A host-declared or built-in styling range in text (`[clue]…[/clue]`). |
@@ -97,7 +99,7 @@ Each extension below is fully designed, and joins the language when its trigger 
 | [`@shuffle`, `@shuffle once`, `random()`](#shuffle-shuffle-once-and-random) and the seeded generator | The first need for randomness |
 | [`@else` after `@once` and `@shuffle once`](#else-after-once-and-shuffle-once) | A "first time X, afterwards Y" pattern that `visits()` handles awkwardly |
 | [Inline `{sequence}`, `{cycle}`, `{shuffle}`, `{once}`](#inline-variations) | Block forms feel too heavy for varying a few words |
-| [Pose changes partway through a line](#pose-changes-partway-through-a-line) (`{(pose)}`, `{actor (pose)}`) | A pose change that must land mid-line |
+| [Values set partway through a line](#values-set-partway-through-a-line) (`{(value)}`, `{actor (value)}`) | A channel value that must land mid-line |
 | [`{auto}`](#auto) | Interrupted speech |
 | [Personas](#personas) | The first mystery character or disguise |
 | [Terms](#terms) | Player pronouns, or other wording that depends on state in many places |
@@ -116,7 +118,7 @@ The full grammar is the [v1 grammar](reference.md#appendix-grammar) plus the cha
 | `@shuffle`, `@shuffle once`, `random()` | Additive | `variation` |
 | `@else` after `@once` and `@shuffle once` | Additive: v1 reports a stray `@else` | `variation` |
 | Inline variations | Additive, with lexer changes | `inline_item`; new `ivariation`, `alternatives`, `alternative_text`; four more fused `{` tokens; `\|` becomes a token |
-| Pose changes partway through a line | Additive: v1 rejects `{name (…)}` | `point_body` |
+| Values set partway through a line | Additive: v1 rejects `{name (…)}` | `point_body` |
 | `{auto}` | Additive | `point_body` |
 | Personas | Additive: v1 reports an unknown actor property | `actor_prop`; new `persona_prop` |
 | Terms | Additive | `declaration`, `point_body`; new `term_decl` |
@@ -256,9 +258,9 @@ alternative_text ::= (inline_item - PIPE)*                               /* Q18 
 > mira: {once}This line appears the first time.{else}This line appears every time after.{/once}
 > ```
 
-### Pose changes partway through a line
+### Values set partway through a line
 
-`{(pose)}` changes the speaker's pose at this point in the line, and `{actor (pose)}` changes another actor's. They're effect markers: allowed in text lines but not option text, and fired by the reveal helper like inline commands, including when a reveal is skipped.
+`{(value)}` sets the speaker's value at this point in the line, and `{actor (value)}` sets another actor's. The value belongs to its channel, so `{(sad)}` sets a pose and `{(shake)}` an effect. They're effect markers: allowed in text lines but not option text, and fired by the reveal helper like inline commands, including when a reveal is skipped.
 
 **Grammar:**
 
@@ -266,13 +268,13 @@ alternative_text ::= (inline_item - PIPE)*                               /* Q18 
 point_body      ::= … | "(" NAME ")" | NAME "(" NAME ")"
 ```
 
-`{(pose)}` starts with a token no v1 point can start with. `{actor (pose)}` is told apart from a call by the space: a call's `(` touches its name and lexes as CALL_OPEN, while the `(` in `{mira (happy)}` is a plain `(` ([tokens](reference.md#tokens)). v1 already rejects `{fn (x)}`, so the extension only gives a meaning to something v1 rejects.
+`{(value)}` starts with a token no v1 point can start with. `{actor (value)}` is told apart from a call by the space: a call's `(` touches its name and lexes as CALL_OPEN, while the `(` in `{mira (happy)}` is a plain `(` ([tokens](reference.md#tokens)). v1 already rejects `{fn (x)}`, so the extension only gives a meaning to something v1 rejects.
 
 **Guide text:**
 
 > ```
 > mira: This part is said with her current pose,{(sad)} and this part with the "sad" pose.
-> mira: This line changes Rex's pose partway through.{rex (surprised)}
+> mira: This line sets Rex's pose partway through.{rex (surprised)}
 > ```
 
 ### `{auto}`
@@ -304,7 +306,7 @@ A persona is an alternate presentation of an actor that turns on automatically f
 ```
 @actor rex
     name: Rex
-    poses: neutral, grumpy, surprised
+    pose += grumpy, surprised
     persona stranger if not $met_rex
         name: ???
 ```
@@ -316,7 +318,7 @@ A persona is an alternate presentation of an actor that turns on automatically f
 - **The speaker's display name,** and an interpolated actor's name, come from the actor's active persona.
 - Persona names are localized like actor names ([localization design](../localization.md#what-needs-an-id)).
 
-Personas cover the "derived actor" need (the same poses, and the same voice-file and backlog identity) without introducing a second actor for the writer to switch between.
+Personas cover the "derived actor" need (the same channels and values, and the same voice-file and backlog identity) without introducing a second actor for the writer to switch between.
 
 **Grammar:**
 
@@ -336,7 +338,7 @@ persona_prop    ::= "persona" NAME ("if" expr)? EOL INDENT name_prop DEDENT     
 > ```
 > @actor rex
 >     name: Rex
->     poses: neutral, grumpy, surprised
+>     pose += grumpy, surprised
 >     persona stranger if not $met_rex
 >         name: ???
 > ```
@@ -577,7 +579,7 @@ mira (worried): Locked.{w} Of course it's locked.
 >
 > #### Writing for translation
 >
-> Translators can change the wording, move emphasis and adjust pauses however their language needs. They can't remove sounds, animations, pose changes, icons, or styles like `[clue]` that the game depends on. Pibbles checks this for every translated line. A few habits make their job easier:
+> Translators can change the wording, move emphasis and adjust pauses however their language needs. They can't remove sounds, animations, values a line sets, icons, or styles like `[clue]` that the game depends on. Pibbles checks this for every translated line. A few habits make their job easier:
 >
 > - Use conditional wording (`{if}`) instead of building sentences from pieces in separate lines.
 > - Keep a whole thought in one line. Don't split one sentence across two lines.
