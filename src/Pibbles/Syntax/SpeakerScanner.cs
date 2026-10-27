@@ -8,9 +8,10 @@ namespace Pibbles.Syntax;
 /// <param name="Name">The name before the parenthesis or colon.</param>
 /// <param name="Parentheses">The parenthesis, brackets included, or <see langword="null"/> if there's none.</param>
 /// <param name="Pose">The single name inside the parenthesis, or <see langword="null"/> if there's no parenthesis or it holds something else.</param>
+/// <param name="Extra">What stands between the parenthesis and the colon, or <see langword="null"/> if there's nothing: further parentheses and at most one word.</param>
 /// <param name="Colon">Where the colon is.</param>
 /// <param name="IsSpeaker">Whether the line has a speaker, rather than starting with something that looks like one.</param>
-internal readonly record struct SpeakerPrefix(TextSpan Name, TextSpan? Parentheses, TextSpan? Pose, int Colon, bool IsSpeaker);
+internal readonly record struct SpeakerPrefix(TextSpan Name, TextSpan? Parentheses, TextSpan? Pose, TextSpan? Extra, int Colon, bool IsSpeaker);
 
 /// <summary>Finds a <see cref="SpeakerPrefix"/> at the start of a text line.</summary>
 internal static class SpeakerScanner
@@ -25,6 +26,7 @@ internal static class SpeakerScanner
         int position = SkipWhitespace(text, nameEnd, end);
         TextSpan? parentheses = null;
         TextSpan? pose = null;
+        TextSpan? extra = null;
         if (position < end && text[position] is '(')
         {
             int close = text.IndexOf(')', position, end - position);
@@ -37,14 +39,51 @@ internal static class SpeakerScanner
             if (poseEnd > poseStart && SkipWhitespace(text, poseEnd, close) == close)
                 pose = new TextSpan(poseStart, poseEnd - poseStart);
 
-            position = SkipWhitespace(text, close + 1, end);
+            int extraStart = SkipWhitespace(text, close + 1, end);
+            int extraEnd = SkipExtra(text, extraStart, end);
+            if (extraEnd > extraStart)
+                extra = new TextSpan(extraStart, extraEnd - extraStart);
+
+            position = SkipWhitespace(text, extraEnd, end);
         }
 
         if (position >= end || text[position] is not ':')
             return null;
 
         bool spaced = position + 1 >= end || text[position + 1] is ' ' or '\t';
-        return new(new(start, nameEnd - start), parentheses, pose, position, spaced && (parentheses is null || pose is not null));
+        return new(new(start, nameEnd - start), parentheses, pose, extra, position, spaced && extra is null && (parentheses is null || pose is not null));
+    }
+
+    /// <summary>Skips further parentheses and at most one word, and returns where the last of them ends, or <paramref name="start"/> if there are none.</summary>
+    private static int SkipExtra(string text, int start, int end)
+    {
+        int extraEnd = start;
+        int position = start;
+        bool hasWord = false;
+        while (position < end)
+        {
+            if (text[position] is '(')
+            {
+                int close = text.IndexOf(')', position, end - position);
+                if (close < 0)
+                    break;
+
+                extraEnd = close + 1;
+            }
+            else if (!hasWord && SkipIdentifier(text, position, end) is var wordEnd && wordEnd > position)
+            {
+                hasWord = true;
+                extraEnd = wordEnd;
+            }
+            else
+            {
+                break;
+            }
+
+            position = SkipWhitespace(text, extraEnd, end);
+        }
+
+        return extraEnd;
     }
 
     private static int SkipIdentifier(string text, int start, int end)

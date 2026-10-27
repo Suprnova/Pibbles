@@ -347,6 +347,14 @@ public static class DiagnosticCatalog
         "There's no space after `{0}:`.",
         help: "Add one, or escape the colon if this is narration: `{1}`.");
 
+    /// <summary>PIB2005: more between a declared actor's pose and the colon, as in <c>mira (smug) (shake):</c> or <c>mira (smug) shake:</c>.</summary>
+    /// <remarks>Arguments: what comes after the pose; the pose's parenthesis; and the line's start up to its colon, which the help escapes.</remarks>
+    public static DiagnosticDescriptor AfterPose { get; } = new(
+        "PIB2005",
+        DiagnosticSeverity.Error,
+        "`{0}` has no place after `{1}`, before the colon.",
+        help: "A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}\\:`.");
+
     /// <summary>PIB2010: a command that isn't declared.</summary>
     /// <remarks>Arguments: the command's name, without its <c>@</c>, and the closest command, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownCommand { get; } = new(
@@ -915,6 +923,7 @@ public static class DiagnosticCatalog
         UnknownPose,
         NotPose,
         NoSpaceAfterSpeaker,
+        AfterPose,
         UnknownCommand,
         ArgumentType,
         NotInline,

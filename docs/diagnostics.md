@@ -78,6 +78,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2002 | Error | Mira has no pose called `smirk`. | Did you mean `smug`? |
 | PIB2003 | Error | `(to Rex)` isn't a pose: a pose is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
 | PIB2004 | Warning | There's no space after `mira:`. | Add one, or escape the colon if this is narration: `mira\:Hi`. |
+| PIB2005 | Error | `shake` has no place after `(mad)`, before the colon. | A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (mad) shake\:`. |
 | PIB2010 | Error | I don't know a command called `@shak`. | Did you mean `@shake_screen`? |
 | PIB2011 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
@@ -625,6 +626,16 @@ mira:Hi.
 ```
 
 Add the space, `mira: Hi.`, or escape the colon if the line really is narration: `mira\:Hi.` Names that aren't actors, as in `Time:3pm`, are never reported.
+
+### PIB2005
+
+**Between an actor's pose and the colon there's nothing else,** so a second parenthesis or a word there is reported rather than shown as narration. A line with a colon much later, such as `mira (mad) leaves the room: she said.`, is narration and isn't reported.
+
+```text
+mira (mad) shake: Fine.
+```
+
+Write the direction as a comment, `// Shaking.`, and the line as `mira (mad): Fine.` If the line is narration, escape the colon: `mira (mad) shake\: Fine.`
 
 ### PIB2010
 

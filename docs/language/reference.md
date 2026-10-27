@@ -174,7 +174,7 @@ mira (sad):
 ```
 
 - **`speaker:`** where `speaker` is a declared actor, followed by a space or the end of the line. Spaces between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):`. Anything else is narration.
-- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds more than one name (`mira (to Rex): Fine.`) is an error, since a pose is a single name. A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
+- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds more than one name (`mira (to Rex): Fine.`) is an error, since a pose is a single name. So is anything between a declared actor's pose and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
 - **`speaker (pose):`** sets the actor's pose, then shows the line. The pose stays until it's changed again.
 - **`speaker (pose):` with no text** changes the pose without showing a line.
 - **`speaker:` with neither a pose nor text** is an error. For a box that shows only the speaker's name, write a point and no text: `mira: {w}`.
@@ -705,7 +705,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - Declarations come before a file's first node, and `@prefix` comes before everything but comments.
 - A variation block holds only alternatives.
 - A speaker is a declared actor. Otherwise the analyzer suggests escaping the colon.
-- A text line that starts with a name, then a parenthesis that isn't a single identifier, then a colon (`mira (to Rex):`) is an error. A text line that starts with a declared actor directly followed by a colon and a character other than whitespace (`mira:Hi`) is a warning. Both suggest escaping the colon if the line is narration.
+- A text line that starts with a name, then a parenthesis that isn't a single identifier, then a colon (`mira (to Rex):`) is an error. So is a text line that starts with a declared actor and its pose, then more parentheses or a word, then a colon (`mira (mad) (shake):`, `mira (mad) shake:`). A text line that starts with a declared actor directly followed by a colon and a character other than whitespace (`mira:Hi`) is a warning. All three suggest escaping the colon if the line is narration.
 - A tag is reserved or declared with `@tag`. An unknown tag suggests the closest declared name, or escaping the `#` if it's meant as text.
 - A flag tag has no `:`. A value tag has one, followed by a value of its type. The value may be empty only if the type is marked `?`. A tag type is `string` or a declared enum.
 - `#id` has the [line ID](#lexical-basics) shape, at most once, only on a text line that shows text, an option, `@call` or a variation block opener. A block opener takes no other tag.

@@ -174,7 +174,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     /// <summary>
     /// Reports narration that almost looks like a speaker, so a mistake never shows as narration: a parenthesis that
-    /// isn't a single pose, or a declared actor with no space after the colon.
+    /// isn't a single pose, anything between a declared actor's pose and the colon, or a declared actor with no space after
+    /// the colon.
     /// </summary>
     private void CheckNarration(TextLineSyntax line)
     {
@@ -185,6 +186,10 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         if (prefix is { Parentheses: { } parentheses, Pose: null })
         {
             Report(DiagnosticCatalog.NotPose, parentheses, TextOf(parentheses), before);
+        }
+        else if (prefix is { Extra: { } extra, Parentheses: { } poseParentheses } && symbols.Actors.ContainsKey(TextOf(prefix.Name)))
+        {
+            Report(DiagnosticCatalog.AfterPose, extra, TextOf(extra), TextOf(poseParentheses), before);
         }
         else if (symbols.Actors.ContainsKey(TextOf(prefix.Name)))
         {

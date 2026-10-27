@@ -208,6 +208,11 @@ public class BinderTests
             "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\\:`."
         },
         {
+            $"{Cast}mira (smug) shake: Fine.\n",
+            "`shake` has no place after `(smug)`, before the colon.",
+            "A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (smug) shake\\:`."
+        },
+        {
             $"{Cast}mira:Hi there. #id:k7qp2x\n",
             "There's no space after `mira:`.",
             "Add one, or escape the colon if this is narration: `mira\\:Hi there.`."
