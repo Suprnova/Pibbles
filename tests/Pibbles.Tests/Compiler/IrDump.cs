@@ -88,7 +88,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
             InterpolationElement interpolation => $"{{{Format(interpolation.Value)}:{interpolation.Value.Type.Name}}}",
             CommandElement command => $"{{@{command.Command.Name}({string.Join(", ", command.Arguments.Select(Format))}) waits={Lower(command.Waits)}}}",
             InputWaitElement => "{w}",
-            PauseElement pause => $"{{w {Format(pause.Duration)}}}",
+            PauseElement pause => $"{{pause {Format(pause.Duration)}}}",
             SpeedElement speed => $"{{speed {Format(speed.Factor)}}}",
             SpeedResetElement => "{speed}",
             PageBreakElement => "{p}",

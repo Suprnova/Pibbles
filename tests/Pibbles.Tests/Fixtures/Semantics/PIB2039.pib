@@ -10,17 +10,17 @@ A {speed (-1)} B.
 //       ^^^^ PIB2039
 A {speed (2 * 0)} B.
 //       ^^^^^^^ PIB2039
-A {w 0} B.
-//   ^ PIB2039
-A {w 0s} B.
-//   ^^ PIB2039
-A {w (0.5s - 1s)} B.
-//   ^^^^^^^^^^^ PIB2039
+A {pause 0} B.
+//       ^ PIB2039
+A {pause 0s} B.
+//       ^^ PIB2039
+A {pause (0.5s - 1s)} B.
+//       ^^^^^^^^^^^ PIB2039
 @wait 0s
 //    ^^ PIB2039
 
 // Must not trigger
 
-A {w 0.1} B {speed $s} C {w $d} D {speed 0.5} E {speed} F.
-A {w (79228162514264337593543950335 * 2)} B {speed (79228162514264337593543950335 * 2)} C.
+A {pause 0.1} B {speed $s} C {pause $d} D {speed 0.5} E {speed} F.
+A {pause (79228162514264337593543950335 * 2)} B {speed (79228162514264337593543950335 * 2)} C.
 @wait 0.5s

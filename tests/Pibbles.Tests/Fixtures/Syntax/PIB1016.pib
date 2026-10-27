@@ -3,8 +3,8 @@
 == fixture.option_text
 -> Wait {w} here
 //      ^^^ PIB1016
--> Pause {w 0.5} here
-//       ^^^^^^^ PIB1016
+-> Pause {pause 0.5} here
+//       ^^^^^^^^^^^ PIB1016
 -> A new page{p}
 //           ^^^ PIB1016
 -> Jolt {@jolt mira}

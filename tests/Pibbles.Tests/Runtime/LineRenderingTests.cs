@@ -54,7 +54,7 @@ public class LineRenderingTests
     [Fact]
     public void Markers_AreAtTheirPositionsWithTheirPayloadsInSourceOrder()
     {
-        Line line = Render("mira: {@shake 3}Hi{w} there{w 0.5}{p}new{speed 2}fast{speed}.{@shake 1 wait}");
+        Line line = Render("mira: {@shake 3}Hi{w} there{pause 0.5}{p}new{speed 2}fast{speed}.{@shake 1 wait}");
 
         Assert.Equal("Hi therenewfast.", line.Text);
         Assert.Equal(
@@ -85,7 +85,7 @@ public class LineRenderingTests
     [Fact]
     public void Markers_NonPositiveValuesAreLeftOutWithAWarning()
     {
-        Game game = Game.Of("== t.n\nmira: a{w $delay}b{speed $count}c{w 0.5}\n");
+        Game game = Game.Of("== t.n\nmira: a{pause $delay}b{speed $count}c{pause 0.5}\n");
 
         game.Runner.Start("t.n");
         var line = ((LineStep)game.Runner.Next()).Line;
@@ -224,7 +224,7 @@ public class LineRenderingTests
     public void Equality_LinesWithTheSameContentAreEqual()
     {
         Game game = Game.Of(
-            "== t.n\nmira: Hi [b]there[/b]{w 1}{@shake 2} #thought #id:a1\n== t.m\nmira: Hi [b]there[/b]{w 2}{@shake 2} #thought #id:a2\n== t.k\nmira: Hi [b]there[/b]{w 1}{@shake 3} #thought #id:a3\n");
+            "== t.n\nmira: Hi [b]there[/b]{pause 1}{@shake 2} #thought #id:a1\n== t.m\nmira: Hi [b]there[/b]{pause 2}{@shake 2} #thought #id:a2\n== t.k\nmira: Hi [b]there[/b]{pause 1}{@shake 3} #thought #id:a3\n");
         Line Next(string node)
         {
             game.Runner.Start(node);

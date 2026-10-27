@@ -98,7 +98,7 @@ public class BinderTests
             "Did you mean `{speed}`?"
         },
         {
-            "== a.b\nWait.{w (0.3s - 0.1s - 0.2s)} Done.\n",
+            "== a.b\nWait.{pause (0.3s - 0.1s - 0.2s)} Done.\n",
             "A pause has to be more than zero, but `(0.3s - 0.1s - 0.2s)` isn't.",
             "Write a pause longer than zero, like `{pause 0.5}`."
         },
@@ -261,19 +261,19 @@ public class BinderTests
     }
 
     [Theory]
-    [InlineData("== a.b\nWait.{w (79228162514264337593543950335 * 2)} Done.\n")]
+    [InlineData("== a.b\nWait.{pause (79228162514264337593543950335 * 2)} Done.\n")]
     [InlineData("== a.b\nWait.{speed (79228162514264337593543950335 * 2)} Done.\n")]
     public void Compile_PacingValueThatIsNotRepresentable_IsNotConstant(string text) => Assert.Empty(Diagnose(text));
 
     [Theory]
-    [InlineData("== a.b\nWait.{w (1 / 0)} Done.\n")]
+    [InlineData("== a.b\nWait.{pause (1 / 0)} Done.\n")]
     [InlineData("== a.b\nWait.{speed (1 / 0)} Done.\n")]
     public void Compile_PacingValueThatDividesByZero_GetsOnlyTheDivisionWarning(string text) =>
         Assert.Equal(["PIB2070"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Theory]
     [InlineData("== a.b\nSlow.{speed 0s} Done.\n")]
-    [InlineData("== a.b\nSlow.{w \"0\"} Done.\n")]
+    [InlineData("== a.b\nSlow.{pause \"0\"} Done.\n")]
     [InlineData("== a.b\n@wait \"0\"\n")]
     public void Compile_PacingValueOfWrongType_ReportsOnlyTheType(string text) =>
         Assert.Equal(["PIB2031"], Diagnose(text).Select(diagnostic => diagnostic.Code));

@@ -158,7 +158,7 @@ public sealed class StoryGenerator(int seed)
         2 => $"[shout]{Pick(Words)}[/shout]",
         3 => Pick(["{$name}", "{$who}"]),
         4 => $"{{$count{random.Next(Counts)}}}",
-        5 => "{w 0.3}" + Pick(Words),
+        5 => "{pause 0.3}" + Pick(Words),
         6 => "{w}" + Pick(Words),
         7 => Pick(Words) + "{br}" + Pick(Words),
         8 => $"{{speed 0.5}}{Phrase(2)}{{speed}}",

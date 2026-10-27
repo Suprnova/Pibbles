@@ -208,7 +208,7 @@ public class EvaluatorTests
         wait.Play("t.n");
         Game loop = Game.Of("== t.n\n@jump t.n\n", budget: 20);
         loop.Play("t.n");
-        Game line = Game.Of("== t.n\nmira: a{w $delay}b{speed $count}c\n");
+        Game line = Game.Of("== t.n\nmira: a{pause $delay}b{speed $count}c\n");
         line.Play("t.n");
         return [.. wait.Warnings, .. loop.Warnings, .. line.Warnings];
     }

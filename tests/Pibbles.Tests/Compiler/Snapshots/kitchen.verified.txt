@@ -105,7 +105,7 @@ node common.stuck
 templates
   #c0wiqs: rex <id:c0wiqs> "Back in the kitchen. Thrilling."
   #mfzuit: mira <id:mfzuit> "This kitchen gives me the creeps."
-  #aesok7: rex <id:aesok7> "It's a kitchen."{w duration(0.4)}" Relax."
+  #aesok7: rex <id:aesok7> "It's a kitchen."{pause duration(0.4)}" Relax."
   #lh35ik: mira <id:lh35ik> "Who said that?"
   #er911h: rex <id:er911h> "Rex. I live in the walls."{w}" "{speed 0.5}"Kidding."{speed}" I'm behind the fridge."
   #ob3a3g: mira <id:ob3a3g> "Let's look around. Press "{icon interact}" to inspect things."

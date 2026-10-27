@@ -12,7 +12,7 @@
     @end
 
 mira (worried): This kitchen gives me the creeps. #id:mfzuit
-rex (grumpy): It's a kitchen.{w 0.4} Relax. #id:aesok7
+rex (grumpy): It's a kitchen.{pause 0.4} Relax. #id:aesok7
 mira: Who said that? #id:lh35ik
 rex: Rex. I live in the walls.{w} {speed 0.5}Kidding.{speed} I'm behind the fridge. #id:er911h
 mira: Let's look around. Press {icon interact} to inspect things. #id:ob3a3g

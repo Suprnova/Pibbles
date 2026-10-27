@@ -72,7 +72,7 @@ public class RuntimeBenchmarks
         @icon key
 
         == bench.line
-        mira: [wave amplitude=2]Waves[/wave] and {$name} has {$count} coins,{w 0.3} then {speed 0.5}slowly{speed} a {icon key} {@shake 2}shakes, {if $flag}yes{else}no{/if}.{w} [b]Bold [shout]and loud[/shout][/b], to the end of a long line. #id:l1
+        mira: [wave amplitude=2]Waves[/wave] and {$name} has {$count} coins,{pause 0.3} then {speed 0.5}slowly{speed} a {icon key} {@shake 2}shakes, {if $flag}yes{else}no{/if}.{w} [b]Bold [shout]and loud[/shout][/b], to the end of a long line. #id:l1
         @jump bench.line
         """;
 

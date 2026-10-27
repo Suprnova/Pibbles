@@ -15,7 +15,7 @@ node snap.elements
     7  Return
 templates
   ~elements.pib:4: mira <> "Plain, "[b]("bold")" and "[wave 2 5]("waving "[shout]("nested"))"."
-  ~elements.pib:5: mira <> "Pause"{w duration(0.5)}" then wait"{w}" then a page"{p}"and a line"{br}"break."
+  ~elements.pib:5: mira <> "Pause"{pause duration(0.5)}" then wait"{w}" then a page"{p}"and a line"{br}"break."
   ~elements.pib:6: mira <> {speed 0.5}"Slow"{speed}" normal "{speed ($count + 1):number}"fast."
   ~elements.pib:7: mira <> "Icon "{icon interact}", "{@jolt(mira) waits=false}", "{@jolt(mira) waits=true}", "{@sfx("x") waits=false}"."
   ~elements.pib:8: mira <> "You "{if $has_key: "have" | elif ($count > 1):bool: "nearly have" | else: "lack"}" it, "{$name:string}", "{$count:number}", "{$who:actor}"."

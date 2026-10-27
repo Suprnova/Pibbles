@@ -16,11 +16,11 @@ public class StyleChecksTests
         { "@if true != $a\n    Hi.\n", "PIB5020", "Write `not $a`." },
         { "@if ($a and $a) == false\n    Hi.\n", "PIB5020", "Write `not ($a and $a)`." },
         { "@set $n = $n - 2 * 3\n", "PIB5021", "Write `@set $n -= 2 * 3`." },
-        { "Wait.{w 0.2}{w 300ms} Done.\n", "PIB5018", "Write one pause: `{pause 0.5}`." },
-        { "Wait.{w 0.10}{w 0.20} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
-        { "Wait.{w 0.1}{w 0.2} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
+        { "Wait.{pause 0.2}{pause 300ms} Done.\n", "PIB5018", "Write one pause: `{pause 0.5}`." },
+        { "Wait.{pause 0.10}{pause 0.20} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
+        { "Wait.{pause 0.1}{pause 0.2} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
         { "Wait.{w}{p}Done.\n", "PIB5017", "Remove it." },
-        { "Wait.{w 79228162514264337593543950335}{w 1} Done.\n", "PIB5018", null },
+        { "Wait.{pause 79228162514264337593543950335}{pause 1} Done.\n", "PIB5018", null },
     };
 
     [Theory]
@@ -37,7 +37,7 @@ public class StyleChecksTests
     [Theory]
     [InlineData("Wait.{w}\n", "PIB5011", "This wait does nothing, because the end of the line already waits for a click.")]
     [InlineData("Wait.{w}{p}Done.\n", "PIB5017", "This wait does nothing, because the `{p}` after it already waits.")]
-    [InlineData("Wait.{w 0.2}{w 0.3} Done.\n", "PIB5018", "This pause comes right after another one, so the two could be one.")]
+    [InlineData("Wait.{pause 0.2}{pause 0.3} Done.\n", "PIB5018", "This pause comes right after another one, so the two could be one.")]
     public void Create_RedundantWaitOrPause_SaysWhichItIs(string body, string code, string message)
     {
         var source = new SourceText("story.pib", $"== a.b\n{body}");

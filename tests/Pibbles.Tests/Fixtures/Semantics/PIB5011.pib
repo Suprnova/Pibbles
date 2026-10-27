@@ -6,5 +6,5 @@ This line waits for a click that happens anyway.{w}
 
 // Must not trigger
 
-This line ends with a timed pause, which still counts in auto mode.{w 0.5}
+This line ends with a timed pause, which still counts in auto mode.{pause 0.5}
 This line waits{w} and continues.
