@@ -389,7 +389,7 @@ point_body      ::= … | NAME call_args?
 
 - `call_args` becomes optional in `point_body`. After the NAME, `(` means a call and `}` means a term.
 - A capitalized reference (`{They}`) is an ordinary NAME, which the binder matches to its lowercase term.
-- A term body ends in text, so like a text line it can't have a trailing comment. A term takes no tags, so a `#` followed by a letter in its body is an error, escaped as `\#`.
+- A term body ends in text, so like a text line it can end with a trailing comment. A term takes no tags, so a `#` followed by a letter in its body is an error, escaped as `\#`.
 - What a term body may contain is a check.
 
 **Guide text:**
@@ -562,7 +562,7 @@ What the language gains with the localization pipeline ([localization design](..
 mira (worried): Locked.{w} Of course it's locked.
 ```
 
-**Grammar:** notes give the NOTE line class a meaning: `///`, then RAW. To keep the syntax LL(1), the parser attaches a note to the next TEXT or OPTION line as trivia, the way comments are dropped, instead of reading it as a grammar symbol. As a symbol, `note_line*` would start both `text_line` and `option`, and telling them apart would need lookahead past every note. A note that isn't directly above a text line or option is a check. Q2 decides which lines are notes.
+**Grammar:** notes give the NOTE line class a meaning: `///`, then RAW. To keep the syntax LL(1), the parser attaches a note to the next TEXT or OPTION line as trivia, the way comments are dropped, instead of reading it as a grammar symbol. As a symbol, `note_line*` would start both `text_line` and `option`, and telling them apart would need lookahead past every note. A note that isn't directly above a text line or option is a check. A `///` after the start of a line is an error, so a note is always a whole line and never silently becomes a trailing comment. Q2 decides which lines are notes.
 
 **Guide text:**
 

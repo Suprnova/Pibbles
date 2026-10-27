@@ -56,11 +56,11 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 - **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
-- **Comments:** `//` starts a comment on a line of its own, or after the content of an `@` line or a node header. A line with text in it can't have a trailing comment, because `//` shows up in normal prose and URLs: text lines, options and an actor's `name:` all count. Comment lines don't take part in indentation, so a comment can sit at any indentation.
+- **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
 - **Variable names:** `$` followed by a name, which is identifiers joined by dots, as a node name is (`$has_key`, `$kitchen.door_open`). A name starting with a dot (`$.door_open`) is relative to the file's [prefix](#prefixes).
-- **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
+- **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\/`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
 - **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
 - **Where IDs go:** `#id` goes on text lines that show text, on options, on `@call` and on variation block openers (`@once #id:b8k2qd`), at most once each. Lines, options and calls are what a save can point at, and a block's ID keys its [entry count](#variations). A pose-only line (`mira (sad):`) takes none: it shows nothing and completes at once, so a save never waits on it.
@@ -97,7 +97,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 
 | Declaration | Meaning |
 | --- | --- |
-| `@actor id` | A character. `name:` is the display name, plain text in which every character counts, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
+| `@actor id` | A character. `name:` is the display name, plain text in which every character counts up to a `//` comment, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
 | `@enum name: a, b, c` | A closed set of values. Use it for positions, rooms, sound IDs, anything that should be typo-proof. |
 | `@var $name [: type] = literal` | A variable, saved with the game. The name may be dotted or [relative](#prefixes). The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
 | `@command name(params) [inline] [waits]` | A host instruction. `inline` allows it inside a line's text ([below](#commands)). `waits` means the story waits for it to finish by default. |
@@ -518,7 +518,7 @@ The parser reads two classes by context, which the classifier doesn't know:
 - **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. A `-` with nothing after it but a comment has no content: its alternative is the block below it. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
 - **TEXT** inside an `@actor` block is an actor property.
 
-A byte-order mark at the start of the file is skipped. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error.
+A byte-order mark at the start of the file is skipped. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error. The same counts apply anywhere else on a line: a run of two slashes, or of four or more, starts a comment, and a run of exactly three is a NOTE, an error in v1.
 
 **Indentation** turns widths into tokens:
 
@@ -550,7 +550,7 @@ NUMBER          ::= digit+ ("." digit*)? | "." digit+    /* not followed by a le
 DURATION        ::= NUMBER ("ms" | "s")              /* not followed by a letter, digit, "_" or "." */
 STRING          ::= '"' ([^"#x5C#xA#xD] | ESCAPE)* '"'
 TAG             ::= "#" letter (letter | digit | "_")* (":" [^#x20#x9#xA#xD]*)?
-COMMENT         ::= "//" [^#xA#xD]*            /* only on HEADER and AT lines and in an actor's poses: */
+COMMENT         ::= "//" [^#xA#xD]*            /* in every mode, outside a STRING and a TAG's value */
 AT_WORD         ::= "@" ident
 CALL_OPEN       ::= "("                          /* directly after a NAME, with no whitespace between */
 PUNCT           ::= "(" | ")" | "," | ":" | "?" | "=" | "+=" | "-=" | "->"
@@ -565,7 +565,7 @@ Inline mode:
 SPEAKER         ::= ident (ws* pose)? ws* ":"      /* followed by ws or the end of the line */
 pose            ::= "(" ws* ident ws* ")"
 TEXT            ::= text_char+
-text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag or, in option text, a modifier starts */
+text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag, a COMMENT or, in option text, a modifier starts */
 ESCAPE          ::= #x5C escapable
 escapable       ::= [#x21-#x2F#x3A-#x40#x5B-#x60#x7B-#x7E]          /* ASCII punctuation */
 SPAN_OPEN       ::= "["
@@ -578,8 +578,9 @@ BRACE_CLOSE     ::= "{" ws* "/"
 ```
 
 - SPEAKER is only tried at the start of a TEXT line. If it doesn't match, the whole line is inline text.
-- The lexer looks ahead at characters before it picks a token, which is separate from the parser's one-token lookahead. A `#` starts a tag only when the character after it is a letter, so `my #1 fan` needs no escape. `\#` is only needed when `#` followed by a letter should be text. Once a tag starts, the lexer reads tags to the end of the line, and anything that isn't a tag is an error.
-- In option text, an `@` followed by a letter ends the text, and the lexer reads the rest of the line in code mode: modifiers, then tags. `\@` is only needed when `@` followed by a letter should be text.
+- The lexer looks ahead at characters before it picks a token, which is separate from the parser's one-token lookahead. A `#` starts a tag only when the character after it is a letter, so `my #1 fan` needs no escape. `\#` is only needed when `#` followed by a letter should be text. Once a tag starts, the lexer reads tags to the end of the line or a COMMENT, and anything else is an error.
+- A `//` that isn't after a backslash ends the text and starts a COMMENT, wherever it is on the line. `\//` is only needed when `//` should be text. A COMMENT inside `[…]` or `{…}` takes the rest of the line, so the bracket or brace is unclosed.
+- In option text, an `@` followed by a letter ends the text, and the lexer reads the rest of the line in code mode: modifiers, then tags, up to a COMMENT. `\@` is only needed when `@` followed by a letter should be text.
 - A `[` or `{` fuses with a `/` or keyword after it into one token, and a fused keyword can't be followed by a letter, digit or `_`. This keeps every inline decision to one token: `{elif` ends the branch before it, while a plain `{` starts a point.
 - After a bracket or brace token, the lexer reads code mode up to the matching `]` or `}`, then returns to inline mode.
 - `]` and `}` on their own are text.
@@ -587,7 +588,7 @@ BRACE_CLOSE     ::= "{" ws* "/"
 Raw mode:
 
 ```ebnf
-RAW             ::= [^#xA#xD]*                         /* trimmed; a "[", "{" or #x5C in it is an error */
+RAW             ::= [^#xA#xD]*                         /* up to a COMMENT, trimmed; a "[", "{" or #x5C in it is an error */
 ```
 
 ### Structure

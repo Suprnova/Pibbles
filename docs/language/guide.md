@@ -238,23 +238,33 @@ This line appears while Mira is still moving.
 
 ## Special characters
 
-Some characters mean something to Pibbles: `[ ] { } # \` and, in some places, `:` and `@`. To write one literally, put a backslash in front of it. A `#` only needs one when a letter follows it, and so does an `@` in option text:
+Some characters mean something to Pibbles: `[ ] { } # \`, `//` and, in some places, `:` and `@`. To write one literally, put a backslash in front of it. A `#` only needs one when a letter follows it, and so does an `@` in option text. A `//` needs one in front of its first slash:
 
 ```pib
 This line shows \[square brackets\] and \{curly braces\}.
 This line ends with a hashtag \#literally.
 This line shows a backslash: \\
+This line shows a web address: https:\//example.com
 -> Email me \@home
 ```
 
 ## Comments
 
+A `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, or end any other line. The player never sees it:
+
 ```pib
-// A comment for other writers. The player never sees it.
-This line is story text. // This is NOT a comment. It's part of the line.
+// A comment for other writers.
+mira: Hello there. // Said warmly.
+-> Leave // The polite exit.
 ```
 
-In dialogue, narration and options, a comment must be on its own line, so a line that contains a web address or `//` still reads correctly. A comment line can sit at any indentation.
+To show a `//` to the player, put a backslash in front of it, so a web address is written `https:\//example.com`. Inside quotation marks, and in a tag's value, a `//` is never a comment, so `#link:https://example.com` works as it is.
+
+Four or more slashes (`////`) start a comment too, which suits a banner. A `///` is reserved for notes that arrive later, so it's an error, and your comment can't turn into one by accident:
+
+```pib-error PIB1005
+mira: Hello there. /// Said warmly.
+```
 
 ## Line IDs
 
