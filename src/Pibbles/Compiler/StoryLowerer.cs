@@ -87,8 +87,8 @@ internal sealed class StoryLowerer(Compilation compilation)
                 code.Add(LowerSet(set));
                 break;
 
-            case WaitStatementSyntax wait:
-                code.Add(new WaitInstruction(LowerExpression(wait.Duration), LocationOf(wait)));
+            case PauseStatementSyntax pause:
+                code.Add(new WaitInstruction(LowerExpression(pause.Duration), LocationOf(pause)));
                 break;
 
             case CommandStatementSyntax command:

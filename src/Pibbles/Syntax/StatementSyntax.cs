@@ -59,9 +59,9 @@ public sealed record ElseClauseSyntax(IReadOnlyList<StatementSyntax> Body) : Syn
 /// <param name="Value">The value assigned, added or subtracted.</param>
 public sealed record SetStatementSyntax(VariableExpressionSyntax Variable, AssignmentOperator Operator, TextSpan OperatorSpan, ExpressionSyntax Value) : StatementSyntax;
 
-/// <summary><c>@wait duration</c>: pauses the story without showing text.</summary>
-/// <param name="Duration">How long to wait.</param>
-public sealed record WaitStatementSyntax(ExpressionSyntax Duration) : StatementSyntax;
+/// <summary><c>@pause duration</c>: pauses the story without showing text.</summary>
+/// <param name="Duration">How long to pause.</param>
+public sealed record PauseStatementSyntax(ExpressionSyntax Duration) : StatementSyntax;
 
 /// <summary>A command on its own line, such as <c>@show mira left</c> or <c>@move mira offscreen nowait</c>.</summary>
 /// <param name="Command">The command's name, without the <c>@</c>.</param>

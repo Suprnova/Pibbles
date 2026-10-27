@@ -19,7 +19,7 @@ internal static class SyntaxGenerators
     private static readonly HashSet<string> Reserved =
     [
         "prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
-        "call", "return", "end", "wait", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "p", "br", "auto",
+        "call", "return", "end", "wait", "pause", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "p", "br", "auto",
         "true", "false", "and", "or", "not", "nowait", "speaker", "visits", "random", "bool", "number", "string", "duration",
         "node", "speed", "b", "i", "u", "s", "color", "name", "poses", "inline", "waits", "required", "persona", "id", "was",
         "migrates", "draft", "voice", "unvoiced", "default",
@@ -140,7 +140,7 @@ internal static class SyntaxGenerators
             (1, Gen.Select(NodeName, Tags(other: true, id: true), StatementSyntax (target, tags) => new CallStatementSyntax(Name(target), tags) { Span = default })),
             (1, Gen.Const<StatementSyntax>(new ReturnStatementSyntax { Span = default })),
             (1, Gen.Const<StatementSyntax>(new EndStatementSyntax { Span = default })),
-            (1, Expression(2).Select(StatementSyntax (duration) => new WaitStatementSyntax(duration) { Span = default })),
+            (1, Expression(2).Select(StatementSyntax (duration) => new PauseStatementSyntax(duration) { Span = default })),
             (2, Gen.Select(Identifier, Arguments(1, allowWait: true),
                 StatementSyntax (name, arguments) => new CommandStatementSyntax(Name(name), arguments.Arguments, arguments.Wait) { Span = default })),
         ];

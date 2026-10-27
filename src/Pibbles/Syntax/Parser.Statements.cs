@@ -66,10 +66,10 @@ internal sealed partial class Parser
                 statements.Add(ParseSet(start));
                 return;
 
-            case "@wait":
+            case "@pause" or "@wait":
                 Advance();
                 ExpressionSyntax duration = ParseExpression();
-                statements.Add(FinishStatement(new WaitStatementSyntax(duration) { Span = SpanFrom(start) }));
+                statements.Add(FinishStatement(new PauseStatementSyntax(duration) { Span = SpanFrom(start) }));
                 return;
 
             case "@prefix":

@@ -99,10 +99,10 @@ public class BindingsTests
         (Compilation compilation, SyntaxTree tree) = Compile(Story);
 
         ExpressionSyntax delay = ((CommandStatementSyntax)Statements(tree).First(statement => statement is CommandStatementSyntax)).Arguments[2].Value;
-        ExpressionSyntax wait = ((WaitStatementSyntax)Statements(tree).First(statement => statement is WaitStatementSyntax)).Duration;
+        ExpressionSyntax pause = ((PauseStatementSyntax)Statements(tree).First(statement => statement is PauseStatementSyntax)).Duration;
         ExpressionSyntax added = ((SetStatementSyntax)Statements(tree).Last(statement => statement is SetStatementSyntax)).Value;
 
-        Assert.All([delay, wait, added], expression =>
+        Assert.All([delay, pause, added], expression =>
             Assert.Equal(new ExpressionType(TypeSymbol.Number, TypeSymbol.Duration), compilation.Bindings.TypeOf(expression)));
     }
 

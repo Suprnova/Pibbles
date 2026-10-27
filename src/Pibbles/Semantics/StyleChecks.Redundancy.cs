@@ -25,7 +25,7 @@ internal sealed partial class StyleChecks
                     CheckPose(line, speaker.Text, poses, unseen);
                     break;
 
-                case TextLineSyntax or WaitStatementSyntax:
+                case TextLineSyntax or PauseStatementSyntax:
                     unseen.Clear();
                     break;
 

@@ -6,7 +6,7 @@ namespace Pibbles.Semantics;
 /// <summary>
 /// Resolves the names in a story against its <see cref="SymbolTable"/>: speakers and poses, commands, markup, icons,
 /// tags, functions, variables and nodes. It checks every argument against its parameter, and the type of every
-/// expression: in variables' values, parameters' defaults, conditions, arguments, <c>@set</c>, <c>@wait</c> and text.
+/// expression: in variables' values, parameters' defaults, conditions, arguments, <c>@set</c>, <c>@pause</c> and text.
 /// </summary>
 /// <remarks>
 /// An expression is bound with the type expected where it appears, which is how a bare name is read: as a member of the
@@ -124,8 +124,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     BindSet(set);
                     break;
 
-                case WaitStatementSyntax wait:
-                    BindPacing(wait.Duration, TypeSymbol.Duration, "`@wait` takes a `duration`", "The time to `@wait`", "Write a time longer than zero, like `@wait 0.5s`.");
+                case PauseStatementSyntax pause:
+                    BindPacing(pause.Duration, TypeSymbol.Duration, "`@pause` takes a `duration`", "The time to `@pause`", "Write a time longer than zero, like `@pause 0.5s`.");
                     break;
             }
         }

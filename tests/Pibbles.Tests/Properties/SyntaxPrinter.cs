@@ -184,7 +184,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         CallStatementSyntax call => $"@call {call.Target.Text}{Tags(call.Tags)}",
         ReturnStatementSyntax => "@return",
         EndStatementSyntax => "@end",
-        WaitStatementSyntax wait => $"@wait {Expression(wait.Duration)}",
+        PauseStatementSyntax pause => $"@pause {Expression(pause.Duration)}",
         CommandStatementSyntax command => $"@{command.Command.Text}{Arguments(command.Arguments, command.Wait)}",
         _ => null,
     };

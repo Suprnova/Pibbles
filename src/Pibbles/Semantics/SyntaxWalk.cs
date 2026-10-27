@@ -72,7 +72,7 @@ internal static class SyntaxWalk
         {
             IfStatementSyntax @if => [@if.Condition, .. @if.ElseIfs.Select(elseIf => elseIf.Condition)],
             SetStatementSyntax set => [set.Variable, set.Value],
-            WaitStatementSyntax wait => [wait.Duration],
+            PauseStatementSyntax pause => [pause.Duration],
             CommandStatementSyntax command => command.Arguments.Select(argument => argument.Value),
             ChoiceSyntax choice => choice.Options.Select(option => option.Condition).OfType<ExpressionSyntax>(),
             _ => [],

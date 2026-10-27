@@ -6,6 +6,7 @@ namespace Pibbles.Tests.Syntax;
 public class ParserTests
 {
     [Theory]
+    [InlineData("@pause 0.1", "0.1")]
     [InlineData("@wait 0.1", "0.1")]
     [InlineData("@wait 1.50", "1.50")]
     [InlineData("@wait 300ms", "0.3")]
@@ -16,9 +17,9 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", $"== a.b\n{text}\n");
 
-        var wait = (WaitStatementSyntax)SyntaxTree.Parse(source).Root.Nodes[0].Body[0];
+        var pause = (PauseStatementSyntax)SyntaxTree.Parse(source).Root.Nodes[0].Body[0];
 
-        decimal value = wait.Duration switch
+        decimal value = pause.Duration switch
         {
             NumberLiteralSyntax number => number.Value,
             DurationLiteralSyntax duration => duration.Seconds,
@@ -37,7 +38,7 @@ public class ParserTests
         SyntaxTree tree = SyntaxTree.Parse(source);
 
         Assert.Equal("PIB1047", Assert.Single(tree.Diagnostics).Code);
-        Assert.IsType<ErrorExpressionSyntax>(((WaitStatementSyntax)tree.Root.Nodes[0].Body[0]).Duration);
+        Assert.IsType<ErrorExpressionSyntax>(((PauseStatementSyntax)tree.Root.Nodes[0].Body[0]).Duration);
     }
 
     [Theory]

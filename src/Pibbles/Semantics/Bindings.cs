@@ -6,7 +6,7 @@ namespace Pibbles.Semantics;
 /// <param name="Type">The type the expression has. <see cref="TypeSymbol.Error"/> if it can't be known.</param>
 /// <param name="ConvertedType">
 /// The type the context uses it as: <see cref="TypeSymbol.Duration"/> for a number where a duration is expected, such as
-/// <c>@wait 1</c> or <c>0.5s + 1</c>; otherwise the same as <paramref name="Type"/>.
+/// <c>@pause 1</c> or <c>0.5s + 1</c>; otherwise the same as <paramref name="Type"/>.
 /// </param>
 internal readonly record struct ExpressionType(TypeSymbol Type, TypeSymbol ConvertedType);
 

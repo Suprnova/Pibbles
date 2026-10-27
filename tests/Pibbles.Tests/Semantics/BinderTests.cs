@@ -108,9 +108,9 @@ public class BinderTests
             "Write a speed above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting."
         },
         {
-            "== a.b\n@wait (-1s)\n",
-            "The time to `@wait` has to be more than zero, but `(-1s)` isn't.",
-            "Write a time longer than zero, like `@wait 0.5s`."
+            "== a.b\n@pause (-1s)\n",
+            "The time to `@pause` has to be more than zero, but `(-1s)` isn't.",
+            "Write a time longer than zero, like `@pause 0.5s`."
         },
         {
             "@prefix kitchen\n\n== .door\n@if visits(.dor) > 0\n    Hm.\n",
