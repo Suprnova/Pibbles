@@ -5,24 +5,24 @@ using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
 
-/// <summary>Redundancy: pose changes nobody sees, pauses and markup that do nothing, conditions that make no difference, and a last <c>@return</c>.</summary>
+/// <summary>Redundancy: channel values nobody sees, pauses and markup that do nothing, conditions that make no difference, and a last <c>@return</c>.</summary>
 internal sealed partial class StyleChecks
 {
     /// <summary>
-    /// PIB5010 and PIB5016: follows each actor's pose down a block, but only while that's certain. Text lines, <c>@set</c> and
-    /// <c>@pause</c> keep what's known; anything else, such as a command, a call or a choice, might change a pose or skip
-    /// ahead, so it forgets everything.
+    /// PIB5010 and PIB5016: follows each actor's value in each channel down a block, but only while that's certain. Text
+    /// lines, <c>@set</c> and <c>@pause</c> keep what's known; anything else, such as a command, a call or a choice,
+    /// might change a value or skip ahead, so it forgets everything.
     /// </summary>
-    private void CheckPoses(IReadOnlyList<StatementSyntax> block)
+    private void CheckValues(IReadOnlyList<StatementSyntax> block)
     {
-        Dictionary<string, string> poses = [];
-        Dictionary<string, TextLineSyntax> unseen = [];
+        Dictionary<(string Actor, string Channel), string> values = [];
+        Dictionary<(string Actor, string Channel), NameSyntax> unseen = [];
         foreach (StatementSyntax statement in block)
         {
             switch (statement)
             {
-                case TextLineSyntax { Speaker: { } speaker } line when symbols.Actors.ContainsKey(speaker.Text):
-                    CheckPose(line, speaker.Text, poses, unseen);
+                case TextLineSyntax { Speaker: { } speaker } line when symbols.Actors.TryGetValue(speaker.Name.Text, out ActorSymbol? actor):
+                    CheckLineValues(line, speaker, actor, values, unseen);
                     break;
 
                 case TextLineSyntax or PauseStatementSyntax:
@@ -33,33 +33,37 @@ internal sealed partial class StyleChecks
                     break;
 
                 default:
-                    poses.Clear();
+                    values.Clear();
                     unseen.Clear();
                     break;
             }
 
             foreach (IReadOnlyList<StatementSyntax> inner in SyntaxWalk.BlocksOf(statement))
-                CheckPoses(inner);
+                CheckValues(inner);
         }
     }
 
-    /// <summary>Reports a pose the actor already has, or a pose-only line whose pose changes again before any line shows.</summary>
-    private void CheckPose(TextLineSyntax line, string actor, Dictionary<string, string> poses, Dictionary<string, TextLineSyntax> unseen)
+    /// <summary>Reports a value the actor already has, or one set by a line with no text that changes again before any line shows.</summary>
+    private void CheckLineValues(TextLineSyntax line, SpeakerSyntax speaker, ActorSymbol actor, Dictionary<(string Actor, string Channel), string> values, Dictionary<(string Actor, string Channel), NameSyntax> unseen)
     {
-        if (line.Pose is { } pose)
+        foreach (NameSyntax value in speaker.Values)
         {
-            if (unseen.Remove(actor, out TextLineSyntax? hidden))
-                Report(DiagnosticCatalog.UnseenPoseChange, hidden.Span, new SpeakerMention(actor));
-            else if (poses.GetValueOrDefault(actor) == pose.Text)
-                Report(DiagnosticCatalog.RepeatedPose, pose.Span, new SpeakerMention(actor));
+            if (actor.Channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } owner)
+                continue;
 
-            poses[actor] = pose.Text;
+            var key = (actor.Name, owner.Channel.Name);
+            if (unseen.Remove(key, out NameSyntax? hidden))
+                Report(DiagnosticCatalog.UnseenValueChange, hidden.Span, hidden.Text, new SpeakerMention(actor.Name), owner.Channel.Name);
+            else if (values.GetValueOrDefault(key) == value.Text)
+                Report(DiagnosticCatalog.RepeatedValue, value.Span, value.Text, new SpeakerMention(actor.Name));
+
+            values[key] = value.Text;
+            if (line.Content.Count == 0)
+                unseen[key] = value;
         }
 
         if (line.Content.Count > 0)
             unseen.Clear();
-        else if (line.Pose is not null)
-            unseen[actor] = line;
     }
 
     /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{page}</c>, and timed pauses side by side.</summary>

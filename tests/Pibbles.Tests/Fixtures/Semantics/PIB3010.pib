@@ -1,8 +1,9 @@
 // A line the player sees, an option, a `@call` and a variation block each have an `#id`.
 
+@channel pose
 @actor mira
     name: Mira
-    poses: sad
+    pose: sad
 
 == kitchen.door
 mira: No ID here.

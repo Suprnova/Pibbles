@@ -1,23 +1,30 @@
-File 1:1-29:1
+File 1:1-31:1
   Nodes:
-    Node 3:1-28:15
+    Node 3:1-30:19
       Name: Name 3:4-3:17 Text="snapshot.text"
       Body:
         TextLine 4:1-4:19
-          Speaker: Name 4:1-4:5 Text="mira"
+          Speaker: Speaker 4:1-4:5
+            Name: Name 4:1-4:5 Text="mira"
           Content:
             TextRun 4:7-4:19 Text="Hello there."
         TextLine 5:1-5:32
-          Speaker: Name 5:1-5:5 Text="mira"
-          Pose: Name 5:7-5:11 Text="smug"
+          Speaker: Speaker 5:1-5:12
+            Name: Name 5:1-5:5 Text="mira"
+            Values:
+              Name 5:7-5:11 Text="smug"
           Content:
             TextRun 5:14-5:32 Text="I knew you'd come."
         TextLine 6:1-6:12
-          Speaker: Name 6:1-6:5 Text="mira"
-          Pose: Name 6:7-6:10 Text="sad"
+          Speaker: Speaker 6:1-6:11
+            Name: Name 6:1-6:5 Text="mira"
+            Values:
+              Name 6:7-6:10 Text="sad"
         TextLine 7:1-7:57
-          Speaker: Name 7:1-7:5 Text="mira"
-          Pose: Name 7:6-7:11 Text="happy"
+          Speaker: Speaker 7:1-7:12
+            Name: Name 7:1-7:5 Text="mira"
+            Values:
+              Name 7:6-7:11 Text="happy"
           Content:
             TextRun 7:15-7:57 Text="Spacing around the speaker doesn't matter."
         TextLine 8:1-8:34
@@ -30,7 +37,8 @@ File 1:1-29:1
           Content:
             TextRun 10:1-10:37 Text="my #1 fan, and ] and } on their own."
         TextLine 11:1-11:78
-          Speaker: Name 11:1-11:5 Text="mira"
+          Speaker: Speaker 11:1-11:5
+            Name: Name 11:1-11:5 Text="mira"
           Content:
             TextRun 11:7-11:14 Text="That's "
             Markup 11:14-11:24
@@ -51,7 +59,8 @@ File 1:1-29:1
             Tag 11:59-11:67 Name="thought" Value=null
             Tag 11:68-11:78 Name="box" Value="phone"
         TextLine 12:1-12:96
-          Speaker: Name 12:1-12:4 Text="rex"
+          Speaker: Speaker 12:1-12:4
+            Name: Name 12:1-12:4 Text="rex"
           Content:
             Markup 12:6-12:40
               Name: Name 12:7-12:11 Text="wave"
@@ -75,7 +84,8 @@ File 1:1-29:1
               Content:
                 TextRun 12:84-12:88 Text="Red."
         TextLine 13:1-13:82
-          Speaker: Name 13:1-13:5 Text="mira"
+          Speaker: Speaker 13:1-13:5
+            Name: Name 13:1-13:5 Text="mira"
           Content:
             TextRun 13:7-13:11 Text="Hi, "
             Interpolation 13:11-13:25
@@ -91,7 +101,8 @@ File 1:1-29:1
               Name: Name 13:71-13:80 Text="inventory"
             TextRun 13:81-13:82 Text="."
         TextLine 14:1-14:75
-          Speaker: Name 14:1-14:5 Text="mira"
+          Speaker: Speaker 14:1-14:5
+            Name: Name 14:1-14:5 Text="mira"
           Content:
             TextRun 14:7-14:14 Text="Locked."
             InputWait 14:14-14:17
@@ -104,7 +115,8 @@ File 1:1-29:1
             LineBreak 14:62-14:66
             TextRun 14:66-14:75 Text="New line."
         TextLine 15:1-15:84
-          Speaker: Name 15:1-15:5 Text="mira"
+          Speaker: Speaker 15:1-15:5
+            Name: Name 15:1-15:5 Text="mira"
           Content:
             Markup 15:7-15:30
               Name: Name 15:8-15:13 Text="shout"
@@ -126,7 +138,8 @@ File 1:1-29:1
                 Argument 15:72-15:76
                   Value: NameExpression 15:72-15:76 Name="thud"
         TextLine 16:1-16:108
-          Speaker: Name 16:1-16:4 Text="rex"
+          Speaker: Speaker 16:1-16:4
+            Name: Name 16:1-16:4 Text="rex"
           Content:
             TextRun 16:6-16:10 Text="You "
             ConditionalText 16:10-16:107
@@ -147,7 +160,8 @@ File 1:1-29:1
                   TextRun 16:84-16:102 Text="haven't even tried"
             TextRun 16:107-16:108 Text="."
         TextLine 17:1-17:52
-          Speaker: Name 17:1-17:5 Text="mira"
+          Speaker: Speaker 17:1-17:5
+            Name: Name 17:1-17:5 Text="mira"
           Content:
             ConditionalText 17:7-17:30
               Condition: VariableExpression 17:11-17:13 Name="a"
@@ -161,18 +175,21 @@ File 1:1-29:1
               Content:
                 TextRun 17:39-17:45 Text="spaced"
         TextLine 18:1-18:10
-          Speaker: Name 18:1-18:5 Text="mira"
+          Speaker: Speaker 18:1-18:5
+            Name: Name 18:1-18:5 Text="mira"
           Content:
             InputWait 18:7-18:10
         TextLine 19:1-19:35
-          Speaker: Name 19:1-19:5 Text="mira"
+          Speaker: Speaker 19:1-19:5
+            Name: Name 19:1-19:5 Text="mira"
           Content:
             TextRun 19:7-19:13 Text="Quiet."
             Pause 19:13-19:24
               Duration: NumberLiteral 19:20-19:23 Value=0.5
             TextRun 19:24-19:35 Text=" Then more."
         TextLine 20:1-20:65
-          Speaker: Name 20:1-20:5 Text="mira"
+          Speaker: Speaker 20:1-20:5
+            Name: Name 20:1-20:5 Text="mira"
           Content:
             TextRun 20:7-20:13 Text="Tried "
             Interpolation 20:13-20:25
@@ -182,12 +199,15 @@ File 1:1-29:1
               Value: VariableExpression 20:34-20:48 Name="kitchen.tries"
             TextRun 20:49-20:65 Text=" in the kitchen."
         TextLine 21:1-21:19
-          Speaker: Name 21:1-21:5 Text="mira"
+          Speaker: Speaker 21:1-21:5
+            Name: Name 21:1-21:5 Text="mira"
           Content:
             TextRun 21:7-21:19 Text="Hello there."
         TextLine 22:1-22:12
-          Speaker: Name 22:1-22:5 Text="mira"
-          Pose: Name 22:7-22:10 Text="sad"
+          Speaker: Speaker 22:1-22:11
+            Name: Name 22:1-22:5 Text="mira"
+            Values:
+              Name 22:7-22:10 Text="sad"
         TextLine 23:1-23:39
           Content:
             TextRun 23:1-23:30 Text="The kitchen smells of coffee."
@@ -197,7 +217,8 @@ File 1:1-29:1
           Content:
             TextRun 24:1-24:43 Text="Visit https://example.com for the recipe."
         TextLine 25:1-25:33
-          Speaker: Name 25:1-25:5 Text="mira"
+          Speaker: Speaker 25:1-25:5
+            Name: Name 25:1-25:5 Text="mira"
           Content:
             TextRun 25:7-25:12 Text="Look "
             Markup 25:12-25:26
@@ -207,7 +228,8 @@ File 1:1-29:1
             Interpolation 25:26-25:33
               Value: VariableExpression 25:27-25:32 Name="name"
         TextLine 26:1-26:46
-          Speaker: Name 26:1-26:5 Text="mira"
+          Speaker: Speaker 26:1-26:5
+            Name: Name 26:1-26:5 Text="mira"
           Content:
             TextRun 26:7-26:9 Text="A "
             Interpolation 26:9-26:20
@@ -217,15 +239,31 @@ File 1:1-29:1
                   StringLiteral 26:12-26:18 Value="a//b"
             TextRun 26:20-26:46 Text=" string keeps its slashes."
         TextLine 27:1-27:37
-          Speaker: Name 27:1-27:5 Text="mira"
+          Speaker: Speaker 27:1-27:5
+            Name: Name 27:1-27:5 Text="mira"
           Content:
             TextRun 27:7-27:11 Text="Read"
           Tags:
             Tag 27:12-27:37 Name="link" Value="https://example.com"
         TextLine 28:1-28:15
-          Speaker: Name 28:1-28:5 Text="mira"
+          Speaker: Speaker 28:1-28:5
+            Name: Name 28:1-28:5 Text="mira"
           Content:
             TextRun 28:7-28:15 Text="A banner"
+        TextLine 29:1-29:55
+          Speaker: Speaker 29:1-29:20
+            Name: Name 29:1-29:5 Text="mira"
+            Values:
+              Name 29:7-29:12 Text="happy"
+              Name 29:14-29:19 Text="shake"
+          Content:
+            TextRun 29:22-29:55 Text="Two values, in the order written."
+        TextLine 30:1-30:19
+          Speaker: Speaker 30:1-30:18
+            Name: Name 30:1-30:5 Text="mira"
+            Values:
+              Name 30:7-30:12 Text="shake"
+              Name 30:14-30:17 Text="sad"
 Comments:
   1:1-1:48 "Text lines and every kind of inline element."
   21:20-21:34 trailing "said warmly"

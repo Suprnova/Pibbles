@@ -1,13 +1,17 @@
 // Story-wide declarations: the contract between the writers and the game.
 // The game must implement everything declared here.
 
+// What a line sets for its speaker: every actor starts with these values, and a block adds to them.
+@channel pose: neutral, happy, sad, worried
+@channel effect: still, jolt
+
 @actor mira
     name: Mira
-    poses: neutral, happy, sad, smug, worried, angry
+    pose += smug, angry
 
 @actor rex
     name: Rex
-    poses: neutral, grumpy, surprised
+    pose += grumpy, surprised
 
 @enum position: left, center, right, offscreen
 @enum room: kitchen, cellar, study
@@ -23,7 +27,6 @@
 @command move(who: actor, to: position) waits
 
 // Effects
-@command jolt(who: actor) inline
 @command shake_screen(strength: number = 1, duration: duration = 0.3s) inline
 @command sfx(name: sound) inline
 @command camera(target: camera_target) waits

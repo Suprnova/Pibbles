@@ -1,16 +1,27 @@
-// A pose is one of the poses its actor declares.
+// A value is one of the values its speaker has.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: neutral, smug
+    pose: neutral, smug
+@actor rex
+    name: Rex
+    no effect
 
 == kitchen.door
 mira (smirk): I knew it.
 //    ^^^^^ PIB2002
 mira (happy):
 //    ^^^^^ PIB2002
+mira (smug, wobble): I knew it.
+//          ^^^^^^ PIB2002
+rex (shake): Hm.
+//   ^^^^^ PIB2002
 
 // Must not trigger
 
 mira (smug): I knew it.
 mira (neutral):
+mira (smug, shake): Both channels.
+rex: Hm.

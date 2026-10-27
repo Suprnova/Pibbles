@@ -1,9 +1,20 @@
 // The names in one list are all different.
 
+@channel effect: still, shake
+@channel pose
 @actor mira
     name: Mira
-    poses: happy, sad, happy
-//                     ^^^^^ PIB2061
+    pose: happy, sad, happy
+//                    ^^^^^ PIB2061
+@actor rex
+    name: Rex
+    pose: happy
+    pose += sad
+//  ^^^^ PIB2061
+@actor sam
+    name: Sam
+    effect += shake
+//            ^^^^^ PIB2061
 @enum position: left, right, left
 //                           ^^^^ PIB2061
 @command show(who: actor, who: actor)
@@ -11,5 +22,9 @@
 
 // Must not trigger
 
+@actor tess
+    name: Tess
+    pose: happy, sad
+    effect += blink
 @enum side: left, right
 @markup wave(amplitude: number = 1, frequency: number = 5)

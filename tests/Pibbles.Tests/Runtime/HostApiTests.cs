@@ -7,11 +7,14 @@ namespace Pibbles.Tests.Runtime;
 public class HostApiTests
 {
     private const string Source = """
+        @channel pose
+        @channel effect: still, shake
         @actor mira
             name: Mira
-            poses: neutral, happy
+            pose: neutral, happy
         @actor rex
             name: Rex
+            no effect
         @enum mood: calm, tense
         @var $count = 0
         @var $price = 1.50
@@ -60,9 +63,27 @@ public class HostApiTests
             story.Variables.Select(variable => variable.Type.Kind));
         ActorInfo mira = story.Actors.Single(actor => actor.Id == "mira");
         Assert.Equal("Mira", mira.DisplayName);
-        Assert.Equal(["neutral", "happy"], mira.Poses);
-        Assert.Equal("Rex", story.Actors.Single(actor => actor.Id == "rex").DisplayName);
+        Assert.Equal(["pose", "effect"], mira.Channels.Select(channel => channel.Name));
+        Assert.Equal(["neutral", "happy"], mira.Channels[0].Values);
+        Assert.Equal(["still", "shake"], mira.Channels[1].Values);
+        ActorInfo rex = story.Actors.Single(actor => actor.Id == "rex");
+        Assert.Equal("Rex", rex.DisplayName);
+        Assert.Equal(["pose"], rex.Channels.Select(channel => channel.Name));
+        Assert.Equal(["pose", "effect"], story.Channels.Select(channel => channel.Name));
+        Assert.Equal(["still", "shake"], story.Channels.Single(channel => channel.Name == "effect").Values);
         Assert.Equal(["calm", "tense"], Assert.Single(story.Enums).Members);
+    }
+
+    [Fact]
+    public void Story_Actors_ListWhatEachBlockAddsReplacesAndDrops()
+    {
+        Story story = Game.Compile("@channel pose: neutral, happy\n@channel effect: still, shake\n@channel camera: static, orbit\n@actor mira\n    name: Mira\n    pose += eating\n@actor unit7\n    pose: idle, scanning\n@actor god\n    no camera, effect\n== t.n\n");
+
+        string[] channels = [.. story.Actors.Select(actor => $"{actor.Id}: {string.Join("; ", actor.Channels.Select(channel => $"{channel.Name}={string.Join(",", channel.Values)}"))}")];
+
+        Assert.Equal(
+            ["mira: pose=neutral,happy,eating; effect=still,shake; camera=static,orbit", "unit7: pose=idle,scanning; effect=still,shake; camera=static,orbit", "god: pose=neutral,happy"],
+            channels);
     }
 
     [Theory]

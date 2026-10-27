@@ -5,6 +5,8 @@ internal sealed class SymbolTable
 {
     public Dictionary<string, ActorSymbol> Actors { get; } = [];
 
+    public Dictionary<string, ChannelSymbol> Channels { get; } = [];
+
     public Dictionary<string, EnumSymbol> Enums { get; } = [];
 
     public Dictionary<string, VariableSymbol> Variables { get; } = [];
@@ -25,10 +27,11 @@ internal sealed class SymbolTable
     /// <summary>Nodes by each of their former full names.</summary>
     public Dictionary<string, NodeSymbol> Aliases { get; } = [];
 
-    /// <summary>Every symbol, with the poses, enum members and parameters that belong to them.</summary>
+    /// <summary>Every symbol, with the channel values, enum members and parameters that belong to them.</summary>
     public IEnumerable<Symbol> All() =>
     [
-        .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Poses]),
+        .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))]),
+        .. Channels.Values.SelectMany(channel => (IEnumerable<Symbol>)[channel, .. channel.Defaults]),
         .. Enums.Values.SelectMany(@enum => (IEnumerable<Symbol>)[@enum, .. @enum.Members]),
         .. Variables.Values,
         .. Commands.Values.SelectMany(command => (IEnumerable<Symbol>)[command, .. command.Parameters]),

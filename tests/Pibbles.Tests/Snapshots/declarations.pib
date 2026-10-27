@@ -1,10 +1,15 @@
 // Every kind of declaration.
 
+@channel pose
+@channel effect: still, shake
+@channel camera: static, orbit
 @actor mira
     name: Mira Okafor
-    poses: neutral, happy, sad
+    pose: neutral, happy, sad
+    effect += wobble
 @actor rex
-    poses: neutral
+    pose: neutral
+    no effect, camera
 @enum position: left, center, right, offscreen
 @var $has_key = false
 @var $bravery = 0
@@ -28,4 +33,4 @@
 @var $.attempts = 0
 @actor sam
     name: Sam Ortiz // the name stops here
-    poses: neutral // and so do the poses
+    pose: neutral // and so do the values

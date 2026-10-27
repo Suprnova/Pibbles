@@ -8,8 +8,7 @@ start kitchen.window
   mira: Very dusty.  #xj5acx
   pause 0.5s
   @sfx sneeze
-  pose mira angry
-  mira: Ugh.  #wdsl43
+  mira (angry): Ugh.  #wdsl43
   end
 
 start kitchen.window

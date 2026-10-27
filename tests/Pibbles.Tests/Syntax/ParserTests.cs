@@ -277,6 +277,76 @@ public class ParserTests
         Assert.Equal((displayName, 0), (actor.DisplayName, tree.Diagnostics.Count));
     }
 
+    [Theory]
+    [InlineData("mira (happy): Hi.", new[] { "happy" }, true)]
+    [InlineData("mira (happy, shake, pan_left): Hi.", new[] { "happy", "shake", "pan_left" }, true)]
+    [InlineData("mira(shake ,happy) : Hi.", new[] { "shake", "happy" }, true)]
+    [InlineData("mira (happy, shake):", new[] { "happy", "shake" }, false)]
+    [InlineData("mira: Hi.", new string[0], true)]
+    public void Parse_SpeakerValues_AreTheNamesInTheParenthesisInTheOrderWritten(string line, string[] values, bool hasText)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal(values, text.Speaker!.Values.Select(value => value.Text));
+        Assert.Equal((hasText, 0), (text.Content.Count > 0, tree.Diagnostics.Count));
+    }
+
+    [Theory]
+    [InlineData("mira (to Rex): Hi.")]
+    [InlineData("mira (happy,): Hi.")]
+    [InlineData("mira (): Hi.")]
+    [InlineData("mira (happy) shake: Hi.")]
+    public void Parse_ParenthesisThatIsNotAListOfNames_IsNarrationForTheBinderToReport(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Null(text.Speaker);
+    }
+
+    [Fact]
+    public void Parse_ChannelDeclarations_HaveValuesOrNone()
+    {
+        var source = new SourceText("story.pib", "@channel pose: neutral, happy\n@channel effect\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var channels = tree.Root.Declarations.Cast<ChannelDeclarationSyntax>().ToArray();
+        Assert.Equal(["pose", "effect"], channels.Select(channel => channel.Name.Text));
+        Assert.Equal([2, 0], channels.Select(channel => channel.Values.Count));
+        Assert.Empty(tree.Diagnostics);
+    }
+
+    [Fact]
+    public void Parse_ActorBlock_ReadsReplacingAddingAndDroppingLinesInOrder()
+    {
+        var source = new SourceText("story.pib", "@actor mira\n    no camera, effect\n    name: Mira\n    pose: idle, scanning // two poses\n    mood += calm\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var actor = (ActorDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal(
+            ["camera:Drop:", "effect:Drop:", "pose:Replace:idle,scanning", "mood:Add:calm"],
+            actor.Channels.Select(edit => $"{edit.Channel.Text}:{edit.Edit}:{string.Join(',', edit.Values.Select(value => value.Text))}"));
+        Assert.Equal(("Mira", 0), (actor.DisplayName, tree.Diagnostics.Count));
+    }
+
+    [Fact]
+    public void Parse_ActorBlockLineThatIsNoneOfThose_IsReportedAndSkipped()
+    {
+        var source = new SourceText("story.pib", "@actor mira\n    mood\n    pose: idle\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var actor = (ActorDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal((1, 1), (tree.Diagnostics.Count, actor.Channels.Count));
+    }
+
     [Fact]
     public void Parse_DisplayNameThatIsOnlyAComment_ReportsMissingName()
     {

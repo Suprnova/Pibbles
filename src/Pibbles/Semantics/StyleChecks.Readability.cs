@@ -75,7 +75,8 @@ internal sealed partial class StyleChecks
     {
         IEnumerable<NameSyntax> names = declaration switch
         {
-            ActorDeclarationSyntax actor => [actor.Name, .. actor.Poses],
+            ActorDeclarationSyntax actor => [actor.Name, .. actor.Channels.SelectMany(edit => edit.Values)],
+            ChannelDeclarationSyntax channel => [channel.Name, .. channel.Values],
             EnumDeclarationSyntax @enum => [@enum.Name, .. @enum.Members],
             CommandDeclarationSyntax command => [command.Name],
             MarkupDeclarationSyntax markup => [markup.Name],
@@ -168,7 +169,7 @@ internal sealed partial class StyleChecks
         _ => $"{count} tabs",
     };
 
-    /// <summary>PIB5033: a speaker written other than <c>name:</c> or <c>name (pose):</c>.</summary>
+    /// <summary>PIB5033: a speaker written other than <c>name:</c> or <c>name (a, b):</c>.</summary>
     private void CheckSpeakerSpacing(TextLineSyntax line)
     {
         if (line.Speaker is not { } speaker)
@@ -178,7 +179,7 @@ internal sealed partial class StyleChecks
         if (SpeakerScanner.Scan(Tree.Source.Text, speaker.Span.Start, lineSpan.End) is not { IsSpeaker: true } prefix)
             return;
 
-        string usual = line.Pose is { } pose ? $"{speaker.Text} ({pose.Text}):" : $"{speaker.Text}:";
+        string usual = speaker.Values.Count > 0 ? $"{speaker.Name.Text} ({string.Join(", ", speaker.Values.Select(value => value.Text))}):" : $"{speaker.Name.Text}:";
         var written = new TextSpan(speaker.Span.Start, prefix.Colon + 1 - speaker.Span.Start);
         if (TextOf(written) != usual)
             Report(DiagnosticCatalog.SpeakerSpacing, written, usual);

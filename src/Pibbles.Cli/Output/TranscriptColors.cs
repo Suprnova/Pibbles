@@ -34,8 +34,8 @@ internal static partial class TranscriptColors
         return Speaker().Replace(painted, match => match.Groups[1].Value + Ansi.Paint(match.Groups[2].Value, Ansi.Bold, true), 1);
     }
 
-    /// <summary>A command, pose, wait, end or variable change.</summary>
-    [GeneratedRegex(@"^  (@|pose |wait |end$|\$|choice$)")]
+    /// <summary>A command, a parenthesis with no text, a wait, the end or a variable change.</summary>
+    [GeneratedRegex(@"^  (@|[^\s:(@$]+( \([^)]*\))?:( #.*)?$|wait |end$|\$|choice$)")]
     private static partial Regex StageStep();
 
     [GeneratedRegex("⟨[^⟩]*⟩")]
@@ -45,7 +45,7 @@ internal static partial class TranscriptColors
     [GeneratedRegex(@"(?<=  )#(~|[a-z][a-z0-9_]*)(?=( \((unavailable|chosen)\))*$)")]
     private static partial Regex Id();
 
-    [GeneratedRegex(@"^(  )([^\s:]+)(?=: )")]
+    [GeneratedRegex(@"^(  )([^\s:(]+)(?=( \([^)]*\))?: )")]
     private static partial Regex Speaker();
 }
 

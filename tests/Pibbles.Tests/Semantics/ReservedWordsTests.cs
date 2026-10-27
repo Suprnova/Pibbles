@@ -8,7 +8,7 @@ namespace Pibbles.Tests.Semantics;
 public class ReservedWordsTests
 {
     private static readonly string[] Statement =
-        ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause",
+        ["prefix", "actor", "channel", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause",
          "sequence", "cycle", "once", "term", "resume", "shuffle"];
 
     private static readonly string[] Brace = ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else", "auto", "sequence", "cycle", "shuffle", "once"];
@@ -25,7 +25,7 @@ public class ReservedWordsTests
 
     private static readonly string[] ReservedTags = ["id", "was", "migrates", "draft", "voice", "unvoiced"];
 
-    private static readonly string[] Contextual = ["name", "poses", "inline", "waits", "required", "persona"];
+    private static readonly string[] Contextual = ["name", "no", "inline", "waits", "required", "persona"];
 
     private static readonly string[] Words =
         [.. Statement.Concat(Brace).Concat(Value).Concat(Argument).Concat(BuiltInFunctions).Concat(BuiltInTypes).Concat(BuiltInMarkup).Concat(ReservedTags).Concat(Contextual).Distinct()];
@@ -41,7 +41,9 @@ public class ReservedWordsTests
         { "@actor {0}\n    name: Someone", [.. Value, .. Argument, .. Brace] },
         { "@command show({0}: number)", ["wait", "nowait"] },
         { "@tag {0}", ReservedTags },
-        { "@actor someone\n    poses: {0}", [] },
+        { "@channel {0}", ["name", "no"] },
+        { "@channel pose: {0}", [] },
+        { "@channel pose\n@actor someone\n    pose: {0}", [] },
         { "@icon {0}", [] },
         { "@var ${0} = 1", [] },
     };

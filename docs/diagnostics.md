@@ -15,7 +15,7 @@ The catalog of every diagnostic code. Each code has one entry here and one in `D
 
 A code's first digit gives its category, a group of codes that writers switch on or off together. The category decides which `pibbles_diagnostic.category-<name>.severity` setting in `.editorconfig` reaches the code, once the category has a code of its own ([configuration](tooling.md#configuration)). It decides whether a `// pibbles-ignore` comment can silence the code: style and spelling only. It also decides whether a line with an error drops the code: style only. A code starting with 1 to 3 has no category. It's one of the story's own checks, and settings reach it only by its own code. A code that changes category gets a new number.
 
-Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and poses, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
+Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and channel values, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
 
 Severities are error, warning, info and hint. `.editorconfig` can change any of them but an error, since a story with an error can't compile ([configuration](tooling.md#configuration)).
 
@@ -70,15 +70,17 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
-| PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`. |
+| PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`. |
 | PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
-| PIB2002 | Error | Mira has no pose called `smirk`. | Did you mean `smug`? |
-| PIB2003 | Error | `(to Rex)` isn't a pose: a pose is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
+| PIB2002 | Error | Mira has no value called `smirk`. | Did you mean `smug`? |
+| PIB2003 | Error | `(to Rex)` isn't a list of values: each value is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
 | PIB2004 | Warning | There's no space after `mira:`. | Add one, or escape the colon if this is narration: `mira\:Hi`. |
-| PIB2005 | Error | `shake` has no place after `(mad)`, before the colon. | A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (mad) shake\:`. |
+| PIB2005 | Error | `shake` has no place after `(mad)`, before the colon. | A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (mad) shake\:`. |
+| PIB2006 | Error | `happy` and `sad` are both values of Mira's `pose`, and a line sets one value of a channel. | Keep the one you mean. |
+| PIB2007 | Error | `none` is already a value of `pose`, so `effect` can't have it too. | A line names a value without its channel, so each value belongs to one channel. Give one of them another name. |
 | PIB2010 | Error | I don't know a command called `@shak`. | Did you mean `@shake_screen`? |
 | PIB2011 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2012 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
@@ -106,13 +108,14 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2047 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
 | PIB2048 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
 | PIB2060 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
-| PIB2061 | Error | `happy` is already one of Mira's poses. | Remove the second `happy`, or give it another name. |
+| PIB2061 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
 | PIB2062 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
 | PIB2063 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
 | PIB2064 | Error | I don't know a type called `postion`. | Did you mean `position`? |
 | PIB2065 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
 | PIB2066 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
 | PIB2067 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
+| PIB2068 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
 | PIB2070 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB3002 | Info | This option has no text. | Write what the player picks after the `->`. |
@@ -125,13 +128,13 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
-| PIB5010 | Hint | This pose change does nothing, because Mira's pose changes again before a line shows. | Remove this line. |
+| PIB5010 | Hint | `sad` does nothing, because Mira's `pose` changes again before a line shows. | Remove `sad`. |
 | PIB5011 | Hint | This wait does nothing, because the end of the line already waits for a click. | Remove it. |
 | PIB5012 | Hint | This `[b]` is empty. | Remove it. |
 | PIB5013 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
-| PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
+| PIB5016 | Hint | `happy` does nothing, because Mira already has it. | Leave `happy` out of this line. |
 | PIB5017 | Hint | This wait does nothing, because the `{page}` after it already waits. | Remove it. |
 | PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{pause 0.5}`. |
 | PIB5019 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
@@ -140,7 +143,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{page}`. |
 | PIB5031 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
 | PIB5032 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
-| PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
+| PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy, shake):`. | Write `mira (happy, shake):`. |
 | PIB5034 | Hint | This option is 120 characters long, more than 80. | Shorten it to what the player picks. The lines after it can say the rest. |
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 | PIB5050 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
@@ -470,7 +473,7 @@ Write `#show_disabled`, and declare it that way with `@tag`.
 
 ### PIB1045
 
-**Names you declare are single names:** actors, poses, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.
+**Names you declare are single names:** actors, channels and their values, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.
 
 ```text
 @enum rooms.kitchen: fridge, sink
@@ -550,13 +553,13 @@ Put the tag on the line inside the node that it belongs to.
 
 ### PIB1054
 
-**A speaker's name and colon need something after them:** text to say, or a pose to change to. A bare `mira:` is reported, since it's most likely unfinished.
+**A speaker's name and colon need something after them:** text to say, or values to set. A bare `mira:` is reported, since it's most likely unfinished.
 
 ```text
 mira:
 ```
 
-Write what Mira says, or `mira (happy):` to change her pose without a line. For a message box that shows only her name, write `mira: {w}`, which waits for the player and shows no text.
+Write what Mira says, or `mira (happy):` to set her pose without a line. For a message box that shows only her name, write `mira: {w}`, which waits for the player and shows no text.
 
 ### PIB1055
 
@@ -600,21 +603,22 @@ If it's narration, escape the colon: `Note\: the door is locked.` If it's a spea
 
 ### PIB2002
 
-**A pose is one of the poses its actor lists in `poses:`.** The help suggests the closest one, or lists them all.
+**A value in a speaker's parenthesis is one of the values its actor has,** in the channels the actor has. The help suggests the closest one, lists them all, or says which channel the actor dropped when the value belongs to it.
 
 ```text
+@channel pose
 @actor mira
     name: Mira
-    poses: neutral, smug
+    pose: neutral, smug
 
 mira (smirk): I knew it.
 ```
 
-Use one of the actor's poses, `mira (smug):`, or add the pose to the actor's `poses:`.
+Use one of the actor's values, `mira (smug):`, or add the value to the actor's channel with `pose += smirk`.
 
 ### PIB2003
 
-**A pose is a single name,** so a parenthesis that holds anything else, before a colon, is reported rather than shown as narration. Directions for how a line is said, such as who it's said to, belong in a `//` comment above it.
+**A speaker's parenthesis is a list of values,** names separated by commas, so a parenthesis that holds anything else, before a colon, is reported rather than shown as narration. Directions for how a line is said, such as who it's said to, belong in a `//` comment above it.
 
 ```text
 mira (to Rex): Fine.
@@ -634,13 +638,38 @@ Add the space, `mira: Hi.`, or escape the colon if the line really is narration:
 
 ### PIB2005
 
-**Between an actor's pose and the colon there's nothing else,** so a second parenthesis or a word there is reported rather than shown as narration. A line with a colon much later, such as `mira (mad) leaves the room: she said.`, is narration and isn't reported.
+**Between an actor's values and the colon there's nothing else,** so a second parenthesis or a word there is reported rather than shown as narration. A line with a colon much later, such as `mira (mad) leaves the room: she said.`, is narration and isn't reported.
 
 ```text
 mira (mad) shake: Fine.
 ```
 
-Write the direction as a comment, `// Shaking.`, and the line as `mira (mad): Fine.` If the line is narration, escape the colon: `mira (mad) shake\: Fine.`
+Write the direction as a comment, `// Shaking.`, and the line as `mira (mad): Fine.` To set both values, put them in one parenthesis: `mira (mad, shake): Fine.` If the line is narration, escape the colon: `mira (mad) shake\: Fine.`
+
+### PIB2006
+
+**A line sets one value of each channel.** A second value of the same channel is reported, since a speaker has one pose, one effect and one camera move at a time.
+
+```text
+@channel pose: neutral, happy, sad
+@actor mira
+    name: Mira
+
+mira (happy, sad): Both at once?
+```
+
+Keep the one you mean: `mira (happy): …`. Values of different channels go together, `mira (happy, shake):`, in any order.
+
+### PIB2007
+
+**A value belongs to one channel of a speaker,** so a line can name it without naming its channel. A value that two of a speaker's channels share is reported where the second is declared, in `@channel` or in an actor's block.
+
+```text
+@channel pose: neutral, none
+@channel effect: still, none
+```
+
+Give one of them another name, such as `no_effect`, or drop the value from the speaker that doesn't need it.
 
 ### PIB2010
 
@@ -968,15 +997,16 @@ Merge the two into one declaration (`@enum room: kitchen, cellar, attic`), or gi
 
 ### PIB2061
 
-**The poses of one actor, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported.
+**The values of one channel list, the channels in one actor's block, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported. That includes a value that `+=` adds to a channel that already has it.
 
 ```text
+@channel pose
 @actor mira
     name: Mira
-    poses: happy, sad, happy
+    pose: happy, sad, happy
 ```
 
-Remove the second `happy`. If it was meant to be another pose, give it that name.
+Remove the second `happy`. If it was meant to be another value, give it that name.
 
 ### PIB2062
 
@@ -1040,6 +1070,19 @@ Use `@tag count: string`, or declare an enum with the values the tag can take an
 ```
 
 Write the type after the variable: `@var $where: position = left`.
+
+### PIB2068
+
+**An actor's block can only change channels the story declares with `@channel`,** so a typo never makes a channel of its own. The help suggests the closest declared channel.
+
+```text
+@channel pose
+@actor mira
+    name: Mira
+    pos: happy
+```
+
+Write the channel's name, `pose: happy`, or declare the channel with `@channel pos`.
 
 ### PIB2070
 
@@ -1188,14 +1231,14 @@ Declare a markup that says what the color means, such as `@markup clue`, ask who
 
 ### PIB5010
 
-**A pose-only line whose pose changes again before any line shows does nothing:** nobody sees the first pose. It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+**A value set by a line with no text, and set again in its channel before any line shows, does nothing:** nobody sees the first one. Other channels keep what they were set to. It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change a value, so after one nothing is known.
 
 ```text
 mira (sad):
-mira (happy): The silent pose change above is never seen.
+mira (happy): The silent change above is never seen.
 ```
 
-Remove the pose-only line nobody sees.
+Remove the value nobody sees.
 
 ### PIB5011
 
@@ -1254,14 +1297,14 @@ Remove the dot: `@prefix kitchen`.
 
 ### PIB5016
 
-**A pose change to the pose the actor already has does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change the pose, so after one nothing is known.
+**Setting a value the actor already has in that channel does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change a value, so after one nothing is known.
 
 ```text
 mira (happy): This line sets the pose.
 mira (happy): The pose on this line changes nothing.
 ```
 
-Leave the pose out: `mira: …`.
+Leave the value out: `mira: …`.
 
 ### PIB5017
 
@@ -1326,7 +1369,7 @@ Split it into two lines, or into pages with `{page}`, which keeps one message an
 
 ### PIB5031
 
-**Names are written in `snake_case`:** nodes, actors, poses, variables, enums and their members, commands, markup, icons and functions. A display name such as `name: Mira` is what the player sees, so it's written any way. Only the place a name is declared is reported.
+**Names are written in `snake_case`:** nodes, actors, channels and their values, variables, enums and their members, commands, markup, icons and functions. A display name such as `name: Mira` is what the player sees, so it's written any way. Only the place a name is declared is reported.
 
 ```text
 @actor Mira
@@ -1351,14 +1394,15 @@ Indent the block like the rest of the file. Most editors can re-indent a selecti
 
 ### PIB5033
 
-**Speakers are written `name (pose):`,** with one space before the pose, none inside the parentheses and none before the colon. Any spacing works, but one form keeps a script easy to scan.
+**Speakers are written `name (a, b):`,** with one space before the values, a comma and a space between them, none inside the parentheses and none before the colon. Any spacing works, but one form keeps a script easy to scan.
 
 ```text
-mira(happy): This line has no space before the pose.
+mira(happy): This line has no space before the values.
+mira (happy,shake): This line has no space after the comma.
 mira : This line has a space before the colon.
 ```
 
-Write `mira (happy):` and `mira:`.
+Write `mira (happy):`, `mira (happy, shake):` and `mira:`.
 
 ### PIB5034
 

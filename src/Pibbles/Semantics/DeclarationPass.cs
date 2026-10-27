@@ -10,8 +10,9 @@ namespace Pibbles.Semantics;
 /// </summary>
 /// <remarks>
 /// Enums are declared first and variables last, so every type is known before anything uses one, and a variable's
-/// missing type can be suggested from every other name. A name with a problem is still declared, so the places that
-/// use it don't report it again; a duplicate isn't, and the first declaration wins.
+/// missing type can be suggested from every other name. Channels come before actors, whose blocks change the values
+/// every actor has. A name with a problem is still declared, so the places that use it don't report it again; a
+/// duplicate isn't, and the first declaration wins.
 /// </remarks>
 internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings) : AnalysisPass(diagnostics, references)
 {
@@ -23,6 +24,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     {
         var pass = new DeclarationPass(diagnostics, references, bindings);
         pass.ForEachFile(trees, pass.DeclareEnums);
+        pass.ForEachFile(trees, pass.DeclareChannels);
         pass.ForEachFile(trees, pass.DeclareOthers);
         pass.ForEachFile(trees, pass.DeclareVariables);
         return pass.symbols;
@@ -47,6 +49,25 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             Declare(symbols.Enums, new EnumSymbol(declaration.Name.Text, Location(declaration.Name.Span), members), declaration.Name, SymbolKind.Enum);
         }
     }
+
+    private void DeclareChannels(FileSyntax file)
+    {
+        foreach (ChannelDeclarationSyntax declaration in file.Declarations.OfType<ChannelDeclarationSyntax>())
+        {
+            List<ChannelValueSymbol> defaults = DeclareList(declaration.Values, value => value, SymbolKind.ChannelValue,
+                $"the values of `{declaration.Name.Text}`", value => new ChannelValueSymbol(value.Text, Location(value.Span)));
+            foreach (ChannelValueSymbol value in defaults)
+            {
+                if (symbols.Channels.Values.FirstOrDefault(other => other.Defaults.Any(known => known.Name == value.Name)) is { } sharing)
+                    ReportSharedValue(declaration.Values.First(candidate => candidate.Text == value.Name), $"`{sharing.Name}`", declaration.Name.Text);
+            }
+
+            Declare(symbols.Channels, new ChannelSymbol(declaration.Name.Text, Location(declaration.Name.Span), defaults), declaration.Name, SymbolKind.Channel);
+        }
+    }
+
+    private void ReportSharedValue(NameSyntax value, string holder, string channel) =>
+        Report(DiagnosticCatalog.ValueInTwoChannels, value.Span, value.Text, holder, channel);
 
     private void DeclareOthers(FileSyntax file)
     {
@@ -107,9 +128,82 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     private void DeclareActor(ActorDeclarationSyntax actor)
     {
         string displayName = actor.DisplayName ?? actor.Name.Text;
-        string poseList = actor.Name.IsMissing ? "this actor's poses" : $"{displayName}'s poses";
-        List<PoseSymbol> poses = DeclareList(actor.Poses, pose => pose, SymbolKind.Pose, poseList, pose => new PoseSymbol(pose.Text, Location(pose.Span)));
-        Declare(symbols.Actors, new ActorSymbol(actor.Name.Text, Location(actor.Name.Span), displayName, poses), actor.Name, SymbolKind.Actor);
+        string owner = actor.Name.IsMissing ? "this actor" : displayName;
+        List<SpeakerChannel> channels = ResolveChannels(actor, owner);
+        Declare(symbols.Actors, new ActorSymbol(actor.Name.Text, Location(actor.Name.Span), displayName, channels), actor.Name, SymbolKind.Actor);
+    }
+
+    /// <summary>
+    /// Works out the channels an actor has: every channel with its defaults, then the actor's block applied. A channel
+    /// the block drops is left out, one it replaces has the block's values, and one it adds to has the defaults and the
+    /// block's values. A channel is mentioned once in a block, and the values of an actor's channels all differ.
+    /// </summary>
+    private List<SpeakerChannel> ResolveChannels(ActorDeclarationSyntax actor, string owner)
+    {
+        Dictionary<ChannelSymbol, List<ChannelValueSymbol>?> lists = symbols.Channels.Values.ToDictionary(channel => channel, channel => (List<ChannelValueSymbol>?)[.. channel.Defaults]);
+        HashSet<string> written = [];
+        List<(NameSyntax Syntax, ChannelValueSymbol Value, ChannelSymbol Channel)> introduced = [];
+
+        foreach (ChannelEditSyntax edit in actor.Channels)
+        {
+            if (FindChannel(edit.Channel, written, owner) is not { } channel)
+                continue;
+
+            if (edit.Edit is ChannelEdit.Drop)
+            {
+                lists[channel] = null;
+                continue;
+            }
+
+            List<ChannelValueSymbol> values = DeclareList(edit.Values, value => value, SymbolKind.ChannelValue,
+                $"{owner}'s `{channel.Name}` values", value => new ChannelValueSymbol(value.Text, Location(value.Span)));
+            List<ChannelValueSymbol> kept = edit.Edit is ChannelEdit.Add ? lists[channel]! : [];
+            foreach (ChannelValueSymbol value in values)
+            {
+                NameSyntax syntax = edit.Values.First(candidate => candidate.Text == value.Name);
+                if (kept.Any(known => known.Name == value.Name))
+                    Report(DiagnosticCatalog.RepeatedName, syntax.Span, value.Name, $"{owner}'s `{channel.Name}` values");
+                else
+                    kept.Add(value);
+
+                introduced.Add((syntax, value, channel));
+            }
+
+            lists[channel] = kept;
+        }
+
+        List<SpeakerChannel> channels = [.. lists.Where(list => list.Value is not null).Select(list => new SpeakerChannel(list.Key, list.Value!))];
+        foreach ((NameSyntax syntax, ChannelValueSymbol value, ChannelSymbol channel) in introduced)
+        {
+            int order = channels.FindIndex(has => has.Channel == channel);
+            bool IntroducedLater(SpeakerChannel other) =>
+                channels.IndexOf(other) > order && introduced.Any(later => later.Channel == other.Channel && later.Value.Name == value.Name);
+
+            if (channels.FirstOrDefault(other => other.Channel != channel && other.Values.Any(known => known.Name == value.Name) && !IntroducedLater(other)) is { } sharing)
+                ReportSharedValue(syntax, $"{owner}'s `{sharing.Channel.Name}`", channel.Name);
+        }
+
+        return channels;
+    }
+
+    /// <summary>Finds the channel a block line names, reporting it if it isn't declared or the block already mentioned it.</summary>
+    private ChannelSymbol? FindChannel(NameSyntax name, HashSet<string> written, string owner)
+    {
+        if (name.IsMissing)
+            return null;
+
+        if (!symbols.Channels.TryGetValue(name.Text, out ChannelSymbol? channel))
+        {
+            ReportWithOptionalHelp(DiagnosticCatalog.UnknownChannel, name.Span, name.Text, Suggestions.Closest(name.Text, symbols.Channels.Keys));
+            return null;
+        }
+
+        Refers(name.Span, channel);
+        if (written.Add(name.Text))
+            return channel;
+
+        Report(DiagnosticCatalog.RepeatedName, name.Span, name.Text, $"the channels in {owner}'s block");
+        return null;
     }
 
     private void DeclareTag(TagEntrySyntax tag)
@@ -130,7 +224,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             parameter => new ParameterSymbol(parameter.Name.Text, Location(parameter.Name.Span), ResolveType(parameter.Type), parameter.Default));
     }
 
-    /// <summary>Declares the names in one declaration's list, such as an actor's poses, which have to differ from each other.</summary>
+    /// <summary>Declares the names in one declaration's list, such as the values of a channel, which have to differ from each other.</summary>
     private List<T> DeclareList<TSyntax, T>(IEnumerable<TSyntax> items, Func<TSyntax, NameSyntax> nameOf, SymbolKind kind, string listName, Func<TSyntax, T> create)
         where T : Symbol
     {

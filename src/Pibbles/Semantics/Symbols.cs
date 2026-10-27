@@ -81,28 +81,43 @@ public sealed class EnumMemberSymbol : Symbol
 /// <summary>An actor: <c>@actor id</c> and its properties.</summary>
 public sealed class ActorSymbol : Symbol
 {
-    internal ActorSymbol(string name, SourceLocation? location, string displayName, IReadOnlyList<PoseSymbol> poses)
+    internal ActorSymbol(string name, SourceLocation? location, string displayName, IReadOnlyList<SpeakerChannel> channels)
         : base(name, location)
     {
         DisplayName = displayName;
-        Poses = poses;
+        Channels = channels;
     }
 
     /// <summary>The name the player sees: the <c>name:</c> property, or the ID.</summary>
     public string DisplayName { get; }
 
-    /// <summary>The actor's poses. The first is the default.</summary>
-    public IReadOnlyList<PoseSymbol> Poses { get; }
+    /// <summary>The channels the actor has, each with the values the actor can set: the channel's defaults, changed by the actor's block.</summary>
+    public IReadOnlyList<SpeakerChannel> Channels { get; }
 }
 
-/// <summary>One of an actor's poses.</summary>
-public sealed class PoseSymbol : Symbol
+/// <summary>A channel: <c>@channel name: a, b</c>, a value that lines set, such as a pose.</summary>
+public sealed class ChannelSymbol : Symbol
 {
-    internal PoseSymbol(string name, SourceLocation? location)
+    internal ChannelSymbol(string name, SourceLocation? location, IReadOnlyList<ChannelValueSymbol> defaults)
+        : base(name, location) => Defaults = defaults;
+
+    /// <summary>The values every actor has, unless its block changes them. The first is where an actor starts.</summary>
+    public IReadOnlyList<ChannelValueSymbol> Defaults { get; }
+}
+
+/// <summary>One value of a channel, such as a pose.</summary>
+public sealed class ChannelValueSymbol : Symbol
+{
+    internal ChannelValueSymbol(string name, SourceLocation? location)
         : base(name, location)
     {
     }
 }
+
+/// <summary>A channel as one speaker has it.</summary>
+/// <param name="Channel">The channel.</param>
+/// <param name="Values">The values the speaker can set. The first is where the speaker starts. All of a speaker's values differ, across its channels too.</param>
+public sealed record SpeakerChannel(ChannelSymbol Channel, IReadOnlyList<ChannelValueSymbol> Values);
 
 /// <summary>A variable: <c>@var $name = value</c>. Its <see cref="Symbol.Name"/> is its full name, such as <c>kitchen.door_open</c>.</summary>
 public sealed class VariableSymbol : Symbol

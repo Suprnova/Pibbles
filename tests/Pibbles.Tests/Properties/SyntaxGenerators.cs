@@ -18,10 +18,10 @@ internal static class SyntaxGenerators
     /// <summary>Every reserved, contextual and built-in word, so a generated name is never read as one.</summary>
     private static readonly HashSet<string> Reserved =
     [
-        "prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
+        "prefix", "actor", "channel", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
         "call", "return", "end", "wait", "pause", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "page", "p", "br", "auto",
         "true", "false", "and", "or", "not", "nowait", "speaker", "visits", "random", "bool", "number", "string", "duration",
-        "node", "speed", "b", "i", "u", "s", "color", "name", "poses", "inline", "waits", "required", "persona", "id", "was",
+        "node", "speed", "b", "i", "u", "s", "color", "name", "no", "inline", "waits", "required", "persona", "id", "was",
         "migrates", "draft", "voice", "unvoiced", "default",
     ];
 
@@ -85,9 +85,13 @@ internal static class SyntaxGenerators
         Gen<NameSyntax[]> names = Identifier.Select(Name).Array[1, 3];
 
         Gen<string> displayName = Gen.String[Gen.Char["abcdeABC xyz 019.,'!-?:()#@/é"], 1, 10].Select(name => name.Trim()).Where(name => name.Length > 0 && !name.Contains("//", StringComparison.Ordinal));
-        Gen<DeclarationSyntax> actor = Gen.Select(Identifier, Maybe(displayName), Identifier.Select(Name).Array[0, 3],
-                (name, display, poses) => new ActorDeclarationSyntax(Name(name), display, poses) { Span = default })
-            .Where(actor => actor.DisplayName is not null || actor.Poses.Count > 0)
+        Gen<ChannelEditSyntax> channelEdit = Gen.OneOf(
+            Gen.Select(Identifier, Gen.Bool, names,
+                (channel, add, values) => new ChannelEditSyntax(Name(channel), add ? ChannelEdit.Add : ChannelEdit.Replace, values) { Span = default }),
+            Identifier.Select(channel => new ChannelEditSyntax(Name(channel), ChannelEdit.Drop, []) { Span = default }));
+        Gen<DeclarationSyntax> actor = Gen.Select(Identifier, Maybe(displayName), channelEdit.Array[0, 3],
+                (name, display, edits) => new ActorDeclarationSyntax(Name(name), display, edits) { Span = default })
+            .Where(actor => actor.DisplayName is not null || actor.Channels.Count > 0)
             .Select(DeclarationSyntax (actor) => actor);
 
         Gen<TagValueSyntax> tagValue = Gen.Select(Identifier, Gen.Bool, (type, empty) => new TagValueSyntax(Name(type), empty) { Span = default });
@@ -95,6 +99,7 @@ internal static class SyntaxGenerators
 
         return Gen.OneOf(
             actor,
+            Gen.Select(Identifier, Identifier.Select(Name).Array[0, 3], DeclarationSyntax (name, values) => new ChannelDeclarationSyntax(Name(name), values) { Span = default }),
             Gen.Select(Identifier, names, DeclarationSyntax (name, members) => new EnumDeclarationSyntax(Name(name), members) { Span = default }),
             Gen.Select(VariableName, Maybe(Identifier), Constant(),
                 DeclarationSyntax (name, type, value) => new VariableDeclarationSyntax(new(name) { Span = default }, type is null ? null : Name(type), value) { Span = default }),
@@ -182,12 +187,12 @@ internal static class SyntaxGenerators
     private static Gen<StatementSyntax> TextLine()
     {
         Gen<InlineSyntax[]> content = LineContent(option: false, required: true);
+        Gen<SpeakerSyntax> speaker = Gen.Select(Identifier, Identifier.Select(Name).Array[0, 3], (name, values) => new SpeakerSyntax(Name(name), values) { Span = default });
+        Gen<SpeakerSyntax> valued = Gen.Select(Identifier, Identifier.Select(Name).Array[1, 3], (name, values) => new SpeakerSyntax(Name(name), values) { Span = default });
         return Gen.OneOf(
-            Gen.Select(content, Tags(other: true, id: true), StatementSyntax (text, tags) => new TextLineSyntax(null, null, text, tags) { Span = default }),
-            Gen.Select(Identifier, Maybe(Identifier), content, Tags(other: true, id: true),
-                StatementSyntax (speaker, pose, text, tags) => new TextLineSyntax(Name(speaker), pose is null ? null : Name(pose), text, tags) { Span = default }),
-            Gen.Select(Identifier, Identifier, Tags(other: true, id: false),
-                StatementSyntax (speaker, pose, tags) => new TextLineSyntax(Name(speaker), Name(pose), [], tags) { Span = default }));
+            Gen.Select(content, Tags(other: true, id: true), StatementSyntax (text, tags) => new TextLineSyntax(null, text, tags) { Span = default }),
+            Gen.Select(speaker, content, Tags(other: true, id: true), StatementSyntax (speaker, text, tags) => new TextLineSyntax(speaker, text, tags) { Span = default }),
+            Gen.Select(valued, Tags(other: true, id: false), StatementSyntax (speaker, tags) => new TextLineSyntax(speaker, [], tags) { Span = default }));
     }
 
     /// <summary>A line's inline text: merged, with leading and trailing whitespace trimmed, as the parser reads it.</summary>

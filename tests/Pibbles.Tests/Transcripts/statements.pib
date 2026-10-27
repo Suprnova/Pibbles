@@ -1,8 +1,10 @@
-// Every kind of statement: text lines, poses, commands, @set, @pause, @if, @call, @return, @jump, variations and a choice.
+// Every kind of statement: text lines, values, commands, @set, @pause, @if, @call, @return, @jump, variations and a choice.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: neutral, happy, sad
+    pose: neutral, happy, sad
 @actor rex
     name: Rex
 
@@ -18,7 +20,7 @@
 == story.main
 Narration without a speaker. #id:l01
 mira: A line with a speaker. #id:l02
-mira (happy): A posed line. #id:l03
+mira (happy, shake): A line with two values. #id:l03
 mira (sad):
 rex: {w} #id:l04
 @show mira

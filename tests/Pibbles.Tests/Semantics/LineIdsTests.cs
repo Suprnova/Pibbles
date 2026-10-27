@@ -7,9 +7,10 @@ namespace Pibbles.Tests.Semantics;
 public partial class LineIdsTests
 {
     private const string Story = """
+        @channel pose
         @actor mira
             name: Mira
-            poses: sad
+            pose: sad
         @tag thought
 
         == a.b
@@ -32,9 +33,10 @@ public partial class LineIdsTests
     public void Assign_Story_AddsIdAtEndOfEachLineThatNeedsOne()
     {
         string expected = """
+            @channel pose
             @actor mira
                 name: Mira
-                poses: sad
+                pose: sad
             @tag thought
 
             == a.b

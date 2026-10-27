@@ -41,8 +41,10 @@
   "chosenOptions": [
     "o1"
   ],
-  "poses": {
-    "mira": "happy"
+  "channels": {
+    "mira": {
+      "pose": "happy"
+    }
   }
 }
 {

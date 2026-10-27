@@ -4,7 +4,7 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// Resolves the names in a story against its <see cref="SymbolTable"/>: speakers and poses, commands, markup, icons,
+/// Resolves the names in a story against its <see cref="SymbolTable"/>: speakers and their values, commands, markup, icons,
 /// tags, functions, variables and nodes. It checks every argument against its parameter, and the type of every
 /// expression: in variables' values, parameters' defaults, conditions, arguments, <c>@set</c>, <c>@pause</c> and text.
 /// </summary>
@@ -142,40 +142,52 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         BindTags(line.Tags);
     }
 
-    private void BindSpeaker(TextLineSyntax line, NameSyntax speaker)
+    private void BindSpeaker(TextLineSyntax line, SpeakerSyntax speaker)
     {
-        if (!symbols.Actors.TryGetValue(speaker.Text, out ActorSymbol? actor))
+        if (!symbols.Actors.TryGetValue(speaker.Name.Text, out ActorSymbol? actor))
         {
-            string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(speaker.Text, symbols.Actors.Keys));
-            Report(DiagnosticCatalog.UnknownSpeaker, speaker.Span, speaker.Text, meant, BeforeColon(line));
+            string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(speaker.Name.Text, symbols.Actors.Keys));
+            Report(DiagnosticCatalog.UnknownSpeaker, speaker.Name.Span, speaker.Name.Text, meant, BeforeColon(line));
             return;
         }
 
-        Refers(speaker, actor);
-        if (line.Pose is not { } pose)
-            return;
-
-        if (actor.Poses.FirstOrDefault(known => known.Name == pose.Text) is { } posed)
+        Refers(speaker.Name, actor);
+        Dictionary<ChannelSymbol, NameSyntax> set = [];
+        foreach (NameSyntax value in speaker.Values)
         {
-            Refers(pose, posed);
-            return;
-        }
-
-        string[] poses = [.. actor.Poses.Select(known => known.Name)];
-        string help = Suggestions.Closest(pose.Text, poses) is { } suggestion ? DiagnosticCatalog.DidYouMean(suggestion).TrimEnd()
-            : poses.Length switch
+            if (actor.Channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } owner)
             {
-                0 => $"Give {actor.DisplayName} poses with `poses:` under `@actor {actor.Name}`.",
-                1 => $"{actor.DisplayName}'s only pose is {Phrase.And(poses)}.",
-                _ => $"{actor.DisplayName}'s poses are {Phrase.And(poses)}.",
+                ReportUnknownValue(actor, value);
+                continue;
+            }
+
+            Refers(value, owner.Values.First(known => known.Name == value.Text));
+            if (set.TryGetValue(owner.Channel, out NameSyntax? first))
+                Report(DiagnosticCatalog.TwoValuesInChannel, value.Span, first.Text, value.Text, actor.DisplayName, owner.Channel.Name);
+            else
+                set.Add(owner.Channel, value);
+        }
+    }
+
+    private void ReportUnknownValue(ActorSymbol actor, NameSyntax value)
+    {
+        string[] values = [.. actor.Channels.SelectMany(channel => channel.Values).Select(known => known.Name)];
+        ChannelSymbol? dropped = symbols.Channels.Values.FirstOrDefault(channel => actor.Channels.All(has => has.Channel != channel) && channel.Defaults.Any(known => known.Name == value.Text));
+        string help = dropped is not null ? $"{actor.DisplayName} has no `{dropped.Name}`, which has `{value.Text}`."
+            : Suggestions.Closest(value.Text, values) is { } suggestion ? DiagnosticCatalog.DidYouMean(suggestion).TrimEnd()
+            : values.Length switch
+            {
+                0 => $"{actor.DisplayName} has no values to set. Declare a channel such as `@channel pose`, then list {actor.DisplayName}'s values under `@actor {actor.Name}`: `pose: neutral, happy`.",
+                1 => $"{actor.DisplayName}'s only value is {Phrase.And(values)}.",
+                _ => $"{actor.DisplayName}'s values are {Phrase.And(values)}.",
             };
-        Report(DiagnosticCatalog.UnknownPose, pose.Span, actor.DisplayName, pose.Text, help);
+        Report(DiagnosticCatalog.UnknownChannelValue, value.Span, actor.DisplayName, value.Text, help);
     }
 
     /// <summary>
     /// Reports narration that almost looks like a speaker, so a mistake never shows as narration: a parenthesis that
-    /// isn't a single pose, anything between a declared actor's pose and the colon, or a declared actor with no space after
-    /// the colon.
+    /// isn't a list of names, anything between a declared actor's values and the colon, or a declared actor with no space
+    /// after the colon.
     /// </summary>
     private void CheckNarration(TextLineSyntax line)
     {
@@ -183,13 +195,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
 
         string before = TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start));
-        if (prefix is { Parentheses: { } parentheses, Pose: null })
+        if (prefix is { Parentheses: { } parentheses, Values: null })
         {
-            Report(DiagnosticCatalog.NotPose, parentheses, TextOf(parentheses), before);
+            Report(DiagnosticCatalog.NotValues, parentheses, TextOf(parentheses), before);
         }
-        else if (prefix is { Extra: { } extra, Parentheses: { } poseParentheses } && symbols.Actors.ContainsKey(TextOf(prefix.Name)))
+        else if (prefix is { Extra: { } extra, Parentheses: { } valuesParentheses } && symbols.Actors.ContainsKey(TextOf(prefix.Name)))
         {
-            Report(DiagnosticCatalog.AfterPose, extra, TextOf(extra), TextOf(poseParentheses), before);
+            Report(DiagnosticCatalog.AfterValues, extra, TextOf(extra), TextOf(valuesParentheses), before);
         }
         else if (symbols.Actors.ContainsKey(TextOf(prefix.Name)))
         {

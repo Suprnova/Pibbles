@@ -4,7 +4,8 @@ namespace Pibbles.Semantics;
 internal enum SymbolKind
 {
     Actor,
-    Pose,
+    Channel,
+    ChannelValue,
     Enum,
     EnumMember,
     Variable,
@@ -23,7 +24,8 @@ internal static class SymbolKindExtensions
     public static string Describe(this SymbolKind kind) => kind switch
     {
         SymbolKind.Actor => "an actor",
-        SymbolKind.Pose => "a pose",
+        SymbolKind.Channel => "a channel",
+        SymbolKind.ChannelValue => "a channel value",
         SymbolKind.Enum => "an enum",
         SymbolKind.EnumMember => "an enum member",
         SymbolKind.Variable => "a variable",

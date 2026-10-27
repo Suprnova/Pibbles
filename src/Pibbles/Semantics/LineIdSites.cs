@@ -9,7 +9,7 @@ internal readonly record struct LineIdSite(TagSyntax? Id, int Insert);
 
 /// <summary>
 /// Finds the lines that need a line ID: text lines that show text, options, <c>@call</c>, and variation block openers.
-/// A pose change shows nothing, so a save never stops on it, and it takes no ID.
+/// A line that only sets values shows nothing, so a save never stops on it, and it takes no ID.
 /// </summary>
 internal static class LineIdSites
 {
@@ -24,7 +24,7 @@ internal static class LineIdSites
 
     private static IEnumerable<LineIdSite> In(SourceText source, Dictionary<int, int> commentStarts, IEnumerable<StatementSyntax> statements) => statements.SelectMany(statement => statement switch
     {
-        TextLineSyntax { Pose: not null, Content: [] } => [],
+        TextLineSyntax { Speaker.Values.Count: > 0, Content: [] } => [],
         TextLineSyntax line => [new(IdOf(line.Tags), line.Span.End)],
         CallStatementSyntax call => [new(IdOf(call.Tags), call.Span.End)],
         ChoiceSyntax choice => choice.Options.SelectMany(option => (IEnumerable<LineIdSite>)[new(IdOf(option.Tags), LineEnd(source, commentStarts, option.Span.Start)), .. In(source, commentStarts, option.Body)]),

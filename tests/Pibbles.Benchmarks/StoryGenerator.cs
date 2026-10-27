@@ -20,6 +20,7 @@ public sealed class StoryGenerator(int seed)
 
     private static readonly string[] Actors = ["mira", "rex", "ana", "bo", "cy", "dee"];
     private static readonly string[] Poses = ["neutral", "happy", "sad", "angry"];
+    private static readonly string[] Effects = ["still", "shake"];
     private static readonly string[] Places = ["left", "center", "right"];
 
     private static readonly string[] Words =
@@ -47,8 +48,9 @@ public sealed class StoryGenerator(int seed)
     private static string Declarations()
     {
         var text = new StringBuilder();
+        text.Append(CultureInfo.InvariantCulture, $"@channel pose: {string.Join(", ", Poses)}\n@channel effect: {string.Join(", ", Effects)}\n");
         foreach (string actor in Actors)
-            text.Append(CultureInfo.InvariantCulture, $"@actor {actor}\n    name: {char.ToUpperInvariant(actor[0])}{actor[1..]}\n    poses: {string.Join(", ", Poses)}\n");
+            text.Append(CultureInfo.InvariantCulture, $"@actor {actor}\n    name: {char.ToUpperInvariant(actor[0])}{actor[1..]}\n");
 
         text.Append("@enum position: left, center, right\n@enum mood: calm, tense, wild\n");
         for (int flag = 0; flag < Flags; flag++)
@@ -105,7 +107,7 @@ public sealed class StoryGenerator(int seed)
 
         text.Append(CultureInfo.InvariantCulture, $"== {name}\n");
         text.Append(CultureInfo.InvariantCulture, $"@show {actor} {Pick(Places)}\n");
-        text.Append(CultureInfo.InvariantCulture, $"{actor} ({Pick(Poses)}): {Text()} #id:{Id()}\n");
+        text.Append(CultureInfo.InvariantCulture, $"{actor} ({Pick(Poses)}, {Effects[actor.Length % Effects.Length]}): {Text()} #id:{Id()}\n");
         for (int line = random.Next(6, 12); line > 0; line--)
             text.Append(Line(""));
 

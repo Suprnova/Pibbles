@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using Pibbles.Compiler;
@@ -97,7 +98,8 @@ internal static class LineRenderer
                 [.. spans.Select(span => new Span(span.Name, Move(span.Start), Move(span.End) - Move(span.Start), span.Arguments))],
                 [.. markers.Select(marker => marker.Create(Move(marker.Position)))],
                 [.. icons.Select(icon => new Icon(Move(icon.Position), icon.Name))],
-                Tags(template, story),
+                ValuesOf(template.Values),
+                Tags(template.Tags, story),
                 story.FallbackIds.Contains(id));
         }
 
@@ -153,16 +155,22 @@ internal static class LineRenderer
             }
         }
 
-        private static TagCollection Tags(Template template, Story story) => new(
-            [.. template.Tags.Select(tag => new Tag(tag.Name, KindOf(tag.Name, story), string.IsNullOrEmpty(tag.Value) ? null : tag.Value))],
-            story.Tags);
-
-        private static TagKind KindOf(string name, Story story) =>
-            !story.Tags.TryGetValue(name, out TagSymbol? symbol) ? TagKind.Reserved
-            : symbol.ValueType is null ? TagKind.Flag
-            : symbol.ValueType is EnumSymbol ? TagKind.Enum
-            : TagKind.Text;
     }
+
+    /// <summary>The tags of a line, as the host reads them.</summary>
+    public static TagCollection Tags(IReadOnlyList<TemplateTag> tags, Story story) => new(
+        [.. tags.Select(tag => new Tag(tag.Name, KindOf(tag.Name, story), string.IsNullOrEmpty(tag.Value) ? null : tag.Value))],
+        story.Tags);
+
+    /// <summary>The values a line sets, as the host reads them.</summary>
+    public static ImmutableArray<ChannelValue> ValuesOf(IReadOnlyList<TemplateValue> values) =>
+        [.. values.Select(value => new ChannelValue(value.Channel.Name, value.Value.Name))];
+
+    private static TagKind KindOf(string name, Story story) =>
+        !story.Tags.TryGetValue(name, out TagSymbol? symbol) ? TagKind.Reserved
+        : symbol.ValueType is null ? TagKind.Flag
+        : symbol.ValueType is EnumSymbol ? TagKind.Enum
+        : TagKind.Text;
 
     private sealed class OpenSpan(string name, int start, Arguments arguments)
     {

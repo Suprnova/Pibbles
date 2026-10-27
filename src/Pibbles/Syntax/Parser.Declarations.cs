@@ -5,7 +5,7 @@ namespace Pibbles.Syntax;
 /// <summary>Declarations: the lines before a file's first node that make up the contract between the story and the host.</summary>
 internal sealed partial class Parser
 {
-    private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
+    private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@channel", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
 
     /// <summary>Keywords that grammar extensions will use. v1 gives them no meaning, and rejects them where they'd appear.</summary>
     private static readonly HashSet<string> ExtensionKeywords = ["@term", "@resume", "@shuffle"];
@@ -23,6 +23,7 @@ internal sealed partial class Parser
 
         DeclarationSyntax declaration = word switch
         {
+            "@channel" => ParseChannel(),
             "@enum" => ParseEnum(),
             "@var" => ParseVariableDeclaration(),
             "@command" => ParseCommandDeclaration(),
@@ -47,7 +48,7 @@ internal sealed partial class Parser
         FinishLine();
 
         string? displayName = null;
-        List<NameSyntax> poses = [];
+        List<ChannelEditSyntax> channels = [];
         if (Current.Kind is LineTokenKind.Indent)
         {
             index++;
@@ -61,7 +62,7 @@ internal sealed partial class Parser
                 }
 
                 end = TrimmedEnd(Current.Line);
-                ParseActorProperty(Current.Line, ref displayName, poses);
+                ParseActorProperty(Current.Line, ref displayName, channels);
             }
 
             SkipDedent();
@@ -71,20 +72,25 @@ internal sealed partial class Parser
             Report(DiagnosticCatalog.MissingBlock, keyword, TextOf(new(start, end - start)));
         }
 
-        return new(name, displayName, poses) { Span = new(start, end - start) };
+        return new(name, displayName, channels) { Span = new(start, end - start) };
     }
 
-    /// <summary>Parses one line of an actor's block: <c>name: Display name</c>, read as plain text, or <c>poses: a, b, c</c>.</summary>
-    private void ParseActorProperty(SourceLine line, ref string? displayName, List<NameSyntax> poses)
+    /// <summary>
+    /// Parses one line of an actor's block: <c>name: Display name</c>, read as plain text; <c>pose: a, b</c> or
+    /// <c>pose += c</c> for a channel's values; or <c>no camera, effect</c> for the channels the actor doesn't have.
+    /// </summary>
+    private void ParseActorProperty(SourceLine line, ref string? displayName, List<ChannelEditSyntax> channels)
     {
         lineFailed = false;
         inlineEnd = TrimmedEnd(line);
         int start = line.Content.Start;
         int wordEnd = SkipIdentifier(start);
         string word = source.Text[start..wordEnd];
-        int colon = SkipWhitespace(wordEnd);
+        int next = SkipWhitespace(wordEnd);
+        bool colon = next < inlineEnd && source.Text[next] is ':';
+        bool plusEquals = next + 1 < inlineEnd && source.Text.AsSpan(next, 2) is "+=";
 
-        if (line.Kind is not LineKind.Text || word is not ("name" or "poses") || colon >= inlineEnd || source.Text[colon] is not ':')
+        if (line.Kind is not LineKind.Text || wordEnd == start || !(colon || plusEquals || (word is "no" && next > wordEnd && SkipIdentifier(next) > next)))
         {
             var unexpected = new TextSpan(start, Math.Max(wordEnd, start + 1) - start);
             Fail(DiagnosticCatalog.Unexpected, unexpected, $"`{TextOf(unexpected)}`");
@@ -93,23 +99,47 @@ internal sealed partial class Parser
             return;
         }
 
-        if (word is "poses")
+        if (word is "name" && colon)
         {
-            StartLine(new(colon + 1, line.Content.End - colon - 1));
-            previousSpan = new(colon, 1);
-            previousEnd = colon + 1;
-            poses.AddRange(ParseNameList("a pose", "poses:"));
-            FinishLine();
+            int valueStart = SkipWhitespace(next + 1);
+            var value = new TextSpan(valueStart, PlainContentEnd(valueStart, inlineEnd) - valueStart);
+            if (value.Length == 0)
+                Fail(DiagnosticCatalog.Missing, new(next + 1, 0), "a display name", "name:");
+
+            displayName = TextOf(value);
+            index++;
             return;
         }
 
-        int valueStart = SkipWhitespace(colon + 1);
-        var value = new TextSpan(valueStart, PlainContentEnd(valueStart, inlineEnd) - valueStart);
-        if (value.Length == 0)
-            Fail(DiagnosticCatalog.Missing, new(colon + 1, 0), "a display name", "name:");
+        StartLine(line.Content);
+        if (word is "no" && !colon && !plusEquals)
+        {
+            Advance();
+            channels.AddRange(ParseNameList("a channel", "no").Select(channel => new ChannelEditSyntax(channel, ChannelEdit.Drop, []) { Span = channel.Span }));
+        }
+        else
+        {
+            NameSyntax channel = ExpectName("a channel", "");
+            ChannelEdit edit = plusEquals ? ChannelEdit.Add : ChannelEdit.Replace;
+            string separator = plusEquals ? "+=" : ":";
+            Advance();
+            channels.Add(new(channel, edit, ParseNameList("a value", separator)) { Span = SpanFrom(start) });
+        }
 
-        displayName = TextOf(value);
-        index++;
+        FinishLine();
+    }
+
+    private ChannelDeclarationSyntax ParseChannel()
+    {
+        NameSyntax name = ExpectDeclaredName("a channel name", "@channel");
+        List<NameSyntax> values = [];
+        if (token.Kind is TokenKind.Colon)
+        {
+            Advance();
+            values = ParseNameList("a value", ":");
+        }
+
+        return new(name, values) { Span = default };
     }
 
     private EnumDeclarationSyntax ParseEnum()

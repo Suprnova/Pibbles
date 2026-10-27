@@ -1,13 +1,17 @@
-// A speaker is written `name (pose):`, with one space before the pose and none inside the parentheses.
+// A speaker is written `name (a, b):`, with one space before the values, a comma and a space between them, and none inside the parentheses.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: neutral, happy
+    pose: neutral, happy
 
 == kitchen.door
-mira(happy): This line has no space before the pose.
+mira(happy): This line has no space before the values.
 // PIB5033
 mira ( happy ): This line has spaces inside the parentheses.
+// PIB5033
+mira (happy,shake): This line has no space after the comma.
 // PIB5033
 mira : This line has a space before the colon.
 // PIB5033
@@ -15,4 +19,5 @@ mira : This line has a space before the colon.
 // Must not trigger
 
 mira (happy): This line uses the usual spacing.
+mira (happy, shake): So does this one, with two values.
 mira: So does this one.

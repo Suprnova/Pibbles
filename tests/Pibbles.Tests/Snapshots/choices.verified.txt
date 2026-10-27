@@ -12,8 +12,10 @@ File 1:1-23:1
                 Tag 4:22-4:32 Name="id" Value="c4ne8r"
               Body:
                 TextLine 5:5-5:42
-                  Speaker: Name 5:5-5:9 Text="mira"
-                  Pose: Name 5:11-5:16 Text="angry"
+                  Speaker: Speaker 5:5-5:17
+                    Name: Name 5:5-5:9 Text="mira"
+                    Values:
+                      Name 5:11-5:16 Text="angry"
                   Content:
                     Markup 5:19-5:42
                       Name: Name 5:20-5:25 Text="shout"
@@ -72,7 +74,8 @@ File 1:1-23:1
                       Body:
                         EndStatement 14:9-14:13
         TextLine 15:1-15:27
-          Speaker: Name 15:1-15:5 Text="mira"
+          Speaker: Speaker 15:1-15:5
+            Name: Name 15:1-15:5 Text="mira"
           Content:
             TextRun 15:7-15:27 Text="Between two choices."
         Choice 16:1-16:19
@@ -81,7 +84,8 @@ File 1:1-23:1
               Text:
                 TextRun 16:4-16:19 Text="A second choice"
         TextLine 17:1-17:32
-          Speaker: Name 17:1-17:5 Text="mira"
+          Speaker: Speaker 17:1-17:5
+            Name: Name 17:1-17:5 Text="mira"
           Content:
             TextRun 17:7-17:32 Text="Between two more choices."
         Choice 18:1-22:30

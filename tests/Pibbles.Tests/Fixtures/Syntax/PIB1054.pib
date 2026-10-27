@@ -1,4 +1,4 @@
-// A speaker needs a pose or something to say.
+// A speaker needs values or something to say.
 
 == fixture.empty
 mira:
@@ -9,6 +9,7 @@ mira :   #thought
 // Must not trigger
 
 mira (sad):
+mira (sad, still):
 mira: {w}
 mira: Something.
 mira\: is narration.

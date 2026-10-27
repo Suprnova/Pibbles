@@ -16,19 +16,22 @@ File 1:1-18:1
             Alternative 8:5-8:19
               Body:
                 TextLine 8:5-8:19
-                  Speaker: Name 8:5-8:9 Text="mira"
+                  Speaker: Speaker 8:5-8:9
+                    Name: Name 8:5-8:9 Text="mira"
                   Content:
                     TextRun 8:11-8:19 Text="No dash."
             Alternative 9:5-9:25
               Body:
                 TextLine 9:5-9:25
-                  Speaker: Name 9:5-9:9 Text="mira"
+                  Speaker: Speaker 9:5-9:9
+                    Name: Name 9:5-9:9 Text="mira"
                   Content:
                     TextRun 9:11-9:25 Text="Still no dash."
             Alternative 10:5-10:32
               Body:
                 TextLine 10:7-10:32
-                  Speaker: Name 10:7-10:11 Text="mira"
+                  Speaker: Speaker 10:7-10:11
+                    Name: Name 10:7-10:11 Text="mira"
                   Content:
                     TextRun 10:13-10:32 Text="A real alternative."
         VariationStatement 11:1-14:6 Kind=Sequence
@@ -39,13 +42,16 @@ File 1:1-18:1
                   Condition: VariableExpression 12:11-12:13 Name="x"
                   Body:
                     TextLine 13:9-13:40
-                      Speaker: Name 13:9-13:13 Text="mira"
+                      Speaker: Speaker 13:9-13:13
+                        Name: Name 13:9-13:13 Text="mira"
                       Content:
                         TextRun 13:15-13:40 Text="An opener after the dash."
             Alternative 14:5-14:6
         TextLine 16:1-16:23
-          Speaker: Name 16:1-16:5 Text="mira"
-          Pose: Name 16:7-16:10 Text="sad"
+          Speaker: Speaker 16:1-16:11
+            Name: Name 16:1-16:5 Text="mira"
+            Values:
+              Name 16:7-16:10 Text="sad"
           Tags:
             Tag 16:13-16:23 Name="id" Value="k7qp2x"
         Choice 17:1-17:14
@@ -64,5 +70,5 @@ Diagnostics:
   PIB1032 12:7 `@if` can't start an alternative.
   PIB1004 14:5 I expected indented lines under `-`.
   PIB1021 15:1 Declarations have to come before the file's first node.
-  PIB1053 16:13 `#id:k7qp2x` can't go on a line that only changes a pose.
+  PIB1053 16:13 `#id:k7qp2x` can't go on a line that only sets values.
   PIB1052 17:7 `#id:BAD` isn't a line ID I can use.

@@ -22,27 +22,27 @@ internal sealed partial class Parser
         textOwner = "the text";
         textLineStart = start;
 
-        NameSyntax? speaker = null;
-        NameSyntax? pose = null;
+        SpeakerSyntax? speaker = null;
         int textStart = start;
         if (SpeakerScanner.Scan(source.Text, start, inlineEnd) is { IsSpeaker: true } match)
         {
-            speaker = new(TextOf(match.Name)) { Span = match.Name };
-            textOwner = new SpeakerMention(speaker.Text, "what {0} says");
-            pose = match.Pose is { } poseSpan ? new(TextOf(poseSpan)) { Span = poseSpan } : null;
+            NameSyntax name = new(TextOf(match.Name)) { Span = match.Name };
+            List<NameSyntax> values = [.. (match.Values ?? []).Select(span => new NameSyntax(TextOf(span)) { Span = span })];
+            speaker = new(name, values) { Span = new(start, (match.Parentheses?.End ?? match.Name.End) - start) };
+            textOwner = new SpeakerMention(name.Text, "what {0} says");
             textStart = match.Colon + 1;
         }
 
         List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), inlineEnd, option: false);
         List<TagSyntax> tags = ParseTrailingTags();
 
-        if (speaker is not null && pose is null && content.Count == 0)
-            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Text, new SpeakerMention(speaker.Text));
+        if (speaker is { Values.Count: 0 } && content.Count == 0)
+            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Name.Text, new SpeakerMention(speaker.Name.Text));
 
-        CheckTags(tags, pose is not null && content.Count == 0 ? TagPlace.PoseChange : TagPlace.TextLine);
+        CheckTags(tags, speaker is { Values.Count: > 0 } && content.Count == 0 ? TagPlace.ValuesOnly : TagPlace.TextLine);
 
         index++;
-        return new(speaker, pose, content, tags) { Span = new(start, inlineEnd - start) };
+        return new(speaker, content, tags) { Span = new(start, inlineEnd - start) };
     }
 
     private int SkipIdentifier(int start)

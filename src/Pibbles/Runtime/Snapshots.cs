@@ -31,8 +31,8 @@ public sealed record StateSnapshot
     /// <summary>The IDs of the options the player has chosen, for <c>WasChosen</c> and <c>@once</c>.</summary>
     public required IReadOnlyList<string> ChosenOptions { get; init; }
 
-    /// <summary>Each actor's pose, by the actor's ID, for the actors the story has posed.</summary>
-    public required IReadOnlyDictionary<string, string> Poses { get; init; }
+    /// <summary>The values each actor has been given, by the actor's ID and then the channel's name, for the channels the story has set.</summary>
+    public required IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Channels { get; init; }
 }
 
 /// <summary>
@@ -135,11 +135,14 @@ public enum SaveProblemKind
     /// <summary>The save records a chosen option that no longer exists. It's dropped.</summary>
     UnknownOption,
 
-    /// <summary>The save has a pose for an actor the story no longer declares. It's dropped.</summary>
+    /// <summary>The save has values for an actor the story no longer declares. They're dropped.</summary>
     UnknownActor,
 
-    /// <summary>The save has a pose the actor no longer has. The actor keeps its default pose.</summary>
-    UnknownPose,
+    /// <summary>The save has a value in a channel the actor no longer has. It's dropped.</summary>
+    UnknownChannel,
+
+    /// <summary>The save has a value the actor no longer has in that channel. The actor keeps the channel's default.</summary>
+    UnknownChannelValue,
 
     /// <summary>
     /// A frame of the saved dialogue no longer exists: a line, every option of a choice, or a call. A lost call is dropped
@@ -197,10 +200,19 @@ internal static class SnapshotChecks
         if (NullIn(snapshot.ChosenOptions, "chosenOptions") is { } path)
             return path;
 
-        if (snapshot.Poses is null)
-            return "poses";
+        if (snapshot.Channels is null)
+            return "channels";
 
-        return snapshot.Poses.FirstOrDefault(pose => pose.Value is null).Key is { } actor ? $"poses.{actor}" : null;
+        foreach ((string actor, IReadOnlyDictionary<string, string> channels) in snapshot.Channels)
+        {
+            if (channels is null)
+                return $"channels.{actor}";
+
+            if (channels.FirstOrDefault(channel => channel.Value is null).Key is { } name)
+                return $"channels.{actor}.{name}";
+        }
+
+        return null;
     }
 
     /// <summary>Where a runner snapshot has a null that must be a value, as a JSON path, or <see langword="null"/> if it has none.</summary>

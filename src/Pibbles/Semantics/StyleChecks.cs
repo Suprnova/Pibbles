@@ -35,7 +35,7 @@ internal sealed partial class StyleChecks(SymbolTable symbols, ReferenceIndex re
         foreach (NodeSyntax node in Tree.Root.Nodes)
         {
             CheckNesting(node.Body, depth: 0, Settings.Threshold("pibbles_max_nesting"));
-            CheckPoses(node.Body);
+            CheckValues(node.Body);
             CheckReturn(node);
             foreach (StatementSyntax statement in SyntaxWalk.Statements(node.Body))
                 CheckStatement(statement);

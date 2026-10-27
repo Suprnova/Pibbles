@@ -1,16 +1,23 @@
-// A pose is a single name. How a line is said goes in a comment.
+// A speaker's parenthesis is a list of names. How a line is said goes in a comment.
 
+@channel pose: happy
+@channel effect: still, shake
 @actor mira
     name: Mira
 
 == kitchen.door
 mira (to Rex): Fine.
 //   ^^^^^^^^ PIB2003
+mira (happy,): Fine.
+//   ^^^^^^^^ PIB2003
+mira (): Fine.
+//   ^^ PIB2003
 Breakfast (served daily): eggs.
 //        ^^^^^^^^^^^^^^ PIB2003
 
 // Must not trigger
 
+mira (happy, shake): Fine.
 Breakfast (served daily)\: eggs.
 // To Rex.
 mira: Fine.

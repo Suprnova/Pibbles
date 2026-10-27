@@ -75,11 +75,16 @@ public sealed record FunctionInfo(string Name, IReadOnlyList<StoryParameter> Par
 /// <param name="Type">Its type.</param>
 public sealed record VariableInfo(string Name, StoryType Type);
 
+/// <summary>A channel, with the values a speaker can set in it.</summary>
+/// <param name="Name">The channel's name.</param>
+/// <param name="Values">The values, the first being where a speaker starts. For a story's channel, the values every actor starts with.</param>
+public sealed record ChannelInfo(string Name, IReadOnlyList<string> Values);
+
 /// <summary>An actor the story declares.</summary>
 /// <param name="Id">The actor's ID.</param>
 /// <param name="DisplayName">The name the player sees.</param>
-/// <param name="Poses">The actor's poses, the first being the default.</param>
-public sealed record ActorInfo(string Id, string DisplayName, IReadOnlyList<string> Poses);
+/// <param name="Channels">The channels the actor has, with the values it can set in each. A channel the actor drops isn't listed.</param>
+public sealed record ActorInfo(string Id, string DisplayName, IReadOnlyList<ChannelInfo> Channels);
 
 /// <summary>An enum the story declares.</summary>
 /// <param name="Name">The enum's name.</param>

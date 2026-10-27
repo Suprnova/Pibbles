@@ -26,10 +26,11 @@ public sealed record ChoiceStep(ImmutableArray<ChoiceOption> Options) : Dialogue
 /// <param name="Waits">Whether the story waits for the command to finish before asking for the next step.</param>
 public sealed record CommandStep(CommandInvocation Command, bool Waits) : DialogueStep;
 
-/// <summary>Change an actor's pose. Sent every time, even when the pose is the one the actor already has.</summary>
+/// <summary>Set an actor's values without showing a line, from a parenthesis with no text. Sent every time, even when the actor already has them.</summary>
 /// <param name="Actor">The actor's ID.</param>
-/// <param name="Pose">The pose's name.</param>
-public sealed record PoseStep(string Actor, string Pose) : DialogueStep;
+/// <param name="Values">The values, in the order written.</param>
+/// <param name="Tags">The tags on the line.</param>
+public sealed record ChannelStep(string Actor, ImmutableArray<ChannelValue> Values, TagCollection Tags) : DialogueStep;
 
 /// <summary>Pause for a moment without showing anything.</summary>
 /// <param name="Duration">How long.</param>

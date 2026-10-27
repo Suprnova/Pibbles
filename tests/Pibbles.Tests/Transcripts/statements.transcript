@@ -2,9 +2,8 @@ start story.main
 
   narration: Narration without a speaker.  #l01
   mira: A line with a speaker.  #l02
-  pose mira happy
-  mira: A posed line.  #l03
-  pose mira sad
+  mira (happy, shake): A line with two values.  #l03
+  mira (sad):
   rex: ⟨w⟩  #l04
   @show mira center
   @show rex left

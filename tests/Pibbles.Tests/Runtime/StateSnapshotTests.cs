@@ -7,9 +7,10 @@ public class StateSnapshotTests
 {
     private const string EveryType = """
         @enum mood: calm, tense
+        @channel pose
         @actor mira
             name: Mira
-            poses: neutral, happy
+            pose: neutral, happy
         @actor rex
             name: Rex
         @var $flag = false
@@ -56,7 +57,7 @@ public class StateSnapshotTests
         Assert.Equal(game.State.Visits, restored.Visits);
         Assert.Equal(game.State.BlockEntries, restored.BlockEntries);
         Assert.Equal(game.State.ChosenOptions, restored.ChosenOptions);
-        Assert.Equal("happy", restored.GetPose("mira"));
+        Assert.Equal("happy", restored.GetChannel("mira", "pose"));
     }
 
     [Fact]
@@ -195,15 +196,28 @@ public class StateSnapshotTests
     }
 
     [Fact]
-    public void Restore_PoseRemoved_KeepsTheDefaultPose()
+    public void Restore_ValueRemoved_KeepsTheFirstValue()
     {
-        const string Before = "@actor mira\n    name: Mira\n    poses: neutral, happy\n@actor rex\n    name: Rex\n    poses: calm, cross\n== t.n\nmira (happy): Hi. #id:l1\nrex (cross): Hi. #id:l2\n";
-        const string After = "@actor mira\n    name: Mira\n    poses: neutral\n== t.n\n";
+        const string Before = "@channel pose\n@actor mira\n    name: Mira\n    pose: neutral, happy\n@actor rex\n    name: Rex\n    pose: calm, cross\n== t.n\nmira (happy): Hi. #id:l1\nrex (cross): Hi. #id:l2\n";
+        const string After = "@channel pose\n@actor mira\n    name: Mira\n    pose: neutral\n== t.n\n";
 
         IReadOnlyList<SaveProblem> problems = Reload(Before, After, out Game loaded);
 
-        Assert.Equal([(SaveProblemKind.UnknownPose, "mira"), (SaveProblemKind.UnknownActor, "rex")], Kinds(problems));
-        Assert.Equal("neutral", loaded.State.GetPose("mira"));
+        Assert.Equal([(SaveProblemKind.UnknownChannelValue, "mira.pose"), (SaveProblemKind.UnknownActor, "rex")], Kinds(problems));
+        Assert.Equal("neutral", loaded.State.GetChannel("mira", "pose"));
+    }
+
+    [Fact]
+    public void Restore_ChannelRemoved_DropsItsValue()
+    {
+        const string Before = "@channel pose: neutral\n@channel effect: still, shake\n@actor mira\n    name: Mira\n== t.n\nmira (shake): Hi. #id:l1\n";
+        const string After = "@channel pose: neutral\n@channel effect: still, shake\n@actor mira\n    name: Mira\n    no effect\n== t.n\n";
+
+        IReadOnlyList<SaveProblem> problems = Reload(Before, After, out Game loaded);
+
+        Assert.Equal([(SaveProblemKind.UnknownChannel, "mira.effect")], Kinds(problems));
+        Assert.Equal("neutral", loaded.State.GetChannel("mira", "pose"));
+        Assert.Throws<ArgumentException>(() => loaded.State.GetChannel("mira", "effect"));
     }
 
     [Fact]

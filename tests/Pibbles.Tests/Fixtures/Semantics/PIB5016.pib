@@ -1,12 +1,16 @@
-// A pose change to the pose the actor already has.
+// A value set to the value the actor already has.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: neutral, happy, sad
+    pose: neutral, happy, sad
 
 == kitchen.door
 mira (happy): This line sets the pose.
 mira (happy): The pose on this line changes nothing.
+//    ^^^^^ PIB5016
+mira (happy, shake): Only the shake is a change.
 //    ^^^^^ PIB5016
 
 // Must not trigger
@@ -16,5 +20,6 @@ mira (happy): This line sets the pose.
 @call kitchen.door
 mira (happy): After a call, the pose may have changed.
 mira (sad): A different pose is a change.
+mira (shake): Another channel is a change of its own.
 -> Look around
     mira (sad): Inside an option, the pose isn't known.

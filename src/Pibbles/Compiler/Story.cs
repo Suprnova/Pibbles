@@ -13,6 +13,7 @@ public sealed class Story
     private IReadOnlyList<NodeInfo>? nodeInfos;
     private IReadOnlyList<FunctionInfo>? functionInfos;
     private IReadOnlyList<VariableInfo>? variableInfos;
+    private IReadOnlyList<ChannelInfo>? channelInfos;
     private IReadOnlyList<ActorInfo>? actorInfos;
     private IReadOnlyList<EnumInfo>? enumInfos;
 
@@ -24,6 +25,7 @@ public sealed class Story
         IReadOnlyDictionary<string, IdSite> sites,
         IReadOnlySet<string> fallbackIds,
         IReadOnlyDictionary<string, ActorSymbol> actors,
+        IReadOnlyDictionary<string, ChannelSymbol> channels,
         IReadOnlyDictionary<string, TagSymbol> tags,
         IReadOnlyDictionary<string, EnumSymbol> enums,
         IReadOnlyDictionary<string, FunctionSymbol> functions)
@@ -35,6 +37,7 @@ public sealed class Story
         Sites = sites;
         FallbackIds = fallbackIds;
         ActorSymbols = actors;
+        ChannelSymbols = channels;
         Tags = tags;
         EnumSymbols = enums;
         FunctionSymbols = functions;
@@ -50,9 +53,13 @@ public sealed class Story
     /// <summary>The variables the story declares, in declaration order.</summary>
     public IReadOnlyList<VariableInfo> Variables => variableInfos ??= [.. VariableDefinitions.Select(variable => new VariableInfo(variable.Variable.Name, StoryType.Of(variable.Variable.Type)))];
 
+    /// <summary>The channels the story declares, each with the values every actor starts with.</summary>
+    public IReadOnlyList<ChannelInfo> Channels => channelInfos ??=
+        [.. ChannelSymbols.Values.Select(channel => new ChannelInfo(channel.Name, [.. channel.Defaults.Select(value => value.Name)]))];
+
     /// <summary>The actors the story declares.</summary>
     public IReadOnlyList<ActorInfo> Actors => actorInfos ??=
-        [.. ActorSymbols.Values.Select(actor => new ActorInfo(actor.Name, actor.DisplayName, [.. actor.Poses.Select(pose => pose.Name)]))];
+        [.. ActorSymbols.Values.Select(actor => new ActorInfo(actor.Name, actor.DisplayName, [.. actor.Channels.Select(channel => new ChannelInfo(channel.Channel.Name, [.. channel.Values.Select(value => value.Name)]))]))];
 
     /// <summary>The enums the story declares.</summary>
     public IReadOnlyList<EnumInfo> Enums => enumInfos ??= [.. EnumSymbols.Values.Select(@enum => new EnumInfo(@enum.Name, [.. @enum.Members.Select(member => member.Name)]))];
@@ -80,6 +87,9 @@ public sealed class Story
 
     /// <summary>Every declared actor, by ID, for checking what a host function returns.</summary>
     internal IReadOnlyDictionary<string, ActorSymbol> ActorSymbols { get; }
+
+    /// <summary>Every declared channel, by name.</summary>
+    internal IReadOnlyDictionary<string, ChannelSymbol> ChannelSymbols { get; }
 
     /// <summary>The functions the story declares, which the host provides. <c>visits</c> isn't among them.</summary>
     internal IReadOnlyDictionary<string, FunctionSymbol> FunctionSymbols { get; }

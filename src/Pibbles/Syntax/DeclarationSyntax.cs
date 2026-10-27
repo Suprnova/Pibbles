@@ -6,8 +6,32 @@ public abstract record DeclarationSyntax : SyntaxNode;
 /// <summary><c>@actor id</c> and its properties: a character.</summary>
 /// <param name="Name">The actor's ID, which lines use as their speaker.</param>
 /// <param name="DisplayName">The <c>name:</c> property: the name the player sees, or <see langword="null"/> to show the ID.</param>
-/// <param name="Poses">The <c>poses:</c> property. The first pose is the default.</param>
-public sealed record ActorDeclarationSyntax(NameSyntax Name, string? DisplayName, IReadOnlyList<NameSyntax> Poses) : DeclarationSyntax;
+/// <param name="Channels">What the block does to channels, in the order written: <c>pose: a, b</c>, <c>pose += c</c>, and each channel named after <c>no</c>.</param>
+public sealed record ActorDeclarationSyntax(NameSyntax Name, string? DisplayName, IReadOnlyList<ChannelEditSyntax> Channels) : DeclarationSyntax;
+
+/// <summary><c>@channel name: a, b, c</c>: a value that lines set, such as a pose, and the values every actor starts with.</summary>
+/// <param name="Name">The channel's name.</param>
+/// <param name="Values">The values every actor has, the first being where it starts. Empty when each actor lists its own.</param>
+public sealed record ChannelDeclarationSyntax(NameSyntax Name, IReadOnlyList<NameSyntax> Values) : DeclarationSyntax;
+
+/// <summary>What an actor's block does to one channel: <c>pose: a, b</c>, <c>pose += c</c>, or one channel of <c>no camera, effect</c>.</summary>
+/// <param name="Channel">The channel's name.</param>
+/// <param name="Edit">Whether the values replace the channel's, are added to them, or the actor doesn't have the channel.</param>
+/// <param name="Values">The values. Empty when the actor drops the channel.</param>
+public sealed record ChannelEditSyntax(NameSyntax Channel, ChannelEdit Edit, IReadOnlyList<NameSyntax> Values) : SyntaxNode;
+
+/// <summary>How an actor's block changes a channel.</summary>
+public enum ChannelEdit
+{
+    /// <summary><c>pose: a, b</c>: the actor's values replace the channel's.</summary>
+    Replace,
+
+    /// <summary><c>pose += a</c>: the values are added to the channel's.</summary>
+    Add,
+
+    /// <summary><c>no pose</c>: the actor doesn't have the channel.</summary>
+    Drop,
+}
 
 /// <summary><c>@enum name: a, b, c</c>: a closed set of values.</summary>
 /// <param name="Name">The enum's name, which parameters and variables use as their type.</param>

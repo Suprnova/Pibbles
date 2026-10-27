@@ -1,0 +1,21 @@
+// A line sets one value of a channel.
+
+@channel pose: neutral, happy, sad
+@channel effect: still, shake
+@actor mira
+    name: Mira
+
+== kitchen.door
+mira (happy, sad): Two poses.
+//           ^^^ PIB2006
+mira (shake, happy, still): A pose and two effects.
+//                  ^^^^^ PIB2006
+mira (happy, happy): The same pose twice.
+//           ^^^^^ PIB2006
+
+// Must not trigger
+
+mira (happy, shake): One value in each channel.
+mira (sad, still): The order doesn't matter.
+mira (still, neutral):
+mira (happy): One value.

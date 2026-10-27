@@ -13,9 +13,10 @@ public class SnapshotJsonTests
 {
     private const string Story = """
         @enum mood: calm, tense
+        @channel pose
         @actor mira
             name: Mira
-            poses: neutral, happy
+            pose: neutral, happy
         @var $flag = false
         @var $number = 0
         @var $text = ""
@@ -73,15 +74,16 @@ public class SnapshotJsonTests
     }
 
     [Theory]
-    [InlineData("variables", """{"format":1,"seed":1,"variables":null,"visits":{},"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("variables.x", """{"format":1,"seed":1,"variables":{"x":null},"visits":{},"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("variables.x.type", """{"format":1,"seed":1,"variables":{"x":{"type":null,"number":1}},"visits":{},"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("visits", """{"format":1,"seed":1,"variables":{},"visits":null,"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("blockEntries", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":null,"chosenOptions":[],"poses":{}}""")]
-    [InlineData("chosenOptions", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":null,"poses":{}}""")]
-    [InlineData("chosenOptions[1]", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":["o1",null],"poses":{}}""")]
-    [InlineData("poses", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"poses":null}""")]
-    [InlineData("poses.mira", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"poses":{"mira":null}}""")]
+    [InlineData("variables", """{"format":1,"seed":1,"variables":null,"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("variables.x", """{"format":1,"seed":1,"variables":{"x":null},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("variables.x.type", """{"format":1,"seed":1,"variables":{"x":{"type":null,"number":1}},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("visits", """{"format":1,"seed":1,"variables":{},"visits":null,"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("blockEntries", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":null,"chosenOptions":[],"channels":{}}""")]
+    [InlineData("chosenOptions", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":null,"channels":{}}""")]
+    [InlineData("chosenOptions[1]", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":["o1",null],"channels":{}}""")]
+    [InlineData("channels", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":null}""")]
+    [InlineData("channels.mira", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{"mira":null}}""")]
+    [InlineData("channels.mira.pose", """{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{"mira":{"pose":null}}}""")]
     public void DeserializeState_NullWhereAValueMustBe_ThrowsNamingThePath(string path, string json)
     {
         var exception = Assert.Throws<JsonException>(() => SnapshotJson.DeserializeState(json));
@@ -90,9 +92,9 @@ public class SnapshotJsonTests
     }
 
     [Theory]
-    [InlineData("""{"format":1,"seed":1,"variables":{},"visits":{"t.n":null},"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("""{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{"b1":null},"chosenOptions":[],"poses":{}}""")]
-    [InlineData("""{"format":1,"seed":null,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"poses":{}}""")]
+    [InlineData("""{"format":1,"seed":1,"variables":{},"visits":{"t.n":null},"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("""{"format":1,"seed":1,"variables":{},"visits":{},"blockEntries":{"b1":null},"chosenOptions":[],"channels":{}}""")]
+    [InlineData("""{"format":1,"seed":null,"variables":{},"visits":{},"blockEntries":{},"chosenOptions":[],"channels":{}}""")]
     public void DeserializeState_NullCount_Throws(string json)
     {
         Assert.Throws<JsonException>(() => SnapshotJson.DeserializeState(json));
@@ -127,8 +129,9 @@ public class SnapshotJsonTests
         { "blockEntries", EmptyState with { BlockEntries = null! } },
         { "chosenOptions", EmptyState with { ChosenOptions = null! } },
         { "chosenOptions[0]", EmptyState with { ChosenOptions = [null!] } },
-        { "poses", EmptyState with { Poses = null! } },
-        { "poses.mira", EmptyState with { Poses = new Dictionary<string, string> { ["mira"] = null! } } },
+        { "channels", EmptyState with { Channels = null! } },
+        { "channels.mira", EmptyState with { Channels = new Dictionary<string, IReadOnlyDictionary<string, string>> { ["mira"] = null! } } },
+        { "channels.mira.pose", EmptyState with { Channels = new Dictionary<string, IReadOnlyDictionary<string, string>> { ["mira"] = new Dictionary<string, string> { ["pose"] = null! } } } },
     };
 
     public static TheoryData<string, RunnerSnapshot> NullRunners { get; } = new()
@@ -139,7 +142,7 @@ public class SnapshotJsonTests
         { "choice[0]", RunnerSnapshot.Empty with { Choice = [null!] } },
     };
 
-    private static StateSnapshot EmptyState => new() { Format = 1, Seed = 1, Variables = new Dictionary<string, SavedValue>(), Visits = new Dictionary<string, int>(), BlockEntries = new Dictionary<string, int>(), ChosenOptions = [], Poses = new Dictionary<string, string>() };
+    private static StateSnapshot EmptyState => new() { Format = 1, Seed = 1, Variables = new Dictionary<string, SavedValue>(), Visits = new Dictionary<string, int>(), BlockEntries = new Dictionary<string, int>(), ChosenOptions = [], Channels = new Dictionary<string, IReadOnlyDictionary<string, string>>() };
 
     [Theory]
     [MemberData(nameof(NullStates))]

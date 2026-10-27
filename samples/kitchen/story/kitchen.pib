@@ -55,8 +55,7 @@ mira (worried): Locked.{w} Of course it's locked. #id:k7qp2x
 
 -> Rattle the handle #id:c4ne8r
     @sfx door_rattle
-    @jolt mira
-    mira (angry): [shout]Open up![/shout]{@shake_screen 0.5} #id:p2vd7t
+    mira (angry, jolt): [shout]Open up![/shout]{@shake_screen 0.5} #id:p2vd7t
     @set $bravery += 1
     @call common.stuck #id:r4hc6v
 -> Use the key  @if $has_key #show_disabled #id:m3xw9a

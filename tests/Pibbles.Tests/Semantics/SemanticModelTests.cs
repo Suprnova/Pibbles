@@ -11,9 +11,10 @@ public class SemanticModelTests
 
     private const string Cast = """
         @enum position: left, right
+        @channel pose
         @actor mira
             name: Mira
-            poses: happy
+            pose: happy
         @var $has_key = false
         @command show(who: actor, at: position = left)
         @markup clue
@@ -42,7 +43,7 @@ public class SemanticModelTests
     public static TheoryData<string, string, Type, string, int> Positions { get; } = new()
     {
         { KitchenPath, "|mira (happy)", typeof(ActorSymbol), "mira", 2 },
-        { KitchenPath, "mira (ha|ppy)", typeof(PoseSymbol), "happy", 1 },
+        { KitchenPath, "mira (ha|ppy)", typeof(ChannelValueSymbol), "happy", 1 },
         { KitchenPath, "[cl|ue]", typeof(MarkupSymbol), "clue", 1 },
         { KitchenPath, "{icon int|eract}", typeof(IconSymbol), "interact", 1 },
         { KitchenPath, "#th|ought", typeof(TagSymbol), "thought", 1 },
@@ -100,9 +101,9 @@ public class SemanticModelTests
     }
 
     [Fact]
-    public void Symbols_Nested_ListsPosesMembersAndParameters()
+    public void Symbols_Nested_ListsChannelValuesMembersAndParameters()
     {
-        Assert.Equal(["happy"], compilation.Model.Symbols<PoseSymbol>().Select(pose => pose.Name));
+        Assert.Equal(["happy"], compilation.Model.Symbols<ChannelValueSymbol>().Select(value => value.Name));
         Assert.Equal(["left", "right"], compilation.Model.Symbols<EnumMemberSymbol>().Select(member => member.Name));
         Assert.Contains(compilation.Model.Symbols<ParameterSymbol>(), parameter => parameter.Name == "who");
     }

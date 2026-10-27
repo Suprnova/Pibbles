@@ -26,3 +26,5 @@ mira: Look [b]closely[/b]{$name}// touching a closer
 mira: A {f("a//b")} string keeps its slashes. // and this is the comment
 mira: Read #link:https://example.com // a tag value keeps its slashes
 mira: A banner //// and a comment
+mira (happy, shake): Two values, in the order written.
+mira (shake, sad):

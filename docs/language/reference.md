@@ -70,9 +70,12 @@ The parser classifies each line by how it starts, before looking at the rest of 
 Declarations make up the contract between the story and the host ([boundaries](../boundaries.md#the-contract-goes-both-ways)). They are global, order doesn't matter, and they may only appear before a file's first node.
 
 ```pib-standalone
+@channel pose: neutral, happy, sad, worried
+@channel effect: still, shake
+
 @actor mira
     name: Mira
-    poses: neutral, happy, sad, smug, worried, angry
+    pose += smug, angry
 
 @enum position: left, center, right, offscreen
 @enum room: kitchen, cellar

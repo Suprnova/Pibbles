@@ -287,13 +287,13 @@ public static class DiagnosticCatalog
         "`{0}` can't go on {1}.",
         help: "{2}");
 
-    /// <summary>PIB1054: a speaker with neither a pose nor text.</summary>
+    /// <summary>PIB1054: a speaker with neither values nor text.</summary>
     /// <remarks>Arguments: the speaker's name as written, and a <see cref="SpeakerMention"/> of it for the help's prose.</remarks>
     public static DiagnosticDescriptor EmptyLine { get; } = new(
         "PIB1054",
         DiagnosticSeverity.Error,
         "`{0}:` has nothing after it.",
-        help: "Write what {1} says after the colon, or write `{0}: {{w}}` for a box with only their name. To change their pose without a line, write `{0} (pose):`.");
+        help: "Write what {1} says after the colon, or write `{0}: {{w}}` for a box with only their name. To set their values without a line, write `{0} (value):`.");
 
     /// <summary>PIB1055: a negative number as a command argument, without parentheses.</summary>
     /// <remarks>Argument: the negative value as written, such as <c>-1</c>.</remarks>
@@ -329,20 +329,20 @@ public static class DiagnosticCatalog
         "I don't know an actor called `{0}`.",
         help: "{1}If this line is narration, escape the colon: `{2}\\:`.");
 
-    /// <summary>PIB2002: a pose the speaker doesn't have.</summary>
-    /// <remarks>Arguments: the actor's display name; the pose; and a suggestion or the actor's poses, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownPose { get; } = new(
+    /// <summary>PIB2002: a value the speaker doesn't have.</summary>
+    /// <remarks>Arguments: the actor's display name; the value; and a suggestion, the actor's values or where the value went, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownChannelValue { get; } = new(
         "PIB2002",
         DiagnosticSeverity.Error,
-        "{0} has no pose called `{1}`.",
+        "{0} has no value called `{1}`.",
         help: "{2}");
 
-    /// <summary>PIB2003: a parenthesis after a name, before a colon, that doesn't hold a single name, as in <c>mira (to Rex):</c>.</summary>
+    /// <summary>PIB2003: a parenthesis after a name, before a colon, that doesn't hold a list of names, as in <c>mira (to Rex):</c>.</summary>
     /// <remarks>Arguments: the parenthesis, and the line's start up to its colon, which the help escapes.</remarks>
-    public static DiagnosticDescriptor NotPose { get; } = new(
+    public static DiagnosticDescriptor NotValues { get; } = new(
         "PIB2003",
         DiagnosticSeverity.Error,
-        "`{0}` isn't a pose: a pose is a single name.",
+        "`{0}` isn't a list of values: each value is a single name.",
         help: "For how a line is said, use a `//` comment. If this is narration, escape the colon: `{1}\\:`.");
 
     /// <summary>PIB2004: a declared actor and a colon with no space after it, as in <c>mira:Hi</c>.</summary>
@@ -353,13 +353,29 @@ public static class DiagnosticCatalog
         "There's no space after `{0}:`.",
         help: "Add one, or escape the colon if this is narration: `{1}`.");
 
-    /// <summary>PIB2005: more between a declared actor's pose and the colon, as in <c>mira (smug) (shake):</c> or <c>mira (smug) shake:</c>.</summary>
-    /// <remarks>Arguments: what comes after the pose; the pose's parenthesis; and the line's start up to its colon, which the help escapes.</remarks>
-    public static DiagnosticDescriptor AfterPose { get; } = new(
+    /// <summary>PIB2005: more between a declared actor's values and the colon, as in <c>mira (smug) (shake):</c> or <c>mira (smug) shake:</c>.</summary>
+    /// <remarks>Arguments: what comes after the values; the values' parenthesis; and the line's start up to its colon, which the help escapes.</remarks>
+    public static DiagnosticDescriptor AfterValues { get; } = new(
         "PIB2005",
         DiagnosticSeverity.Error,
         "`{0}` has no place after `{1}`, before the colon.",
-        help: "A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}\\:`.");
+        help: "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}\\:`.");
+
+    /// <summary>PIB2006: two values of one channel on one line, as in <c>mira (mad, sad):</c>.</summary>
+    /// <remarks>Arguments: the first value; the second value; the speaker's display name; and the channel.</remarks>
+    public static DiagnosticDescriptor TwoValuesInChannel { get; } = new(
+        "PIB2006",
+        DiagnosticSeverity.Error,
+        "`{0}` and `{1}` are both values of {2}'s `{3}`, and a line sets one value of a channel.",
+        help: "Keep the one you mean.");
+
+    /// <summary>PIB2007: a value that two of a speaker's channels share.</summary>
+    /// <remarks>Arguments: the value; where it already is, such as <c>`effect`</c> or <c>Mira's `effect`</c>; and the channel that can't have it too.</remarks>
+    public static DiagnosticDescriptor ValueInTwoChannels { get; } = new(
+        "PIB2007",
+        DiagnosticSeverity.Error,
+        "`{0}` is already a value of {1}, so `{2}` can't have it too.",
+        help: "A line names a value without its channel, so each value belongs to one channel. Give one of them another name.");
 
     /// <summary>PIB2010: a command that isn't declared.</summary>
     /// <remarks>Arguments: the command's name, without its <c>@</c>, and the closest command, or <see langword="null"/> to leave out the help.</remarks>
@@ -584,8 +600,8 @@ public static class DiagnosticCatalog
         "There's already {0} called `{1}`, {2}.",
         help: "Give one of them another name, or remove one.");
 
-    /// <summary>PIB2061: a pose, enum member or parameter listed twice in one declaration.</summary>
-    /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's poses</c>.</remarks>
+    /// <summary>PIB2061: a channel value, enum member, parameter or channel listed twice in one declaration.</summary>
+    /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's `pose` values</c>.</remarks>
     public static DiagnosticDescriptor RepeatedName { get; } = new(
         "PIB2061",
         DiagnosticSeverity.Error,
@@ -642,6 +658,14 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "`{0}` starts as `{1}`, so I need its type written out.",
         help: "Write the type after the variable: `{2}`.");
+
+    /// <summary>PIB2068: a channel an actor's block names that isn't declared.</summary>
+    /// <remarks>Arguments: the channel as written, and the closest declared channel, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownChannel { get; } = new(
+        "PIB2068",
+        DiagnosticSeverity.Error,
+        "I don't know a channel called `{0}`.",
+        help: "Did you mean `{1}`?");
 
     /// <summary>PIB2070: a <c>/</c> or <c>%</c> whose right side is a constant zero.</summary>
     /// <remarks>Argument: the operation as written, such as <c>$x / 0</c>.</remarks>
@@ -735,21 +759,21 @@ public static class DiagnosticCatalog
         "The color `{0}` is used in {1} places.",
         help: "If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place.");
 
-    /// <summary>PIB5010: a pose-only line whose pose changes again before any line shows.</summary>
-    /// <remarks>Argument: the actor, as a <see cref="SpeakerMention"/>.</remarks>
-    public static DiagnosticDescriptor UnseenPoseChange { get; } = new(
+    /// <summary>PIB5010: a value set by a line with no text that changes again before any line shows.</summary>
+    /// <remarks>Arguments: the value; the actor, as a <see cref="SpeakerMention"/>; and the channel.</remarks>
+    public static DiagnosticDescriptor UnseenValueChange { get; } = new(
         "PIB5010",
         DiagnosticSeverity.Hint,
-        "This pose change does nothing, because {0}'s pose changes again before a line shows.",
-        help: "Remove this line.");
+        "`{0}` does nothing, because {1}'s `{2}` changes again before a line shows.",
+        help: "Remove `{0}`.");
 
-    /// <summary>PIB5016: a pose change to the pose the actor already has.</summary>
-    /// <remarks>Argument: the actor, as a <see cref="SpeakerMention"/>.</remarks>
-    public static DiagnosticDescriptor RepeatedPose { get; } = new(
+    /// <summary>PIB5016: a value set to the value the actor already has.</summary>
+    /// <remarks>Arguments: the value, and the actor, as a <see cref="SpeakerMention"/>.</remarks>
+    public static DiagnosticDescriptor RepeatedValue { get; } = new(
         "PIB5016",
         DiagnosticSeverity.Hint,
-        "This pose change does nothing, because {0} already has that pose.",
-        help: "Leave the pose out of this line.");
+        "`{0}` does nothing, because {1} already has it.",
+        help: "Leave `{0}` out of this line.");
 
     /// <summary>PIB5011: <c>{w}</c> at the very end of a line.</summary>
     public static DiagnosticDescriptor PauseAtLineEnd { get; } = new(
@@ -926,10 +950,12 @@ public static class DiagnosticCatalog
         UnclosedParenthesis,
         ChainedComparison,
         UnknownSpeaker,
-        UnknownPose,
-        NotPose,
+        UnknownChannelValue,
+        NotValues,
         NoSpaceAfterSpeaker,
-        AfterPose,
+        AfterValues,
+        TwoValuesInChannel,
+        ValueInTwoChannels,
         UnknownCommand,
         ArgumentType,
         NotInline,
@@ -964,6 +990,7 @@ public static class DiagnosticCatalog
         RequiredAfterOptional,
         TagValueType,
         UntypedVariable,
+        UnknownChannel,
         DivisionByZero,
         NeverRuns,
         EmptyOption,
@@ -976,8 +1003,8 @@ public static class DiagnosticCatalog
         LongOptionBody,
         RepeatedLine,
         RepeatedColor,
-        UnseenPoseChange,
-        RepeatedPose,
+        UnseenValueChange,
+        RepeatedValue,
         PauseAtLineEnd,
         PauseBeforePageBreak,
         AdjacentPauses,

@@ -1,8 +1,10 @@
-// Only the pose goes between a speaker's name and its colon.
+// Only the values go between a speaker's name and its colon.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: mad
+    pose: mad
 
 == kitchen.door
 mira (mad) (shake): Fine.
@@ -19,3 +21,4 @@ mira (mad) leaves the room: she said.
 mira (mad) shake\: Fine.
 Breakfast (served) daily: eggs.
 mira (mad): Fine.
+mira (mad, shake): Fine.

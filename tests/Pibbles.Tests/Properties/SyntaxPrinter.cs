@@ -68,8 +68,12 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
                 Line(0, $"@actor {actor.Name.Text}");
                 if (actor.DisplayName is not null)
                     Line(1, $"name: {actor.DisplayName}");
-                if (actor.Poses.Count > 0)
-                    Line(1, $"poses: {Names(actor.Poses)}");
+                foreach (ChannelEditSyntax edit in actor.Channels)
+                    Line(1, edit.Edit is ChannelEdit.Drop ? $"no {edit.Channel.Text}" : $"{edit.Channel.Text}{(edit.Edit is ChannelEdit.Add ? " +=" : ":")} {Names(edit.Values)}");
+                break;
+
+            case ChannelDeclarationSyntax channel:
+                Line(0, channel.Values.Count > 0 ? $"@channel {channel.Name.Text}: {Names(channel.Values)}" : $"@channel {channel.Name.Text}");
                 break;
 
             case EnumDeclarationSyntax @enum:
@@ -191,7 +195,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
 
     private static string TextLine(TextLineSyntax line)
     {
-        string speaker = line.Speaker is null ? "" : line.Pose is null ? $"{line.Speaker.Text}:" : $"{line.Speaker.Text} ({line.Pose.Text}):";
+        string speaker = line.Speaker is null ? "" : line.Speaker.Values.Count == 0 ? $"{line.Speaker.Name.Text}:" : $"{line.Speaker.Name.Text} ({Names(line.Speaker.Values)}):";
         string content = Inline(line.Content, option: false, narration: line.Speaker is null);
         if (line.Speaker is null && content is ['-' or '=' or '@', ..])
             content = "\\" + content;

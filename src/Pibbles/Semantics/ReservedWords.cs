@@ -9,7 +9,7 @@ internal static class ReservedWords
     private const string Planned = "for a planned feature";
 
     private static readonly Group Statement = new("after `@`",
-        ["prefix", "actor", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
+        ["prefix", "actor", "channel", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
         ["term", "resume", "shuffle"]);
 
     private static readonly Group Brace = new("inside `{…}`", ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
@@ -26,6 +26,8 @@ internal static class ReservedWords
 
     private static readonly Group BuiltInMarkup = new("for its own markup", ["b", "i", "u", "s", "color"], []);
 
+    private static readonly Group ActorBlock = new("in an actor's block", ["name", "no"], []);
+
     private static readonly Group ReservedTag = new("for its own tag", ["id", "was"], ["migrates", "draft", "voice", "unvoiced"]);
 
     /// <summary>
@@ -39,6 +41,7 @@ internal static class ReservedWords
         Group[] groups = kind switch
         {
             SymbolKind.Command => [Statement],
+            SymbolKind.Channel => [ActorBlock],
             SymbolKind.Markup => [BuiltInMarkup],
             SymbolKind.Function => [Brace, Value, BuiltInFunction],
             SymbolKind.Enum => [BuiltInType],

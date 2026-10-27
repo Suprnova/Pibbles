@@ -5,8 +5,7 @@ stub has_item = false
   end
 
 start kitchen.fridge
-  pose mira smug
-  mira: Still a fridge.  #zprojv
+  mira (smug): Still a fridge.  #zprojv
   end
 
 start kitchen.fridge

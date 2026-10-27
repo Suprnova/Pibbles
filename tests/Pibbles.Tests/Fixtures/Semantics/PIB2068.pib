@@ -1,0 +1,21 @@
+// A block can only change channels the story declares.
+
+@channel pose
+@channel effect: still, shake
+@actor mira
+    name: Mira
+    pos: happy
+//  ^^^ PIB2068
+    effect += wobble
+    no camra
+//     ^^^^^ PIB2068
+
+// Must not trigger
+
+@actor rex
+    name: Rex
+    pose: sad
+    effect += wobble
+@actor sam
+    name: Sam
+    no effect

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using Pibbles.Compiler;
@@ -210,7 +211,7 @@ internal sealed class TranscriptPlayer
         switch (step)
         {
             case LineStep line:
-                WriteLine($"{Indent}{line.Line.Speaker ?? "narration"}: {Text(line.Line)}{Suffix(line.Line)}");
+                WriteLine($"{Indent}{line.Line.Speaker ?? "narration"}{Values(line.Line.Values)}: {Text(line.Line)}{Suffix(line.Line)}");
                 break;
 
             case ChoiceStep choice:
@@ -224,8 +225,8 @@ internal sealed class TranscriptPlayer
                 WriteLine($"{Indent}@{command.Command.Name}{Arguments(command.Command.Parameters, command.Command.GetValue)}{(command.Waits ? " waits" : "")}");
                 break;
 
-            case PoseStep pose:
-                WriteLine($"{Indent}pose {pose.Actor} {pose.Pose}");
+            case ChannelStep channels:
+                WriteLine($"{Indent}{channels.Actor}{Values(channels.Values)}:{TagsText(channels.Tags)}");
                 break;
 
             case PauseStep pause:
@@ -241,12 +242,15 @@ internal sealed class TranscriptPlayer
     private static string Arguments(IReadOnlyList<StoryParameter> parameters, Func<string, object> get) =>
         string.Concat(parameters.Select(parameter => " " + ValueText.Show(get(parameter.Name), parameter.Type)));
 
+    /// <summary>A speaker's values as the line is written: <c> (mad, shake)</c>, or nothing when it sets none.</summary>
+    private static string Values(ImmutableArray<ChannelValue> values) =>
+        values.IsEmpty ? "" : $" ({string.Join(", ", values.Select(value => value.Value))})";
+
     /// <summary>A line's tags and ID after its text. An ID the compiler made up is written <c>#~</c>, since it changes whenever lines move.</summary>
-    private static string Suffix(Line line)
-    {
-        string tags = string.Concat(line.Tags.Where(tag => tag.Name != "id").Select(tag => " #" + tag.Name + (tag.Value is null ? "" : ":" + tag.Value)));
-        return tags + "  " + (line.IsFallbackId ? "#~" : "#" + line.Id);
-    }
+    private static string Suffix(Line line) => TagsText(line.Tags) + "  " + (line.IsFallbackId ? "#~" : "#" + line.Id);
+
+    private static string TagsText(TagCollection tags) =>
+        string.Concat(tags.Where(tag => tag.Name != "id").Select(tag => " #" + tag.Name + (tag.Value is null ? "" : ":" + tag.Value)));
 
     /// <summary>A line's text with its spans, markers and icons written in at their positions.</summary>
     private string Text(Line line)

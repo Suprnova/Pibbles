@@ -194,23 +194,23 @@ public class BinderTests
         },
         {
             $"{Cast}mira (smirk): Hi.\n",
-            "Mira has no pose called `smirk`.",
-            "Mira's poses are `neutral` and `smug`."
+            "Mira has no value called `smirk`.",
+            "Mira's values are `neutral` and `smug`."
         },
         {
             "@actor rex\n    name: Rex\n\n== a.b\nrex (happy): Hi.\n",
-            "Rex has no pose called `happy`.",
-            "Give Rex poses with `poses:` under `@actor rex`."
+            "Rex has no value called `happy`.",
+            "Rex has no values to set. Declare a channel such as `@channel pose`, then list Rex's values under `@actor rex`: `pose: neutral, happy`."
         },
         {
             $"{Cast}mira (to Rex): Fine.\n",
-            "`(to Rex)` isn't a pose: a pose is a single name.",
+            "`(to Rex)` isn't a list of values: each value is a single name.",
             "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\\:`."
         },
         {
             $"{Cast}mira (smug) shake: Fine.\n",
             "`shake` has no place after `(smug)`, before the colon.",
-            "A speaker takes one pose and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (smug) shake\\:`."
+            "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (smug) shake\\:`."
         },
         {
             $"{Cast}mira:Hi there. #id:k7qp2x\n",
@@ -220,7 +220,7 @@ public class BinderTests
         {
             $"{Cast}mira:\n",
             "`mira:` has nothing after it.",
-            "Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To change their pose without a line, write `mira (pose):`."
+            "Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`."
         },
         {
             "@enum position: left, right\n@command show(at: position)\n\n== a.b\n@show att=left\n",
@@ -269,7 +269,7 @@ public class BinderTests
         Assert.StartsWith("Write what mira says", diagnostic.Help);
     }
 
-    private const string Cast = "@actor mira\n    name: Mira\n    poses: neutral, smug\n\n== a.b\n";
+    private const string Cast = "@channel pose\n@actor mira\n    name: Mira\n    pose: neutral, smug\n\n== a.b\n";
 
     [Theory]
     [MemberData(nameof(Messages))]

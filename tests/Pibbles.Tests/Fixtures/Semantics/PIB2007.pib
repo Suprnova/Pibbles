@@ -1,0 +1,23 @@
+// A value belongs to one channel, so a line can name it without the channel.
+
+@channel pose: neutral, none
+@channel effect: still, none
+//                      ^^^^ PIB2007
+@channel camera
+@actor mira
+    name: Mira
+    camera: neutral
+//          ^^^^^^^ PIB2007
+@actor rex
+    name: Rex
+    effect: sad
+//          ^^^ PIB2007
+    pose: sad
+
+// Must not trigger
+
+@actor sam
+    name: Sam
+    camera: static
+    pose: none
+    no effect

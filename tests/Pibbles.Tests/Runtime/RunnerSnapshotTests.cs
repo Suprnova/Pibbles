@@ -34,6 +34,20 @@ public class RunnerSnapshotTests
     }
 
     [Fact]
+    public void Restore_LineWithValues_ShowsItWithItsValuesAgain()
+    {
+        Game game = Game.Of("== t.n\nmira (happy, shake): One. #id:l1\nmira: Two. #id:l2\n");
+        game.Runner.Start("t.n");
+        game.Runner.Next();
+
+        Game loaded = game.SaveAndLoad(out IReadOnlyList<SaveProblem> problems);
+
+        Assert.Empty(problems);
+        Assert.Equal(["Line mira (pose=happy, effect=shake): One.", "Line mira: Two.", "End"], loaded.Continue());
+        Assert.Equal("shake", loaded.State.GetChannel("mira", "effect"));
+    }
+
+    [Fact]
     public void CreateSnapshot_AtAChoice_SavesEveryOptionAndRestoreOffersItAgain()
     {
         Game game = Game.Of("== t.n\n-> A #id:o1\n-> B  @if $key #id:o2\n-> C  @once #id:o3\nmira: After. #id:l1\n");
@@ -273,15 +287,15 @@ public class RunnerSnapshotTests
     }
 
     [Fact]
-    public void FastForward_AcrossCommandsPosesAndWaits_StopsAtTheNextLine()
+    public void FastForward_AcrossCommandsValuesAndWaits_StopsAtTheNextLine()
     {
-        Game game = Game.Of("== t.n\n@show mira\n@pause 1\nmira (happy): Next. #id:l1\nmira: Later. #id:l2\n");
+        Game game = Game.Of("== t.n\n@show mira\n@pause 1\nmira (happy):\nmira: Next. #id:l1\nmira: Later. #id:l2\n");
         game.Runner.Start("t.n");
         game.Runner.Next();
 
         IReadOnlyList<DialogueStep> passed = game.Runner.FastForward();
 
-        Assert.Equal(["Pause 1s", "Pose mira happy", "Line mira: Next."], passed.Select(Game.Format));
+        Assert.Equal(["Pause 1s", "Channel mira (pose=happy)", "Line mira: Next."], passed.Select(Game.Format));
         Assert.Equal("l1", game.Runner.CreateSnapshot().Value.Line);
     }
 

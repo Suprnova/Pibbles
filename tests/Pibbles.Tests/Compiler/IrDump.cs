@@ -50,7 +50,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
         return instruction switch
         {
             LineInstruction line => $"Line {Id(line.Id)}",
-            PoseInstruction pose => $"Pose {pose.Actor.Name} {pose.Pose.Name}",
+            ChannelInstruction channels => $"Channel {channels.Speaker.Name}{Values(channels.Values)} <{Tags(channels.Tags)}>",
             ChoiceInstruction choice => $"Choice [{string.Join(", ", choice.Options.Select(Format))}] join {choice.Join}",
             BranchInstruction branch => $"Branch -> {branch.Target}",
             BranchIfFalseInstruction branch => $"BranchIfFalse {Format(branch.Condition)} -> {branch.Target}",
@@ -72,9 +72,14 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
     private string Format(Template template)
     {
         string speaker = template.Speaker?.Name ?? "-";
-        string tags = string.Join(", ", template.Tags.Select(tag => tag.Name + (tag.Value is null ? "" : $":{tag.Value}") + (tag.Member is { } member ? $"({member.Name})" : "")));
-        return $"{speaker} <{tags}> {Format(template.Content)}";
+        return $"{speaker}{Values(template.Values)} <{Tags(template.Tags)}> {Format(template.Content)}";
     }
+
+    private static string Values(IReadOnlyList<TemplateValue> values) =>
+        values.Count == 0 ? "" : $" ({string.Join(", ", values.Select(value => $"{value.Channel.Name}.{value.Value.Name}"))})";
+
+    private static string Tags(IReadOnlyList<TemplateTag> tags) =>
+        string.Join(", ", tags.Select(tag => tag.Name + (tag.Value is null ? "" : $":{tag.Value}") + (tag.Member is { } member ? $"({member.Name})" : "")));
 
     private string Format(IEnumerable<TemplateElement> content) => string.Concat(content.Select(Format));
 

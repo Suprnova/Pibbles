@@ -295,7 +295,7 @@ public class LineRevealTests
     }
 
     internal static Line Line(string text, params Marker[] markers) =>
-        new("line", null, null, text, [], [.. markers], [], new TagCollection([], new Dictionary<string, TagSymbol>()));
+        new("line", null, null, text, [], [.. markers], [], [], new TagCollection([], new Dictionary<string, TagSymbol>()));
 
     internal static LineReveal Reveal(string text, params Marker[] markers) => new(Line(text, markers), new RevealSettings(10));
 

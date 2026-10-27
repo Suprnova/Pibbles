@@ -1,8 +1,9 @@
 // A speaker's colon has a space after it.
 
+@channel pose
 @actor mira
     name: Mira
-    poses: smug
+    pose: smug
 
 == kitchen.door
 mira:Hi.

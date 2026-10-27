@@ -5,7 +5,7 @@ namespace Pibbles.Runtime;
 
 /// <summary>
 /// What a save slot holds: the story's variables, how often each node has been visited and each variation block
-/// entered, which options have been chosen, each actor's pose, and the seed. A <see cref="DialogueRunner"/> changes it
+/// entered, which options have been chosen, each actor's values in its channels, and the seed. A <see cref="DialogueRunner"/> changes it
 /// as it runs, and several runners can share one.
 /// </summary>
 public sealed class StoryState
@@ -37,23 +37,36 @@ public sealed class StoryState
 
     internal HashSet<string> ChosenOptions { get; } = [];
 
-    internal Dictionary<string, string> Poses { get; } = [];
+    internal Dictionary<string, Dictionary<string, string>> Channels { get; } = [];
 
     /// <summary>
-    /// An actor's current pose: the last one the story set, or the actor's first pose if it hasn't set one. A host can
-    /// use it to redraw after a load.
+    /// An actor's current value in a channel: the last one the story set, or the actor's first value if it hasn't set
+    /// one. A host can use it to redraw after a load.
     /// </summary>
     /// <param name="actor">The actor's ID.</param>
-    /// <returns>The pose's name, or <see langword="null"/> if the actor has no poses.</returns>
-    /// <exception cref="ArgumentException">The story has no actor with that ID.</exception>
-    public string? GetPose(string actor)
+    /// <param name="channel">The channel's name.</param>
+    /// <returns>The value's name, or <see langword="null"/> if the actor has no values in the channel.</returns>
+    /// <exception cref="ArgumentException">The story has no actor with that ID, or the actor has no such channel.</exception>
+    public string? GetChannel(string actor, string channel)
     {
-        if (Poses.TryGetValue(actor, out string? pose))
-            return pose;
+        if (!Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared))
+            throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
 
-        return Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared)
-            ? (declared.Poses is [var first, ..] ? first.Name : null)
-            : throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
+        SpeakerChannel has = declared.Channels.FirstOrDefault(candidate => candidate.Channel.Name == channel)
+            ?? throw new ArgumentException($"`{actor}` has no channel called `{channel}`.", nameof(channel));
+        return Channels.GetValueOrDefault(actor)?.GetValueOrDefault(channel) ?? (has.Values is [var first, ..] ? first.Name : null);
+    }
+
+    /// <summary>Records the values a line or a parenthesis with no text set for an actor.</summary>
+    internal void SetChannels(ActorSymbol actor, IEnumerable<TemplateValue> values)
+    {
+        foreach (TemplateValue value in values)
+        {
+            if (!Channels.TryGetValue(actor.Name, out Dictionary<string, string>? set))
+                Channels[actor.Name] = set = [];
+
+            set[value.Channel.Name] = value.Value.Name;
+        }
     }
 
     /// <summary>
@@ -83,7 +96,7 @@ public sealed class StoryState
 
     /// <summary>
     /// Takes a snapshot of everything in the state, keyed so that it survives edits to the story: variables by name, visits
-    /// by node name, block entries and chosen options by ID, and poses by actor ID.
+    /// by node name, block entries and chosen options by ID, and channel values by actor ID and channel name.
     /// </summary>
     /// <returns>
     /// The snapshot, and a <see cref="SaveProblemKind.FallbackId"/> problem for each block entry count or chosen option it
@@ -110,7 +123,7 @@ public sealed class StoryState
             Visits = Sorted(Visits),
             BlockEntries = Sorted(BlockEntries.Where(entry => Keep(entry.Key, "The entry count of the block"))),
             ChosenOptions = [.. ChosenOptions.Order(StringComparer.Ordinal).Where(id => Keep(id, "The chosen option"))],
-            Poses = Sorted(Poses),
+            Channels = Channels.OrderBy(entry => entry.Key, StringComparer.Ordinal).ToDictionary(entry => entry.Key, entry => (IReadOnlyDictionary<string, string>)Sorted(entry.Value)),
         };
         return new(snapshot, problems);
     }
@@ -118,8 +131,8 @@ public sealed class StoryState
     /// <summary>
     /// Restores a state from a snapshot, against the story as it is now, which may have changed since the snapshot was taken.
     /// Whatever no longer fits is dropped and reported, never thrown: a variable that's gone or whose type changed, a value
-    /// that names something that's gone, and counts, chosen options and poses for nodes, blocks, options, actors and poses
-    /// that are gone. A saved node name finds its node through <c>#was:</c> aliases too. Variables the snapshot doesn't
+    /// that names something that's gone, and counts, chosen options and channel values for nodes, blocks, options, actors,
+    /// channels and values that are gone. A saved node name finds its node through <c>#was:</c> aliases too. Variables the snapshot doesn't
     /// have, or whose value was dropped, keep their starting values.
     /// </summary>
     /// <param name="story">The story as it is now.</param>
@@ -136,7 +149,7 @@ public sealed class StoryState
         state.RestoreVisits(snapshot.Visits, problems);
         state.RestoreBlockEntries(snapshot.BlockEntries, problems);
         state.RestoreChosenOptions(snapshot.ChosenOptions, problems);
-        state.RestorePoses(snapshot.Poses, problems);
+        state.RestoreChannels(snapshot.Channels, problems);
         return new(state, problems);
     }
 
@@ -205,16 +218,27 @@ public sealed class StoryState
         }
     }
 
-    private void RestorePoses(IReadOnlyDictionary<string, string> saved, List<SaveProblem> problems)
+    private void RestoreChannels(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> saved, List<SaveProblem> problems)
     {
-        foreach ((string actor, string pose) in saved)
+        foreach ((string actor, IReadOnlyDictionary<string, string> values) in saved)
         {
             if (!Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared))
-                problems.Add(new(SaveProblemKind.UnknownActor, actor, $"The save has `{actor}` in the pose `{pose}`, but the story no longer declares that actor, so it's dropped."));
-            else if (declared.Poses.All(candidate => candidate.Name != pose))
-                problems.Add(new(SaveProblemKind.UnknownPose, actor, $"The save has `{actor}` in the pose `{pose}`, which the actor no longer has, so it keeps its default pose."));
-            else
-                Poses[actor] = pose;
+            {
+                problems.Add(new(SaveProblemKind.UnknownActor, actor, $"The save has values for `{actor}`, but the story no longer declares that actor, so they're dropped."));
+                continue;
+            }
+
+            foreach ((string channel, string value) in values)
+            {
+                if (declared.Channels.FirstOrDefault(candidate => candidate.Channel.Name == channel) is not { } has)
+                    problems.Add(new(SaveProblemKind.UnknownChannel, $"{actor}.{channel}", $"The save has `{actor}` set to `{value}` in the channel `{channel}`, which the actor no longer has, so it's dropped."));
+                else if (has.Values.All(candidate => candidate.Name != value))
+                    problems.Add(new(SaveProblemKind.UnknownChannelValue, $"{actor}.{channel}", $"The save has `{actor}` set to `{value}` in the channel `{channel}`, which the actor no longer has in that channel, so it keeps its first value."));
+                else if (Channels.TryGetValue(actor, out Dictionary<string, string>? set))
+                    set[channel] = value;
+                else
+                    Channels[actor] = new() { [channel] = value };
+            }
         }
     }
 

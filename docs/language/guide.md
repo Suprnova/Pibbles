@@ -397,10 +397,12 @@ Write the brackets right up against the name: `has_item("crowbar")`, not `has_it
 One or more files (usually a single file like `defs.pib`) list everything the story is allowed to use. Writers and programmers keep them together, because the game has to support everything listed. Declarations go above the first node in a file.
 
 ```pib-standalone
-// Characters and their poses
+// What a line can set for its speaker, and the values every character starts with
+@channel pose: neutral, happy, sad
+
+// Characters
 @actor mira
     name: Mira
-    poses: neutral, happy, sad
 
 // Fixed lists of names, used by commands and variables
 @enum position: left, center, right

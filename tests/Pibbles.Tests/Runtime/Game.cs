@@ -12,9 +12,11 @@ internal sealed class Game
     /// <summary>Declarations the test stories share.</summary>
     public const string Defs = """
         @enum mood: calm, tense
+        @channel pose
+        @channel effect: still, shake
         @actor mira
             name: Mira
-            poses: neutral, happy
+            pose: neutral, happy
         @actor rex
             name: Rex
         @var $count = 0
@@ -140,14 +142,17 @@ internal sealed class Game
 
     public static string Format(DialogueStep step) => step switch
     {
-        LineStep line => $"Line{(line.Line.Speaker is { } speaker ? $" {speaker}" : "")}: {Visible(line.Line.Text)}",
+        LineStep line => $"Line{(line.Line.Speaker is { } speaker ? $" {speaker}" : "")}{Values(line.Line.Values)}: {Visible(line.Line.Text)}",
         ChoiceStep choice => "Choice " + string.Join(" | ", choice.Options.Select(option => option.Text.Text + (option.IsAvailable ? "" : " (unavailable)") + (option.WasChosen ? " (chosen)" : ""))),
         CommandStep command => $"Command @{command.Command.Name}({string.Join(", ", command.Command.Values.Select(Show))}){(command.Waits ? " waits" : "")}",
-        PoseStep pose => $"Pose {pose.Actor} {pose.Pose}",
+        ChannelStep channels => $"Channel {channels.Actor}{Values(channels.Values)}",
         PauseStep pause => $"Pause {pause.Duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)}s",
         EndStep => "End",
         _ => throw new NotSupportedException(step.GetType().Name),
     };
+
+    private static string Values(IEnumerable<ChannelValue> values) =>
+        values.Any() ? $" ({string.Join(", ", values.Select(value => $"{value.Channel}={value.Value}"))})" : "";
 
     private static string Visible(string text) => text.Replace("\n", "\\n", StringComparison.Ordinal).Replace("￼", "<icon>", StringComparison.Ordinal);
 

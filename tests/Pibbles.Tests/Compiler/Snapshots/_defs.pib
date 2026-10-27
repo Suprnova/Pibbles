@@ -1,8 +1,10 @@
 // Declarations the IR snapshot inputs share. It holds no nodes, so it has no instructions of its own.
 
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-    poses: neutral, happy, sad
+    pose: neutral, happy, sad
 @actor rex
     name: Rex
 

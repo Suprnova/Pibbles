@@ -5,34 +5,67 @@ namespace Pibbles.Tests.Runtime;
 public class DialogueRunnerTests
 {
     [Fact]
-    public void Next_LinesPosesAndPointOnlyLines_GiveTheirSteps()
+    public void Next_LinesWithValuesAndLinesWithNoText_GiveTheirSteps()
     {
-        Game game = Game.Of("== t.n\nNarration.\nmira: Hello.\nmira (happy): Posed.\nmira (neutral):\nmira: {w}\n");
+        Game game = Game.Of("== t.n\nNarration.\nmira: Hello.\nmira (happy, shake): Valued.\nmira (neutral):\nmira: {w}\n");
 
         string[] run = game.Play("t.n");
 
-        Assert.Equal(["Line: Narration.", "Line mira: Hello.", "Pose mira happy", "Line mira: Posed.", "Pose mira neutral", "Line mira: ", "End"], run);
-        Assert.Equal("neutral", game.State.GetPose("mira"));
+        Assert.Equal(["Line: Narration.", "Line mira: Hello.", "Line mira (pose=happy, effect=shake): Valued.", "Channel mira (pose=neutral)", "Line mira: ", "End"], run);
+        Assert.Equal("neutral", game.State.GetChannel("mira", "pose"));
+        Assert.Equal("shake", game.State.GetChannel("mira", "effect"));
     }
 
     [Fact]
-    public void Pose_Unchanged_StillGivesAStepEveryTime()
+    public void Values_Unchanged_AreStillOnEveryLine()
     {
         Game game = Game.Of("== t.n\nmira (happy): One.\nmira (happy): Two.\n");
 
         string[] run = game.Play("t.n");
 
-        Assert.Equal(["Pose mira happy", "Line mira: One.", "Pose mira happy", "Line mira: Two.", "End"], run);
+        Assert.Equal(["Line mira (pose=happy): One.", "Line mira (pose=happy): Two.", "End"], run);
     }
 
     [Fact]
-    public void GetPose_BeforeAnyPoseIsSet_IsTheActorsFirstPose()
+    public void GetChannel_BeforeAnyValueIsSet_IsTheActorsFirstValue()
     {
         Game game = Game.Of("== t.n\nmira: Hi.\n");
 
-        Assert.Equal("neutral", game.State.GetPose("mira"));
-        Assert.Null(game.State.GetPose("rex"));
-        Assert.Throws<ArgumentException>(() => game.State.GetPose("nobody"));
+        Assert.Equal("neutral", game.State.GetChannel("mira", "pose"));
+        Assert.Equal("still", game.State.GetChannel("rex", "effect"));
+        Assert.Null(game.State.GetChannel("rex", "pose"));
+    }
+
+    [Fact]
+    public void Next_LineWithValues_CarriesThemInTheOrderWritten()
+    {
+        Game game = Game.Of("== t.n\nmira (shake, happy): Hi. #id:l1\n");
+        game.Runner.Start("t.n");
+
+        var line = Assert.IsType<LineStep>(game.Runner.Next()).Line;
+
+        Assert.Equal([new ChannelValue("effect", "shake"), new ChannelValue("pose", "happy")], line.Values);
+    }
+
+    [Fact]
+    public void Next_ParenthesisWithNoTextAndATag_CarriesItsValuesAndTags()
+    {
+        Game game = Game.Of("@channel pose: neutral, happy\n@tag thought\n@actor mira\n    name: Mira\n\n== t.n\nmira (happy): #thought\nmira: Hi. #id:l1\n", declarations: false);
+        game.Runner.Start("t.n");
+
+        var step = Assert.IsType<ChannelStep>(game.Runner.Next());
+
+        Assert.Equal([new ChannelValue("pose", "happy")], step.Values);
+        Assert.Equal(("mira", true), (step.Actor, step.Tags.Has("thought")));
+    }
+
+    [Fact]
+    public void GetChannel_UnknownActorOrChannel_Throws()
+    {
+        Game game = Game.Of("== t.n\nmira: Hi.\n");
+
+        Assert.Throws<ArgumentException>(() => game.State.GetChannel("nobody", "pose"));
+        Assert.Throws<ArgumentException>(() => game.State.GetChannel("mira", "camera"));
     }
 
     [Fact]

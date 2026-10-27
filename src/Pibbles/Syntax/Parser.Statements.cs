@@ -321,14 +321,14 @@ internal sealed partial class Parser
     private enum TagPlace
     {
         TextLine,
-        PoseChange,
+        ValuesOnly,
         Option,
         Call,
         Variation,
     }
 
     /// <summary>
-    /// Checks where the reserved tags go. <c>#id</c> holds a line ID, at most once, and not on a pose change. <c>#was</c>
+    /// Checks where the reserved tags go. <c>#id</c> holds a line ID, at most once, and not on a line that only sets values. <c>#was</c>
     /// only goes on a node header. A variation block takes no tag but <c>#id</c>.
     /// </summary>
     private void CheckTags(IReadOnlyList<TagSyntax> tags, TagPlace place)
@@ -343,8 +343,8 @@ internal sealed partial class Parser
             }
             else if (tag.Name is "id")
             {
-                if (place is TagPlace.PoseChange)
-                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, PlaceName(place), "A pose change shows nothing, so a save never stops on it. Remove the `#id`.");
+                if (place is TagPlace.ValuesOnly)
+                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, PlaceName(place), "Setting values shows nothing, so a save never stops on it. Remove the `#id`.");
                 else if (hasId)
                     Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, "a line that already has an `#id`", "A line has one ID. Remove one of them.");
                 else if (!IsLineId(tag.Value))
@@ -362,7 +362,7 @@ internal sealed partial class Parser
     private static string PlaceName(TagPlace place) => place switch
     {
         TagPlace.TextLine => "a text line",
-        TagPlace.PoseChange => "a line that only changes a pose",
+        TagPlace.ValuesOnly => "a line that only sets values",
         TagPlace.Option => "an option",
         TagPlace.Call => "`@call`",
         _ => "a variation block",

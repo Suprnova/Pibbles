@@ -134,7 +134,7 @@ public sealed class DialogueRunner
     /// Finishes whatever the dialogue is doing and runs on to the next save point: the next line or choice, or the end. A
     /// host calls it when the player saves at any other moment, then calls <see cref="CreateSnapshot"/>. It's skip mode
     /// that stops at the first line: the host carries out the commands it passed instantly (with a skip variant of their
-    /// effect), applies the poses, drops the waits, and shows the final line or choice.
+    /// effect), applies the channel values, drops the waits, and shows the final line or choice.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -220,7 +220,8 @@ public sealed class DialogueRunner
     /// Restores a runner from a snapshot, against the story as it is now, which may have changed since the snapshot was
     /// taken. Then call <see cref="Next"/> as usual: it shows the saved line again, rendered afresh, or offers the saved
     /// choice again, its conditions evaluated against the state as it is now. Restoring never counts a visit, and never
-    /// replays the pose before a line: the host redraws poses from <see cref="StoryState.GetPose"/>.
+    /// sends the step of a parenthesis with no text again: the host redraws channels from <see cref="StoryState.GetChannel"/>,
+    /// and the shown line carries its own values.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -413,13 +414,16 @@ public sealed class DialogueRunner
         {
             case LineInstruction line:
                 Line shown = BuildLine(line.Id);
+                if (story.Templates[line.Id] is { Speaker: { } speaker } template)
+                    state.SetChannels(speaker, template.Values);
+
                 index++;
                 return new LineStep(shown);
 
-            case PoseInstruction pose:
-                state.Poses[pose.Actor.Name] = pose.Pose.Name;
+            case ChannelInstruction channels:
+                state.SetChannels(channels.Speaker, channels.Values);
                 index++;
-                return new PoseStep(pose.Actor.Name, pose.Pose.Name);
+                return new ChannelStep(channels.Speaker.Name, LineRenderer.ValuesOf(channels.Values), LineRenderer.Tags(channels.Tags, story));
 
             case ChoiceInstruction choice:
                 return ExecuteChoice(choice);

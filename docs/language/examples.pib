@@ -3,13 +3,16 @@
 // block compiles together with this file. It must not define anything a block
 // defines, such as kitchen.door or common.stuck.
 
+@channel pose: neutral, happy, sad, worried
+@channel effect: still, shake
+
 @actor mira
     name: Mira
-    poses: neutral, happy, sad, smug, worried, angry
+    pose += smug, angry
 
 @actor rex
     name: Rex
-    poses: neutral, grumpy, surprised
+    pose += grumpy, surprised
 
 @enum position: left, center, right, offscreen
 @enum room: kitchen, cellar

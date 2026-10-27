@@ -100,7 +100,7 @@ public class BindingsTests
 
         var line = Assert.IsType<TextLineSyntax>(Statements(tree).First(statement => statement is TextLineSyntax));
 
-        Assert.IsType<ActorSymbol>(compilation.Bindings.SymbolOf(line.Speaker!));
+        Assert.IsType<ActorSymbol>(compilation.Bindings.SymbolOf(line.Speaker!.Name));
     }
 
     [Fact]

@@ -91,13 +91,13 @@ public class StyleChecksTests
     }
 
     [Fact]
-    public void Create_RepeatedPoseOfActorWithDisplayName_NamesActorByDisplayName()
+    public void Create_RepeatedValueOfActorWithDisplayName_NamesActorByDisplayName()
     {
-        var source = new SourceText("story.pib", "@actor mira\n    name: Mira\n    poses: happy\n\n== a.b\nmira (happy): One.\nmira (happy): Two.\n");
+        var source = new SourceText("story.pib", "@channel pose\n@actor mira\n    name: Mira\n    pose: happy\n\n== a.b\nmira (happy): One.\nmira (happy): Two.\n");
 
         Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code is "PIB5016");
 
-        Assert.Equal("This pose change does nothing, because Mira already has that pose.", diagnostic.Message);
+        Assert.Equal("`happy` does nothing, because Mira already has it.", diagnostic.Message);
     }
 
     [Theory]

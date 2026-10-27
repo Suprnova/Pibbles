@@ -20,6 +20,7 @@ namespace Pibbles.Runtime;
 /// <param name="Spans">The markup spans over <paramref name="Text"/>, by start, an outer span before an inner one that starts with it.</param>
 /// <param name="Markers">The points in <paramref name="Text"/> where the reveal does something, in the order the line has them.</param>
 /// <param name="Icons">The icons in <paramref name="Text"/>, one for each U+FFFC.</param>
+/// <param name="Values">The values the line sets, in the order written, such as a pose and an effect. A restored line has them again.</param>
 /// <param name="Tags">The line's tags, <c>#id</c> included.</param>
 /// <param name="IsFallbackId">Whether <paramref name="Id"/> was made up by the compiler because the source has no <c>#id</c>. A fallback ID changes whenever the file is edited, so a host that records which lines the player has seen must skip it.</param>
 public sealed record Line(
@@ -30,6 +31,7 @@ public sealed record Line(
     ImmutableArray<Span> Spans,
     ImmutableArray<Marker> Markers,
     ImmutableArray<Icon> Icons,
+    ImmutableArray<ChannelValue> Values,
     TagCollection Tags,
     bool IsFallbackId = false)
 {
@@ -43,12 +45,18 @@ public sealed record Line(
         && Spans.SequenceEqual(other.Spans)
         && Markers.SequenceEqual(other.Markers)
         && Icons.SequenceEqual(other.Icons)
+        && Values.SequenceEqual(other.Values)
         && Tags.Equals(other.Tags)
         && IsFallbackId == other.IsFallbackId;
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(Id, Speaker, Text, Spans.Length, Markers.Length, Icons.Length);
 }
+
+/// <summary>A value a line sets in one of its speaker's channels.</summary>
+/// <param name="Channel">The channel's name, such as <c>pose</c>.</param>
+/// <param name="Value">The value's name, such as <c>sad</c>.</param>
+public sealed record ChannelValue(string Channel, string Value);
 
 /// <summary>A markup span over a line's text: <c>[name args]…[/name]</c>.</summary>
 /// <param name="Name">The markup's name.</param>

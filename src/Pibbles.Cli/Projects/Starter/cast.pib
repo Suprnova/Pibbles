@@ -2,11 +2,14 @@
 // every name the story uses against it, so a typo is caught before anyone plays.
 // A // starts a comment, notes for whoever reads the script. It runs to the end of the line.
 
+// A channel is something a line can set for its speaker. Each character lists its own poses.
+@channel pose
+
 // A character. Lines of dialogue start with their ID: `guide: Hello!`
-// `name:` is the name the player sees, and `poses:` lists how they can look.
+// `name:` is the name the player sees, and `pose:` lists how they can look.
 @actor guide
     name: Guide
-    poses: neutral, happy // The first pose is where they start.
+    pose: neutral, happy // The first pose is where they start.
 
 // A variable: something the story remembers, saved with the game.
 @var $asked_for_help = false
