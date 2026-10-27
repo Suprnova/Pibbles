@@ -98,7 +98,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2036 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
 | PIB2037 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB2038 | Error | I can't show `$has_key` in text, because it's a `bool`. | Show text that depends on it instead: `{if $has_key}…{else}…{/if}`. |
-| PIB2039 | Error | A pause has to be more than zero, but `0` isn't. | Write a pause longer than zero, like `{w 0.5}`. |
+| PIB2039 | Error | A pause has to be more than zero, but `0` isn't. | Write a pause longer than zero, like `{pause 0.5}`. |
 | PIB2045 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB2046 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
 | PIB2047 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
@@ -124,14 +124,14 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
 | PIB5010 | Hint | This pose change does nothing, because Mira's pose changes again before a line shows. | Remove this line. |
-| PIB5011 | Hint | This pause does nothing, because the end of the line already waits for a click. | Remove it. |
+| PIB5011 | Hint | This wait does nothing, because the end of the line already waits for a click. | Remove it. |
 | PIB5012 | Hint | This `[b]` is empty. | Remove it. |
 | PIB5013 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
-| PIB5017 | Hint | This pause does nothing, because the `{p}` after it already waits. | Remove it. |
-| PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{w 0.5}`. |
+| PIB5017 | Hint | This wait does nothing, because the `{p}` after it already waits. | Remove it. |
+| PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{pause 0.5}`. |
 | PIB5019 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
@@ -860,7 +860,7 @@ Write the words for each case: `You {if $has_key}have{else}don't have{/if} the k
 mira: Wait.{w 0} What?
 ```
 
-Write a pause longer than zero, like `{w 0.5}`, or remove it. For a speed, write one above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.
+Write a pause longer than zero, like `{pause 0.5}`, or remove it. For a speed, write one above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.
 
 ### PIB2045
 
@@ -1158,7 +1158,7 @@ Remove the pose-only line nobody sees.
 
 ### PIB5011
 
-**A pause at the very end of a line does nothing,** since the line already waits for a click. A timed pause at the end of a line is fine, since it still delays auto mode.
+**A wait at the very end of a line does nothing,** since the line already waits for a click. A timed pause at the end of a line is fine, since it still delays auto mode.
 
 ```text
 This line waits for a click that happens anyway.{w}
@@ -1224,7 +1224,7 @@ Leave the pose out: `mira: …`.
 
 ### PIB5017
 
-**A pause just before `{p}` does nothing,** since the page break already waits.
+**A wait just before `{p}` does nothing,** since the page break already waits.
 
 ```text
 This line waits twice here.{w}{p}New page.
@@ -1240,7 +1240,7 @@ Remove the `{w}`.
 This line pauses{w 0.2}{w 0.3} in two steps.
 ```
 
-Write one pause: `{w 0.5}`. When the durations aren't plain numbers, the message is all it says.
+Write one pause: `{pause 0.5}`. When the durations aren't plain numbers, the message is all it says.
 
 ### PIB5019
 

@@ -100,7 +100,7 @@ public class BinderTests
         {
             "== a.b\nWait.{w (0.3s - 0.1s - 0.2s)} Done.\n",
             "A pause has to be more than zero, but `(0.3s - 0.1s - 0.2s)` isn't.",
-            "Write a pause longer than zero, like `{w 0.5}`."
+            "Write a pause longer than zero, like `{pause 0.5}`."
         },
         {
             "== a.b\nSlow.{speed (1 - 1)} Done.\n",

@@ -730,14 +730,14 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor PauseAtLineEnd { get; } = new(
         "PIB5011",
         DiagnosticSeverity.Hint,
-        "This pause does nothing, because the end of the line already waits for a click.",
+        "This wait does nothing, because the end of the line already waits for a click.",
         help: "Remove it.");
 
     /// <summary>PIB5017: <c>{w}</c> just before <c>{p}</c>.</summary>
     public static DiagnosticDescriptor PauseBeforePageBreak { get; } = new(
         "PIB5017",
         DiagnosticSeverity.Hint,
-        "This pause does nothing, because the `{{p}}` after it already waits.",
+        "This wait does nothing, because the `{{p}}` after it already waits.",
         help: "Remove it.");
 
     /// <summary>PIB5018: two timed pauses side by side.</summary>
@@ -746,7 +746,7 @@ public static class DiagnosticCatalog
         "PIB5018",
         DiagnosticSeverity.Hint,
         "This pause comes right after another one, so the two could be one.",
-        help: "Write one pause: `{{w {0}}}`.");
+        help: "Write one pause: `{{pause {0}}}`.");
 
     /// <summary>PIB5012: a markup span with nothing inside it.</summary>
     /// <remarks>Argument: the markup's name.</remarks>

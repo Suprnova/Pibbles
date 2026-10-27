@@ -245,11 +245,11 @@ mira: This line keeps it.
 mira (happy): Only the pose that's actually seen is written.
 ```
 
-#### PIB5011, PIB5017 and PIB5018 – Redundant pause ⚡
+#### PIB5011, PIB5017 and PIB5018 – Redundant wait or pause ⚡
 
 **Level:** hint
 
-Flags pauses that do nothing or could be one:
+Flags waits and pauses that do nothing or could be one:
 - PIB5011: `{w}` at the very end of a line. The end of a line already waits for a click.
 - PIB5017: `{w}` directly before `{p}`. The page break already waits.
 - PIB5018: timed pauses right next to each other.

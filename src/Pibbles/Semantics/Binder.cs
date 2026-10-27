@@ -217,7 +217,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                     break;
 
                 case PauseSyntax pause:
-                    BindPacing(pause.Duration, TypeSymbol.Duration, "`{w}` takes a `duration`", "A pause", "Write a pause longer than zero, like `{w 0.5}`.");
+                    BindPacing(pause.Duration, TypeSymbol.Duration, "`{pause}` takes a `duration`", "A pause", "Write a pause longer than zero, like `{pause 0.5}`.");
                     break;
 
                 case SpeedSyntax { Factor: { } factor }:
