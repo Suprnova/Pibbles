@@ -384,8 +384,8 @@ rex: [wave amplitude=2]Spooooky.[/wave]
 | --- | --- |
 | `{$var}`, `{fn(args)}` | Interpolates the value. A `string` shows as written, a `number` is formatted with the current locale's culture, and an `actor` shows its display name. Other types (`bool`, enums, `node`, `duration`) can't be interpolated: they aren't player-facing text. Use conditional text (`{if $has_key}…{/if}`), or a host function that returns a string. |
 | `{@command args}` | Runs a command declared `inline` at this point in the reveal. `{@jolt mira wait}` holds the reveal until the host finishes. |
-| `{w}` | Waits for player input, then continues on the same page. |
-| `{pause 0.5}` | Pauses the reveal for this long (a duration). |
+| `{w}` | Waits for player input, then continues on the same page. Takes no value: `{w 0.5}` is an error that suggests `{pause 0.5}`. |
+| `{pause 0.5}` | Holds the reveal for this long (a duration). Needs a duration. |
 | `{speed 0.3}` | Sets the reveal speed from this point on, relative to the player's speed setting (a `number`: `2` is twice as fast, `0.5` is half). |
 | `{speed}` | Returns to the player's speed setting. The reveal reads each speed point as the factor in effect after it: `x`, or 1 for `{speed}`. |
 | `{p}` | Page break: waits for input, clears the box, continues. |
@@ -420,7 +420,7 @@ The branches can contain any inline text, including markup and points. Only the 
 | --- | --- | --- |
 | Markup spans, interpolation, icons, conditionals | Yes | Yes |
 | `{br}` | Yes | Yes |
-| Commands, `{w}`, `{p}`, `{speed}` | Yes | No |
+| Commands, `{w}`, `{pause}`, `{p}`, `{speed}` | Yes | No |
 
 ## Runtime semantics summary
 
@@ -439,7 +439,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Group | Words |
 | --- | --- |
 | Statement and declaration keywords (after `@`) | `prefix`, `actor`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `wait`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
-| Brace keywords (after `{`) | `w`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
+| Brace keywords (after `{`) | `w`, `pause`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |
 | Built-in functions | `visits`; *(ext)* `random` |
@@ -665,7 +665,8 @@ point           ::= BRACE point_body "}"
 point_body      ::= VARIABLE
                   | NAME call_args
                   | AT_WORD arg* wait_flag?
-                  | "w" arg?
+                  | "w"
+                  | "pause" arg
                   | "speed" arg?
                   | "p"
                   | "br"
@@ -707,7 +708,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - `#id` has the [line ID](#lexical-basics) shape, at most once, only on a text line that shows text, an option, `@call` or a variation block opener. A block opener takes no other tag.
 - `#was` names a node, only on a node header. A node header takes no other tag in v1.
 - Node names, node aliases and line IDs are all distinct from one another.
-- Option text can't contain commands, `{w}`, `{p}` or `{speed}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
+- Option text can't contain commands, `{w}`, `{pause}`, `{p}` or `{speed}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
 - A `(` separated from the NAME before it by whitespace, where only a call can follow the NAME (`{fn (x)}`, `has_item ("key")`), is an error that suggests removing the space.
 - A declared name isn't a [reserved word](#reserved-words) for its kind, and uses ASCII letters only.
 

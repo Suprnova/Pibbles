@@ -270,7 +270,7 @@ If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning 
 
 ### PIB1016
 
-**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{p}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
+**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{pause}`, `{p}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
 
 ```text
 -> Knock{w} and wait
@@ -285,7 +285,7 @@ Move the pause into the option's body:
 
 ### PIB1017
 
-**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{p}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
+**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{pause d}`, `{p}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
 
 ```text
 mira: Hi, {name}.

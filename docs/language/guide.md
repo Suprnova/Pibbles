@@ -198,7 +198,7 @@ This part types at normal speed, {speed 0.3}this part types slowly,{speed 3} and
 
 | Write | Effect |
 | --- | --- |
-| `{pause 0.5}` | Pause for that many seconds |
+| `{pause 0.5}` | Pause for that many seconds (the time is required) |
 | `{w}` | Wait for a click, then continue on the same page |
 | `{p}` | Wait for a click, clear the box, continue |
 | `{br}` | Start a new line |
