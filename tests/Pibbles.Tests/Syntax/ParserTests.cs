@@ -117,6 +117,29 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("{p}", "To break the page, write `{page}`.")]
+    [InlineData("{p 0.5}", "To break the page, write `{page}`. To pause for that long, write `{pause 0.5}`.")]
+    public void Parse_OldPageBreak_NamesThePointAndOffersThePageBreak(string point, string help)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi{point} there\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
+        Assert.Equal(("PIB1017", $"I don't know what `{point}` means.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+    }
+
+    [Fact]
+    public void Parse_OldPageBreakInOption_IsReportedOnce()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n-> Knock{p}\n    mira: Hi\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal("PIB1017", diagnostic.Code);
+    }
+
+    [Theory]
     [InlineData("{speed 2 3}")]
     [InlineData("{pause 1 2}")]
     public void Parse_SecondValueAfterPointThatTakesOne_IsUnexpectedNotPointTakesNoValue(string point)

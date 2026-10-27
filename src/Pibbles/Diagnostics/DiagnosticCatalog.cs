@@ -110,13 +110,16 @@ public static class DiagnosticCatalog
         "An option's text can't contain `{0}`.",
         help: "Pauses, speed changes and commands go in the indented lines under the option.");
 
-    /// <summary>PIB1017: a point that isn't a variable, call, command or brace keyword.</summary>
-    /// <remarks>Argument: the point as written.</remarks>
+    /// <summary>The help for PIB1017 when the point isn't an old spelling of one.</summary>
+    public const string UnknownPointHelp = "To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`.";
+
+    /// <summary>PIB1017: a point that isn't a variable, call, command or brace keyword, or is the old spelling <c>{p}</c> of <c>{page}</c>.</summary>
+    /// <remarks>Arguments: the point as written, and how to fix it, which is <see cref="UnknownPointHelp"/> unless the point has a known replacement.</remarks>
     public static DiagnosticDescriptor UnknownPoint { get; } = new(
         "PIB1017",
         DiagnosticSeverity.Error,
         "I don't know what `{0}` means.",
-        help: "To show a variable, write `{{$name}}`. To call a function, write `{{name()}}`. If the braces are part of the text, put a backslash before the `{{`.");
+        help: "{1}");
 
     /// <summary>PIB1018: a value after a point that takes none, such as <c>{w 0.5}</c>.</summary>
     /// <remarks>Arguments: the point's keyword, such as <c>w</c>; the value as written; and how to fix it.</remarks>

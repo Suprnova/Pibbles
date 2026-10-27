@@ -237,8 +237,11 @@ internal sealed partial class Parser
 
             case TokenKind.Name when text is "p":
                 Advance();
-                RejectValue("p");
-                return (new PageBreakSyntax { Span = default }, "{p}");
+                string help = ReadPointValue() is { } value
+                    ? $"To break the page, write `{{page}}`. To pause for that long, write `{{pause {TextOf(value)}}}`."
+                    : "To break the page, write `{page}`.";
+                Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)), help);
+                return (new PageBreakSyntax { Span = default }, null);
 
             case TokenKind.Name when text is "br":
                 Advance();
@@ -254,24 +257,32 @@ internal sealed partial class Parser
                 if (token.Kind is TokenKind.CallOpen or TokenKind.OpenParen)
                     return (new InterpolationSyntax(ParseNameValue(first, argument: false)) { Span = default }, null);
 
-                Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)));
+                Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)), DiagnosticCatalog.UnknownPointHelp);
                 return (new InterpolationSyntax(new NameExpressionSyntax(text) { Span = first.Span }) { Span = default }, null);
 
             default:
-                Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)));
+                Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)), DiagnosticCatalog.UnknownPointHelp);
                 return (new InterpolationSyntax(new ErrorExpressionSyntax { Span = new(open + 1, 0) }) { Span = default }, null);
         }
+    }
+
+    /// <summary>Reads the value written after a point's keyword, so the point still closes, and returns where it is, or <see langword="null"/> if there is none.</summary>
+    private TextSpan? ReadPointValue()
+    {
+        if (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine)
+            return null;
+
+        int start = token.Span.Start;
+        ParseArgumentValue();
+        return new TextSpan(start, Math.Max(previousEnd - start, 0));
     }
 
     /// <summary>Reports a value written after a point that takes none, such as <c>{w 0.5}</c>, and reads it so the point still closes.</summary>
     private void RejectValue(string point)
     {
-        if (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine)
+        if (ReadPointValue() is not { } value)
             return;
 
-        int start = token.Span.Start;
-        ParseArgumentValue();
-        var value = new TextSpan(start, Math.Max(previousEnd - start, 0));
         string written = TextOf(value);
         string help = point is "w" ? $"To pause for that long, write `{{pause {written}}}`." : $"Remove `{written}`.";
         Fail(DiagnosticCatalog.PointTakesNoValue, value, point, written, help);

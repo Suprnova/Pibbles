@@ -9,6 +9,10 @@ mira: {42} is a number.
 //    ^^^^ PIB1017
 mira: {auto} is reserved.
 //    ^^^^^^ PIB1017
+mira: First.{p}Second.
+//          ^^^ PIB1017
+mira: First.{p 0.5}Second.
+//          ^^^^^^^ PIB1017
 
 // Must not trigger
 
