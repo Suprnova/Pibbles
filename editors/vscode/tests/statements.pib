@@ -37,10 +37,11 @@
 // <----- keyword.control.pibbles
 //    ^^^^^^^^^^^^ entity.name.section.node.pibbles
 //                 ^^^^^^^^^^ comment.other.line-id.pibbles
-@wait 300ms
-//    ^^^^^ constant.numeric.duration.pibbles
-@wait .5s
-//    ^^^ constant.numeric.duration.pibbles
+@pause 300ms
+// <------ keyword.control.pibbles
+//     ^^^^^ constant.numeric.duration.pibbles
+@pause .5s
+//     ^^^ constant.numeric.duration.pibbles
 
 @move mira offscreen speed=(-1) nowait
 // <----- entity.name.function.command.pibbles

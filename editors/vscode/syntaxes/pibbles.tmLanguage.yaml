@@ -106,7 +106,7 @@ repository:
         captures:
           '1': { name: keyword.control.pibbles }
           '2': { name: entity.name.section.node.pibbles }
-      - match: '\G@(?:if|elif|else|set|return|end|wait|sequence|cycle|once)(?![\p{L}\p{M}\p{N}_])'
+      - match: '\G@(?:if|elif|else|set|return|end|pause|sequence|cycle|once)(?![\p{L}\p{M}\p{N}_])'
         name: keyword.control.pibbles
       - match: '\G@[\p{L}_][\p{L}\p{M}\p{N}_]*'
         name: entity.name.function.command.pibbles

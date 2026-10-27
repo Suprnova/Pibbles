@@ -7,7 +7,7 @@ const story = [
     '@cycle #id:skmne3',
     '    - mira: Dusty. #id:i6f2vr',
     '    - mira: Very dusty.',
-    '        @wait 0.5s',
+    '        @pause 0.5s',
     '    - ',
     '    -',
     '- Not in a variation.',
