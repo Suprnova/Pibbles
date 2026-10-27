@@ -21,15 +21,15 @@ mira: That's [b]not[/b] a [wave amplitude=2 frequency=$speed]key[/wave].
 //                              ^^^^^^^^^ variable.parameter.pibbles
 //                                        ^ constant.numeric.pibbles
 //                                                    ^^^^^^ variable.other.pibbles
-mira: Hi, {$player_name}. You have {item_name("key")}.{w}{w 0.5}{p}{br}
+mira: Hi, {$player_name}. You have {item_name("key")}.{w}{pause 0.5}{p}{br}
 //        ^ meta.point.pibbles punctuation.definition.point.pibbles
 //         ^^^^^^^^^^^^ variable.other.pibbles
 //                     ^ punctuation.definition.point.pibbles
 //                                  ^^^^^^^^^ entity.name.function.pibbles
 //                                                     ^ keyword.other.point.pibbles
-//                                                        ^ keyword.other.point.pibbles
-//                                                               ^ keyword.other.point.pibbles
-//                                                                  ^^ keyword.other.point.pibbles
+//                                                        ^^^^^ keyword.other.point.pibbles
+//                                                                   ^ keyword.other.point.pibbles
+//                                                                      ^^ keyword.other.point.pibbles
 mira: Hm.{pause 0.5}
 //       ^ punctuation.definition.point.pibbles
 //        ^^^^^ keyword.other.point.pibbles
