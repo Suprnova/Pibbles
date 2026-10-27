@@ -62,7 +62,7 @@ internal sealed partial class StyleChecks
             unseen[actor] = line;
     }
 
-    /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{p}</c>, and timed pauses side by side.</summary>
+    /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{page}</c>, and timed pauses side by side.</summary>
     private void CheckPauses(IReadOnlyList<InlineSyntax> content)
     {
         if (content is [.., InputWaitSyntax last])

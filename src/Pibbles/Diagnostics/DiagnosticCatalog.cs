@@ -102,7 +102,7 @@ public static class DiagnosticCatalog
         "I read `{0}` as a tag, but tags go at the end of the line.",
         "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
-    /// <summary>PIB1016: a command, <c>{w}</c>, <c>{p}</c> or <c>{speed}</c> in an option's text.</summary>
+    /// <summary>PIB1016: a command, <c>{w}</c>, <c>{page}</c> or <c>{speed}</c> in an option's text.</summary>
     /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
     public static DiagnosticDescriptor NotInOption { get; } = new(
         "PIB1016",
@@ -741,7 +741,7 @@ public static class DiagnosticCatalog
         "This wait does nothing, because the end of the line already waits for a click.",
         help: "Remove it.");
 
-    /// <summary>PIB5017: <c>{w}</c> just before <c>{p}</c>.</summary>
+    /// <summary>PIB5017: <c>{w}</c> just before <c>{page}</c>.</summary>
     public static DiagnosticDescriptor PauseBeforePageBreak { get; } = new(
         "PIB5017",
         DiagnosticSeverity.Hint,

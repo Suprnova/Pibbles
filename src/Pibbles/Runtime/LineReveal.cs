@@ -13,7 +13,7 @@ public enum RevealState
     /// <summary>Characters are appearing.</summary>
     Revealing,
 
-    /// <summary>The reveal reached a <c>{w}</c> or a <c>{p}</c>, and waits for the player. Call <see cref="LineReveal.Resume"/> when they answer.</summary>
+    /// <summary>The reveal reached a <c>{w}</c> or a <c>{page}</c>, and waits for the player. Call <see cref="LineReveal.Resume"/> when they answer.</summary>
     WaitingForInput,
 
     /// <summary>The reveal reached an inline command that waits for the host, and waits until the host calls <see cref="LineReveal.Resume"/>.</summary>
@@ -26,7 +26,7 @@ public enum RevealState
 /// <summary>What a <see cref="LineReveal"/> shows after a call, and what happened on the way.</summary>
 /// <remarks>The text on screen is <c>line.Text[PageStart..VisibleLength]</c>; <see cref="Line.Text"/> itself is always the whole line.</remarks>
 /// <param name="State">Where the reveal is.</param>
-/// <param name="PageStart">Where the current page starts. When the reveal resumes after a <c>{p}</c>, it moves past the spaces and line breaks that follow the break, but never past the next marker, and the host shows only the text from there on.</param>
+/// <param name="PageStart">Where the current page starts. When the reveal resumes after a <c>{page}</c>, it moves past the spaces and line breaks that follow the break, but never past the next marker, and the host shows only the text from there on.</param>
 /// <param name="VisibleLength">How much of the line is visible: a UTF-16 index into the line's text, always on a grapheme cluster boundary.</param>
 /// <param name="Fired">The markers the reveal reached during this call, in order.</param>
 public sealed record RevealFrame(RevealState State, int PageStart, int VisibleLength, ImmutableArray<Marker> Fired)

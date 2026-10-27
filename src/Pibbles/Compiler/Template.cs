@@ -54,7 +54,7 @@ internal sealed record SpeedElement(Expr Factor, SourceLocation Location) : Temp
 /// <summary><c>{speed}</c>: returns to the player's speed setting.</summary>
 internal sealed record SpeedResetElement : TemplateElement;
 
-/// <summary><c>{p}</c>: waits for the player, clears the box and continues.</summary>
+/// <summary><c>{page}</c>: waits for the player, clears the box and continues.</summary>
 internal sealed record PageBreakElement : TemplateElement;
 
 /// <summary><c>{br}</c>: a line break.</summary>

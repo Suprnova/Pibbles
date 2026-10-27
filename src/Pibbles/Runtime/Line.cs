@@ -81,7 +81,7 @@ public sealed record InputWaitMarker(int Position) : Marker(Position);
 /// <param name="Duration">How long.</param>
 public sealed record PauseMarker(int Position, TimeSpan Duration) : Marker(Position);
 
-/// <summary><c>{p}</c>: wait for the player, clear the box, and continue.</summary>
+/// <summary><c>{page}</c>: wait for the player, clear the box, and continue.</summary>
 public sealed record PageBreakMarker(int Position) : Marker(Position);
 
 /// <summary><c>{speed x}</c> or <c>{speed}</c>: the reveal speed from here on.</summary>
