@@ -13,13 +13,14 @@ public partial class LineIdsTests
         @tag thought
 
         == a.b
-        mira: Hello. #thought
-        mira (sad):
-        -> Go
+        mira: Hello. #thought // Aside.
+        mira (sad): // Still sad.
+        -> Go // Pick me.
             mira: Inside.
+        -> Leave @once // Or not.
         @call a.c // Back again.
         @sequence
-            - One.
+            - One. // First.
 
         == a.c
         Already has one. #id:k7qp2x
@@ -37,13 +38,14 @@ public partial class LineIdsTests
             @tag thought
 
             == a.b
-            mira: Hello. #thought #id:ID
-            mira (sad):
-            -> Go #id:ID
+            mira: Hello. #thought #id:ID // Aside.
+            mira (sad): // Still sad.
+            -> Go #id:ID // Pick me.
                 mira: Inside. #id:ID
+            -> Leave @once #id:ID // Or not.
             @call a.c #id:ID // Back again.
             @sequence #id:ID
-                - One. #id:ID
+                - One. #id:ID // First.
 
             == a.c
             Already has one. #id:k7qp2x

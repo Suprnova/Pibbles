@@ -13,17 +13,24 @@ internal readonly record struct LineIdSite(TagSyntax? Id, int Insert);
 /// </summary>
 internal static class LineIdSites
 {
-    public static IEnumerable<LineIdSite> In(SyntaxTree tree) => tree.Root.Nodes.SelectMany(node => In(tree.Source, node.Body));
+    public static IEnumerable<LineIdSite> In(SyntaxTree tree)
+    {
+        Dictionary<int, int> commentStarts = [];
+        foreach (Comment comment in tree.Comments.Where(comment => !comment.OnOwnLine))
+            commentStarts.TryAdd(tree.Source.GetLinePosition(comment.Span.Start).Line, comment.Span.Start);
 
-    private static IEnumerable<LineIdSite> In(SourceText source, IEnumerable<StatementSyntax> statements) => statements.SelectMany(statement => statement switch
+        return tree.Root.Nodes.SelectMany(node => In(tree.Source, commentStarts, node.Body));
+    }
+
+    private static IEnumerable<LineIdSite> In(SourceText source, Dictionary<int, int> commentStarts, IEnumerable<StatementSyntax> statements) => statements.SelectMany(statement => statement switch
     {
         TextLineSyntax { Pose: not null, Content: [] } => [],
         TextLineSyntax line => [new(IdOf(line.Tags), line.Span.End)],
         CallStatementSyntax call => [new(IdOf(call.Tags), call.Span.End)],
-        ChoiceSyntax choice => choice.Options.SelectMany(option => (IEnumerable<LineIdSite>)[new(IdOf(option.Tags), LineEnd(source, option.Span.Start)), .. In(source, option.Body)]),
-        VariationStatementSyntax variation => [Opener(variation.Span, variation.Tags, variation.Kind is VariationKind.Sequence ? "@sequence" : "@cycle"), .. variation.Alternatives.SelectMany(alternative => In(source, alternative.Body))],
-        OnceStatementSyntax once => [Opener(once.Span, once.Tags, "@once"), .. In(source, once.Body)],
-        IfStatementSyntax @if => [.. In(source, @if.Body), .. @if.ElseIfs.SelectMany(elseIf => In(source, elseIf.Body)), .. In(source, @if.Else?.Body ?? [])],
+        ChoiceSyntax choice => choice.Options.SelectMany(option => (IEnumerable<LineIdSite>)[new(IdOf(option.Tags), LineEnd(source, commentStarts, option.Span.Start)), .. In(source, commentStarts, option.Body)]),
+        VariationStatementSyntax variation => [Opener(variation.Span, variation.Tags, variation.Kind is VariationKind.Sequence ? "@sequence" : "@cycle"), .. variation.Alternatives.SelectMany(alternative => In(source, commentStarts, alternative.Body))],
+        OnceStatementSyntax once => [Opener(once.Span, once.Tags, "@once"), .. In(source, commentStarts, once.Body)],
+        IfStatementSyntax @if => [.. In(source, commentStarts, @if.Body), .. @if.ElseIfs.SelectMany(elseIf => In(source, commentStarts, elseIf.Body)), .. In(source, commentStarts, @if.Else?.Body ?? [])],
         _ => [],
     });
 
@@ -32,10 +39,12 @@ internal static class LineIdSites
 
     private static TagSyntax? IdOf(IEnumerable<TagSyntax> tags) => tags.FirstOrDefault(tag => tag.Name is "id");
 
-    /// <summary>The end of the line <paramref name="position"/> is on, without trailing whitespace.</summary>
-    private static int LineEnd(SourceText source, int position)
+    /// <summary>The end of the line <paramref name="position"/> is on, before its trailing comment and without trailing whitespace.</summary>
+    private static int LineEnd(SourceText source, Dictionary<int, int> commentStarts, int position)
     {
-        TextSpan line = source.GetLineSpan(source.GetLinePosition(position).Line);
-        return line.Start + source.Text.AsSpan(line.Start, line.Length).TrimEnd(" \t").Length;
+        int number = source.GetLinePosition(position).Line;
+        TextSpan line = source.GetLineSpan(number);
+        int end = commentStarts.TryGetValue(number, out int comment) ? comment : line.End;
+        return line.Start + source.Text.AsSpan(line.Start, end - line.Start).TrimEnd(" \t").Length;
     }
 }
