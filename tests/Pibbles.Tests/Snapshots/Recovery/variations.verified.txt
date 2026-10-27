@@ -1,6 +1,6 @@
 File 1:1-18:1
   Declarations:
-    ActorDeclaration 3:1-4:27 DisplayName="Mira [the brave]" DisplayNameSpan=4:11-4:27
+    ActorDeclaration 3:1-4:27 DisplayName="Mira [the brave]"
       Name: Name 3:8-3:12 Text="mira"
     EnumDeclaration 5:1-5:26
       Name: Name 5:7-5:20 Text="rooms.kitchen"

@@ -96,13 +96,24 @@ public partial class LineIndependenceTests
                 parses.Add((start.Line, $"{path}/{kind}@{start.Column}{Values(node)}"));
             }
 
-            if (node is ActorDeclarationSyntax { DisplayNameSpan: { } displayName } actor)
-                parses.Add((tree.Source.GetLinePosition(displayName.Start).Line, $"{path}/{kind} name: {actor.DisplayName}"));
+            if (node is ActorDeclarationSyntax { DisplayName: { } displayName } actor)
+                parses.Add((DisplayNameLine(tree.Source, actor), $"{path}/{kind} name: {displayName}"));
 
             foreach (SyntaxNode child in NodeFields.Children(node))
                 Visit(child, $"{path}/{kind}");
         }
     }
+
+    /// <summary>The line of an actor's <c>name:</c> property, which is the last one in its block when there are several.</summary>
+    private static int DisplayNameLine(SourceText source, ActorDeclarationSyntax actor)
+    {
+        int first = source.GetLinePosition(actor.Span.Start).Line;
+        int last = source.GetLinePosition(actor.Span.End).Line;
+        return Enumerable.Range(first, last - first + 1).Last(line => NameProperty().IsMatch(LineText(source, line)));
+    }
+
+    [GeneratedRegex(@"^\s*name\s*:")]
+    private static partial Regex NameProperty();
 
     /// <summary>A node's values, apart from its spans and an actor's display name, which belongs to its <c>name:</c> line.</summary>
     private static string Values(SyntaxNode node) => string.Concat(NodeFields.Of(node.GetType())

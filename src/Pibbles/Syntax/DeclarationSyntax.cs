@@ -6,9 +6,8 @@ public abstract record DeclarationSyntax : SyntaxNode;
 /// <summary><c>@actor id</c> and its properties: a character.</summary>
 /// <param name="Name">The actor's ID, which lines use as their speaker.</param>
 /// <param name="DisplayName">The <c>name:</c> property: the name the player sees, or <see langword="null"/> to show the ID.</param>
-/// <param name="DisplayNameSpan">Where the display name is written, or <see langword="null"/>.</param>
 /// <param name="Poses">The <c>poses:</c> property. The first pose is the default.</param>
-public sealed record ActorDeclarationSyntax(NameSyntax Name, string? DisplayName, TextSpan? DisplayNameSpan, IReadOnlyList<NameSyntax> Poses) : DeclarationSyntax;
+public sealed record ActorDeclarationSyntax(NameSyntax Name, string? DisplayName, IReadOnlyList<NameSyntax> Poses) : DeclarationSyntax;
 
 /// <summary><c>@enum name: a, b, c</c>: a closed set of values.</summary>
 /// <param name="Name">The enum's name, which parameters and variables use as their type.</param>

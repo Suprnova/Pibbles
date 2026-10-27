@@ -47,7 +47,6 @@ internal sealed partial class Parser
         FinishLine();
 
         string? displayName = null;
-        TextSpan? displayNameSpan = null;
         List<NameSyntax> poses = [];
         if (Current.Kind is LineTokenKind.Indent)
         {
@@ -62,7 +61,7 @@ internal sealed partial class Parser
                 }
 
                 end = TrimmedEnd(Current.Line);
-                ParseActorProperty(Current.Line, ref displayName, ref displayNameSpan, poses);
+                ParseActorProperty(Current.Line, ref displayName, poses);
             }
 
             SkipDedent();
@@ -72,11 +71,11 @@ internal sealed partial class Parser
             Report(DiagnosticCatalog.MissingBlock, keyword, TextOf(new(start, end - start)));
         }
 
-        return new(name, displayName, displayNameSpan, poses) { Span = new(start, end - start) };
+        return new(name, displayName, poses) { Span = new(start, end - start) };
     }
 
     /// <summary>Parses one line of an actor's block: <c>name: Display name</c>, read as plain text, or <c>poses: a, b, c</c>.</summary>
-    private void ParseActorProperty(SourceLine line, ref string? displayName, ref TextSpan? displayNameSpan, List<NameSyntax> poses)
+    private void ParseActorProperty(SourceLine line, ref string? displayName, List<NameSyntax> poses)
     {
         lineFailed = false;
         inlineEnd = TrimmedEnd(line);
@@ -110,7 +109,6 @@ internal sealed partial class Parser
             Fail(DiagnosticCatalog.Missing, new(colon + 1, 0), "a display name", "name:");
 
         displayName = TextOf(value);
-        displayNameSpan = value;
         index++;
     }
 
