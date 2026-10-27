@@ -116,6 +116,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2066 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
 | PIB2067 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
 | PIB2068 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
+| PIB2069 | Error | There's already an `@narration`, on line 6. | Narration has one block. Merge the two, or remove one. |
 | PIB2070 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
 | PIB3001 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB3002 | Info | This option has no text. | Write what the player picks after the `->`. |
@@ -603,7 +604,7 @@ If it's narration, escape the colon: `Note\: the door is locked.` If it's a spea
 
 ### PIB2002
 
-**A value in a speaker's parenthesis is one of the values its actor has,** in the channels the actor has. The help suggests the closest one, lists them all, or says which channel the actor dropped when the value belongs to it.
+**A value in a speaker's parenthesis is one of the values its actor has,** in the channels the actor has. Narration's parenthesis, at the start of a line, takes narration's own values. The help suggests the closest one, lists them all, or says which channel the speaker dropped when the value belongs to it.
 
 ```text
 @channel pose
@@ -614,7 +615,7 @@ If it's narration, escape the colon: `Note\: the door is locked.` If it's a spea
 mira (smirk): I knew it.
 ```
 
-Use one of the actor's values, `mira (smug):`, or add the value to the actor's channel with `pose += smirk`.
+Use one of the actor's values, `mira (smug):`, or add the value to the actor's channel with `pose += smirk`. If a narration line that starts with a parenthesis and a colon is plain text, such as `(Meanwhile): …`, put a backslash before the `(`: `\(Meanwhile): …`.
 
 ### PIB2003
 
@@ -624,7 +625,7 @@ Use one of the actor's values, `mira (smug):`, or add the value to the actor's c
 mira (to Rex): Fine.
 ```
 
-Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If the line is narration, escape the colon: `Breakfast (served daily)\: eggs.`
+Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If the line is narration, escape the colon: `Breakfast (served daily)\: eggs.` Narration's own parenthesis, at the start of a line, is read the same way, so `(to the room): Fine.` is reported too.
 
 ### PIB2004
 
@@ -1083,6 +1084,25 @@ Write the type after the variable: `@var $where: position = left`.
 ```
 
 Write the channel's name, `pose: happy`, or declare the channel with `@channel pos`.
+
+### PIB2069
+
+**Narration is declared once.** `@narration` and its block say what narration has: the channels its lines can set, and the name shown with them. A second block is reported, since two blocks could say different things.
+
+```text
+@narration
+    no pose
+@narration
+    name: Narrator
+```
+
+Merge the two into one block:
+
+```text
+@narration
+    name: Narrator
+    no pose
+```
 
 ### PIB2070
 

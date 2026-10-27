@@ -14,7 +14,9 @@ node snap.text
     6  Line ~text.pib:10
     7  Line ~text.pib:11
     8  Channel mira (effect.still, pose.sad) <>
-    9  Return
+    9  Line ~text.pib:13
+   10  Channel - (effect.shake) <>
+   11  Return
 templates
   ~text.pib:4: - <> "Narration, with no speaker."
   ~text.pib:5: mira <> "A line with a speaker."
@@ -23,6 +25,7 @@ templates
   ~text.pib:9: mira (pose.happy) <thought, box:tense(tense)> "Tags follow the text."
   ~text.pib:10: mira <> "You have "{$count:number}" keys, "{$name:string}", and "{$who:actor}" is here."
   ~text.pib:11: mira (pose.happy, effect.shake) <thought> "Two values at once."
+  ~text.pib:13: - (effect.still) <thought> "Narration at ease."
 ids
   ~text.pib:4 -> snap.text[0]
   ~text.pib:5 -> snap.text[1]
@@ -31,3 +34,4 @@ ids
   ~text.pib:9 -> snap.text[5]
   ~text.pib:10 -> snap.text[6]
   ~text.pib:11 -> snap.text[7]
+  ~text.pib:13 -> snap.text[9]

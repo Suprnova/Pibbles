@@ -1,6 +1,6 @@
-File 1:1-31:1
+File 1:1-33:1
   Nodes:
-    Node 3:1-30:19
+    Node 3:1-32:14
       Name: Name 3:4-3:17 Text="snapshot.text"
       Body:
         TextLine 4:1-4:19
@@ -264,6 +264,17 @@ File 1:1-31:1
             Values:
               Name 30:7-30:12 Text="shake"
               Name 30:14-30:17 Text="sad"
+        TextLine 31:1-31:33
+          Speaker: Speaker 31:1-31:8
+            Values:
+              Name 31:2-31:7 Text="shake"
+          Content:
+            TextRun 31:10-31:33 Text="Narration with a value."
+        TextLine 32:1-32:14
+          Speaker: Speaker 32:1-32:13
+            Values:
+              Name 32:2-32:7 Text="still"
+              Name 32:9-32:12 Text="sad"
 Comments:
   1:1-1:48 "Text lines and every kind of inline element."
   21:20-21:34 trailing "said warmly"

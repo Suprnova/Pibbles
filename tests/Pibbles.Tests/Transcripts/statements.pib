@@ -2,6 +2,9 @@
 
 @channel pose
 @channel effect: still, shake
+@narration
+    name: Narrator
+    no pose
 @actor mira
     name: Mira
     pose: neutral, happy, sad
@@ -22,6 +25,8 @@ Narration without a speaker. #id:l01
 mira: A line with a speaker. #id:l02
 mira (happy, shake): A line with two values. #id:l03
 mira (sad):
+(shake): Narration with a value. #id:l03n
+(still):
 rex: {w} #id:l04
 @show mira
 @show rex left

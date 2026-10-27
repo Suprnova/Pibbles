@@ -33,6 +33,9 @@ public sealed record StateSnapshot
 
     /// <summary>The values each actor has been given, by the actor's ID and then the channel's name, for the channels the story has set.</summary>
     public required IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Channels { get; init; }
+
+    /// <summary>The values narration has been given, by the channel's name, for the channels the story has set.</summary>
+    public required IReadOnlyDictionary<string, string> Narration { get; init; }
 }
 
 /// <summary>
@@ -212,7 +215,10 @@ internal static class SnapshotChecks
                 return $"channels.{actor}.{name}";
         }
 
-        return null;
+        if (snapshot.Narration is null)
+            return "narration";
+
+        return snapshot.Narration.FirstOrDefault(channel => channel.Value is null).Key is { } narrated ? $"narration.{narrated}" : null;
     }
 
     /// <summary>Where a runner snapshot has a null that must be a value, as a JSON path, or <see langword="null"/> if it has none.</summary>

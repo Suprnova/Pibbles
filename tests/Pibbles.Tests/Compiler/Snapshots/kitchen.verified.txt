@@ -54,22 +54,23 @@ node kitchen.door
     0  BranchIfFalse $kitchen.door_open -> 2
     1  Jump kitchen.leave
     2  Line #k7qp2x
-    3  Choice [#c4ne8r -> 4, #m3xw9a if $has_key -> 9, #t5bq2m once -> 13, #x2jm5p -> 16] join 17
+    3  Choice [#c4ne8r -> 4, #m3xw9a if $has_key -> 10, #t5bq2m once -> 14, #x2jm5p -> 17] join 18
     4  Command @sfx(door_rattle) waits=false
     5  Line #p2vd7t
-    6  Set $bravery = ($bravery + 1):number
-    7  Call common.stuck #r4hc6v
-    8  Branch -> 17
-    9  Command @sfx(key_turn) waits=false
-   10  Set $kitchen.door_open = true
-   11  Line #h8ya3k
-   12  Jump kitchen.leave
-   13  Line #w9fz4e
-   14  Line #d6kr8u
-   15  Branch -> 17
-   16  End
-   17  Line #q7gt3n
-   18  Return
+    6  Line #cpmv5i
+    7  Set $bravery = ($bravery + 1):number
+    8  Call common.stuck #r4hc6v
+    9  Branch -> 18
+   10  Command @sfx(key_turn) waits=false
+   11  Set $kitchen.door_open = true
+   12  Line #h8ya3k
+   13  Jump kitchen.leave
+   14  Line #w9fz4e
+   15  Line #d6kr8u
+   16  Branch -> 18
+   17  End
+   18  Line #q7gt3n
+   19  Return
 node kitchen.leave
     0  Command @hide(rex) waits=false
     1  Command @move(mira, offscreen) waits=false
@@ -108,6 +109,7 @@ templates
   #k7qp2x: mira (pose.worried) <id:k7qp2x> "Locked."{w}" Of course it's locked."
   #c4ne8r: - <id:c4ne8r> "Rattle the handle"
   #p2vd7t: mira (pose.angry, effect.jolt) <id:p2vd7t> [shout]("Open up!"){@shake_screen(0.5, 0.3s) waits=false}
+  #cpmv5i: - (effect.jolt) <id:cpmv5i> "The whole door shudders in its frame."
   #m3xw9a: - <show_disabled, id:m3xw9a> "Use the key"
   #h8ya3k: mira (pose.happy) <id:h8ya3k> "Got it!"
   #t5bq2m: - <id:t5bq2m> "Knock politely"
@@ -145,14 +147,15 @@ ids
   #k7qp2x -> kitchen.door[2]
   #c4ne8r -> kitchen.door[3]
   #p2vd7t -> kitchen.door[5]
-  #r4hc6v -> kitchen.door[7]
+  #cpmv5i -> kitchen.door[6]
+  #r4hc6v -> kitchen.door[8]
   #m3xw9a -> kitchen.door[3]
-  #h8ya3k -> kitchen.door[11]
+  #h8ya3k -> kitchen.door[12]
   #t5bq2m -> kitchen.door[3]
-  #w9fz4e -> kitchen.door[13]
-  #d6kr8u -> kitchen.door[14]
+  #w9fz4e -> kitchen.door[14]
+  #d6kr8u -> kitchen.door[15]
   #x2jm5p -> kitchen.door[3]
-  #q7gt3n -> kitchen.door[17]
+  #q7gt3n -> kitchen.door[18]
   #tbn8zd -> kitchen.leave[2]
   #y22poy -> kitchen.leave[3]
   #qtsu77 -> common.stuck[0]

@@ -18,7 +18,7 @@ internal static class SyntaxGenerators
     /// <summary>Every reserved, contextual and built-in word, so a generated name is never read as one.</summary>
     private static readonly HashSet<string> Reserved =
     [
-        "prefix", "actor", "channel", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
+        "prefix", "actor", "channel", "narration", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump",
         "call", "return", "end", "wait", "pause", "sequence", "cycle", "once", "term", "resume", "shuffle", "w", "page", "p", "br", "auto",
         "true", "false", "and", "or", "not", "nowait", "speaker", "visits", "random", "bool", "number", "string", "duration",
         "node", "speed", "b", "i", "u", "s", "color", "name", "no", "inline", "waits", "required", "persona", "id", "was",
@@ -93,12 +93,17 @@ internal static class SyntaxGenerators
                 (name, display, edits) => new ActorDeclarationSyntax(Name(name), display, edits) { Span = default })
             .Where(actor => actor.DisplayName is not null || actor.Channels.Count > 0)
             .Select(DeclarationSyntax (actor) => actor);
+        Gen<DeclarationSyntax> narration = Gen.Select(Maybe(displayName), channelEdit.Array[0, 3],
+                (display, edits) => new NarrationDeclarationSyntax(display, edits) { Span = default })
+            .Where(narration => narration.DisplayName is not null || narration.Channels.Count > 0)
+            .Select(DeclarationSyntax (narration) => narration);
 
         Gen<TagValueSyntax> tagValue = Gen.Select(Identifier, Gen.Bool, (type, empty) => new TagValueSyntax(Name(type), empty) { Span = default });
         Gen<TagEntrySyntax> tagEntry = Gen.Select(Identifier, Maybe(tagValue), (name, value) => new TagEntrySyntax(Name(name), value) { Span = default });
 
         return Gen.OneOf(
             actor,
+            narration,
             Gen.Select(Identifier, Identifier.Select(Name).Array[0, 3], DeclarationSyntax (name, values) => new ChannelDeclarationSyntax(Name(name), values) { Span = default }),
             Gen.Select(Identifier, names, DeclarationSyntax (name, members) => new EnumDeclarationSyntax(Name(name), members) { Span = default }),
             Gen.Select(VariableName, Maybe(Identifier), Constant(),
@@ -189,10 +194,13 @@ internal static class SyntaxGenerators
         Gen<InlineSyntax[]> content = LineContent(option: false, required: true);
         Gen<SpeakerSyntax> speaker = Gen.Select(Identifier, Identifier.Select(Name).Array[0, 3], (name, values) => new SpeakerSyntax(Name(name), values) { Span = default });
         Gen<SpeakerSyntax> valued = Gen.Select(Identifier, Identifier.Select(Name).Array[1, 3], (name, values) => new SpeakerSyntax(Name(name), values) { Span = default });
+        Gen<SpeakerSyntax> narrated = Identifier.Select(Name).Array[1, 3].Select(values => new SpeakerSyntax(null, values) { Span = default });
         return Gen.OneOf(
             Gen.Select(content, Tags(other: true, id: true), StatementSyntax (text, tags) => new TextLineSyntax(null, text, tags) { Span = default }),
             Gen.Select(speaker, content, Tags(other: true, id: true), StatementSyntax (speaker, text, tags) => new TextLineSyntax(speaker, text, tags) { Span = default }),
-            Gen.Select(valued, Tags(other: true, id: false), StatementSyntax (speaker, tags) => new TextLineSyntax(speaker, [], tags) { Span = default }));
+            Gen.Select(narrated, content, Tags(other: true, id: true), StatementSyntax (speaker, text, tags) => new TextLineSyntax(speaker, text, tags) { Span = default }),
+            Gen.Select(valued, Tags(other: true, id: false), StatementSyntax (speaker, tags) => new TextLineSyntax(speaker, [], tags) { Span = default }),
+            Gen.Select(narrated, Tags(other: true, id: false), StatementSyntax (speaker, tags) => new TextLineSyntax(speaker, [], tags) { Span = default }));
     }
 
     /// <summary>A line's inline text: merged, with leading and trailing whitespace trimmed, as the parser reads it.</summary>

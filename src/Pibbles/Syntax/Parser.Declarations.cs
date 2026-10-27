@@ -5,7 +5,7 @@ namespace Pibbles.Syntax;
 /// <summary>Declarations: the lines before a file's first node that make up the contract between the story and the host.</summary>
 internal sealed partial class Parser
 {
-    private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@channel", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
+    private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@channel", "@narration", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
 
     /// <summary>Keywords that grammar extensions will use. v1 gives them no meaning, and rejects them where they'd appear.</summary>
     private static readonly HashSet<string> ExtensionKeywords = ["@term", "@resume", "@shuffle"];
@@ -20,6 +20,9 @@ internal sealed partial class Parser
 
         if (word is "@actor")
             return ParseActor(start, keyword);
+
+        if (word is "@narration")
+            return ParseNarration(start, keyword);
 
         DeclarationSyntax declaration = word switch
         {
@@ -42,7 +45,20 @@ internal sealed partial class Parser
     {
         NameSyntax name = ExpectDeclaredName("an actor name", "@actor");
         RejectColon("@actor", start);
+        (string? displayName, List<ChannelEditSyntax> channels, int end) = ParseSpeakerBlock(start, keyword);
+        return new(name, displayName, channels) { Span = new(start, end - start) };
+    }
 
+    private NarrationDeclarationSyntax ParseNarration(int start, TextSpan keyword)
+    {
+        RejectColon("@narration", start);
+        (string? displayName, List<ChannelEditSyntax> channels, int end) = ParseSpeakerBlock(start, keyword);
+        return new(displayName, channels) { Span = new(start, end - start) };
+    }
+
+    /// <summary>Finishes the line of an actor or narration and parses the block under it, which has the same lines for both.</summary>
+    private (string? DisplayName, List<ChannelEditSyntax> Channels, int End) ParseSpeakerBlock(int start, TextSpan keyword)
+    {
         bool failed = lineFailed;
         int end = previousEnd;
         FinishLine();
@@ -72,11 +88,11 @@ internal sealed partial class Parser
             Report(DiagnosticCatalog.MissingBlock, keyword, TextOf(new(start, end - start)));
         }
 
-        return new(name, displayName, channels) { Span = new(start, end - start) };
+        return (displayName, channels, end);
     }
 
     /// <summary>
-    /// Parses one line of an actor's block: <c>name: Display name</c>, read as plain text; <c>pose: a, b</c> or
+    /// Parses one line of an actor's or narration's block: <c>name: Display name</c>, read as plain text; <c>pose: a, b</c> or
     /// <c>pose += c</c> for a channel's values; or <c>no camera, effect</c> for the channels the actor doesn't have.
     /// </summary>
     private void ParseActorProperty(SourceLine line, ref string? displayName, List<ChannelEditSyntax> channels)

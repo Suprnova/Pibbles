@@ -179,7 +179,8 @@ internal sealed partial class StyleChecks
         if (SpeakerScanner.Scan(Tree.Source.Text, speaker.Span.Start, lineSpan.End) is not { IsSpeaker: true } prefix)
             return;
 
-        string usual = speaker.Values.Count > 0 ? $"{speaker.Name.Text} ({string.Join(", ", speaker.Values.Select(value => value.Text))}):" : $"{speaker.Name.Text}:";
+        string values = speaker.Values.Count > 0 ? $"({string.Join(", ", speaker.Values.Select(value => value.Text))})" : "";
+        string usual = $"{speaker.Name?.Text} {values}".Trim() + ":";
         var written = new TextSpan(speaker.Span.Start, prefix.Colon + 1 - speaker.Span.Start);
         if (TextOf(written) != usual)
             Report(DiagnosticCatalog.SpeakerSpacing, written, usual);

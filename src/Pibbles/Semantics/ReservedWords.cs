@@ -9,7 +9,7 @@ internal static class ReservedWords
     private const string Planned = "for a planned feature";
 
     private static readonly Group Statement = new("after `@`",
-        ["prefix", "actor", "channel", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
+        ["prefix", "actor", "channel", "narration", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
         ["term", "resume", "shuffle"]);
 
     private static readonly Group Brace = new("inside `{…}`", ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);

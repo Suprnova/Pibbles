@@ -2,16 +2,17 @@ namespace Pibbles.Syntax;
 
 /// <summary>
 /// What starts a text line when it looks like a speaker: a name, an optional parenthesis, and a colon, with any spacing
-/// between them. It's a speaker only when the parenthesis holds a list of names and the colon has whitespace or the end
-/// of the line after it. Anything else is narration, which the analyzer checks for lines that almost look like a speaker.
+/// between them. Narration's own values have a parenthesis and a colon with no name before them. It's a speaker only
+/// when the parenthesis holds a list of names and the colon has whitespace or the end of the line after it. Anything
+/// else is narration, which the analyzer checks for lines that almost look like a speaker.
 /// </summary>
-/// <param name="Name">The name before the parenthesis or colon.</param>
+/// <param name="Name">The name before the parenthesis or colon, or <see langword="null"/> when the line starts with the parenthesis.</param>
 /// <param name="Parentheses">The parenthesis, brackets included, or <see langword="null"/> if there's none.</param>
 /// <param name="Values">The names inside the parenthesis, separated by commas, or <see langword="null"/> if there's no parenthesis or it holds something else.</param>
 /// <param name="Extra">What stands between the parenthesis and the colon, or <see langword="null"/> if there's nothing: further parentheses and at most one word.</param>
 /// <param name="Colon">Where the colon is.</param>
 /// <param name="IsSpeaker">Whether the line has a speaker, rather than starting with something that looks like one.</param>
-internal readonly record struct SpeakerPrefix(TextSpan Name, TextSpan? Parentheses, IReadOnlyList<TextSpan>? Values, TextSpan? Extra, int Colon, bool IsSpeaker);
+internal readonly record struct SpeakerPrefix(TextSpan? Name, TextSpan? Parentheses, IReadOnlyList<TextSpan>? Values, TextSpan? Extra, int Colon, bool IsSpeaker);
 
 /// <summary>Finds a <see cref="SpeakerPrefix"/> at the start of a text line.</summary>
 internal static class SpeakerScanner
@@ -21,7 +22,7 @@ internal static class SpeakerScanner
     {
         int nameEnd = SkipIdentifier(text, start, end);
         if (nameEnd == start)
-            return null;
+            return start < end && text[start] is '(' ? ScanNarration(text, start, end) : null;
 
         int position = SkipWhitespace(text, nameEnd, end);
         TextSpan? parentheses = null;
@@ -49,6 +50,22 @@ internal static class SpeakerScanner
 
         bool spaced = position + 1 >= end || text[position + 1] is ' ' or '\t';
         return new(new(start, nameEnd - start), parentheses, values, extra, position, spaced && extra is null && (parentheses is null || values is not null));
+    }
+
+    /// <summary>Reads narration's values: a parenthesis at the start of the line, then a colon.</summary>
+    private static SpeakerPrefix? ScanNarration(string text, int start, int end)
+    {
+        int close = text.IndexOf(')', start, end - start);
+        if (close < 0)
+            return null;
+
+        int colon = SkipWhitespace(text, close + 1, end);
+        if (colon >= end || text[colon] is not ':')
+            return null;
+
+        List<TextSpan>? values = ReadValues(text, start + 1, close);
+        bool spaced = colon + 1 >= end || text[colon + 1] is ' ' or '\t';
+        return new(null, new TextSpan(start, close + 1 - start), values, null, colon, spaced && values is not null);
     }
 
     /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas, or returns <see langword="null"/> if there's anything else, or no name at all.</summary>

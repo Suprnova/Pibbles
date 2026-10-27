@@ -1,0 +1,18 @@
+// Narration has one block.
+
+@channel pose
+@channel camera: static, orbit
+@narration
+    no pose
+@narration
+// PIB2069
+    camera += pan_left
+
+// Must not trigger
+
+@actor mira
+    name: Mira
+
+== kitchen.door
+(orbit): The wind picks up.
+mira: Hi.

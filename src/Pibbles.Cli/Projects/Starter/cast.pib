@@ -5,6 +5,10 @@
 // A channel is something a line can set for its speaker. Each character lists its own poses.
 @channel pose
 
+// Narration, the lines with no speaker, is declared like a character. It has no pose.
+@narration
+    no pose
+
 // A character. Lines of dialogue start with their ID: `guide: Hello!`
 // `name:` is the name the player sees, and `pose:` lists how they can look.
 @actor guide

@@ -13,10 +13,10 @@ internal abstract record Instruction;
 internal sealed record LineInstruction(string Id) : Instruction;
 
 /// <summary>Sets an actor's values with no line to show: a parenthesis with no text. A line carries its own values in its <see cref="Template"/>.</summary>
-/// <param name="Speaker">The speaker.</param>
+/// <param name="Speaker">The speaker, or <see langword="null"/> for narration.</param>
 /// <param name="Values">The values, in the order written.</param>
 /// <param name="Tags">The tags on the line.</param>
-internal sealed record ChannelInstruction(ActorSymbol Speaker, IReadOnlyList<TemplateValue> Values, IReadOnlyList<TemplateTag> Tags) : Instruction;
+internal sealed record ChannelInstruction(ActorSymbol? Speaker, IReadOnlyList<TemplateValue> Values, IReadOnlyList<TemplateTag> Tags) : Instruction;
 
 /// <summary>Offers the options of a choice. The choice is skipped when none is available.</summary>
 /// <param name="Options">The options, in source order.</param>

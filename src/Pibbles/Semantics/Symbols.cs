@@ -95,6 +95,26 @@ public sealed class ActorSymbol : Symbol
     public IReadOnlyList<SpeakerChannel> Channels { get; }
 }
 
+/// <summary>
+/// What narration has: <c>@narration</c> and its block, or every channel's defaults with no name when the story has no
+/// block. It isn't an actor: no line names it, and it's never an <c>actor</c> value.
+/// </summary>
+public sealed class NarrationSymbol : Symbol
+{
+    internal NarrationSymbol(SourceLocation? location, string? displayName, IReadOnlyList<SpeakerChannel> channels)
+        : base("narration", location)
+    {
+        DisplayName = displayName;
+        Channels = channels;
+    }
+
+    /// <summary>The name shown with narration's lines: the <c>name:</c> property, or <see langword="null"/> to show none.</summary>
+    public string? DisplayName { get; }
+
+    /// <summary>The channels narration has, each with the values its lines can set.</summary>
+    public IReadOnlyList<SpeakerChannel> Channels { get; }
+}
+
 /// <summary>A channel: <c>@channel name: a, b</c>, a value that lines set, such as a pose.</summary>
 public sealed class ChannelSymbol : Symbol
 {

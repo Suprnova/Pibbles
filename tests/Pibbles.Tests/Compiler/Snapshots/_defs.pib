@@ -2,6 +2,9 @@
 
 @channel pose
 @channel effect: still, shake
+@narration
+    name: Narrator
+    no pose
 @actor mira
     name: Mira
     pose: neutral, happy, sad

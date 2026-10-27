@@ -50,7 +50,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
         return instruction switch
         {
             LineInstruction line => $"Line {Id(line.Id)}",
-            ChannelInstruction channels => $"Channel {channels.Speaker.Name}{Values(channels.Values)} <{Tags(channels.Tags)}>",
+            ChannelInstruction channels => $"Channel {channels.Speaker?.Name ?? "-"}{Values(channels.Values)} <{Tags(channels.Tags)}>",
             ChoiceInstruction choice => $"Choice [{string.Join(", ", choice.Options.Select(Format))}] join {choice.Join}",
             BranchInstruction branch => $"Branch -> {branch.Target}",
             BranchIfFalseInstruction branch => $"BranchIfFalse {Format(branch.Condition)} -> {branch.Target}",

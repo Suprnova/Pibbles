@@ -93,7 +93,7 @@ internal static class LineRenderer
             return new(
                 id,
                 template.Speaker?.Name,
-                template.Speaker?.DisplayName,
+                template.SpeakerName,
                 trimmed,
                 [.. spans.Select(span => new Span(span.Name, Move(span.Start), Move(span.End) - Move(span.Start), span.Arguments))],
                 [.. markers.Select(marker => marker.Create(Move(marker.Position)))],

@@ -10,6 +10,7 @@ stub has_item = false
 > #c4ne8r
   @sfx door_rattle
   mira (angry, jolt): [shout]Open up![/shout]⟨@shake_screen 0.5 0.3s⟩  #p2vd7t
+  narration (jolt): The whole door shudders in its frame.  #cpmv5i
   $bravery = 1
   mira (sad): Nope.  #koyi9l
   rex: Well, that didn't work.  #q7gt3n

@@ -26,18 +26,20 @@ internal sealed partial class Parser
         int textStart = start;
         if (SpeakerScanner.Scan(source.Text, start, inlineEnd) is { IsSpeaker: true } match)
         {
-            NameSyntax name = new(TextOf(match.Name)) { Span = match.Name };
+            NameSyntax? name = match.Name is { } nameSpan ? new(TextOf(nameSpan)) { Span = nameSpan } : null;
             List<NameSyntax> values = [.. (match.Values ?? []).Select(span => new NameSyntax(TextOf(span)) { Span = span })];
-            speaker = new(name, values) { Span = new(start, (match.Parentheses?.End ?? match.Name.End) - start) };
-            textOwner = new SpeakerMention(name.Text, "what {0} says");
+            speaker = new(name, values) { Span = new(start, (match.Parentheses?.End ?? match.Name!.Value.End) - start) };
+            if (name is not null)
+                textOwner = new SpeakerMention(name.Text, "what {0} says");
+
             textStart = match.Colon + 1;
         }
 
         List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), inlineEnd, option: false);
         List<TagSyntax> tags = ParseTrailingTags();
 
-        if (speaker is { Values.Count: 0 } && content.Count == 0)
-            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speaker.Name.Text, new SpeakerMention(speaker.Name.Text));
+        if (speaker is { Name: { } speakerName, Values.Count: 0 } && content.Count == 0)
+            Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speakerName.Text, new SpeakerMention(speakerName.Text));
 
         CheckTags(tags, speaker is { Values.Count: > 0 } && content.Count == 0 ? TagPlace.ValuesOnly : TagPlace.TextLine);
 

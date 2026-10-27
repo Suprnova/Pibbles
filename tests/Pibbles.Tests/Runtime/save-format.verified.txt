@@ -45,6 +45,9 @@
     "mira": {
       "pose": "happy"
     }
+  },
+  "narration": {
+    "camera": "orbit"
   }
 }
 {

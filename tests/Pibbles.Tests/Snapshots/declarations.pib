@@ -3,6 +3,10 @@
 @channel pose
 @channel effect: still, shake
 @channel camera: static, orbit
+@narration
+    name: Narrator // shown with narration's lines
+    no pose
+    camera += orbit_scene
 @actor mira
     name: Mira Okafor
     pose: neutral, happy, sad

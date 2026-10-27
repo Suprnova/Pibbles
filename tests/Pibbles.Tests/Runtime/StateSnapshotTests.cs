@@ -221,6 +221,29 @@ public class StateSnapshotTests
     }
 
     [Fact]
+    public void Restore_NarrationChannelRemoved_DropsItsValue()
+    {
+        const string Before = "@channel camera: static, orbit\n== t.n\n(orbit): Hi. #id:l1\n";
+        const string After = "@channel camera: static, orbit\n@narration\n    no camera\n== t.n\n";
+
+        IReadOnlyList<SaveProblem> problems = Reload(Before, After, out Game loaded);
+
+        Assert.Equal([(SaveProblemKind.UnknownChannel, "narration.camera")], Kinds(problems));
+        Assert.Throws<ArgumentException>(() => loaded.State.GetChannel(null, "camera"));
+    }
+
+    [Fact]
+    public void Restore_NarrationValues_AreKept()
+    {
+        const string Story = "@channel camera: static, orbit\n== t.n\n(orbit): Hi. #id:l1\n";
+
+        IReadOnlyList<SaveProblem> problems = Reload(Story, Story, out Game loaded);
+
+        Assert.Empty(problems);
+        Assert.Equal("orbit", loaded.State.GetChannel(null, "camera"));
+    }
+
+    [Fact]
     public void Restore_VariableTheSaveDoesNotHave_GetsItsStartingValue()
     {
         IReadOnlyList<SaveProblem> problems = Reload("@var $a = 0\n== t.n\n@set $a = 5\n", "@var $a = 0\n@var $added = 7\n== t.n\n", out Game loaded);

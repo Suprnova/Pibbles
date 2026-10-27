@@ -226,7 +226,7 @@ internal sealed class TranscriptPlayer
                 break;
 
             case ChannelStep channels:
-                WriteLine($"{Indent}{channels.Actor}{Values(channels.Values)}:{TagsText(channels.Tags)}");
+                WriteLine($"{Indent}{channels.Actor ?? "narration"}{Values(channels.Values)}:{TagsText(channels.Tags)}");
                 break;
 
             case PauseStep pause:

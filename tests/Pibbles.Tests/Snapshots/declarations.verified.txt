@@ -1,4 +1,4 @@
-File 1:1-37:1
+File 1:1-41:1
   Declarations:
     ChannelDeclaration 3:1-3:14
       Name: Name 3:10-3:14 Text="pose"
@@ -12,156 +12,165 @@ File 1:1-37:1
       Values:
         Name 5:18-5:24 Text="static"
         Name 5:26-5:31 Text="orbit"
-    ActorDeclaration 6:1-9:21 DisplayName="Mira Okafor"
-      Name: Name 6:8-6:12 Text="mira"
+    NarrationDeclaration 6:1-9:26 DisplayName="Narrator"
       Channels:
-        ChannelEdit 8:5-8:30 Edit=Replace
-          Channel: Name 8:5-8:9 Text="pose"
+        ChannelEdit 8:8-8:12 Edit=Drop
+          Channel: Name 8:8-8:12 Text="pose"
+        ChannelEdit 9:5-9:26 Edit=Add
+          Channel: Name 9:5-9:11 Text="camera"
           Values:
-            Name 8:11-8:18 Text="neutral"
-            Name 8:20-8:25 Text="happy"
-            Name 8:27-8:30 Text="sad"
-        ChannelEdit 9:5-9:21 Edit=Add
-          Channel: Name 9:5-9:11 Text="effect"
-          Values:
-            Name 9:15-9:21 Text="wobble"
-    ActorDeclaration 10:1-12:22 DisplayName=null
-      Name: Name 10:8-10:11 Text="rex"
+            Name 9:15-9:26 Text="orbit_scene"
+    ActorDeclaration 10:1-13:21 DisplayName="Mira Okafor"
+      Name: Name 10:8-10:12 Text="mira"
       Channels:
-        ChannelEdit 11:5-11:18 Edit=Replace
-          Channel: Name 11:5-11:9 Text="pose"
+        ChannelEdit 12:5-12:30 Edit=Replace
+          Channel: Name 12:5-12:9 Text="pose"
           Values:
-            Name 11:11-11:18 Text="neutral"
-        ChannelEdit 12:8-12:14 Edit=Drop
-          Channel: Name 12:8-12:14 Text="effect"
-        ChannelEdit 12:16-12:22 Edit=Drop
-          Channel: Name 12:16-12:22 Text="camera"
-    EnumDeclaration 13:1-13:47
-      Name: Name 13:7-13:15 Text="position"
+            Name 12:11-12:18 Text="neutral"
+            Name 12:20-12:25 Text="happy"
+            Name 12:27-12:30 Text="sad"
+        ChannelEdit 13:5-13:21 Edit=Add
+          Channel: Name 13:5-13:11 Text="effect"
+          Values:
+            Name 13:15-13:21 Text="wobble"
+    ActorDeclaration 14:1-16:22 DisplayName=null
+      Name: Name 14:8-14:11 Text="rex"
+      Channels:
+        ChannelEdit 15:5-15:18 Edit=Replace
+          Channel: Name 15:5-15:9 Text="pose"
+          Values:
+            Name 15:11-15:18 Text="neutral"
+        ChannelEdit 16:8-16:14 Edit=Drop
+          Channel: Name 16:8-16:14 Text="effect"
+        ChannelEdit 16:16-16:22 Edit=Drop
+          Channel: Name 16:16-16:22 Text="camera"
+    EnumDeclaration 17:1-17:47
+      Name: Name 17:7-17:15 Text="position"
       Members:
-        Name 13:17-13:21 Text="left"
-        Name 13:23-13:29 Text="center"
-        Name 13:31-13:36 Text="right"
-        Name 13:38-13:47 Text="offscreen"
-    VariableDeclaration 14:1-14:22
-      Variable: VariableExpression 14:6-14:14 Name="has_key"
-      Value: BooleanLiteral 14:17-14:22 Value=false
-    VariableDeclaration 15:1-15:18
-      Variable: VariableExpression 15:6-15:14 Name="bravery"
-      Value: NumberLiteral 15:17-15:18 Value=0
-    VariableDeclaration 16:1-16:20
-      Variable: VariableExpression 16:6-16:12 Name="delay"
-      Value: UnaryExpression 16:15-16:20 Operator=Negate OperatorSpan=16:15-16:16
-        Operand: DurationLiteral 16:16-16:20 Seconds=0.5
-    VariableDeclaration 17:1-17:18
-      Variable: VariableExpression 17:6-17:13 Name="offset"
-      Value: UnaryExpression 17:16-17:18 Operator=Negate OperatorSpan=17:16-17:17
-        Operand: NumberLiteral 17:17-17:18 Value=3
-    VariableDeclaration 18:1-18:26
-      Variable: VariableExpression 18:6-18:18 Name="player_name"
-      Value: StringLiteral 18:21-18:26 Value="Sam"
-    VariableDeclaration 19:1-19:29
-      Variable: VariableExpression 19:6-19:12 Name="where"
-      Type: Name 19:14-19:22 Text="position"
-      Value: NameExpression 19:25-19:29 Name="left"
-    VariableDeclaration 20:1-20:32
-      Variable: VariableExpression 20:6-20:11 Name="next"
-      Type: Name 20:13-20:17 Text="node"
-      Value: NameExpression 20:20-20:32 Name="kitchen.door"
-    CommandDeclaration 21:1-21:49 IsInline=false Waits=false
-      Name: Name 21:10-21:14 Text="show"
+        Name 17:17-17:21 Text="left"
+        Name 17:23-17:29 Text="center"
+        Name 17:31-17:36 Text="right"
+        Name 17:38-17:47 Text="offscreen"
+    VariableDeclaration 18:1-18:22
+      Variable: VariableExpression 18:6-18:14 Name="has_key"
+      Value: BooleanLiteral 18:17-18:22 Value=false
+    VariableDeclaration 19:1-19:18
+      Variable: VariableExpression 19:6-19:14 Name="bravery"
+      Value: NumberLiteral 19:17-19:18 Value=0
+    VariableDeclaration 20:1-20:20
+      Variable: VariableExpression 20:6-20:12 Name="delay"
+      Value: UnaryExpression 20:15-20:20 Operator=Negate OperatorSpan=20:15-20:16
+        Operand: DurationLiteral 20:16-20:20 Seconds=0.5
+    VariableDeclaration 21:1-21:18
+      Variable: VariableExpression 21:6-21:13 Name="offset"
+      Value: UnaryExpression 21:16-21:18 Operator=Negate OperatorSpan=21:16-21:17
+        Operand: NumberLiteral 21:17-21:18 Value=3
+    VariableDeclaration 22:1-22:26
+      Variable: VariableExpression 22:6-22:18 Name="player_name"
+      Value: StringLiteral 22:21-22:26 Value="Sam"
+    VariableDeclaration 23:1-23:29
+      Variable: VariableExpression 23:6-23:12 Name="where"
+      Type: Name 23:14-23:22 Text="position"
+      Value: NameExpression 23:25-23:29 Name="left"
+    VariableDeclaration 24:1-24:32
+      Variable: VariableExpression 24:6-24:11 Name="next"
+      Type: Name 24:13-24:17 Text="node"
+      Value: NameExpression 24:20-24:32 Name="kitchen.door"
+    CommandDeclaration 25:1-25:49 IsInline=false Waits=false
+      Name: Name 25:10-25:14 Text="show"
       Parameters:
-        Parameter 21:15-21:25
-          Name: Name 21:15-21:18 Text="who"
-          Type: Name 21:20-21:25 Text="actor"
-        Parameter 21:27-21:48
-          Name: Name 21:27-21:29 Text="at"
-          Type: Name 21:31-21:39 Text="position"
-          Default: NameExpression 21:42-21:48 Name="center"
-    CommandDeclaration 22:1-22:46 IsInline=false Waits=true
-      Name: Name 22:10-22:14 Text="move"
+        Parameter 25:15-25:25
+          Name: Name 25:15-25:18 Text="who"
+          Type: Name 25:20-25:25 Text="actor"
+        Parameter 25:27-25:48
+          Name: Name 25:27-25:29 Text="at"
+          Type: Name 25:31-25:39 Text="position"
+          Default: NameExpression 25:42-25:48 Name="center"
+    CommandDeclaration 26:1-26:46 IsInline=false Waits=true
+      Name: Name 26:10-26:14 Text="move"
       Parameters:
-        Parameter 22:15-22:25
-          Name: Name 22:15-22:18 Text="who"
-          Type: Name 22:20-22:25 Text="actor"
-        Parameter 22:27-22:39
-          Name: Name 22:27-22:29 Text="to"
-          Type: Name 22:31-22:39 Text="position"
-    CommandDeclaration 23:1-23:33 IsInline=true Waits=false
-      Name: Name 23:10-23:14 Text="jolt"
+        Parameter 26:15-26:25
+          Name: Name 26:15-26:18 Text="who"
+          Type: Name 26:20-26:25 Text="actor"
+        Parameter 26:27-26:39
+          Name: Name 26:27-26:29 Text="to"
+          Type: Name 26:31-26:39 Text="position"
+    CommandDeclaration 27:1-27:33 IsInline=true Waits=false
+      Name: Name 27:10-27:14 Text="jolt"
       Parameters:
-        Parameter 23:15-23:25
-          Name: Name 23:15-23:18 Text="who"
-          Type: Name 23:20-23:25 Text="actor"
-    CommandDeclaration 24:1-24:30 IsInline=true Waits=true
-      Name: Name 24:10-24:15 Text="blink"
-    CommandDeclaration 25:1-25:79 IsInline=true Waits=false
-      Name: Name 25:10-25:22 Text="shake_screen"
+        Parameter 27:15-27:25
+          Name: Name 27:15-27:18 Text="who"
+          Type: Name 27:20-27:25 Text="actor"
+    CommandDeclaration 28:1-28:30 IsInline=true Waits=true
+      Name: Name 28:10-28:15 Text="blink"
+    CommandDeclaration 29:1-29:79 IsInline=true Waits=false
+      Name: Name 29:10-29:22 Text="shake_screen"
       Parameters:
-        Parameter 25:24-25:44
-          Name: Name 25:24-25:32 Text="strength"
-          Type: Name 25:34-25:40 Text="number"
-          Default: NumberLiteral 25:43-25:44 Value=1
-        Parameter 25:46-25:71
-          Name: Name 25:46-25:54 Text="duration"
-          Type: Name 25:56-25:64 Text="duration"
-          Default: DurationLiteral 25:67-25:71 Seconds=0.3
-    MarkupDeclaration 26:1-26:13
-      Name: Name 26:9-26:13 Text="clue"
-    MarkupDeclaration 27:1-27:59
-      Name: Name 27:9-27:13 Text="wave"
+        Parameter 29:24-29:44
+          Name: Name 29:24-29:32 Text="strength"
+          Type: Name 29:34-29:40 Text="number"
+          Default: NumberLiteral 29:43-29:44 Value=1
+        Parameter 29:46-29:71
+          Name: Name 29:46-29:54 Text="duration"
+          Type: Name 29:56-29:64 Text="duration"
+          Default: DurationLiteral 29:67-29:71 Seconds=0.3
+    MarkupDeclaration 30:1-30:13
+      Name: Name 30:9-30:13 Text="clue"
+    MarkupDeclaration 31:1-31:59
+      Name: Name 31:9-31:13 Text="wave"
       Parameters:
-        Parameter 27:14-27:35
-          Name: Name 27:14-27:23 Text="amplitude"
-          Type: Name 27:25-27:31 Text="number"
-          Default: NumberLiteral 27:34-27:35 Value=1
-        Parameter 27:37-27:58
-          Name: Name 27:37-27:46 Text="frequency"
-          Type: Name 27:48-27:54 Text="number"
-          Default: NumberLiteral 27:57-27:58 Value=5
-    IconDeclaration 28:1-28:26
+        Parameter 31:14-31:35
+          Name: Name 31:14-31:23 Text="amplitude"
+          Type: Name 31:25-31:31 Text="number"
+          Default: NumberLiteral 31:34-31:35 Value=1
+        Parameter 31:37-31:58
+          Name: Name 31:37-31:46 Text="frequency"
+          Type: Name 31:48-31:54 Text="number"
+          Default: NumberLiteral 31:57-31:58 Value=5
+    IconDeclaration 32:1-32:26
       Names:
-        Name 28:7-28:15 Text="interact"
-        Name 28:17-28:26 Text="inventory"
-    TagDeclaration 29:1-29:58
+        Name 32:7-32:15 Text="interact"
+        Name 32:17-32:26 Text="inventory"
+    TagDeclaration 33:1-33:58
       Entries:
-        TagEntry 29:6-29:13
-          Name: Name 29:6-29:13 Text="thought"
-        TagEntry 29:15-29:28
-          Name: Name 29:15-29:28 Text="show_disabled"
-        TagEntry 29:30-29:41
-          Name: Name 29:30-29:33 Text="box"
-          Value: TagValue 29:33-29:41 AllowsEmpty=false
-            Type: Name 29:35-29:41 Text="string"
-        TagEntry 29:43-29:58
-          Name: Name 29:43-29:47 Text="mood"
-          Value: TagValue 29:47-29:58 AllowsEmpty=true
-            Type: Name 29:49-29:57 Text="position"
-    FunctionDeclaration 30:1-30:39
-      Name: Name 30:11-30:19 Text="has_item"
+        TagEntry 33:6-33:13
+          Name: Name 33:6-33:13 Text="thought"
+        TagEntry 33:15-33:28
+          Name: Name 33:15-33:28 Text="show_disabled"
+        TagEntry 33:30-33:41
+          Name: Name 33:30-33:33 Text="box"
+          Value: TagValue 33:33-33:41 AllowsEmpty=false
+            Type: Name 33:35-33:41 Text="string"
+        TagEntry 33:43-33:58
+          Name: Name 33:43-33:47 Text="mood"
+          Value: TagValue 33:47-33:58 AllowsEmpty=true
+            Type: Name 33:49-33:57 Text="position"
+    FunctionDeclaration 34:1-34:39
+      Name: Name 34:11-34:19 Text="has_item"
       Parameters:
-        Parameter 30:20-30:30
-          Name: Name 30:20-30:22 Text="id"
-          Type: Name 30:24-30:30 Text="string"
-      ReturnType: Name 30:35-30:39 Text="bool"
-    FunctionDeclaration 31:1-31:29
-      Name: Name 31:11-31:17 Text="rolled"
-      ReturnType: Name 31:23-31:29 Text="number"
-    VariableDeclaration 32:1-32:32
-      Variable: VariableExpression 32:6-32:24 Name="kitchen.door_open"
-      Value: BooleanLiteral 32:27-32:32 Value=false
-    VariableDeclaration 33:1-33:20
-      Variable: VariableExpression 33:6-33:16 Name=".attempts"
-      Value: NumberLiteral 33:19-33:20 Value=0
-    ActorDeclaration 34:1-36:42 DisplayName="Sam Ortiz"
-      Name: Name 34:8-34:11 Text="sam"
+        Parameter 34:20-34:30
+          Name: Name 34:20-34:22 Text="id"
+          Type: Name 34:24-34:30 Text="string"
+      ReturnType: Name 34:35-34:39 Text="bool"
+    FunctionDeclaration 35:1-35:29
+      Name: Name 35:11-35:17 Text="rolled"
+      ReturnType: Name 35:23-35:29 Text="number"
+    VariableDeclaration 36:1-36:32
+      Variable: VariableExpression 36:6-36:24 Name="kitchen.door_open"
+      Value: BooleanLiteral 36:27-36:32 Value=false
+    VariableDeclaration 37:1-37:20
+      Variable: VariableExpression 37:6-37:16 Name=".attempts"
+      Value: NumberLiteral 37:19-37:20 Value=0
+    ActorDeclaration 38:1-40:42 DisplayName="Sam Ortiz"
+      Name: Name 38:8-38:11 Text="sam"
       Channels:
-        ChannelEdit 36:5-36:18 Edit=Replace
-          Channel: Name 36:5-36:9 Text="pose"
+        ChannelEdit 40:5-40:18 Edit=Replace
+          Channel: Name 40:5-40:9 Text="pose"
           Values:
-            Name 36:11-36:18 Text="neutral"
+            Name 40:11-40:18 Text="neutral"
 Comments:
   1:1-1:30 "Every kind of declaration."
-  24:31-24:64 trailing "A comment after a declaration."
-  35:21-35:43 trailing "the name stops here"
-  36:19-36:42 trailing "and so do the values"
+  7:20-7:51 trailing "shown with narration's lines"
+  28:31-28:64 trailing "A comment after a declaration."
+  39:21-39:43 trailing "the name stops here"
+  40:19-40:42 trailing "and so do the values"

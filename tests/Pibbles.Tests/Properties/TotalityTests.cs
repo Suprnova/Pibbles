@@ -19,7 +19,7 @@ public class TotalityTests
     private static readonly Gen<string> RandomLine = Gen.Select(
         Gen.OneOfConst("", "", "    ", "        ", "\t", "  ", " \t"),
         Gen.OneOfConst("", "==", "@", "->", "- ", "-", "//", "///", "@if ", "@elif ", "@else", "@once", "@cycle", "@sequence", "@actor ", "@var ",
-            "@command ", "@prefix ", "@set ", "@jump ", "@call ", "mira: ", "mira (sad):", "name: ", "pose: ", "pose += ", "no ", "@channel ", "mira (sad, still):", "{", "[", "#"),
+            "@command ", "@prefix ", "@set ", "@jump ", "@call ", "mira: ", "mira (sad):", "name: ", "pose: ", "pose += ", "no ", "@channel ", "@narration ", "(sad):", "mira (sad, still):", "{", "[", "#"),
         Gen.String[Gen.Char[Alphabet], 0, 16],
         (indent, start, rest) => indent + start + rest);
 

@@ -15,12 +15,12 @@ namespace Pibbles.Runtime;
 /// </remarks>
 /// <param name="Id">The line's ID, or the option's. A line without an <c>#id</c> in its source has one made up by the compiler.</param>
 /// <param name="Speaker">The speaker's actor ID, or <see langword="null"/> for narration and for options.</param>
-/// <param name="SpeakerName">The speaker's display name, or <see langword="null"/> when there is no speaker.</param>
+/// <param name="SpeakerName">The speaker's display name; for narration, the name its <c>@narration</c> block gives it. <see langword="null"/> when there is none, and for options.</param>
 /// <param name="Text">The text, without markup, as plain characters: an icon is U+FFFC and a line break is <c>\n</c>.</param>
 /// <param name="Spans">The markup spans over <paramref name="Text"/>, by start, an outer span before an inner one that starts with it.</param>
 /// <param name="Markers">The points in <paramref name="Text"/> where the reveal does something, in the order the line has them.</param>
 /// <param name="Icons">The icons in <paramref name="Text"/>, one for each U+FFFC.</param>
-/// <param name="Values">The values the line sets, in the order written, such as a pose and an effect. A restored line has them again.</param>
+/// <param name="Values">The values the line sets at its speaker, or at narration, in the order written, such as a pose and an effect. A restored line has them again.</param>
 /// <param name="Tags">The line's tags, <c>#id</c> included.</param>
 /// <param name="IsFallbackId">Whether <paramref name="Id"/> was made up by the compiler because the source has no <c>#id</c>. A fallback ID changes whenever the file is edited, so a host that records which lines the player has seen must skip it.</param>
 public sealed record Line(

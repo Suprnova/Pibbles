@@ -9,6 +9,11 @@ public abstract record DeclarationSyntax : SyntaxNode;
 /// <param name="Channels">What the block does to channels, in the order written: <c>pose: a, b</c>, <c>pose += c</c>, and each channel named after <c>no</c>.</param>
 public sealed record ActorDeclarationSyntax(NameSyntax Name, string? DisplayName, IReadOnlyList<ChannelEditSyntax> Channels) : DeclarationSyntax;
 
+/// <summary><c>@narration</c> and its block: what narration has, since it isn't an actor. It takes the same lines as an actor's block.</summary>
+/// <param name="DisplayName">The <c>name:</c> property: the name shown with narration's lines, or <see langword="null"/> to show none.</param>
+/// <param name="Channels">What the block does to channels, in the order written: <c>camera += orbit</c>, <c>pose: a, b</c> and each channel named after <c>no</c>.</param>
+public sealed record NarrationDeclarationSyntax(string? DisplayName, IReadOnlyList<ChannelEditSyntax> Channels) : DeclarationSyntax;
+
 /// <summary><c>@channel name: a, b, c</c>: a value that lines set, such as a pose, and the values every actor starts with.</summary>
 /// <param name="Name">The channel's name.</param>
 /// <param name="Values">The values every actor has, the first being where it starts. Empty when each actor lists its own.</param>

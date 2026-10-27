@@ -4,6 +4,8 @@ start story.main
   mira: A line with a speaker.  #l02
   mira (happy, shake): A line with two values.  #l03
   mira (sad):
+  narration (shake): Narration with a value.  #l03n
+  narration (still):
   rex: ⟨w⟩  #l04
   @show mira center
   @show rex left

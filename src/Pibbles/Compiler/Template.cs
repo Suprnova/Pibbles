@@ -5,10 +5,11 @@ namespace Pibbles.Compiler;
 
 /// <summary>The text of one line or option, lowered, for rendering.</summary>
 /// <param name="Speaker">The speaker, or <see langword="null"/> for narration and for options.</param>
-/// <param name="Values">The values the line sets, in the order written. None for narration and for options.</param>
+/// <param name="SpeakerName">The name shown with the line: the speaker's display name, or narration's name for narration. <see langword="null"/> if there is none, and for options.</param>
+/// <param name="Values">The values the line sets, in the order written. None for options.</param>
 /// <param name="Tags">Every tag on the line, <c>#id</c> included, in the order written.</param>
 /// <param name="Content">What the line shows and does, in order.</param>
-internal sealed record Template(ActorSymbol? Speaker, IReadOnlyList<TemplateValue> Values, IReadOnlyList<TemplateTag> Tags, IReadOnlyList<TemplateElement> Content);
+internal sealed record Template(ActorSymbol? Speaker, string? SpeakerName, IReadOnlyList<TemplateValue> Values, IReadOnlyList<TemplateTag> Tags, IReadOnlyList<TemplateElement> Content);
 
 /// <summary>A value a line sets, with its channel.</summary>
 /// <param name="Channel">The channel.</param>

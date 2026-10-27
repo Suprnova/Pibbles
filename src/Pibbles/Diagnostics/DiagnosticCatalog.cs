@@ -667,6 +667,14 @@ public static class DiagnosticCatalog
         "I don't know a channel called `{0}`.",
         help: "Did you mean `{1}`?");
 
+    /// <summary>PIB2069: a second <c>@narration</c> in the story.</summary>
+    /// <remarks>Argument: where the first one is, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor SecondNarration { get; } = new(
+        "PIB2069",
+        DiagnosticSeverity.Error,
+        "There's already an `@narration`, {0}.",
+        help: "Narration has one block. Merge the two, or remove one.");
+
     /// <summary>PIB2070: a <c>/</c> or <c>%</c> whose right side is a constant zero.</summary>
     /// <remarks>Argument: the operation as written, such as <c>$x / 0</c>.</remarks>
     public static DiagnosticDescriptor DivisionByZero { get; } = new(
@@ -991,6 +999,7 @@ public static class DiagnosticCatalog
         TagValueType,
         UntypedVariable,
         UnknownChannel,
+        SecondNarration,
         DivisionByZero,
         NeverRuns,
         EmptyOption,

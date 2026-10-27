@@ -414,16 +414,15 @@ public sealed class DialogueRunner
         {
             case LineInstruction line:
                 Line shown = BuildLine(line.Id);
-                if (story.Templates[line.Id] is { Speaker: { } speaker } template)
-                    state.SetChannels(speaker, template.Values);
-
+                Template template = story.Templates[line.Id];
+                state.SetChannels(template.Speaker, template.Values);
                 index++;
                 return new LineStep(shown);
 
             case ChannelInstruction channels:
                 state.SetChannels(channels.Speaker, channels.Values);
                 index++;
-                return new ChannelStep(channels.Speaker.Name, LineRenderer.ValuesOf(channels.Values), LineRenderer.Tags(channels.Tags, story));
+                return new ChannelStep(channels.Speaker?.Name, LineRenderer.ValuesOf(channels.Values), LineRenderer.Tags(channels.Tags, story));
 
             case ChoiceInstruction choice:
                 return ExecuteChoice(choice);

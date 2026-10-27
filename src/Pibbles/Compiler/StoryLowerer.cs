@@ -42,6 +42,7 @@ internal sealed class StoryLowerer(Compilation compilation)
             fallbackIds,
             symbols.Actors,
             symbols.Channels,
+            symbols.Narration,
             symbols.Tags,
             symbols.Enums,
             symbols.Functions.Where(function => function.Value.Location is not null).ToDictionary());
@@ -128,23 +129,24 @@ internal sealed class StoryLowerer(Compilation compilation)
 
     private void LowerTextLine(TextLineSyntax line)
     {
-        ActorSymbol? speaker = line.Speaker is { } written ? SymbolOf<ActorSymbol>(written.Name) : null;
-        TemplateValue[] values = [.. (line.Speaker?.Values ?? []).Select(value => LowerValue(speaker!, value))];
+        ActorSymbol? speaker = line.Speaker is { Name: { } written } ? SymbolOf<ActorSymbol>(written) : null;
+        IReadOnlyList<SpeakerChannel> channels = speaker?.Channels ?? symbols.Narration.Channels;
+        TemplateValue[] values = [.. (line.Speaker?.Values ?? []).Select(value => LowerValue(channels, value))];
         if (line.Content.Count == 0)
         {
-            code.Add(new ChannelInstruction(speaker ?? throw Missing(line, "a speaker for the values"), values, LowerTags(line.Tags)));
+            code.Add(new ChannelInstruction(speaker, values, LowerTags(line.Tags)));
             return;
         }
 
         string id = Identify(line.Tags, line.Span, code.Count);
-        templates[id] = new(speaker, values, LowerTags(line.Tags), LowerInline(line.Content));
+        templates[id] = new(speaker, speaker?.DisplayName ?? symbols.Narration.DisplayName, values, LowerTags(line.Tags), LowerInline(line.Content));
         code.Add(new LineInstruction(id));
     }
 
-    private TemplateValue LowerValue(ActorSymbol speaker, NameSyntax written)
+    private TemplateValue LowerValue(IReadOnlyList<SpeakerChannel> channels, NameSyntax written)
     {
         var value = SymbolOf<ChannelValueSymbol>(written);
-        return new(speaker.Channels.First(channel => channel.Values.Contains(value)).Channel, value);
+        return new(channels.First(channel => channel.Values.Contains(value)).Channel, value);
     }
 
     private void LowerChoice(ChoiceSyntax choice)
@@ -157,7 +159,7 @@ internal sealed class StoryLowerer(Compilation compilation)
         foreach (OptionSyntax option in choice.Options)
         {
             string id = Identify(option.Tags, option.Span, at);
-            var text = new Template(null, [], LowerTags(option.Tags), LowerInline(option.Text));
+            var text = new Template(null, null, [], LowerTags(option.Tags), LowerInline(option.Text));
             templates[id] = text;
             options.Add((id, text, option.Condition is { } condition ? LowerExpression(condition) : null, option.IsOnce, option.Body.Count == 0 ? -1 : code.Count));
             if (option.Body.Count > 0)

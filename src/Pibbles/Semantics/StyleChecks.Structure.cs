@@ -59,11 +59,11 @@ internal sealed partial class StyleChecks
             }
         }
 
-        foreach (var repeats in lines.GroupBy(entry => (entry.Line.Speaker?.Name.Text, entry.Text)))
+        foreach (var repeats in lines.GroupBy(entry => (entry.Line.Speaker?.Name?.Text, entry.Text)))
         {
             foreach (var (tree, line, _) in repeats.Where(entry => repeats.Count() >= SettingsOf(entry.Tree).Threshold("pibbles_min_repeated_lines")))
             {
-                object who = line.Speaker is { } speaker ? new SpeakerMention(speaker.Name.Text, "{0} says this same line") : "This same narration appears";
+                object who = line.Speaker is { Name: { } speaker } ? new SpeakerMention(speaker.Text, "{0} says this same line") : "This same narration appears";
                 ReportAt(DiagnosticCatalog.RepeatedLine, tree.Source.GetLocation(SpanOf(line.Content)), who, repeats.Count());
             }
         }

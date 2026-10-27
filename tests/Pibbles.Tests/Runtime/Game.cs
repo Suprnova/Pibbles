@@ -14,6 +14,9 @@ internal sealed class Game
         @enum mood: calm, tense
         @channel pose
         @channel effect: still, shake
+        @narration
+            name: Narrator
+            no pose
         @actor mira
             name: Mira
             pose: neutral, happy

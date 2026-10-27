@@ -9,20 +9,24 @@ namespace Pibbles.Semantics;
 internal sealed partial class StyleChecks
 {
     /// <summary>
-    /// PIB5010 and PIB5016: follows each actor's value in each channel down a block, but only while that's certain. Text
+    /// PIB5010 and PIB5016: follows each actor's and narration's value in each channel down a block, but only while that's certain. Text
     /// lines, <c>@set</c> and <c>@pause</c> keep what's known; anything else, such as a command, a call or a choice,
     /// might change a value or skip ahead, so it forgets everything.
     /// </summary>
     private void CheckValues(IReadOnlyList<StatementSyntax> block)
     {
-        Dictionary<(string Actor, string Channel), string> values = [];
-        Dictionary<(string Actor, string Channel), NameSyntax> unseen = [];
+        Dictionary<(string? Speaker, string Channel), string> values = [];
+        Dictionary<(string? Speaker, string Channel), NameSyntax> unseen = [];
         foreach (StatementSyntax statement in block)
         {
             switch (statement)
             {
-                case TextLineSyntax { Speaker: { } speaker } line when symbols.Actors.TryGetValue(speaker.Name.Text, out ActorSymbol? actor):
-                    CheckLineValues(line, speaker, actor, values, unseen);
+                case TextLineSyntax { Speaker: { Name: { } name } speaker } line when symbols.Actors.TryGetValue(name.Text, out ActorSymbol? actor):
+                    CheckLineValues(line, speaker.Values, actor.Name, actor.Channels, new SpeakerMention(actor.Name), values, unseen);
+                    break;
+
+                case TextLineSyntax { Speaker: { Name: null } narration } line:
+                    CheckLineValues(line, narration.Values, null, symbols.Narration.Channels, "Narration", values, unseen);
                     break;
 
                 case TextLineSyntax or PauseStatementSyntax:
@@ -43,19 +47,23 @@ internal sealed partial class StyleChecks
         }
     }
 
-    /// <summary>Reports a value the actor already has, or one set by a line with no text that changes again before any line shows.</summary>
-    private void CheckLineValues(TextLineSyntax line, SpeakerSyntax speaker, ActorSymbol actor, Dictionary<(string Actor, string Channel), string> values, Dictionary<(string Actor, string Channel), NameSyntax> unseen)
+    /// <summary>
+    /// Reports a value the speaker already has, or one set by a line with no text that changes again before any line
+    /// shows. <paramref name="speaker"/> is the actor's ID, or <see langword="null"/> for narration, and
+    /// <paramref name="mention"/> names it in the message.
+    /// </summary>
+    private void CheckLineValues(TextLineSyntax line, IReadOnlyList<NameSyntax> written, string? speaker, IReadOnlyList<SpeakerChannel> channels, object mention, Dictionary<(string? Speaker, string Channel), string> values, Dictionary<(string? Speaker, string Channel), NameSyntax> unseen)
     {
-        foreach (NameSyntax value in speaker.Values)
+        foreach (NameSyntax value in written)
         {
-            if (actor.Channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } owner)
+            if (channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } owner)
                 continue;
 
-            var key = (actor.Name, owner.Channel.Name);
+            var key = (speaker, owner.Channel.Name);
             if (unseen.Remove(key, out NameSyntax? hidden))
-                Report(DiagnosticCatalog.UnseenValueChange, hidden.Span, hidden.Text, new SpeakerMention(actor.Name), owner.Channel.Name);
+                Report(DiagnosticCatalog.UnseenValueChange, hidden.Span, hidden.Text, mention, owner.Channel.Name);
             else if (values.GetValueOrDefault(key) == value.Text)
-                Report(DiagnosticCatalog.RepeatedValue, value.Span, value.Text, new SpeakerMention(actor.Name));
+                Report(DiagnosticCatalog.RepeatedValue, value.Span, value.Text, mention);
 
             values[key] = value.Text;
             if (line.Content.Count == 0)

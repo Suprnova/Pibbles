@@ -14,6 +14,7 @@ public sealed class Story
     private IReadOnlyList<FunctionInfo>? functionInfos;
     private IReadOnlyList<VariableInfo>? variableInfos;
     private IReadOnlyList<ChannelInfo>? channelInfos;
+    private NarrationInfo? narrationInfo;
     private IReadOnlyList<ActorInfo>? actorInfos;
     private IReadOnlyList<EnumInfo>? enumInfos;
 
@@ -26,6 +27,7 @@ public sealed class Story
         IReadOnlySet<string> fallbackIds,
         IReadOnlyDictionary<string, ActorSymbol> actors,
         IReadOnlyDictionary<string, ChannelSymbol> channels,
+        NarrationSymbol narration,
         IReadOnlyDictionary<string, TagSymbol> tags,
         IReadOnlyDictionary<string, EnumSymbol> enums,
         IReadOnlyDictionary<string, FunctionSymbol> functions)
@@ -38,6 +40,7 @@ public sealed class Story
         FallbackIds = fallbackIds;
         ActorSymbols = actors;
         ChannelSymbols = channels;
+        NarrationSymbol = narration;
         Tags = tags;
         EnumSymbols = enums;
         FunctionSymbols = functions;
@@ -56,6 +59,9 @@ public sealed class Story
     /// <summary>The channels the story declares, each with the values every actor starts with.</summary>
     public IReadOnlyList<ChannelInfo> Channels => channelInfos ??=
         [.. ChannelSymbols.Values.Select(channel => new ChannelInfo(channel.Name, [.. channel.Defaults.Select(value => value.Name)]))];
+
+    /// <summary>What narration has: the name shown with its lines, if any, and the channels its lines can set.</summary>
+    public NarrationInfo Narration => narrationInfo ??= new(NarrationSymbol.DisplayName, [.. NarrationSymbol.Channels.Select(channel => new ChannelInfo(channel.Channel.Name, [.. channel.Values.Select(value => value.Name)]))]);
 
     /// <summary>The actors the story declares.</summary>
     public IReadOnlyList<ActorInfo> Actors => actorInfos ??=
@@ -90,6 +96,9 @@ public sealed class Story
 
     /// <summary>Every declared channel, by name.</summary>
     internal IReadOnlyDictionary<string, ChannelSymbol> ChannelSymbols { get; }
+
+    /// <summary>What narration has, for checking the values a save holds for it.</summary>
+    internal NarrationSymbol NarrationSymbol { get; }
 
     /// <summary>The functions the story declares, which the host provides. <c>visits</c> isn't among them.</summary>
     internal IReadOnlyDictionary<string, FunctionSymbol> FunctionSymbols { get; }

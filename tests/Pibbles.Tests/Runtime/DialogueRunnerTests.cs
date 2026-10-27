@@ -60,6 +60,44 @@ public class DialogueRunnerTests
     }
 
     [Fact]
+    public void Next_NarrationWithValues_CarriesThemAndTheNarrationName()
+    {
+        Game game = Game.Of("== t.n\n(shake): The floor rumbles. #id:l1\nNo values here. #id:l2\n(still):\n");
+        game.Runner.Start("t.n");
+
+        var line = Assert.IsType<LineStep>(game.Runner.Next()).Line;
+        var plain = Assert.IsType<LineStep>(game.Runner.Next()).Line;
+        var step = Assert.IsType<ChannelStep>(game.Runner.Next());
+
+        Assert.Equal([new ChannelValue("effect", "shake")], line.Values);
+        Assert.Null(line.Speaker);
+        Assert.Null(step.Actor);
+        Assert.Equal(["Narrator", "Narrator"], [line.SpeakerName, plain.SpeakerName]);
+        Assert.Equal([new ChannelValue("effect", "still")], step.Values);
+        Assert.Equal("still", game.State.GetChannel(null, "effect"));
+    }
+
+    [Fact]
+    public void Next_NarrationWithNoNameBlock_HasNoName()
+    {
+        Game game = Game.Of("@channel effect: still, shake\n== t.n\nNarration. #id:l1\n", declarations: false);
+        game.Runner.Start("t.n");
+
+        var line = Assert.IsType<LineStep>(game.Runner.Next()).Line;
+
+        Assert.Null(line.SpeakerName);
+        Assert.Equal("still", game.State.GetChannel(null, "effect"));
+    }
+
+    [Fact]
+    public void GetChannel_NarrationWithoutTheChannel_Throws()
+    {
+        Game game = Game.Of("== t.n\nNarration.\n");
+
+        Assert.Throws<ArgumentException>(() => game.State.GetChannel(null, "pose"));
+    }
+
+    [Fact]
     public void GetChannel_UnknownActorOrChannel_Throws()
     {
         Game game = Game.Of("== t.n\nmira: Hi.\n");

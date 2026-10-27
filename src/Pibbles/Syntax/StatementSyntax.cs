@@ -102,15 +102,15 @@ public enum CommandWait
 
 /// <summary>A line of dialogue or narration, such as <c>mira (smug): I knew you'd come.</c></summary>
 /// <remarks>A line with values and no text, <c>mira (sad):</c>, sets the values without showing a line.</remarks>
-/// <param name="Speaker">The speaker and the values in parentheses after it, or <see langword="null"/> for narration.</param>
+/// <param name="Speaker">The speaker and the values in parentheses after it, or <see langword="null"/> for narration with no parenthesis.</param>
 /// <param name="Content">The line's text, with its leading and trailing whitespace trimmed.</param>
 /// <param name="Tags">The tags at the end of the line.</param>
 public sealed record TextLineSyntax(SpeakerSyntax? Speaker, IReadOnlyList<InlineSyntax> Content, IReadOnlyList<TagSyntax> Tags) : StatementSyntax;
 
-/// <summary>The start of a text line: a speaker, and the channel values in parentheses after it, as in <c>mira (mad, shake)</c>.</summary>
-/// <param name="Name">The speaker's actor ID.</param>
+/// <summary>The start of a text line: a speaker, and the channel values in parentheses after it, as in <c>mira (mad, shake)</c>. Narration has values too, in a parenthesis with no name before it: <c>(orbit_scene)</c>.</summary>
+/// <param name="Name">The speaker's actor ID, or <see langword="null"/> for narration's parenthesis.</param>
 /// <param name="Values">The values the line sets, one for each channel at most, in the order written. Empty when the speaker has no parenthesis.</param>
-public sealed record SpeakerSyntax(NameSyntax Name, IReadOnlyList<NameSyntax> Values) : SyntaxNode;
+public sealed record SpeakerSyntax(NameSyntax? Name, IReadOnlyList<NameSyntax> Values) : SyntaxNode;
 
 /// <summary>A choice: consecutive <c>-></c> options at the same indentation.</summary>
 /// <param name="Options">The options, in order.</param>

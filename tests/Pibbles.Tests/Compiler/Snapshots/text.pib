@@ -10,3 +10,5 @@ mira (happy): Tags follow the text. #thought #box:tense
 mira: You have {$count} keys, {$name}, and {$who} is here.
 mira (happy, shake): Two values at once. #thought
 mira (still, sad): // Values alone, with a comment.
+(still): Narration at ease. #thought
+(shake):

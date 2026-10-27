@@ -18,6 +18,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
 {
     private readonly SymbolTable symbols = new();
     private readonly Dictionary<string, SourceLocation> nodeNames = [];
+    private SourceLocation? narrationLocation;
     private bool builtIn;
 
     public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings)
@@ -27,6 +28,9 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         pass.ForEachFile(trees, pass.DeclareChannels);
         pass.ForEachFile(trees, pass.DeclareOthers);
         pass.ForEachFile(trees, pass.DeclareVariables);
+        if (pass.narrationLocation is null)
+            pass.symbols.Narration = new(null, null, [.. pass.symbols.Channels.Values.Select(channel => new SpeakerChannel(channel, channel.Defaults))]);
+
         return pass.symbols;
     }
 
@@ -82,6 +86,10 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
                     DeclareActor(actor);
                     break;
 
+                case NarrationDeclarationSyntax narration:
+                    DeclareNarration(narration);
+                    break;
+
                 case CommandDeclarationSyntax command:
                     List<ParameterSymbol> commandParameters = DeclareParameters(command.Parameters, $"the parameters of `@{command.Name.Text}`");
                     Declare(symbols.Commands, new CommandSymbol(command.Name.Text, Location(command.Name.Span), commandParameters, command.IsInline, command.Waits), command.Name, SymbolKind.Command);
@@ -129,22 +137,36 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     {
         string displayName = actor.DisplayName ?? actor.Name.Text;
         string owner = actor.Name.IsMissing ? "this actor" : displayName;
-        List<SpeakerChannel> channels = ResolveChannels(actor, owner);
+        List<SpeakerChannel> channels = ResolveChannels(actor.Channels, owner);
         Declare(symbols.Actors, new ActorSymbol(actor.Name.Text, Location(actor.Name.Span), displayName, channels), actor.Name, SymbolKind.Actor);
     }
 
+    private void DeclareNarration(NarrationDeclarationSyntax narration)
+    {
+        var keyword = new TextSpan(narration.Span.Start, "@narration".Length);
+        if (narrationLocation is { } first)
+        {
+            Report(DiagnosticCatalog.SecondNarration, keyword, Where(first));
+            return;
+        }
+
+        narrationLocation = Tree.Source.GetLocation(keyword);
+        symbols.Narration = new NarrationSymbol(Location(keyword), narration.DisplayName, ResolveChannels(narration.Channels, "Narration"));
+        DeclaresIfWritten(keyword, symbols.Narration);
+    }
+
     /// <summary>
-    /// Works out the channels an actor has: every channel with its defaults, then the actor's block applied. A channel
+    /// Works out the channels an actor or narration has: every channel with its defaults, then the block applied. A channel
     /// the block drops is left out, one it replaces has the block's values, and one it adds to has the defaults and the
     /// block's values. A channel is mentioned once in a block, and the values of an actor's channels all differ.
     /// </summary>
-    private List<SpeakerChannel> ResolveChannels(ActorDeclarationSyntax actor, string owner)
+    private List<SpeakerChannel> ResolveChannels(IReadOnlyList<ChannelEditSyntax> edits, string owner)
     {
         Dictionary<ChannelSymbol, List<ChannelValueSymbol>?> lists = symbols.Channels.Values.ToDictionary(channel => channel, channel => (List<ChannelValueSymbol>?)[.. channel.Defaults]);
         HashSet<string> written = [];
         List<(NameSyntax Syntax, ChannelValueSymbol Value, ChannelSymbol Channel)> introduced = [];
 
-        foreach (ChannelEditSyntax edit in actor.Channels)
+        foreach (ChannelEditSyntax edit in edits)
         {
             if (FindChannel(edit.Channel, written, owner) is not { } channel)
                 continue;

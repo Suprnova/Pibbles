@@ -39,35 +39,45 @@ public sealed class StoryState
 
     internal Dictionary<string, Dictionary<string, string>> Channels { get; } = [];
 
+    internal Dictionary<string, string> NarrationChannels { get; } = [];
+
     /// <summary>
-    /// An actor's current value in a channel: the last one the story set, or the actor's first value if it hasn't set
+    /// A speaker's current value in a channel: the last one the story set, or the speaker's first value if it hasn't set
     /// one. A host can use it to redraw after a load.
     /// </summary>
-    /// <param name="actor">The actor's ID.</param>
+    /// <param name="actor">The actor's ID, or <see langword="null"/> for narration.</param>
     /// <param name="channel">The channel's name.</param>
-    /// <returns>The value's name, or <see langword="null"/> if the actor has no values in the channel.</returns>
-    /// <exception cref="ArgumentException">The story has no actor with that ID, or the actor has no such channel.</exception>
-    public string? GetChannel(string actor, string channel)
+    /// <returns>The value's name, or <see langword="null"/> if the speaker has no values in the channel.</returns>
+    /// <exception cref="ArgumentException">The story has no actor with that ID, or the speaker has no such channel.</exception>
+    public string? GetChannel(string? actor, string channel)
     {
-        if (!Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared))
-            throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
-
-        SpeakerChannel has = declared.Channels.FirstOrDefault(candidate => candidate.Channel.Name == channel)
-            ?? throw new ArgumentException($"`{actor}` has no channel called `{channel}`.", nameof(channel));
-        return Channels.GetValueOrDefault(actor)?.GetValueOrDefault(channel) ?? (has.Values is [var first, ..] ? first.Name : null);
+        IReadOnlyList<SpeakerChannel> channels = actor is null ? Story.NarrationSymbol.Channels
+            : Story.ActorSymbols.TryGetValue(actor, out ActorSymbol? declared) ? declared.Channels
+            : throw new ArgumentException($"The story has no actor called `{actor}`.", nameof(actor));
+        SpeakerChannel has = channels.FirstOrDefault(candidate => candidate.Channel.Name == channel)
+            ?? throw new ArgumentException($"{(actor is null ? "Narration" : $"`{actor}`")} has no channel called `{channel}`.", nameof(channel));
+        return ValuesOf(actor)?.GetValueOrDefault(channel) ?? (has.Values is [var first, ..] ? first.Name : null);
     }
 
-    /// <summary>Records the values a line or a parenthesis with no text set for an actor.</summary>
-    internal void SetChannels(ActorSymbol actor, IEnumerable<TemplateValue> values)
+    /// <summary>Records the values a line or a parenthesis with no text set for an actor, or for narration.</summary>
+    internal void SetChannels(ActorSymbol? actor, IEnumerable<TemplateValue> values)
     {
         foreach (TemplateValue value in values)
         {
+            if (actor is null)
+            {
+                NarrationChannels[value.Channel.Name] = value.Value.Name;
+                continue;
+            }
+
             if (!Channels.TryGetValue(actor.Name, out Dictionary<string, string>? set))
                 Channels[actor.Name] = set = [];
 
             set[value.Channel.Name] = value.Value.Name;
         }
     }
+
+    private Dictionary<string, string>? ValuesOf(string? actor) => actor is null ? NarrationChannels : Channels.GetValueOrDefault(actor);
 
     /// <summary>
     /// A variable's current value as a host sees it, by the mapping of <see cref="StoryType.HostType"/>. A duration
@@ -124,6 +134,7 @@ public sealed class StoryState
             BlockEntries = Sorted(BlockEntries.Where(entry => Keep(entry.Key, "The entry count of the block"))),
             ChosenOptions = [.. ChosenOptions.Order(StringComparer.Ordinal).Where(id => Keep(id, "The chosen option"))],
             Channels = Channels.OrderBy(entry => entry.Key, StringComparer.Ordinal).ToDictionary(entry => entry.Key, entry => (IReadOnlyDictionary<string, string>)Sorted(entry.Value)),
+            Narration = Sorted(NarrationChannels),
         };
         return new(snapshot, problems);
     }
@@ -150,6 +161,7 @@ public sealed class StoryState
         state.RestoreBlockEntries(snapshot.BlockEntries, problems);
         state.RestoreChosenOptions(snapshot.ChosenOptions, problems);
         state.RestoreChannels(snapshot.Channels, problems);
+        state.RestoreNarration(snapshot.Narration, problems);
         return new(state, problems);
     }
 
@@ -228,17 +240,29 @@ public sealed class StoryState
                 continue;
             }
 
-            foreach ((string channel, string value) in values)
-            {
-                if (declared.Channels.FirstOrDefault(candidate => candidate.Channel.Name == channel) is not { } has)
-                    problems.Add(new(SaveProblemKind.UnknownChannel, $"{actor}.{channel}", $"The save has `{actor}` set to `{value}` in the channel `{channel}`, which the actor no longer has, so it's dropped."));
-                else if (has.Values.All(candidate => candidate.Name != value))
-                    problems.Add(new(SaveProblemKind.UnknownChannelValue, $"{actor}.{channel}", $"The save has `{actor}` set to `{value}` in the channel `{channel}`, which the actor no longer has in that channel, so it keeps its first value."));
-                else if (Channels.TryGetValue(actor, out Dictionary<string, string>? set))
-                    set[channel] = value;
-                else
-                    Channels[actor] = new() { [channel] = value };
-            }
+            if (!Channels.TryGetValue(actor, out Dictionary<string, string>? set))
+                Channels[actor] = set = [];
+
+            RestoreValues(actor, $"`{actor}`", declared.Channels, values, set, problems);
+            if (set.Count == 0)
+                Channels.Remove(actor);
+        }
+    }
+
+    private void RestoreNarration(IReadOnlyDictionary<string, string> saved, List<SaveProblem> problems) =>
+        RestoreValues("narration", "narration", Story.NarrationSymbol.Channels, saved, NarrationChannels, problems);
+
+    /// <summary>Restores one speaker's values, dropping those whose channel or value the speaker no longer has.</summary>
+    private static void RestoreValues(string subject, string speaker, IReadOnlyList<SpeakerChannel> channels, IReadOnlyDictionary<string, string> saved, Dictionary<string, string> into, List<SaveProblem> problems)
+    {
+        foreach ((string channel, string value) in saved)
+        {
+            if (channels.FirstOrDefault(candidate => candidate.Channel.Name == channel) is not { } has)
+                problems.Add(new(SaveProblemKind.UnknownChannel, $"{subject}.{channel}", $"The save has {speaker} set to `{value}` in the channel `{channel}`, which {speaker} no longer has, so it's dropped."));
+            else if (has.Values.All(candidate => candidate.Name != value))
+                problems.Add(new(SaveProblemKind.UnknownChannelValue, $"{subject}.{channel}", $"The save has {speaker} set to `{value}` in the channel `{channel}`, which {speaker} no longer has in that channel, so it keeps its first value."));
+            else
+                into[channel] = value;
         }
     }
 

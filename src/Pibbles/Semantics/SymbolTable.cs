@@ -7,6 +7,9 @@ internal sealed class SymbolTable
 
     public Dictionary<string, ChannelSymbol> Channels { get; } = [];
 
+    /// <summary>What narration has. It's the story's <c>@narration</c> block, or the default once every declaration is made.</summary>
+    public NarrationSymbol Narration { get; set; } = null!;
+
     public Dictionary<string, EnumSymbol> Enums { get; } = [];
 
     public Dictionary<string, VariableSymbol> Variables { get; } = [];
@@ -32,6 +35,7 @@ internal sealed class SymbolTable
     [
         .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))]),
         .. Channels.Values.SelectMany(channel => (IEnumerable<Symbol>)[channel, .. channel.Defaults]),
+        .. Narration.Location is null ? [] : (IEnumerable<Symbol>)[Narration, .. Narration.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))],
         .. Enums.Values.SelectMany(@enum => (IEnumerable<Symbol>)[@enum, .. @enum.Members]),
         .. Variables.Values,
         .. Commands.Values.SelectMany(command => (IEnumerable<Symbol>)[command, .. command.Parameters]),

@@ -60,6 +60,12 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         }
     }
 
+    private void BlockChannels(IEnumerable<ChannelEditSyntax> edits)
+    {
+        foreach (ChannelEditSyntax edit in edits)
+            Line(1, edit.Edit is ChannelEdit.Drop ? $"no {edit.Channel.Text}" : $"{edit.Channel.Text}{(edit.Edit is ChannelEdit.Add ? " +=" : ":")} {Names(edit.Values)}");
+    }
+
     private void Declaration(DeclarationSyntax declaration)
     {
         switch (declaration)
@@ -68,8 +74,14 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
                 Line(0, $"@actor {actor.Name.Text}");
                 if (actor.DisplayName is not null)
                     Line(1, $"name: {actor.DisplayName}");
-                foreach (ChannelEditSyntax edit in actor.Channels)
-                    Line(1, edit.Edit is ChannelEdit.Drop ? $"no {edit.Channel.Text}" : $"{edit.Channel.Text}{(edit.Edit is ChannelEdit.Add ? " +=" : ":")} {Names(edit.Values)}");
+                BlockChannels(actor.Channels);
+                break;
+
+            case NarrationDeclarationSyntax narration:
+                Line(0, "@narration");
+                if (narration.DisplayName is not null)
+                    Line(1, $"name: {narration.DisplayName}");
+                BlockChannels(narration.Channels);
                 break;
 
             case ChannelDeclarationSyntax channel:
@@ -195,7 +207,13 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
 
     private static string TextLine(TextLineSyntax line)
     {
-        string speaker = line.Speaker is null ? "" : line.Speaker.Values.Count == 0 ? $"{line.Speaker.Name.Text}:" : $"{line.Speaker.Name.Text} ({Names(line.Speaker.Values)}):";
+        string speaker = line.Speaker switch
+        {
+            null => "",
+            { Name: null } narration => $"({Names(narration.Values)}):",
+            { Values.Count: 0 } named => $"{named.Name!.Text}:",
+            var named => $"{named.Name!.Text} ({Names(named.Values)}):",
+        };
         string content = Inline(line.Content, option: false, narration: line.Speaker is null);
         if (line.Speaker is null && content is ['-' or '=' or '@', ..])
             content = "\\" + content;

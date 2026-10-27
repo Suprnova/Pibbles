@@ -203,6 +203,16 @@ public class BinderTests
             "Rex has no values to set. Declare a channel such as `@channel pose`, then list Rex's values under `@actor rex`: `pose: neutral, happy`."
         },
         {
+            $"{Cast}(Meanwhile): Fine.\n",
+            "Narration has no value called `Meanwhile`.",
+            "Narration has no values to set. Declare a channel such as `@channel pose`, then list Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\(Meanwhile):`."
+        },
+        {
+            "@channel camera: static, orbit\n@narration\n    no camera\n\n== a.b\n(orbit): Fine.\n",
+            "Narration has no value called `orbit`.",
+            "Narration has no `camera`, which has `orbit`. If this is text, put a backslash before the `(`: `\\(orbit):`."
+        },
+        {
             $"{Cast}mira (to Rex): Fine.\n",
             "`(to Rex)` isn't a list of values: each value is a single name.",
             "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\\:`."

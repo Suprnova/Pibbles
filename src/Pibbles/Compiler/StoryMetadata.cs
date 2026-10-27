@@ -80,6 +80,11 @@ public sealed record VariableInfo(string Name, StoryType Type);
 /// <param name="Values">The values, the first being where a speaker starts. For a story's channel, the values every actor starts with.</param>
 public sealed record ChannelInfo(string Name, IReadOnlyList<string> Values);
 
+/// <summary>What narration has. Narration isn't an actor: no line names it, and it's never an <c>actor</c> value.</summary>
+/// <param name="Name">The name shown with narration's lines, or <see langword="null"/> if there is none.</param>
+/// <param name="Channels">The channels narration has, with the values its lines can set in each. A channel narration drops isn't listed.</param>
+public sealed record NarrationInfo(string? Name, IReadOnlyList<ChannelInfo> Channels);
+
 /// <summary>An actor the story declares.</summary>
 /// <param name="Id">The actor's ID.</param>
 /// <param name="DisplayName">The name the player sees.</param>

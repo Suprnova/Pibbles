@@ -5,6 +5,10 @@
 @channel pose: neutral, happy, sad, worried
 @channel effect: still, jolt
 
+// Narration is declared like an actor, but it isn't one. It has no pose.
+@narration
+    no pose
+
 @actor mira
     name: Mira
     pose += smug, angry

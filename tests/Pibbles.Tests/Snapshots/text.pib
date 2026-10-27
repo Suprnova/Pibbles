@@ -28,3 +28,5 @@ mira: Read #link:https://example.com // a tag value keeps its slashes
 mira: A banner //// and a comment
 mira (happy, shake): Two values, in the order written.
 mira (shake, sad):
+(shake): Narration with a value.
+(still, sad):

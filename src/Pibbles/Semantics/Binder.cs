@@ -133,55 +133,68 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private void BindTextLine(TextLineSyntax line)
     {
-        if (line.Speaker is { } speaker)
-            BindSpeaker(line, speaker);
+        if (line.Speaker is { Name: { } name } speaker)
+        {
+            if (symbols.Actors.TryGetValue(name.Text, out ActorSymbol? actor))
+            {
+                Refers(name, actor);
+                BindValues(speaker.Values, actor.Channels, actor.DisplayName, $"@actor {actor.Name}", line);
+            }
+            else
+            {
+                string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(name.Text, symbols.Actors.Keys));
+                Report(DiagnosticCatalog.UnknownSpeaker, name.Span, name.Text, meant, BeforeColon(line));
+            }
+        }
+        else if (line.Speaker is { } narration)
+        {
+            BindValues(narration.Values, symbols.Narration.Channels, "Narration", "@narration", line);
+        }
         else
+        {
             CheckNarration(line);
+        }
 
         BindInline(line.Content);
         BindTags(line.Tags);
     }
 
-    private void BindSpeaker(TextLineSyntax line, SpeakerSyntax speaker)
+    /// <summary>Binds each value in a speaker's parenthesis to the channel that has it, and reports a second value of one channel.</summary>
+    private void BindValues(IReadOnlyList<NameSyntax> written, IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, TextLineSyntax line)
     {
-        if (!symbols.Actors.TryGetValue(speaker.Name.Text, out ActorSymbol? actor))
-        {
-            string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(speaker.Name.Text, symbols.Actors.Keys));
-            Report(DiagnosticCatalog.UnknownSpeaker, speaker.Name.Span, speaker.Name.Text, meant, BeforeColon(line));
-            return;
-        }
-
-        Refers(speaker.Name, actor);
         Dictionary<ChannelSymbol, NameSyntax> set = [];
-        foreach (NameSyntax value in speaker.Values)
+        foreach (NameSyntax value in written)
         {
-            if (actor.Channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } owner)
+            if (channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } has)
             {
-                ReportUnknownValue(actor, value);
+                ReportUnknownValue(channels, owner, declaration, value, line);
                 continue;
             }
 
-            Refers(value, owner.Values.First(known => known.Name == value.Text));
-            if (set.TryGetValue(owner.Channel, out NameSyntax? first))
-                Report(DiagnosticCatalog.TwoValuesInChannel, value.Span, first.Text, value.Text, actor.DisplayName, owner.Channel.Name);
+            Refers(value, has.Values.First(known => known.Name == value.Text));
+            if (set.TryGetValue(has.Channel, out NameSyntax? first))
+                Report(DiagnosticCatalog.TwoValuesInChannel, value.Span, first.Text, value.Text, owner, has.Channel.Name);
             else
-                set.Add(owner.Channel, value);
+                set.Add(has.Channel, value);
         }
     }
 
-    private void ReportUnknownValue(ActorSymbol actor, NameSyntax value)
+    private void ReportUnknownValue(IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, NameSyntax value, TextLineSyntax line)
     {
-        string[] values = [.. actor.Channels.SelectMany(channel => channel.Values).Select(known => known.Name)];
-        ChannelSymbol? dropped = symbols.Channels.Values.FirstOrDefault(channel => actor.Channels.All(has => has.Channel != channel) && channel.Defaults.Any(known => known.Name == value.Text));
-        string help = dropped is not null ? $"{actor.DisplayName} has no `{dropped.Name}`, which has `{value.Text}`."
+        string[] values = [.. channels.SelectMany(channel => channel.Values).Select(known => known.Name)];
+        ChannelSymbol? dropped = symbols.Channels.Values.FirstOrDefault(channel => channels.All(has => has.Channel != channel) && channel.Defaults.Any(known => known.Name == value.Text));
+        string help = dropped is not null ? $"{owner} has no `{dropped.Name}`, which has `{value.Text}`."
             : Suggestions.Closest(value.Text, values) is { } suggestion ? DiagnosticCatalog.DidYouMean(suggestion).TrimEnd()
             : values.Length switch
             {
-                0 => $"{actor.DisplayName} has no values to set. Declare a channel such as `@channel pose`, then list {actor.DisplayName}'s values under `@actor {actor.Name}`: `pose: neutral, happy`.",
-                1 => $"{actor.DisplayName}'s only value is {Phrase.And(values)}.",
-                _ => $"{actor.DisplayName}'s values are {Phrase.And(values)}.",
+                0 => $"{owner} has no values to set. Declare a channel such as `@channel pose`, then list {owner}'s values under `{declaration}`: `pose: neutral, happy`.",
+                1 => $"{owner}'s only value is {Phrase.And(values)}.",
+                _ => $"{owner}'s values are {Phrase.And(values)}.",
             };
-        Report(DiagnosticCatalog.UnknownChannelValue, value.Span, actor.DisplayName, value.Text, help);
+        if (line.Speaker is { Name: null })
+            help += $" If this is text, put a backslash before the `(`: `\\{BeforeColon(line)}:`.";
+
+        Report(DiagnosticCatalog.UnknownChannelValue, value.Span, owner, value.Text, help);
     }
 
     /// <summary>
@@ -199,17 +212,19 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         {
             Report(DiagnosticCatalog.NotValues, parentheses, TextOf(parentheses), before);
         }
-        else if (prefix is { Extra: { } extra, Parentheses: { } valuesParentheses } && symbols.Actors.ContainsKey(TextOf(prefix.Name)))
+        else if (prefix is { Extra: { } extra, Parentheses: { } valuesParentheses } && IsActor(prefix))
         {
             Report(DiagnosticCatalog.AfterValues, extra, TextOf(extra), TextOf(valuesParentheses), before);
         }
-        else if (symbols.Actors.ContainsKey(TextOf(prefix.Name)))
+        else if (IsActor(prefix))
         {
             int textEnd = line.Tags.Count > 0 ? line.Tags[0].Span.Start : line.Span.End;
             string after = TextOf(new(prefix.Colon + 1, textEnd - prefix.Colon - 1)).TrimEnd();
             Report(DiagnosticCatalog.NoSpaceAfterSpeaker, new(line.Span.Start, prefix.Colon + 1 - line.Span.Start), before, $"{before}\\:{after}");
         }
     }
+
+    private bool IsActor(SpeakerPrefix prefix) => prefix.Name is { } name && symbols.Actors.ContainsKey(TextOf(name));
 
     /// <summary>A text line's start up to its speaker's colon, as written.</summary>
     private string BeforeColon(TextLineSyntax line) =>

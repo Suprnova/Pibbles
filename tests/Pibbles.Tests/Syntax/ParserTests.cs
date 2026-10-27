@@ -309,6 +309,60 @@ public class ParserTests
         Assert.Null(text.Speaker);
     }
 
+    [Theory]
+    [InlineData("(shake): The floor rumbles.", new[] { "shake" }, true)]
+    [InlineData("(shake, orbit_scene):", new[] { "shake", "orbit_scene" }, false)]
+    [InlineData("( shake ,orbit ) : Spacing doesn't matter.", new[] { "shake", "orbit" }, true)]
+    public void Parse_NarrationParenthesis_HasValuesAndNoName(string line, string[] values, bool hasText)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Null(text.Speaker!.Name);
+        Assert.Equal(values, text.Speaker.Values.Select(value => value.Text));
+        Assert.Equal((hasText, 0), (text.Content.Count > 0, tree.Diagnostics.Count));
+    }
+
+    [Theory]
+    [InlineData("(to the room): Hi.")]
+    [InlineData("(aside) more: Hi.")]
+    [InlineData("(Note: this is an aside) and more.")]
+    [InlineData("(shake):Hi.")]
+    [InlineData("\\(shake): Hi.")]
+    public void Parse_ParenthesisAtTheStartThatIsNotNarrationsValues_IsNarration(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Null(text.Speaker);
+    }
+
+    [Fact]
+    public void Parse_NarrationBlock_TakesTheLinesOfAnActorsBlock()
+    {
+        var source = new SourceText("story.pib", "@narration\n    name: Narrator\n    no pose\n    camera += orbit_scene\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var narration = (NarrationDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal(["pose:Drop", "camera:Add"], narration.Channels.Select(edit => $"{edit.Channel.Text}:{edit.Edit}"));
+        Assert.Equal(("Narrator", 0), (narration.DisplayName, tree.Diagnostics.Count));
+    }
+
+    [Fact]
+    public void Parse_NarrationWithNoBlock_IsReportedAsMissingItsBlock()
+    {
+        var source = new SourceText("story.pib", "@narration\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal("PIB1004", Assert.Single(tree.Diagnostics).Code);
+    }
+
     [Fact]
     public void Parse_ChannelDeclarations_HaveValuesOrNone()
     {
