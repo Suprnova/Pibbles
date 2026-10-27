@@ -1,5 +1,5 @@
 start kitchen.door
-set $door_open = true
+set $kitchen.door_open = true
 stub has_item = false
 
   @hide rex

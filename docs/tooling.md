@@ -54,7 +54,7 @@ stub has_item = false
     4. Leave it  #x2jm5p
 > #m3xw9a
   @sfx key_turn
-  $door_open = true
+  $kitchen.door_open = true
   mira (happy): Got it!  #h8ya3k
 ```
 

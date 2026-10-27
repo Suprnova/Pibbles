@@ -1,6 +1,6 @@
 var $has_key = false
-var $door_open = false
 var $bravery = 0
+var $kitchen.door_open = false
 alias kitchen.front_door -> kitchen.door
 node kitchen.enter
     0  Command @show(mira, left) waits=false
@@ -56,7 +56,7 @@ node kitchen.window
    15  Branch -> 16
    16  Return
 node kitchen.door
-    0  BranchIfFalse $door_open -> 2
+    0  BranchIfFalse $kitchen.door_open -> 2
     1  Jump kitchen.leave
     2  Pose mira worried
     3  Line #k7qp2x
@@ -69,7 +69,7 @@ node kitchen.door
    10  Call common.stuck #r4hc6v
    11  Branch -> 23
    12  Command @sfx(key_turn) waits=false
-   13  Set $door_open = true
+   13  Set $kitchen.door_open = true
    14  Pose mira happy
    15  Line #h8ya3k
    16  Jump kitchen.leave

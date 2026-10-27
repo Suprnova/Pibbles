@@ -15,7 +15,6 @@
 @enum camera_target: hallway, door, fridge
 
 @var $has_key = false
-@var $door_open = false
 @var $bravery = 0
 
 // Staging

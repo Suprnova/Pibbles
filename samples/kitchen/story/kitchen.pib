@@ -2,6 +2,7 @@
 // kitchen.enter when the scene opens, and one node for each thing worth a look.
 
 @prefix kitchen
+@var $.door_open = false
 
 == .enter
 @show mira left
@@ -46,7 +47,7 @@ mira: Just spoons now. #id:ds4oao
     - rex: You two stare at everything, don't you? #id:h5aeqs
 
 == .door #was:.front_door
-@if $door_open
+@if $.door_open
     @jump .leave
 
 // Deadpan. She's said this about every door so far.
@@ -60,7 +61,7 @@ mira (worried): Locked.{w} Of course it's locked. #id:k7qp2x
     @call common.stuck #id:r4hc6v
 -> Use the key  @if $has_key #show_disabled #id:m3xw9a
     @sfx key_turn
-    @set $door_open = true
+    @set $.door_open = true
     mira (happy): Got it! #id:h8ya3k
     @jump .leave
 -> Knock politely  @once #id:t5bq2m
