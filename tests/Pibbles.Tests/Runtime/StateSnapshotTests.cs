@@ -59,6 +59,20 @@ public class StateSnapshotTests
         Assert.Equal("happy", restored.GetPose("mira"));
     }
 
+    [Fact]
+    public void Restore_RelativeVariable_IsSavedUnderItsFullName()
+    {
+        Game game = Game.Of("@prefix kitchen\n@var $.tries = 0\n\n== .door\n@set $.tries = 4\n", declarations: false);
+        game.Play("kitchen.door");
+
+        (StateSnapshot snapshot, _) = game.State.CreateSnapshot();
+        Game loaded = game.SaveAndLoad(out IReadOnlyList<SaveProblem> problems);
+
+        Assert.Equal(["kitchen.tries"], snapshot.Variables.Keys);
+        Assert.Empty(problems);
+        Assert.Equal("4", Game.Show(loaded.Get("kitchen.tries")));
+    }
+
     [Theory]
     [InlineData("flag", "true")]
     [InlineData("number", "0.1000000000000000000000000001")]

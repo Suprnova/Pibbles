@@ -134,6 +134,17 @@ public class TranscriptTests
     }
 
     [Fact]
+    public void Play_RelativeVariable_IsSeededAndPrintedByItsFullName()
+    {
+        Story story = Compile("@prefix kitchen\n@var $.tries = 0\n\n== .door\n@set $.tries += 1\nTried. #id:l1\n");
+
+        string transcript = TranscriptPlayer.Play(story, "start kitchen.door\nset $kitchen.tries = 3\n");
+
+        Assert.Contains("  $kitchen.tries = 4\n", transcript);
+        Assert.Equal(transcript, TranscriptPlayer.Play(story, transcript));
+    }
+
+    [Fact]
     public void Play_ScriptWithoutStart_Fails()
     {
         Story story = Compile("== t.n\n");
