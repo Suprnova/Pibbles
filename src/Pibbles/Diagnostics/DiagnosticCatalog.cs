@@ -460,7 +460,7 @@ public static class DiagnosticCatalog
         "I don't know a variable called `{0}`.",
         help: "Did you mean `{1}`?");
 
-    /// <summary>PIB2031: a value whose type isn't the type where it's used: a variable's value, a default, or <c>@wait</c>'s time.</summary>
+    /// <summary>PIB2031: a value whose type isn't the type where it's used: a variable's value, a default, or <c>@pause</c>'s time.</summary>
     /// <remarks>
     /// Arguments: what the value is for, such as <c>`$has_key` holds a `bool`</c>; the value's type with its article; and
     /// what values to use instead, or <see langword="null"/> to leave out the help.

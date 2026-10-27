@@ -10,7 +10,7 @@ internal sealed partial class StyleChecks
 {
     /// <summary>
     /// PIB5010 and PIB5016: follows each actor's pose down a block, but only while that's certain. Text lines, <c>@set</c> and
-    /// <c>@wait</c> keep what's known; anything else, such as a command, a call or a choice, might change a pose or skip
+    /// <c>@pause</c> keep what's known; anything else, such as a command, a call or a choice, might change a pose or skip
     /// ahead, so it forgets everything.
     /// </summary>
     private void CheckPoses(IReadOnlyList<StatementSyntax> block)
