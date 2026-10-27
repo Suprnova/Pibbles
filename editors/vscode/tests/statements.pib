@@ -24,6 +24,10 @@
 //   ^^^^^^^^ variable.other.pibbles
 //            ^^ keyword.operator.pibbles
 //               ^ constant.numeric.pibbles
+@set $.attempts += 1
+//   ^^^^^^^^^^ variable.other.pibbles
+@set $kitchen.door_open = true
+//   ^^^^^^^^^^^^^^^^^^ variable.other.pibbles
 @set $found = false
 //            ^^^^^ constant.language.boolean.pibbles
 @set $name = "Say \"hi\""

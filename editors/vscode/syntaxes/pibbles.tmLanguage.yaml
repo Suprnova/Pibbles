@@ -261,7 +261,7 @@ repository:
         name: constant.numeric.duration.pibbles
       - match: '(?<![\p{L}\p{M}\p{N}_.])(?:\d+(?:\.\d*)?|\.\d+)(?![\p{L}\p{M}\p{N}_.])'
         name: constant.numeric.pibbles
-      - match: '\$[\p{L}_][\p{L}\p{M}\p{N}_]*'
+      - match: '\$\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*'
         name: variable.other.pibbles
       - match: '(?<![\p{L}\p{M}\p{N}_.])(true|false)(?![\p{L}\p{M}\p{N}_])'
         name: constant.language.boolean.pibbles

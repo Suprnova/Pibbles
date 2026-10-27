@@ -33,6 +33,12 @@ name: Narration once the block has ended.
 //             ^^^^^^ entity.name.type.pibbles
 //                      ^ keyword.operator.pibbles
 //                       ^ constant.numeric.pibbles
+@var $.attempts = 0
+// <---- storage.type.declaration.pibbles
+//   ^^^^^^^^^^ variable.other.pibbles
+@var $kitchen.door_open = false
+//   ^^^^^^^^^^^^^^^^^^ variable.other.pibbles
+//                        ^^^^^ constant.language.boolean.pibbles
 
 @command move(who: actor, to: position = center) waits inline
 // <-------- storage.type.declaration.pibbles
