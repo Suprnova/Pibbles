@@ -121,4 +121,4 @@ File 1:1-27:1
       ReturnType: Name 26:23-26:29 Text="number"
 Comments:
   1:1-1:30 "Every kind of declaration."
-  19:31-19:64 "A comment after a declaration."
+  19:31-19:64 trailing "A comment after a declaration."

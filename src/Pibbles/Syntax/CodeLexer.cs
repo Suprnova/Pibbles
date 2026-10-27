@@ -109,7 +109,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private TokenKind ReadComment()
     {
-        comments?.Add(Comment.Read(text, new(Position, span.End - Position)));
+        comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
         Position = span.End;
         return TokenKind.Comment;
     }

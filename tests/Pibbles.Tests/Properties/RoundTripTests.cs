@@ -20,6 +20,22 @@ public class RoundTripTests
     }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
 
     [Fact]
+    public void Parse_PrintedTreeWithComments_MarksCommentsAloneOnTheirLine() => PropertyCheck.Run(Gen.Select(SyntaxGenerators.File, SyntaxGenerators.Comments), input =>
+    {
+        (FileSyntax file, string[] comments) = input;
+        var source = new SourceText("printed.pib", SyntaxPrinter.Print(file, comments));
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        foreach (Comment comment in tree.Comments)
+        {
+            TextSpan line = source.GetLineSpan(source.GetLinePosition(comment.Span.Start).Line);
+            bool aloneOnLine = source.Text.AsSpan(line.Start, comment.Span.Start - line.Start).Trim(" \t").IsEmpty;
+            Assert.Equal(aloneOnLine, comment.OnOwnLine);
+        }
+    }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
+
+    [Fact]
     public void Generator_CoversEveryNodeKindButErrors()
     {
         var pcg = new PCG(1, 1);

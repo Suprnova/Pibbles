@@ -55,7 +55,7 @@ public class SnapshotTests
     {
         string dump = SyntaxDump.Write(tree);
         if (tree.Comments.Count > 0)
-            dump += "Comments:\n" + string.Concat(tree.Comments.Select(comment => $"  {SyntaxDump.Format(tree.Source, comment.Span)} \"{comment.Text}\"\n"));
+            dump += "Comments:\n" + string.Concat(tree.Comments.Select(comment => $"  {SyntaxDump.Format(tree.Source, comment.Span)}{(comment.OnOwnLine ? "" : " trailing")} \"{comment.Text}\"\n"));
 
         if (tree.Diagnostics.Count == 0)
             return dump;

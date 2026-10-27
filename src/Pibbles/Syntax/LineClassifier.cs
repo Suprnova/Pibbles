@@ -55,7 +55,7 @@ internal sealed class LineClassifier
             Report(DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
 
         if (line.Kind is LineKind.Comment)
-            comments.Add(Comment.Read(source.Text, line.Content));
+            comments.Add(Comment.Read(source.Text, line.Content, onOwnLine: true));
 
         if (line.Kind is LineKind.Blank or LineKind.Comment or LineKind.Note)
             return;
