@@ -55,7 +55,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
             BranchInstruction branch => $"Branch -> {branch.Target}",
             BranchIfFalseInstruction branch => $"BranchIfFalse {Format(branch.Condition)} -> {branch.Target}",
             SetInstruction set => $"Set ${set.Variable.Name} = {Format(set.Value)}",
-            WaitInstruction wait => $"Wait {Format(wait.Duration)}",
+            PauseInstruction pause => $"Pause {Format(pause.Duration)}",
             CommandInstruction command => $"Command @{command.Command.Name}({string.Join(", ", command.Arguments.Select(Format))}) waits={Lower(command.Waits)}",
             JumpInstruction jump => $"Jump {jump.Node}",
             CallInstruction call => $"Call {call.Node} {Id(call.Id)}",

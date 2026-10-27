@@ -88,7 +88,7 @@ internal sealed class StoryLowerer(Compilation compilation)
                 break;
 
             case PauseStatementSyntax pause:
-                code.Add(new WaitInstruction(LowerExpression(pause.Duration), LocationOf(pause)));
+                code.Add(new PauseInstruction(LowerExpression(pause.Duration), LocationOf(pause)));
                 break;
 
             case CommandStatementSyntax command:

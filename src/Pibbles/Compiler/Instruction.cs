@@ -44,7 +44,7 @@ internal sealed record SetInstruction(VariableSymbol Variable, Expr Value) : Ins
 /// <summary>Pauses the story for a duration.</summary>
 /// <param name="Duration">How long to wait.</param>
 /// <param name="Location">Where the <c>@wait</c> is written, for a warning.</param>
-internal sealed record WaitInstruction(Expr Duration, SourceLocation Location) : Instruction;
+internal sealed record PauseInstruction(Expr Duration, SourceLocation Location) : Instruction;
 
 /// <summary>Runs a command.</summary>
 /// <param name="Command">The command.</param>

@@ -14,11 +14,11 @@ node snap.variables
     6  Set $has_key = (not $has_key):bool
     7  Set $where = right
     8  Set $delay = ($delay * 2):duration
-    9  Wait duration(1)
-   10  Wait (0.5s + duration((1 + 2):number)):duration
-   11  Wait $delay
+    9  Pause duration(1)
+   10  Pause (0.5s + duration((1 + 2):number)):duration
+   11  Pause $delay
    12  BranchIfFalse ($delay > duration(2)):bool -> 15
-   13  Wait ($delay / 2):duration
+   13  Pause ($delay / 2):duration
    14  Branch -> 15
    15  Return
 templates

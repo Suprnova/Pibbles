@@ -45,7 +45,7 @@ node kitchen.window
     4  Line #i6f2vr
     5  Branch -> 16
     6  Line #xj5acx
-    7  Wait 0.5s
+    7  Pause 0.5s
     8  Command @sfx(sneeze) waits=false
     9  Pose mira angry
    10  Line #wdsl43

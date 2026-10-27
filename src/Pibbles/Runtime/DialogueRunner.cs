@@ -437,8 +437,8 @@ public sealed class DialogueRunner
                 index++;
                 return null;
 
-            case WaitInstruction wait:
-                return ExecuteWait(wait);
+            case PauseInstruction pause:
+                return ExecutePause(pause);
 
             case CommandInstruction command:
                 Value[] arguments = [.. command.Arguments.Select(argument => Evaluator.Evaluate(argument, context))];
@@ -512,17 +512,17 @@ public sealed class DialogueRunner
         return delivered;
     }
 
-    private WaitStep? ExecuteWait(WaitInstruction wait)
+    private WaitStep? ExecutePause(PauseInstruction pause)
     {
-        decimal seconds = Evaluator.Evaluate(wait.Duration, context).AsDecimal;
+        decimal seconds = Evaluator.Evaluate(pause.Duration, context).AsDecimal;
         if (seconds <= 0)
         {
-            Warn(new(RuntimeWarningKind.NonPositiveWait, "This wait isn't for more than zero time, so I skipped it.", wait.Location));
+            Warn(new(RuntimeWarningKind.NonPositiveWait, "This wait isn't for more than zero time, so I skipped it.", pause.Location));
             index++;
             return null;
         }
 
-        TimeSpan duration = Durations.ToTimeSpan(seconds, wait.Location, Warn);
+        TimeSpan duration = Durations.ToTimeSpan(seconds, pause.Location, Warn);
         index++;
         return new WaitStep(duration);
     }
