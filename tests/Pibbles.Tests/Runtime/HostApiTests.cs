@@ -165,7 +165,7 @@ public class HostApiTests
         runner.Start("t.f");
         string[] steps = [Game.Format(runner.Next()), Game.Format(runner.Next()), Game.Format(runner.Next()), Game.Format(runner.Next())];
 
-        Assert.Equal(["Line mira: have", "Wait 0.5s", "Line mira: tense", "End"], steps);
+        Assert.Equal(["Line mira: have", "Pause 0.5s", "Line mira: tense", "End"], steps);
         Assert.Equal(["t.n", "rex"], Assert.Single(calls));
     }
 

@@ -144,7 +144,7 @@ internal sealed class Game
         ChoiceStep choice => "Choice " + string.Join(" | ", choice.Options.Select(option => option.Text.Text + (option.IsAvailable ? "" : " (unavailable)") + (option.WasChosen ? " (chosen)" : ""))),
         CommandStep command => $"Command @{command.Command.Name}({string.Join(", ", command.Command.Values.Select(Show))}){(command.Waits ? " waits" : "")}",
         PoseStep pose => $"Pose {pose.Actor} {pose.Pose}",
-        WaitStep wait => $"Wait {wait.Duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)}s",
+        PauseStep pause => $"Pause {pause.Duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)}s",
         EndStep => "End",
         _ => throw new NotSupportedException(step.GetType().Name),
     };

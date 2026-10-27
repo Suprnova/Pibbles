@@ -71,7 +71,7 @@ public class DialogueRunnerTests
 
         string[] run = game.Play("t.n");
 
-        Assert.Equal(["Wait 0.5s", "Wait 1s", "End"], run);
+        Assert.Equal(["Pause 0.5s", "Pause 1s", "End"], run);
         Assert.Equal([RuntimeWarningKind.NonPositiveWait, RuntimeWarningKind.NonPositiveWait], game.Warnings.Select(warning => warning.Kind));
         Assert.Equal(["story.pib", "story.pib"], game.Warnings.Select(warning => warning.Location.Path));
         Assert.True(game.Warnings[0].Location.Start.Line < game.Warnings[1].Location.Start.Line);
@@ -429,7 +429,7 @@ public class DialogueRunnerTests
 
         Assert.Empty(game.Warnings);
         fail = false;
-        Assert.Equal("Wait 1s", Game.Format(game.Runner.Next()));
+        Assert.Equal("Pause 1s", Game.Format(game.Runner.Next()));
         Assert.Equal([RuntimeWarningKind.DivisionByZero], game.Warnings.Select(warning => warning.Kind));
     }
 }

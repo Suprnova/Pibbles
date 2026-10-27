@@ -512,7 +512,7 @@ public sealed class DialogueRunner
         return delivered;
     }
 
-    private WaitStep? ExecutePause(PauseInstruction pause)
+    private PauseStep? ExecutePause(PauseInstruction pause)
     {
         decimal seconds = Evaluator.Evaluate(pause.Duration, context).AsDecimal;
         if (seconds <= 0)
@@ -524,7 +524,7 @@ public sealed class DialogueRunner
 
         TimeSpan duration = Durations.ToTimeSpan(seconds, pause.Location, Warn);
         index++;
-        return new WaitStep(duration);
+        return new PauseStep(duration);
     }
 
     private Line BuildLine(string id)

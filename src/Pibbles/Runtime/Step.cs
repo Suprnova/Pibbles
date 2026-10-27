@@ -33,7 +33,7 @@ public sealed record PoseStep(string Actor, string Pose) : DialogueStep;
 
 /// <summary>Pause for a moment without showing anything.</summary>
 /// <param name="Duration">How long.</param>
-public sealed record WaitStep(TimeSpan Duration) : DialogueStep;
+public sealed record PauseStep(TimeSpan Duration) : DialogueStep;
 
 /// <summary>The dialogue is over.</summary>
 public sealed record EndStep : DialogueStep;

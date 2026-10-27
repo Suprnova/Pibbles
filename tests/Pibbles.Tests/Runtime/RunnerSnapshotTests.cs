@@ -281,7 +281,7 @@ public class RunnerSnapshotTests
 
         IReadOnlyList<DialogueStep> passed = game.Runner.FastForward();
 
-        Assert.Equal(["Wait 1s", "Pose mira happy", "Line mira: Next."], passed.Select(Game.Format));
+        Assert.Equal(["Pause 1s", "Pose mira happy", "Line mira: Next."], passed.Select(Game.Format));
         Assert.Equal("l1", game.Runner.CreateSnapshot().Value.Line);
     }
 
@@ -320,7 +320,7 @@ public class RunnerSnapshotTests
 
         IReadOnlyList<DialogueStep> passed = game.Runner.FastForward();
 
-        Assert.Equal(["Wait 1s", "Line mira: In."], passed.Select(Game.Format));
+        Assert.Equal(["Pause 1s", "Line mira: In."], passed.Select(Game.Format));
         Assert.Equal(["c1"], game.Runner.CreateSnapshot().Value.Calls);
     }
 

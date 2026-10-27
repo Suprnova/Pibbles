@@ -228,8 +228,8 @@ internal sealed class TranscriptPlayer
                 WriteLine($"{Indent}pose {pose.Actor} {pose.Pose}");
                 break;
 
-            case WaitStep wait:
-                WriteLine($"{Indent}wait {ValueText.FormatSeconds(wait.Duration)}");
+            case PauseStep pause:
+                WriteLine($"{Indent}wait {ValueText.FormatSeconds(pause.Duration)}");
                 break;
 
             case EndStep:
