@@ -35,6 +35,8 @@ internal static class SyntaxGenerators
 
     private static readonly Gen<string> NodeName = Gen.Frequency((3, DottedName), (1, DottedName.Select(name => "." + name)));
 
+    private static readonly Gen<string> VariableName = NodeName;
+
     private static readonly Gen<string> Piece = Gen.Frequency(
         (30, Gen.Char["abcdefghij klmnop ABC 0123 .,!?'\"-:;()]}[{#@\\/=<>*&%$~^|é"].Select(c => c.ToString())),
         (1, Gen.Const("😀")),
@@ -94,7 +96,7 @@ internal static class SyntaxGenerators
         return Gen.OneOf(
             actor,
             Gen.Select(Identifier, names, DeclarationSyntax (name, members) => new EnumDeclarationSyntax(Name(name), members) { Span = default }),
-            Gen.Select(Identifier, Maybe(Identifier), Constant(),
+            Gen.Select(VariableName, Maybe(Identifier), Constant(),
                 DeclarationSyntax (name, type, value) => new VariableDeclarationSyntax(new(name) { Span = default }, type is null ? null : Name(type), value) { Span = default }),
             Gen.Select(Identifier, parameter.Array[0, 2], Gen.Bool, Gen.Bool,
                 DeclarationSyntax (name, parameters, isInline, waits) => new CommandDeclarationSyntax(Name(name), parameters, isInline, waits) { Span = default }),
@@ -134,7 +136,7 @@ internal static class SyntaxGenerators
         List<(int, Gen<StatementSyntax>)> forms =
         [
             (8, TextLine()),
-            (1, Gen.Select(Identifier, Gen.OneOfConst(AssignmentOperator.Assign, AssignmentOperator.Add, AssignmentOperator.Subtract), Expression(2),
+            (1, Gen.Select(VariableName, Gen.OneOfConst(AssignmentOperator.Assign, AssignmentOperator.Add, AssignmentOperator.Subtract), Expression(2),
                 StatementSyntax (variable, @operator, value) => new SetStatementSyntax(new(variable) { Span = default }, @operator, default, value) { Span = default })),
             (1, NodeName.Select(StatementSyntax (target) => new JumpStatementSyntax(Name(target)) { Span = default })),
             (1, Gen.Select(NodeName, Tags(other: true, id: true), StatementSyntax (target, tags) => new CallStatementSyntax(Name(target), tags) { Span = default })),
@@ -201,7 +203,7 @@ internal static class SyntaxGenerators
         List<(int, Gen<InlineSyntax>)> forms =
         [
             (8, Text.Select(InlineSyntax (text) => new TextRunSyntax(text) { Span = default })),
-            (1, Identifier.Select(InlineSyntax (name) => new InterpolationSyntax(new VariableExpressionSyntax(name) { Span = default }) { Span = default })),
+            (1, VariableName.Select(InlineSyntax (name) => new InterpolationSyntax(new VariableExpressionSyntax(name) { Span = default }) { Span = default })),
             (1, Defer(() => Call(1)).Select(InlineSyntax (call) => new InterpolationSyntax(call) { Span = default })),
             (1, Gen.Const<InlineSyntax>(new LineBreakSyntax { Span = default })),
             (1, Identifier.Select(InlineSyntax (name) => new IconSyntax(Name(name)) { Span = default })),
@@ -318,7 +320,7 @@ internal static class SyntaxGenerators
         List<Gen<ExpressionSyntax>> forms =
         [
             Literal(),
-            Identifier.Select(ExpressionSyntax (name) => new VariableExpressionSyntax(name) { Span = default }),
+            VariableName.Select(ExpressionSyntax (name) => new VariableExpressionSyntax(name) { Span = default }),
             NodeName.Select(ExpressionSyntax (name) => new NameExpressionSyntax(name) { Span = default }),
         ];
 

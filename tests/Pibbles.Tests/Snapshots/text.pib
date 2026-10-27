@@ -17,3 +17,4 @@ rex: You {if $bravery > 2}actually hit it{elif $bravery > 0}barely touched it{el
 mira: {if $a}[b]bold[/b]{/if}{ if $b }spaced{ /if }
 mira: {w}
 mira: Quiet.{pause 0.5} Then more.
+mira: Tried {$.attempts} times, {$kitchen.tries} in the kitchen.

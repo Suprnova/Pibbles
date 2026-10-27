@@ -21,3 +21,5 @@
 @enter_room kitchen on_exit=.leave
 @shake_screen ($bravery * 0.5) strength=(1 + 1)
 @give has_item("x") visits(kitchen.door)
+@set $kitchen.door_open = true
+@set $.attempts += 1

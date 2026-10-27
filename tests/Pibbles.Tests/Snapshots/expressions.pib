@@ -15,3 +15,5 @@
     @end
 @if $where == left or $who == mira
     @end
+@if $.attempts > $kitchen.limit
+    @end

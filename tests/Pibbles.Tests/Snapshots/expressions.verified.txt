@@ -1,6 +1,6 @@
-File 1:1-18:1
+File 1:1-20:1
   Nodes:
-    Node 3:1-17:9
+    Node 3:1-19:9
       Name: Name 3:4-3:24 Text="snapshot.expressions"
       Body:
         SetStatement 4:1-4:35 Operator=Assign OperatorSpan=4:16-4:17
@@ -109,5 +109,11 @@ File 1:1-18:1
               Right: NameExpression 16:31-16:35 Name="mira"
           Body:
             EndStatement 17:5-17:9
+        IfStatement 18:1-19:9
+          Condition: BinaryExpression 18:5-18:32 Operator=Greater OperatorSpan=18:16-18:17
+            Left: VariableExpression 18:5-18:15 Name=".attempts"
+            Right: VariableExpression 18:18-18:32 Name="kitchen.limit"
+          Body:
+            EndStatement 19:5-19:9
 Comments:
   1:1-1:54 "Every kind of expression, and how operators group."

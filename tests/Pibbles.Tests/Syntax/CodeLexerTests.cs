@@ -15,6 +15,11 @@ public class CodeLexerTests
     [InlineData("café", "Name café")]
     [InlineData("kitchen.", "Name kitchen|Bad .")]
     [InlineData("$has_key", "Variable $has_key")]
+    [InlineData("$kitchen.door_open", "Variable $kitchen.door_open")]
+    [InlineData("$rooms.kitchen.door_open", "Variable $rooms.kitchen.door_open")]
+    [InlineData("$.door_open", "Variable $.door_open")]
+    [InlineData("$a .b", "Variable $a|Name .b")]
+    [InlineData("$a.", "Variable $a|Bad .")]
     [InlineData("@shake_screen", "AtWord @shake_screen")]
     [InlineData("3 0.5 .5 1.", "Number 3|Number 0.5|Number .5|Number 1.")]
     [InlineData("0.5s 300ms .5s 1.s", "Duration 0.5s|Duration 300ms|Duration .5s|Duration 1.s")]
@@ -47,6 +52,7 @@ public class CodeLexerTests
     [InlineData("kitchen.door(x)", "Name kitchen.door|CallOpen (|Name x|CloseParen )")]
     [InlineData("@show(x)", "AtWord @show|OpenParen (|Name x|CloseParen )")]
     [InlineData("$x(y)", "Variable $x|OpenParen (|Name y|CloseParen )")]
+    [InlineData("$kitchen.x(y)", "Variable $kitchen.x|OpenParen (|Name y|CloseParen )")]
     [InlineData("(x)(y)", "OpenParen (|Name x|CloseParen )|OpenParen (|Name y|CloseParen )")]
     public void Next_OpenParen_IsCallOnlyWhenTouchingName(string text, string expected)
     {
@@ -57,6 +63,8 @@ public class CodeLexerTests
 
     [Theory]
     [InlineData("$", "Bad $")]
+    [InlineData("$.", "Bad $|Bad .")]
+    [InlineData("$.1", "Bad $|Number .1")]
     [InlineData("@ home", "Bad @|Name home")]
     [InlineData("#1", "Bad #|Number 1")]
     [InlineData("#_x", "Bad #|Name _x")]

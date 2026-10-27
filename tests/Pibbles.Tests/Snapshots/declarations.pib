@@ -24,3 +24,5 @@
 @tag thought, show_disabled, box: string, mood: position?
 @function has_item(id: string) -> bool
 @function rolled() -> number
+@var $kitchen.door_open = false
+@var $.attempts = 0

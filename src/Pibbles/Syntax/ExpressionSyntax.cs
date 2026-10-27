@@ -19,8 +19,8 @@ public sealed record StringLiteralSyntax(string Value) : ExpressionSyntax;
 /// <param name="Value">The value.</param>
 public sealed record BooleanLiteralSyntax(bool Value) : ExpressionSyntax;
 
-/// <summary>A variable, such as <c>$has_key</c>.</summary>
-/// <param name="Name">The variable's name, without the <c>$</c>.</param>
+/// <summary>A variable, such as <c>$has_key</c>, <c>$kitchen.door_open</c> or <c>$.door_open</c>.</summary>
+/// <param name="Name">The variable's name as written, without the <c>$</c>. A leading dot makes it relative to the file's prefix.</param>
 public sealed record VariableExpressionSyntax(string Name) : ExpressionSyntax;
 
 /// <summary>

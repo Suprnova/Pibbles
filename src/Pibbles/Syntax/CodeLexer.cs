@@ -41,8 +41,8 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         {
             '"' => ReadString(),
             '#' when IsIdentifierStart(Position + 1, allowUnderscore: false) => ReadTag(),
-            '$' when IsIdentifierStart(Position + 1) => ReadPrefixed(TokenKind.Variable),
-            '@' when IsIdentifierStart(Position + 1) => ReadPrefixed(TokenKind.AtWord),
+            '$' when IsNameStart(Position + 1) => ReadVariable(),
+            '@' when IsIdentifierStart(Position + 1) => ReadAtWord(),
             '/' when Peek(1) is '/' => ReadComment(),
             '.' when IsDigit(Peek(1)) => ReadNumber(),
             '.' when IsIdentifierStart(Position + 1) => ReadName(),
@@ -100,11 +100,18 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         return TokenKind.Name;
     }
 
-    private TokenKind ReadPrefixed(TokenKind kind)
+    private TokenKind ReadVariable()
+    {
+        Position++;
+        ReadName();
+        return TokenKind.Variable;
+    }
+
+    private TokenKind ReadAtWord()
     {
         Position++;
         SkipIdentifier();
-        return kind;
+        return TokenKind.AtWord;
     }
 
     private TokenKind ReadComment()
@@ -220,6 +227,8 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private bool IsIdentifierStart(int index, bool allowUnderscore = true) =>
         index < span.End && (char.IsLetter(text, index) || allowUnderscore && text[index] is '_');
+
+    private bool IsNameStart(int index) => IsIdentifierStart(index) || index < span.End && text[index] is '.' && IsIdentifierStart(index + 1);
 
     /// <summary>Whether a character can start an identifier: a letter or <c>_</c>.</summary>
     internal static bool IsIdentifierStart(string text, int index) => char.IsLetter(text, index) || text[index] is '_';

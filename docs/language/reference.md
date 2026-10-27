@@ -59,7 +59,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 - **Comments:** `//` starts a comment on a line of its own, or after the content of an `@` line or a node header. A line with text in it can't have a trailing comment, because `//` shows up in normal prose and URLs: text lines, options and an actor's `name:` all count. Comment lines don't take part in indentation, so a comment can sit at any indentation.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
-- **Variables:** `$` followed by an identifier (`$has_key`).
+- **Variable names:** `$` followed by a name, which is identifiers joined by dots, as a node name is (`$has_key`, `$kitchen.door_open`). A name starting with a dot (`$.door_open`) is relative to the file's [prefix](#prefixes).
 - **Escapes:** in text and in quoted strings, a backslash makes the next ASCII punctuation character literal: `\[`, `\{`, `\#`, `\:`, `\@`, `\"`, `\\`, and so on. Anything else after a backslash is an error, including a letter, a digit, a space or the end of the line, so new escapes such as `\n` can be added later.
 - **Tags:** `#name` or `#name:value` at the end of a text line, option, `@call`, variation block opener or node header. A node header takes only reserved tags, since the host never reads it. A tag name must start with a letter, so *"my #1 fan"* is text. In text, a `#` followed by a letter always starts a tag, and only more tags can follow one: *"I'm #winning today"* is an error, and is written *"I'm \\#winning today"*. The value runs until whitespace, and may be empty (`#name:`). `#id` holds [line IDs](../localization.md#line-ids) and `#was` [node aliases](#nodes). `#migrates`, `#draft`, `#voice` and `#unvoiced` are reserved for [extensions](#reserved-words). Every other tag must be declared with [`@tag`](#declarations), which says whether it takes a value, and is passed to the host unchanged.
 - **Line IDs:** an `#id` value is a lowercase letter followed by lowercase letters, digits and `_`. Generated IDs are a letter and five letters or digits (`k7qp2x`). Starting with a letter keeps every ID a valid identifier, which the [migration extension](design.md#migrations) relies on. Lowercase keeps IDs distinct as file names on case-insensitive file systems, since voice clips are keyed by ID. A line ID is never the same as a node name or alias, so a name that could be either always means one thing.
@@ -542,7 +542,7 @@ mark            ::= /* any character in Unicode category M */
 digit           ::= [0-9]
 ident           ::= (letter | "_") (letter | mark | digit | "_")*
 NAME            ::= "."? ident ("." ident)*
-VARIABLE        ::= "$" ident
+VARIABLE        ::= "$" NAME
 NUMBER          ::= digit+ ("." digit*)? | "." digit+    /* not followed by a letter, digit, "_" or "." */
 DURATION        ::= NUMBER ("ms" | "s")              /* not followed by a letter, digit, "_" or "." */
 STRING          ::= '"' ([^"#x5C#xA#xD] | ESCAPE)* '"'
