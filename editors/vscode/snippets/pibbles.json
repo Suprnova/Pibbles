@@ -36,7 +36,17 @@
   },
   "Actor": {
     "prefix": "@actor",
-    "body": ["@actor ${1:id}", "\tname: ${2:Name}", "\tposes: ${0:neutral}"],
+    "body": ["@actor ${1:id}", "\tname: ${2:Name}", "\tpose: ${0:neutral}"],
     "description": "A character in the cast list"
+  },
+  "Channel": {
+    "prefix": "@channel",
+    "body": "@channel ${1:pose}: ${0:neutral}",
+    "description": "Something a line sets for its speaker, with the values every actor starts with"
+  },
+  "Narration": {
+    "prefix": "@narration",
+    "body": ["@narration", "\tno ${0:pose}"],
+    "description": "What narration has, since it isn't an actor"
   }
 }

@@ -12,13 +12,44 @@
 //      ^ punctuation.separator.key-value.pibbles
 //        ^^^^^^^^^^^^^^ string.unquoted.display-name.pibbles
 // A comment inside the block doesn't end it.
-    poses: neutral, happy // The first is the default.
-//  ^^^^^ support.type.property-name.pibbles
-//         ^^^^^^^ variable.parameter.pose.pibbles
-//                  ^^^^^ variable.parameter.pose.pibbles
-//                        ^^ comment.line.double-slash.pibbles
+    pose: neutral, happy // The first is the default.
+//  ^^^^ entity.name.type.channel.pibbles
+//      ^ punctuation.separator.key-value.pibbles
+//        ^^^^^^^ constant.other.channel-value.pibbles
+//                 ^^^^^ constant.other.channel-value.pibbles
+//                       ^^ comment.line.double-slash.pibbles
+    effect += shake
+//  ^^^^^^ entity.name.type.channel.pibbles
+//         ^^ punctuation.separator.key-value.pibbles
+//            ^^^^^ constant.other.channel-value.pibbles
+    no camera, sound // The actor has neither.
+//  ^^ keyword.operator.word.pibbles
+//     ^^^^^^ entity.name.type.channel.pibbles
+//             ^^^^^ entity.name.type.channel.pibbles
+//                   ^^ comment.line.double-slash.pibbles
 name: Narration once the block has ended.
 // <---- entity.name.type.speaker.pibbles - meta.actor.pibbles
+
+@channel pose: neutral, happy // Every actor starts with these.
+// <-------- storage.type.declaration.pibbles
+//       ^^^^ entity.name.type.channel.pibbles
+//             ^^^^^^^ constant.other.channel-value.pibbles
+//                      ^^^^^ constant.other.channel-value.pibbles
+//                            ^^ comment.line.double-slash.pibbles
+@channel camera
+//       ^^^^^^ entity.name.type.channel.pibbles
+
+@narration
+// <---------- meta.actor.pibbles storage.type.declaration.pibbles
+    name: Narrator
+//  ^^^^ support.type.property-name.pibbles
+//        ^^^^^^^^ string.unquoted.display-name.pibbles
+    no pose
+//  ^^ keyword.operator.word.pibbles
+//     ^^^^ entity.name.type.channel.pibbles
+    camera += orbit_scene
+//  ^^^^^^ entity.name.type.channel.pibbles
+//            ^^^^^^^^^^^ constant.other.channel-value.pibbles
 
 @enum position: left, center
 // <----- storage.type.declaration.pibbles

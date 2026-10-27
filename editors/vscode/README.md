@@ -2,7 +2,7 @@
 
 Syntax highlighting, snippets and editing aids for `.pib` files, the stories written in [Pibbles](https://github.com/Suprnova/Pibbles).
 
-- Headers, speakers and poses, `@` statements, options, `[markup]`, `{points}`, tags and comments are highlighted.
+- Headers, speakers and the values they set, `@` statements, options, `[markup]`, `{points}`, tags and comments are highlighted.
 - Snippets cover node headers, `@if`, choices, `@sequence`, `@cycle`, `@once` and `@actor`.
 - Line IDs (`#id:k7qp2x`) are hidden, and the status bar shows the ID of the cursor's line instead. Click it, or press **Ctrl+Alt+I** (**Cmd+Alt+I** on a Mac), for the rare edit. The cursor never lands in a hidden ID, Enter at the end of a line keeps the ID on its line, and Backspace and Delete that join lines keep each ID with its line, so a deleted line takes its ID with it. The `pibbles.lineIds.hide` setting shows IDs again, faded like comments, and `pibbles.lineIds.skipWithCursor` then turns off the cursor's skipping.
 - A variation's alternatives work like a Markdown list: Enter at the end of one starts the next, Enter on an empty `- ` leaves the variation, Tab on an empty `- ` turns it into a continuation of the alternative above, and typing `- ` on a continuation moves it out to the alternatives.

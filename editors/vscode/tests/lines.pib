@@ -35,13 +35,36 @@ mira: Hello there. #box:phone #id:k7qp2x
 
 mira (smug): I knew you'd come.
 // <---- entity.name.type.speaker.pibbles
-//   ^ punctuation.definition.pose.pibbles
-//    ^^^^ variable.parameter.pose.pibbles
-//        ^ punctuation.definition.pose.pibbles
+//   ^ punctuation.definition.values.pibbles
+//    ^^^^ constant.other.channel-value.pibbles
+//        ^ punctuation.definition.values.pibbles
 //         ^ punctuation.separator.speaker.pibbles
 
 mira (sad):
-//    ^^^ variable.parameter.pose.pibbles
+//    ^^^ constant.other.channel-value.pibbles
+
+mira (mad, shake , pan_left): Several values, in any order.
+// <---- entity.name.type.speaker.pibbles
+//   ^ punctuation.definition.values.pibbles
+//    ^^^ constant.other.channel-value.pibbles
+//         ^^^^^ constant.other.channel-value.pibbles
+//                 ^^^^^^^^ constant.other.channel-value.pibbles
+//                         ^ punctuation.definition.values.pibbles
+//                          ^ punctuation.separator.speaker.pibbles
+
+(orbit_scene): Narration sets values too.
+// <- punctuation.definition.values.pibbles
+//^^^^^^^^^^ constant.other.channel-value.pibbles
+//          ^ punctuation.definition.values.pibbles
+//           ^ punctuation.separator.speaker.pibbles
+
+(shake):
+// <- punctuation.definition.values.pibbles
+//^^^^ constant.other.channel-value.pibbles
+
+(An aside) and more: a parenthesis with no colon after it is plain text.
+// <- - punctuation.definition.values.pibbles
+//  ^^^^^ - constant.other.channel-value.pibbles
 
 Note\: the door is locked. Not \#winning, but my #1 fan.
 // <---- - entity.name.type.speaker.pibbles
