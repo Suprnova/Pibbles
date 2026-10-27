@@ -289,7 +289,7 @@ internal sealed class TranscriptPlayer
         return marker switch
         {
             InputWaitMarker => "⟨w⟩",
-            PauseMarker pause => $"⟨w {ValueText.FormatSeconds(pause.Duration)}⟩",
+            PauseMarker pause => $"⟨pause {ValueText.FormatSeconds(pause.Duration)}⟩",
             PageBreakMarker => "⟨p⟩",
             SpeedMarker { Factor: 1 } => "⟨speed⟩",
             SpeedMarker speed => $"⟨speed {ValueText.FormatNumber(speed.Factor)}⟩",
