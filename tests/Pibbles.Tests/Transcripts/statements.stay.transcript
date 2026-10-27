@@ -12,8 +12,8 @@ start story.main
   @move mira right
   $count = 6
   $delay = 2s
-  wait 0.5s
-  wait 2s
+  pause 0.5s
+  pause 2s
   rex: Some.  #l06
   mira: In the sub.  #l08
   mira: First.  #l10

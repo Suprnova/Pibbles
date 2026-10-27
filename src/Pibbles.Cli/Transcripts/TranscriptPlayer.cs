@@ -229,7 +229,7 @@ internal sealed class TranscriptPlayer
                 break;
 
             case PauseStep pause:
-                WriteLine($"{Indent}wait {ValueText.FormatSeconds(pause.Duration)}");
+                WriteLine($"{Indent}pause {ValueText.FormatSeconds(pause.Duration)}");
                 break;
 
             case EndStep:

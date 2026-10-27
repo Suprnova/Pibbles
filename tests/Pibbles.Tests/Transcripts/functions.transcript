@@ -11,6 +11,6 @@ stub who = mira
   mira: Have it.  #f02
   $total = 6.5
   mira: Total 6.5.  #f04
-  wait 0.25s
+  pause 0.25s
   mira: Mood tense, Mira.  #f05
   end
