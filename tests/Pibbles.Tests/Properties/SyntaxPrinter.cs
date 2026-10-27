@@ -10,8 +10,8 @@ namespace Pibbles.Tests.Properties;
 /// point, a tag, a modifier or a speaker's colon.
 /// </summary>
 /// <remarks>
-/// Comments, when given, are mixed in where they're allowed: after the content of every other <c>@</c> line or header,
-/// and on lines of their own, at assorted indentation, after every third line. Any left over end the file.
+/// Comments, when given, are mixed in where they're allowed: after the content of every other line, and on lines of
+/// their own, at assorted indentation, after every third line. Any left over end the file.
 /// </remarks>
 internal sealed class SyntaxPrinter(IEnumerable<string> comments)
 {
@@ -35,7 +35,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
     {
         lines++;
         builder.Append(' ', depth * 4).Append(text);
-        if (lines % 2 == 0 && text is ['@', ..] or ['=', '=', ..] && comments.TryDequeue(out string? trailing))
+        if (lines % 2 == 0 && comments.TryDequeue(out string? trailing))
             builder.Append(" // ").Append(trailing);
 
         builder.Append('\n');

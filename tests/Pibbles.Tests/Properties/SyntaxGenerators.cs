@@ -46,7 +46,7 @@ internal static class SyntaxGenerators
 
     private static readonly Gen<decimal> Decimal = Gen.Int[0, 99999].Select(n => n / 100m);
 
-    private static readonly Gen<TagSyntax> Tag = Gen.Select(Identifier, Maybe(Gen.String[Gen.Char["abcxyz019_.-:"], 0, 5]), (name, value) => new TagSyntax(name, value) { Span = default });
+    private static readonly Gen<TagSyntax> Tag = Gen.Select(Identifier, Maybe(Gen.String[Gen.Char["abcxyz019_.-:/"], 0, 5]), (name, value) => new TagSyntax(name, value) { Span = default });
 
     private static readonly Gen<TagSyntax> IdTag =
         Gen.Select(Gen.Char[Letters], Gen.String[Gen.Char[Letters + "0123456789_"], 0, 5], (first, rest) => new TagSyntax("id", first + rest) { Span = default });
