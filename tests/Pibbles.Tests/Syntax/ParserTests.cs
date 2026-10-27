@@ -250,6 +250,30 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("name: Mira Okafor // the cast list", "Mira Okafor")]
+    [InlineData("name: Mira//Okafor", "Mira")]
+    [InlineData("name: Mira \\ Okafor", "Mira \\ Okafor")]
+    public void Parse_CommentAfterDisplayName_EndsTheName(string property, string displayName)
+    {
+        var source = new SourceText("story.pib", $"@actor mira\n    {property}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var actor = (ActorDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal((displayName, 0), (actor.DisplayName, tree.Diagnostics.Count));
+    }
+
+    [Fact]
+    public void Parse_DisplayNameThatIsOnlyAComment_ReportsMissingName()
+    {
+        var source = new SourceText("story.pib", "@actor mira\n    name: // Mira\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal(("PIB1046", 1), (Assert.Single(tree.Diagnostics).Code, tree.Comments.Count));
+    }
+
+    [Theory]
     [InlineData("mira: Hi /// note", 1)]
     [InlineData("-> Go /// note", 1)]
     [InlineData("mira: Hi //// banner", 0)]

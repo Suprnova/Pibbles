@@ -104,7 +104,7 @@ internal sealed partial class Parser
         }
 
         int valueStart = SkipWhitespace(colon + 1);
-        var value = new TextSpan(valueStart, inlineEnd - valueStart);
+        var value = new TextSpan(valueStart, PlainContentEnd(valueStart, inlineEnd) - valueStart);
         if (value.Length == 0)
             Fail(DiagnosticCatalog.Missing, new(colon + 1, 0), "a display name", "name:");
 

@@ -84,7 +84,7 @@ internal static class SyntaxGenerators
             (name, type, @default) => new ParameterSyntax(Name(name), Name(type), @default) { Span = default });
         Gen<NameSyntax[]> names = Identifier.Select(Name).Array[1, 3];
 
-        Gen<string> displayName = Gen.String[Gen.Char["abcdeABC xyz 019.,'!-?:()#@/é"], 1, 10].Select(name => name.Trim()).Where(name => name.Length > 0);
+        Gen<string> displayName = Gen.String[Gen.Char["abcdeABC xyz 019.,'!-?:()#@/é"], 1, 10].Select(name => name.Trim()).Where(name => name.Length > 0 && !name.Contains("//", StringComparison.Ordinal));
         Gen<DeclarationSyntax> actor = Gen.Select(Identifier, Maybe(displayName), Identifier.Select(Name).Array[0, 3],
                 (name, display, poses) => new ActorDeclarationSyntax(Name(name), display, poses) { Span = default })
             .Where(actor => actor.DisplayName is not null || actor.Poses.Count > 0)

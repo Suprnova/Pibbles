@@ -26,3 +26,6 @@
 @function rolled() -> number
 @var $kitchen.door_open = false
 @var $.attempts = 0
+@actor sam
+    name: Sam Ortiz // the name stops here
+    poses: neutral // and so do the poses
