@@ -11,7 +11,7 @@ public abstract record SyntaxNode
     public required TextSpan Span { get; init; }
 }
 
-/// <summary>A name: an identifier, or identifiers joined by dots, as in <c>kitchen.door</c>.</summary>
+/// <summary>A name as written, such as <c>kitchen.door</c>. Its dotted parts needn't be names of their own.</summary>
 /// <remarks>
 /// A name starting with a dot (<c>.door</c>) is relative to the file's <see cref="PrefixSyntax"/>. A name the source
 /// leaves out, after a problem that has already been reported, has empty <see cref="Text"/> and a zero-length span.
