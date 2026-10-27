@@ -43,7 +43,7 @@ public static class DiagnosticCatalog
         "I expected indented lines under `{0}`.",
         help: "Put the lines it controls below it, indented.");
 
-    /// <summary>PIB1005: a <c>///</c> note, which v1 reserves for localization.</summary>
+    /// <summary>PIB1005: a <c>///</c> note, anywhere on a line, which v1 reserves for localization.</summary>
     public static DiagnosticDescriptor UnsupportedNote { get; } = new(
         "PIB1005",
         DiagnosticSeverity.Error,

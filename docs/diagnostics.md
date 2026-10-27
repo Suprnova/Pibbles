@@ -200,11 +200,12 @@ Indent the lines the opener controls. If it has nothing to do yet, put a placeho
 
 ### PIB1005
 
-**`///` is reserved for notes to translators, which arrive with localization.** Until then, a line starting with `///` is an error, so stories written now can't already be using it for something else. A line starting with four or more slashes, such as a `////////` banner, is an ordinary comment.
+**`///` is reserved for notes to translators, which arrive with localization.** Until then, a `///` is an error wherever it appears on a line, so stories written now can't already be using it for something else, and a note at the end of a line is never taken for a comment. Four or more slashes, such as a `////////` banner, are an ordinary comment.
 
 ```text
 /// Mira is joking here.
 mira: I live in the walls.
+@set $trust = 1 /// She trusts you now.
 ```
 
 Write it as an ordinary comment for now: `// Mira is joking here.`
