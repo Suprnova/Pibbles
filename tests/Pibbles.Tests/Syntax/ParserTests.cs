@@ -174,4 +174,92 @@ public class ParserTests
 
         Assert.All(NodeFields.DescendantsAndSelf(statement), node => Assert.True(node.Span.End <= statement.Span.End, $"{node.GetType().Name} at {node.Span} ends after its line."));
     }
+
+    [Theory]
+    [InlineData("mira: Hello there. // said warmly", "mira: Hello there.", "said warmly")]
+    [InlineData("The kitchen smells of coffee.//touching", "The kitchen smells of coffee.", "touching")]
+    [InlineData("mira: Hi {$name}// touching a closer", "mira: Hi {$name}", "touching a closer")]
+    [InlineData("mira: Hi #thought #box:phone // after tags", "mira: Hi #thought #box:phone", "after tags")]
+    [InlineData("mira (sad): // still sad", "mira (sad):", "still sad")]
+    [InlineData("-> Go // polite", "-> Go", "polite")]
+    [InlineData("-> Go @if $a @once // after modifiers", "-> Go @if $a @once", "after modifiers")]
+    [InlineData("-> Go #thought // after a tag", "-> Go #thought", "after a tag")]
+    [InlineData("mira: Banner //// longer", "mira: Banner", "// longer")]
+    public void Parse_CommentAtEndOfLine_EndsTheLineBeforeIt(string line, string content, string comment)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Empty(tree.Diagnostics);
+        Comment found = Assert.Single(tree.Comments);
+        Assert.Equal(("== kitchen.door\n" + content).Length, tree.Root.Nodes[0].Body[0].Span.End);
+        Assert.Equal((comment, false), (found.Text, found.OnOwnLine));
+    }
+
+    [Fact]
+    public void Parse_CommentAfterTextInAlternative_EndsTheAlternativeBeforeIt()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n@sequence\n    - mira: Hi // said warmly\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var variation = (VariationStatementSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal("@sequence\n    - mira: Hi".Length, variation.Alternatives[0].Span.End - variation.Span.Start);
+    }
+
+    [Theory]
+    [InlineData("mira: Visit https:\\//example.com", "Visit https://example.com")]
+    [InlineData("mira: A \\//B", "A //B")]
+    public void Parse_EscapedSlashes_AreTextNotAComment(string line, string text)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var content = (TextRunSyntax)((TextLineSyntax)tree.Root.Nodes[0].Body[0]).Content[0];
+        Assert.Equal((text, 0, 0), (content.Text, tree.Diagnostics.Count, tree.Comments.Count));
+    }
+
+    [Theory]
+    [InlineData("mira: Hi {f(\"a//b\")}")]
+    [InlineData("mira: Hi #link:https://example.com")]
+    [InlineData("-> Go @if f(\"a//b\")")]
+    [InlineData("@jolt \"a//b\"")]
+    public void Parse_SlashesInStringOrTagValue_AreNotAComment(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal((0, 0), (tree.Diagnostics.Count, tree.Comments.Count));
+    }
+
+    [Theory]
+    [InlineData("mira: Hi {$name // }", "PIB1013")]
+    [InlineData("mira: Hi {if $a}yes // {/if}", "PIB1013")]
+    [InlineData("mira: Hi [wave 1 // ]x[/wave]", "PIB1013")]
+    [InlineData("mira: [b]bold // [/b]", "PIB1010")]
+    public void Parse_CommentInsideBracketsOrSpan_LeavesItUnclosed(string line, string code)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal((code, 1), (Assert.Single(tree.Diagnostics).Code, tree.Comments.Count));
+    }
+
+    [Theory]
+    [InlineData("mira: Hi /// note", 1)]
+    [InlineData("-> Go /// note", 1)]
+    [InlineData("mira: Hi //// banner", 0)]
+    [InlineData("mira: Hi ///// banner", 0)]
+    public void Parse_NoteAfterContent_IsReportedUnlessItHasFourSlashes(string line, int diagnostics)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal((diagnostics, 1), (tree.Diagnostics.Count, tree.Comments.Count));
+    }
 }

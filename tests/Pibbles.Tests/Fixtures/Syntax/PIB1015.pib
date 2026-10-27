@@ -13,3 +13,5 @@ mira: Hi. #thought and more
 mira: I'm \#winning today. #thought
 mira: My #1 fan. #thought #box:phone
 -> Go  @once #show_disabled
+mira: Hi. #thought // a comment after a tag
+-> Go @once #show_disabled // a comment after the modifier and tag

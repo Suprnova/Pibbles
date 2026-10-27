@@ -1,6 +1,6 @@
-File 1:1-17:1
+File 1:1-23:1
   Nodes:
-    Node 3:1-16:19
+    Node 3:1-22:30
       Name: Name 3:4-3:20 Text="snapshot.choices"
       Body:
         Choice 4:1-14:13
@@ -80,5 +80,38 @@ File 1:1-17:1
             Option 16:1-16:19 IsOnce=false
               Text:
                 TextRun 16:4-16:19 Text="A second choice"
+        TextLine 17:1-17:32
+          Speaker: Name 17:1-17:5 Text="mira"
+          Content:
+            TextRun 17:7-17:32 Text="Between two more choices."
+        Choice 18:1-22:30
+          Options:
+            Option 18:1-18:8 IsOnce=false
+              Text:
+                TextRun 18:4-18:8 Text="Wave"
+            Option 19:1-19:28 IsOnce=false
+              Text:
+                TextRun 19:4-19:15 Text="Use the key"
+              Condition: VariableExpression 19:20-19:28 Name="has_key"
+            Option 20:1-20:18 IsOnce=false
+              Text:
+                TextRun 20:4-20:9 Text="Knock"
+              Tags:
+                Tag 20:10-20:18 Name="thought" Value=null
+            Option 21:1-21:42 IsOnce=true
+              Text:
+                TextRun 21:4-21:8 Text="Both"
+              Condition: VariableExpression 21:13-21:21 Name="has_key"
+              Tags:
+                Tag 21:28-21:42 Name="show_disabled" Value=null
+            Option 22:1-22:30 IsOnce=false
+              Text:
+                TextRun 22:4-22:30 Text="Visit https://example.com"
 Comments:
   1:1-1:30 "Choices and their options."
+  17:33-17:40 trailing "done"
+  18:9-18:29 trailing "a friendly option"
+  19:29-19:49 trailing "only with the key"
+  20:19-20:43 trailing "a tag, then a comment"
+  21:43-21:76 trailing "every modifier, then a comment"
+  22:31-22:50 trailing "an escaped slash"

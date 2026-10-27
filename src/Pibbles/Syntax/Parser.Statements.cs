@@ -314,7 +314,7 @@ internal sealed partial class Parser
             }
         }
 
-        int end = body.Count > 0 ? Math.Max(body[^1].Span.End, TrimmedEnd(line)) : TrimmedEnd(line);
+        int end = body.Count > 0 ? body[^1].Span.End : start + 1;
         return new(body) { Span = new(start, end - start) };
     }
 

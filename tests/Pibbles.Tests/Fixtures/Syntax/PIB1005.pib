@@ -11,10 +11,16 @@
     Notes don't count as the block's lines, so this one is here.
 @end /// Not a comment.
 //   ^^^ PIB1005
+mira: Hello. /// Not a comment.
+//           ^^^ PIB1005
+-> Go /// Not a comment.
+//    ^^^ PIB1005
 
 // Must not trigger
 
 @end //// A comment, because it has four slashes.
+mira: Hello. //// A comment, because it has four slashes.
+mira: Hello. \/// A slash, then a comment.
 //// A comment banner.
 // A comment.
     // An indented comment.

@@ -18,3 +18,11 @@ mira: {if $a}[b]bold[/b]{/if}{ if $b }spaced{ /if }
 mira: {w}
 mira: Quiet.{pause 0.5} Then more.
 mira: Tried {$.attempts} times, {$kitchen.tries} in the kitchen.
+mira: Hello there. // said warmly
+mira (sad): // still sad
+The kitchen smells of coffee. #thought // narration, a tag, then a comment
+Visit https:\//example.com for the recipe.//touching the text
+mira: Look [b]closely[/b]{$name}// touching a closer
+mira: A {f("a//b")} string keeps its slashes. // and this is the comment
+mira: Read #link:https://example.com // a tag value keeps its slashes
+mira: A banner //// and a comment

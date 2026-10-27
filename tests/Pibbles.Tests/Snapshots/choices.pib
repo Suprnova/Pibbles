@@ -14,3 +14,9 @@
         @end
 mira: Between two choices.
 -> A second choice
+mira: Between two more choices. // done
+-> Wave // a friendly option
+-> Use the key @if $has_key // only with the key
+-> Knock #thought // a tag, then a comment
+-> Both @if $has_key @once #show_disabled // every modifier, then a comment
+-> Visit https:\//example.com // an escaped slash

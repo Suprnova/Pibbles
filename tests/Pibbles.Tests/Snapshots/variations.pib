@@ -23,3 +23,8 @@
 - A dash outside a variation is text.
 -
 mira (sad): #thought
+@sequence
+    - mira: Once more. // an alternative's text, then a comment
+    - @jump snapshot.elsewhere // a jump
+    - // a bare dash
+        @end

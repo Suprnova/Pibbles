@@ -193,7 +193,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
     {
         string speaker = line.Speaker is null ? "" : line.Pose is null ? $"{line.Speaker.Text}:" : $"{line.Speaker.Text} ({line.Pose.Text}):";
         string content = Inline(line.Content, option: false, narration: line.Speaker is null);
-        if (line.Speaker is null && content is ['-' or '/' or '=' or '@', ..])
+        if (line.Speaker is null && content is ['-' or '=' or '@', ..])
             content = "\\" + content;
 
         return string.Join(" ", new[] { speaker, content }.Where(part => part.Length > 0)) + Tags(line.Tags);
@@ -248,7 +248,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         var escaped = new StringBuilder();
         foreach (char c in text)
         {
-            if (c is '\\' or '[' or '{' or '#' || option && c is '@' || narration && c is ':')
+            if (c is '\\' or '[' or '{' or '#' or '/' || option && c is '@' || narration && c is ':')
                 escaped.Append('\\');
 
             escaped.Append(c);

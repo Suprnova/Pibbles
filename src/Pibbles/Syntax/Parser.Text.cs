@@ -17,7 +17,7 @@ internal sealed partial class Parser
     private TextLineSyntax ParseTextLine(SourceLine line)
     {
         lineFailed = false;
-        inlineEnd = TrimmedEnd(line);
+        inlineEnd = ContentEnd(line);
         int start = line.Content.Start;
         textOwner = "the text";
         textLineStart = start;
@@ -42,7 +42,7 @@ internal sealed partial class Parser
         CheckTags(tags, pose is not null && content.Count == 0 ? TagPlace.PoseChange : TagPlace.TextLine);
 
         index++;
-        return new(speaker, pose, content, tags) { Span = new(start, TrimmedEnd(line) - start) };
+        return new(speaker, pose, content, tags) { Span = new(start, inlineEnd - start) };
     }
 
     private int SkipIdentifier(int start)
@@ -71,7 +71,7 @@ internal sealed partial class Parser
     private OptionSyntax ParseOption(SourceLine line)
     {
         lineFailed = false;
-        inlineEnd = TrimmedEnd(line);
+        int lineEnd = inlineEnd = ContentEnd(line);
         int start = line.Content.Start;
         textOwner = "the option's text";
         textLineStart = start;
@@ -126,7 +126,6 @@ internal sealed partial class Parser
         }
 
         CheckTags(tags, TagPlace.Option);
-        int lineEnd = TrimmedEnd(line);
         index++;
 
         List<StatementSyntax> body = [];

@@ -1,13 +1,14 @@
 namespace Pibbles.Syntax;
 
-/// <summary>A <c>//</c> comment: on a line of its own, or after the content of an <c>@</c> line or a node header.</summary>
+/// <summary>A <c>//</c> comment: on a line of its own, or at the end of any line, after its content.</summary>
 /// <remarks>
-/// Comments aren't part of the syntax tree, since they never change what a story means. Tools read them, such as
-/// <c>// pibbles-ignore</c>, which silences a style hint.
+/// A comment runs to the end of its line and starts at the first <c>//</c> that isn't in a quoted string, in a tag's
+/// value or after a backslash. Comments aren't part of the syntax tree, since they never change what a story means.
+/// Tools read them, such as <c>// pibbles-ignore</c>, which silences a style hint.
 /// </remarks>
 /// <param name="Span">The comment, from its <c>//</c> to its last character that isn't whitespace.</param>
 /// <param name="Text">What follows the <c>//</c>, without the whitespace around it.</param>
-/// <param name="OnOwnLine">Whether only whitespace comes before the comment on its line. A comment after the content of an <c>@</c> line, a node header or a dash isn't.</param>
+/// <param name="OnOwnLine">Whether only whitespace comes before the comment on its line. A comment after the content of a line isn't.</param>
 public sealed record Comment(TextSpan Span, string Text, bool OnOwnLine)
 {
     /// <summary>Whether the comment starting at <paramref name="start"/> is a <c>///</c> note, which is only ever a whole line, rather than a comment.</summary>

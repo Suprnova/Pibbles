@@ -1,6 +1,6 @@
-File 1:1-26:1
+File 1:1-31:1
   Nodes:
-    Node 3:1-25:21
+    Node 3:1-30:13
       Name: Name 3:4-3:23 Text="snapshot.variations"
       Body:
         VariationStatement 4:1-7:51 Kind=Sequence
@@ -89,6 +89,24 @@ File 1:1-26:1
           Pose: Name 25:7-25:10 Text="sad"
           Tags:
             Tag 25:13-25:21 Name="thought" Value=null
+        VariationStatement 26:1-30:13 Kind=Sequence
+          Alternatives:
+            Alternative 27:5-27:23
+              Body:
+                TextLine 27:7-27:23
+                  Speaker: Name 27:7-27:11 Text="mira"
+                  Content:
+                    TextRun 27:13-27:23 Text="Once more."
+            Alternative 28:5-28:31
+              Body:
+                JumpStatement 28:7-28:31
+                  Target: Name 28:13-28:31 Text="snapshot.elsewhere"
+            Alternative 29:5-30:13
+              Body:
+                EndStatement 30:9-30:13
 Comments:
   1:1-1:44 "Variation blocks and their alternatives."
   18:7-18:50 trailing "A comment after the dash is a bare dash."
+  27:24-27:64 trailing "an alternative's text, then a comment"
+  28:32-28:41 trailing "a jump"
+  29:7-29:21 trailing "a bare dash"

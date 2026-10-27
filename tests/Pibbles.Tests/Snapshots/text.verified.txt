@@ -1,6 +1,6 @@
-File 1:1-21:1
+File 1:1-29:1
   Nodes:
-    Node 3:1-20:65
+    Node 3:1-28:15
       Name: Name 3:4-3:17 Text="snapshot.text"
       Body:
         TextLine 4:1-4:19
@@ -181,5 +181,58 @@ File 1:1-21:1
             Interpolation 20:33-20:49
               Value: VariableExpression 20:34-20:48 Name="kitchen.tries"
             TextRun 20:49-20:65 Text=" in the kitchen."
+        TextLine 21:1-21:19
+          Speaker: Name 21:1-21:5 Text="mira"
+          Content:
+            TextRun 21:7-21:19 Text="Hello there."
+        TextLine 22:1-22:12
+          Speaker: Name 22:1-22:5 Text="mira"
+          Pose: Name 22:7-22:10 Text="sad"
+        TextLine 23:1-23:39
+          Content:
+            TextRun 23:1-23:30 Text="The kitchen smells of coffee."
+          Tags:
+            Tag 23:31-23:39 Name="thought" Value=null
+        TextLine 24:1-24:43
+          Content:
+            TextRun 24:1-24:43 Text="Visit https://example.com for the recipe."
+        TextLine 25:1-25:33
+          Speaker: Name 25:1-25:5 Text="mira"
+          Content:
+            TextRun 25:7-25:12 Text="Look "
+            Markup 25:12-25:26
+              Name: Name 25:13-25:14 Text="b"
+              Content:
+                TextRun 25:15-25:22 Text="closely"
+            Interpolation 25:26-25:33
+              Value: VariableExpression 25:27-25:32 Name="name"
+        TextLine 26:1-26:46
+          Speaker: Name 26:1-26:5 Text="mira"
+          Content:
+            TextRun 26:7-26:9 Text="A "
+            Interpolation 26:9-26:20
+              Value: CallExpression 26:10-26:19
+                Function: Name 26:10-26:11 Text="f"
+                Arguments:
+                  StringLiteral 26:12-26:18 Value="a//b"
+            TextRun 26:20-26:46 Text=" string keeps its slashes."
+        TextLine 27:1-27:37
+          Speaker: Name 27:1-27:5 Text="mira"
+          Content:
+            TextRun 27:7-27:11 Text="Read"
+          Tags:
+            Tag 27:12-27:37 Name="link" Value="https://example.com"
+        TextLine 28:1-28:15
+          Speaker: Name 28:1-28:5 Text="mira"
+          Content:
+            TextRun 28:7-28:15 Text="A banner"
 Comments:
   1:1-1:48 "Text lines and every kind of inline element."
+  21:20-21:34 trailing "said warmly"
+  22:13-22:25 trailing "still sad"
+  23:40-23:75 trailing "narration, a tag, then a comment"
+  24:43-24:62 trailing "touching the text"
+  25:33-25:53 trailing "touching a closer"
+  26:47-26:73 trailing "and this is the comment"
+  27:38-27:70 trailing "a tag value keeps its slashes"
+  28:16-28:34 trailing "// and a comment"
