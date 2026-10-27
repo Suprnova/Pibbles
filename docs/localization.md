@@ -95,7 +95,7 @@ msgid "Locked.{w} Of course it's locked."
 msgstr "Cerrada.{pause 0.3} Cómo no, está cerrada."
 ```
 
-- `msgctxt` holds the line ID. `msgid` holds the source inline text, with the speaker prefix, tags and modifiers stripped. Notes (`///`), the speaker and the source location become extracted comments.
+- `msgctxt` holds the line ID. `msgid` holds the source inline text, with the speaker prefix, tags, modifiers and trailing comment stripped. Notes (`///`), the speaker and the source location become extracted comments. A `msgstr` takes the source's escapes, `\//` included, since the same inline parser reads it. An unescaped `//` in one is an error, because a translation holds only a line's text and has nothing to comment on.
 - The core reads and writes PO itself. The format is small, and the core stays free of dependencies.
 
 **Why PO:** it's the format translation tools and services support best. It carries context, notes and fuzzy state. Godot also uses PO for UI strings, so the game's UI text and story text can share one translation pipeline and one vendor.
