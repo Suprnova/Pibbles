@@ -88,8 +88,8 @@ internal static class SyntaxGenerators
             .Where(actor => actor.DisplayName is not null || actor.Poses.Count > 0)
             .Select(DeclarationSyntax (actor) => actor);
 
-        Gen<TagEntrySyntax> tagEntry = Gen.Select(Identifier, Maybe(Identifier), Gen.Bool,
-            (name, type, empty) => new TagEntrySyntax(Name(name), type is null ? null : Name(type), type is not null && empty) { Span = default });
+        Gen<TagValueSyntax> tagValue = Gen.Select(Identifier, Gen.Bool, (type, empty) => new TagValueSyntax(Name(type), empty) { Span = default });
+        Gen<TagEntrySyntax> tagEntry = Gen.Select(Identifier, Maybe(tagValue), (name, value) => new TagEntrySyntax(Name(name), value) { Span = default });
 
         return Gen.OneOf(
             actor,

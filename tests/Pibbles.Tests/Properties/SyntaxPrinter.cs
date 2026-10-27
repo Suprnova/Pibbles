@@ -94,7 +94,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
                 break;
 
             case TagDeclarationSyntax tag:
-                Line(0, $"@tag {string.Join(", ", tag.Entries.Select(entry => entry.Type is null ? entry.Name.Text : $"{entry.Name.Text}: {entry.Type.Text}{(entry.AllowsEmpty ? "?" : "")}"))}");
+                Line(0, $"@tag {string.Join(", ", tag.Entries.Select(entry => entry.Value is null ? entry.Name.Text : $"{entry.Name.Text}: {entry.Value.Type.Text}{(entry.Value.AllowsEmpty ? "?" : "")}"))}");
                 break;
 
             case FunctionDeclarationSyntax function:

@@ -177,20 +177,8 @@ internal sealed partial class Parser
         while (true)
         {
             NameSyntax name = ExpectDeclaredName("a tag name", after);
-            NameSyntax? type = null;
-            bool allowsEmpty = false;
-            if (token.Kind is TokenKind.Colon)
-            {
-                Advance();
-                type = ExpectDeclaredName("a type", ":");
-                if (token.Kind is TokenKind.Question)
-                {
-                    Advance();
-                    allowsEmpty = true;
-                }
-            }
-
-            entries.Add(new(name, type, allowsEmpty) { Span = new(name.Span.Start, previousEnd - name.Span.Start) });
+            TagValueSyntax? value = token.Kind is TokenKind.Colon ? ParseTagValue() : null;
+            entries.Add(new(name, value) { Span = new(name.Span.Start, previousEnd - name.Span.Start) });
             if (token.Kind is not TokenKind.Comma)
                 break;
 
@@ -199,6 +187,18 @@ internal sealed partial class Parser
         }
 
         return new(entries) { Span = default };
+    }
+
+    private TagValueSyntax ParseTagValue()
+    {
+        int start = token.Span.Start;
+        Advance();
+        NameSyntax type = ExpectDeclaredName("a type", ":");
+        bool allowsEmpty = token.Kind is TokenKind.Question;
+        if (allowsEmpty)
+            Advance();
+
+        return new(type, allowsEmpty) { Span = new(start, previousEnd - start) };
     }
 
     private FunctionDeclarationSyntax ParseFunctionDeclaration()

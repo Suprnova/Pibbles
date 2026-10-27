@@ -43,9 +43,13 @@ public sealed record TagDeclarationSyntax(IReadOnlyList<TagEntrySyntax> Entries)
 
 /// <summary>One tag in a <c>@tag</c> declaration: a flag, or a tag that takes a value of a type.</summary>
 /// <param name="Name">The tag's name, without the <c>#</c>.</param>
-/// <param name="Type">The type of the tag's value, or <see langword="null"/> for a flag that takes no value.</param>
+/// <param name="Value">The tag's value, or <see langword="null"/> for a flag that takes no value.</param>
+public sealed record TagEntrySyntax(NameSyntax Name, TagValueSyntax? Value) : SyntaxNode;
+
+/// <summary>The value a tag takes, written after its name: <c>: type</c> or <c>: type?</c>.</summary>
+/// <param name="Type">The type of the tag's value.</param>
 /// <param name="AllowsEmpty">Whether the type is marked <c>?</c>, which allows an empty value (<c>#box:</c>).</param>
-public sealed record TagEntrySyntax(NameSyntax Name, NameSyntax? Type, bool AllowsEmpty) : SyntaxNode;
+public sealed record TagValueSyntax(NameSyntax Type, bool AllowsEmpty) : SyntaxNode;
 
 /// <summary><c>@function name(params) -> type</c>: a host function usable in expressions.</summary>
 /// <param name="Name">The function's name.</param>

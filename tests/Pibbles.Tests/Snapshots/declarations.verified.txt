@@ -99,16 +99,18 @@ File 1:1-27:1
         Name 23:17-23:26 Text="inventory"
     TagDeclaration 24:1-24:58
       Entries:
-        TagEntry 24:6-24:13 AllowsEmpty=false
+        TagEntry 24:6-24:13
           Name: Name 24:6-24:13 Text="thought"
-        TagEntry 24:15-24:28 AllowsEmpty=false
+        TagEntry 24:15-24:28
           Name: Name 24:15-24:28 Text="show_disabled"
-        TagEntry 24:30-24:41 AllowsEmpty=false
+        TagEntry 24:30-24:41
           Name: Name 24:30-24:33 Text="box"
-          Type: Name 24:35-24:41 Text="string"
-        TagEntry 24:43-24:58 AllowsEmpty=true
+          Value: TagValue 24:33-24:41 AllowsEmpty=false
+            Type: Name 24:35-24:41 Text="string"
+        TagEntry 24:43-24:58
           Name: Name 24:43-24:47 Text="mood"
-          Type: Name 24:49-24:57 Text="position"
+          Value: TagValue 24:47-24:58 AllowsEmpty=true
+            Type: Name 24:49-24:57 Text="position"
     FunctionDeclaration 25:1-25:39
       Name: Name 25:11-25:19 Text="has_item"
       Parameters:
