@@ -19,7 +19,7 @@ public class StyleChecksTests
         { "Wait.{pause 0.2}{pause 300ms} Done.\n", "PIB5018", "Write one pause: `{pause 0.5}`." },
         { "Wait.{pause 0.10}{pause 0.20} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
         { "Wait.{pause 0.1}{pause 0.2} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
-        { "Wait.{w}{p}Done.\n", "PIB5017", "Remove it." },
+        { "Wait.{w}{page}Done.\n", "PIB5017", "Remove it." },
         { "Wait.{pause 79228162514264337593543950335}{pause 1} Done.\n", "PIB5018", null },
     };
 
@@ -36,7 +36,7 @@ public class StyleChecksTests
 
     [Theory]
     [InlineData("Wait.{w}\n", "PIB5011", "This wait does nothing, because the end of the line already waits for a click.")]
-    [InlineData("Wait.{w}{p}Done.\n", "PIB5017", "This wait does nothing, because the `{page}` after it already waits.")]
+    [InlineData("Wait.{w}{page}Done.\n", "PIB5017", "This wait does nothing, because the `{page}` after it already waits.")]
     [InlineData("Wait.{pause 0.2}{pause 0.3} Done.\n", "PIB5018", "This pause comes right after another one, so the two could be one.")]
     public void Create_RedundantWaitOrPause_SaysWhichItIs(string body, string code, string message)
     {

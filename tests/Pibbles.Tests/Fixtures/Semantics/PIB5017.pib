@@ -1,10 +1,10 @@
 // A pause just before a page break, which already waits.
 
 == kitchen.door
-This line waits twice here.{w}{p}New page.
+This line waits twice here.{w}{page}New page.
 //                         ^^^ PIB5017
 
 // Must not trigger
 
-This line waits once.{p}New page.
-This line waits{w} and then breaks.{p}New page.
+This line waits once.{page}New page.
+This line waits{w} and then breaks.{page}New page.

@@ -90,7 +90,7 @@ File 1:1-20:1
             Icon 13:65-13:81
               Name: Name 13:71-13:80 Text="inventory"
             TextRun 13:81-13:82 Text="."
-        TextLine 14:1-14:72
+        TextLine 14:1-14:75
           Speaker: Name 14:1-14:5 Text="mira"
           Content:
             TextRun 14:7-14:14 Text="Locked."
@@ -99,10 +99,10 @@ File 1:1-20:1
             Pause 14:28-14:39
               Duration: NumberLiteral 14:35-14:38 Value=0.5
             TextRun 14:39-14:47 Text=" Really."
-            PageBreak 14:47-14:50
-            TextRun 14:50-14:59 Text="New page."
-            LineBreak 14:59-14:63
-            TextRun 14:63-14:72 Text="New line."
+            PageBreak 14:47-14:53
+            TextRun 14:53-14:62 Text="New page."
+            LineBreak 14:62-14:66
+            TextRun 14:66-14:75 Text="New line."
         TextLine 15:1-15:84
           Speaker: Name 15:1-15:5 Text="mira"
           Content:

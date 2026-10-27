@@ -267,7 +267,7 @@ public class LineRevealTests
     [Fact]
     public void Reveal_AppliesToLinesRenderedFromTemplates()
     {
-        Game game = Game.Of("== t.n\nmira: Hi{w} [b]there[/b]{@shake 4 wait}!{p}Next.\n");
+        Game game = Game.Of("== t.n\nmira: Hi{w} [b]there[/b]{@shake 4 wait}!{page}Next.\n");
         game.Runner.Start("t.n");
         Line line = ((LineStep)game.Runner.Next()).Line;
         var reveal = new LineReveal(line, new RevealSettings(1000));

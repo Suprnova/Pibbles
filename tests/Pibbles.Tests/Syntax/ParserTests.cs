@@ -105,7 +105,6 @@ public class ParserTests
     [Theory]
     [InlineData("w", "0.5", "To pause for that long, write `{pause 0.5}`.")]
     [InlineData("w", "$delay", "To pause for that long, write `{pause $delay}`.")]
-    [InlineData("p", "2", "Remove `2`.")]
     [InlineData("page", "2", "Remove `2`.")]
     [InlineData("br", "(1 + 1)", "Remove `(1 + 1)`.")]
     public void Parse_ValueAfterPointThatTakesNone_NamesThePointAndOffersAFix(string point, string value, string help)

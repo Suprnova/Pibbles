@@ -3,8 +3,6 @@
 == fixture.points
 Wait.{w 0.5} Then more.
 //      ^^^ PIB1018
-Page.{p 2} Then more.
-//      ^ PIB1018
 Page.{page 2} Then more.
 //         ^ PIB1018
 Break.{br 1} Then more.
@@ -15,6 +13,5 @@ Break.{br 1} Then more.
 Wait.{w} Then more.
 Pause.{pause 0.5} Then more.
 Fast.{speed 2} Then more.
-Page.{p}Then more.
 Page.{page}Then more.
 Break.{br}Then more.

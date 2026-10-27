@@ -91,7 +91,7 @@ internal sealed class IrDump(Story story, ISet<Type>? kinds)
             PauseElement pause => $"{{pause {Format(pause.Duration)}}}",
             SpeedElement speed => $"{{speed {Format(speed.Factor)}}}",
             SpeedResetElement => "{speed}",
-            PageBreakElement => "{p}",
+            PageBreakElement => "{page}",
             LineBreakElement => "{br}",
             IconElement icon => $"{{icon {icon.Icon.Name}}}",
             ConditionalElement conditional => FormatConditional(conditional),

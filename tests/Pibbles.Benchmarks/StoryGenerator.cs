@@ -166,7 +166,7 @@ public sealed class StoryGenerator(int seed)
         10 => "{@shake 2}" + Pick(Words),
         11 => $"{{if $flag{random.Next(Flags)}}}{Pick(Words)}{{else}}{Pick(Words)}{{/if}}",
         12 => Pick(["{price(\"rope\")}", "{if $mood == tense}tense{else}calm{/if}"]),
-        _ => Pick(Words) + "{p}" + Pick(Words),
+        _ => Pick(Words) + "{page}" + Pick(Words),
     };
 
     private string Phrase(int count) => string.Join(' ', Enumerable.Range(0, count).Select(_ => Pick(Words)));

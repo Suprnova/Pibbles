@@ -54,7 +54,7 @@ public class LineRenderingTests
     [Fact]
     public void Markers_AreAtTheirPositionsWithTheirPayloadsInSourceOrder()
     {
-        Line line = Render("mira: {@shake 3}Hi{w} there{pause 0.5}{p}new{speed 2}fast{speed}.{@shake 1 wait}");
+        Line line = Render("mira: {@shake 3}Hi{w} there{pause 0.5}{page}new{speed 2}fast{speed}.{@shake 1 wait}");
 
         Assert.Equal("Hi therenewfast.", line.Text);
         Assert.Equal(
@@ -120,7 +120,7 @@ public class LineRenderingTests
     [Fact]
     public void Trimming_RenderedWhitespaceIsTrimmedAndPositionsMoveToTheNearestEnd()
     {
-        Game game = Game.Of("== t.n\nmira: {$name}{w}x{br}{w}\nmira: [b]{$name}[/b]y{$name}{p}\nmira: {if $key}Ah, {/if}there.\nmira: A {$price}{br}\n");
+        Game game = Game.Of("== t.n\nmira: {$name}{w}x{br}{w}\nmira: [b]{$name}[/b]y{$name}{page}\nmira: {if $key}Ah, {/if}there.\nmira: A {$price}{br}\n");
         game.Set("name", Value.String("  "));
 
         game.Runner.Start("t.n");

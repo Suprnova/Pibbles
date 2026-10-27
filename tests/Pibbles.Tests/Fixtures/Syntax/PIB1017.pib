@@ -12,5 +12,5 @@ mira: {auto} is reserved.
 
 // Must not trigger
 
-mira: {$name}, {name()}, {@jolt mira}, {w}, {p}, {br} and {icon interact}.
+mira: {$name}, {name()}, {@jolt mira}, {w}, {page}, {br} and {icon interact}.
 mira: \{name} is escaped.

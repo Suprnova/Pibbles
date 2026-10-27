@@ -5,8 +5,6 @@
 //      ^^^ PIB1016
 -> Pause {pause 0.5} here
 //       ^^^^^^^^^^^ PIB1016
--> A new page{p}
-//           ^^^ PIB1016
 -> A newer page{page}
 //             ^^^^^^ PIB1016
 -> Jolt {@jolt mira}
@@ -19,4 +17,4 @@
 // Must not trigger
 
 -> [b]Bold[/b] {$name} {icon interact} {if $a}yes{/if}{br}line two
-mira: Text lines can {w} pause{p}, {speed 2}speed up{speed} and {@jolt mira} run commands.
+mira: Text lines can {w} pause{page}, {speed 2}speed up{speed} and {@jolt mira} run commands.
