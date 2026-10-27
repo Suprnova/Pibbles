@@ -75,6 +75,47 @@ public class CompilationTests
         Assert.Equal(["PIB2060", "PIB1040", "PIB2061", "PIB2063"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
+    [Fact]
+    public void Create_RelativeVariable_IsDeclaredUnderItsFullName()
+    {
+        var compilation = Compile("@prefix kitchen\n@var $.attempts = 0\n");
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Equal(["kitchen.attempts"], compilation.Symbols.Variables.Keys);
+    }
+
+    [Fact]
+    public void Create_RelativeVariablesUnderDifferentPrefixes_AreDifferentVariables()
+    {
+        var compilation = WithoutStyle.Compile(
+            new("story/kitchen.pib", "@prefix kitchen\n@var $.attempts = 0\n"),
+            new("story/cellar.pib", "@prefix cellar\n@var $.attempts = 0\n"));
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Equal(["kitchen.attempts", "cellar.attempts"], compilation.Symbols.Variables.Keys);
+    }
+
+    [Fact]
+    public void Create_RelativeVariablesUnderTheSamePrefix_AreOneVariable()
+    {
+        var compilation = WithoutStyle.Compile(
+            new("story/kitchen.pib", "@prefix kitchen\n@var $.attempts = 0\n"),
+            new("story/pantry.pib", "@prefix kitchen\n@var $.attempts = 0\n"));
+
+        Diagnostic duplicate = Assert.Single(compilation.Diagnostics);
+        Assert.Equal(("PIB2060", "There's already a variable called `$kitchen.attempts`, in story/kitchen.pib on line 2."), (duplicate.Code, duplicate.Message));
+    }
+
+    [Fact]
+    public void Create_FullVariableName_IsReachedFromAFileWithAnotherPrefix()
+    {
+        var compilation = WithoutStyle.Compile(
+            new("story/kitchen.pib", "@prefix kitchen\n@var $.lights_on = false\n"),
+            new("story/cellar.pib", "@prefix cellar\n\n== .breaker\n@set $kitchen.lights_on = true\n"));
+
+        Assert.Empty(compilation.Diagnostics);
+    }
+
     public static TheoryData<string, string> LiteralTypes { get; } = new()
     {
         { "3", "number" },

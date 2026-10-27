@@ -38,6 +38,16 @@ public class BindingsTests
     }
 
     [Fact]
+    public void Bindings_RelativeVariable_ResolvesToTheFullVariable()
+    {
+        (Compilation compilation, SyntaxTree tree) = Compile("@prefix kitchen\n@var $.tries = 0\n\n== .door\n@set $.tries += 1\n");
+
+        var set = Assert.IsType<SetStatementSyntax>(Statements(tree).Single());
+
+        Assert.Equal("kitchen.tries", Assert.IsType<VariableSymbol>(compilation.Bindings.SymbolOf(set.Variable)).Name);
+    }
+
+    [Fact]
     public void Bindings_Call_ResolvesFunctionName()
     {
         (Compilation compilation, SyntaxTree tree) = Compile(Story);

@@ -5,7 +5,7 @@ namespace Pibbles.Semantics;
 
 /// <summary>
 /// What the analysis passes share: the file being analyzed, reporting in it, recording the names in it that refer to
-/// symbols, and expanding its relative node names.
+/// symbols, and expanding its relative node and variable names.
 /// </summary>
 internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceIndex references)
 {
@@ -22,10 +22,11 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
     }
 
     /// <summary>
-    /// Expands a node name with its file's prefix, or returns <see langword="null"/> if it can't be: the name is
-    /// missing, or it's relative in a file with no prefix, which is reported.
+    /// Expands a node or variable name with its file's prefix, or returns <see langword="null"/> if it can't be: the
+    /// name is missing, or it's relative in a file with no prefix, which is reported as <paramref name="shown"/>, or
+    /// as written if that's <see langword="null"/>.
     /// </summary>
-    protected string? FullName(string written, TextSpan span)
+    protected string? FullName(string written, TextSpan span, string? shown = null)
     {
         if (written.Length == 0)
             return null;
@@ -35,7 +36,7 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
 
         if (Tree.Root.Prefix is not { } prefix)
         {
-            Report(DiagnosticCatalog.RelativeWithoutPrefix, span, written);
+            Report(DiagnosticCatalog.RelativeWithoutPrefix, span, shown ?? written);
             return null;
         }
 

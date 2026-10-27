@@ -99,7 +99,8 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         {
             var name = new NameSyntax(declaration.Variable.Name) { Span = declaration.Variable.Span };
             TypeSymbol type = declaration.Type is { } written ? ResolveType(written) : TypeOfValue(declaration);
-            Declare(symbols.Variables, new VariableSymbol(name.Text, Location(name.Span), type, declaration.Value), name, SymbolKind.Variable, $"${name.Text}");
+            if (FullName(name.Text, name.Span, $"${name.Text}") is { } fullName)
+                Declare(symbols.Variables, new VariableSymbol(fullName, Location(name.Span), type, declaration.Value), name, SymbolKind.Variable, $"${fullName}");
         }
     }
 
@@ -199,9 +200,9 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             return;
 
         bool valid = CheckName(name, kind, shown);
-        if (!table.TryGetValue(name.Text, out T? first))
+        if (!table.TryGetValue(symbol.Name, out T? first))
         {
-            table.Add(name.Text, symbol);
+            table.Add(symbol.Name, symbol);
             DeclaresIfWritten(name.Span, symbol);
         }
         else if (valid)

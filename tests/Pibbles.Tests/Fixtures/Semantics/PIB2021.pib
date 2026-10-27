@@ -1,4 +1,9 @@
-// A relative node name needs a `@prefix` to be relative to.
+// A relative name needs a `@prefix` to be relative to.
+
+@var $.attempts = 0
+//   ^^^^^^^^^^ PIB2021
+@var $kitchen.tries = 0
+@var $lights = false
 
 == .door
 // ^^^^^ PIB2021
@@ -7,10 +12,17 @@
 @if visits(.cellar) > 0
 //         ^^^^^^^ PIB2021
     Back in the cellar.
+@set $.attempts += 1
+//   ^^^^^^^^^^ PIB2021
+Tried {$.attempts} times.
+//     ^^^^^^^^^^ PIB2021
 @jump .leave
 //    ^^^^^^ PIB2021
 
 // Must not trigger
 
 == kitchen.leave #was:kitchen.exit
+@set $kitchen.tries += 1
+@if $lights
+    Tried {$kitchen.tries} times.
 @jump kitchen.cellar

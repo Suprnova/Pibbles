@@ -440,17 +440,17 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private TypeSymbol BindVariable(VariableExpressionSyntax variable)
     {
-        if (variable.Name.Length == 0)
+        if (FullName(variable.Name, variable.Span, $"${variable.Name}") is not { } name)
             return TypeSymbol.Error;
 
-        if (symbols.Variables.TryGetValue(variable.Name, out VariableSymbol? symbol))
+        if (symbols.Variables.TryGetValue(name, out VariableSymbol? symbol))
         {
             Refers(variable, symbol);
             return symbol.Type;
         }
 
-        string? closest = Suggestions.Closest(variable.Name, symbols.Variables.Keys);
-        ReportWithOptionalHelp(DiagnosticCatalog.UnknownVariable, variable.Span, $"${variable.Name}", closest is null ? null : $"${closest}");
+        string? closest = Suggestions.Closest(name, symbols.Variables.Keys);
+        ReportWithOptionalHelp(DiagnosticCatalog.UnknownVariable, variable.Span, $"${variable.Name}", closest is null ? null : $"${AsWritten(closest, variable.Name)}");
         return TypeSymbol.Error;
     }
 
@@ -518,7 +518,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         return TypeSymbol.Error;
     }
 
-    /// <summary>Writes a full node name the way <paramref name="written"/> is: relative to the file's prefix if it is, and the node is under it.</summary>
+    /// <summary>Writes a full node or variable name the way <paramref name="written"/> is: relative to the file's prefix if it is, and the name is under it.</summary>
     private string AsWritten(string fullName, string written) =>
         written.StartsWith('.') && Tree.Root.Prefix?.Name.Text.TrimStart('.') is { } prefix && fullName.StartsWith(prefix + ".", StringComparison.Ordinal)
             ? fullName[prefix.Length..]

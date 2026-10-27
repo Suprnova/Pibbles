@@ -760,7 +760,7 @@ Fix the spelling: `visits(.door)`. The help suggests the closest node, written r
 
 ### PIB2021
 
-**A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave`. In a file with no prefix, there's nothing for it to be relative to.
+**A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave` and `$.attempts` means `$kitchen.attempts`. In a file with no prefix, there's nothing for it to be relative to.
 
 ```text
 == .leave

@@ -104,7 +104,7 @@ public sealed class PoseSymbol : Symbol
     }
 }
 
-/// <summary>A variable: <c>@var $name = value</c>.</summary>
+/// <summary>A variable: <c>@var $name = value</c>. Its <see cref="Symbol.Name"/> is its full name, such as <c>kitchen.door_open</c>.</summary>
 public sealed class VariableSymbol : Symbol
 {
     internal VariableSymbol(string name, SourceLocation? location, TypeSymbol type, ExpressionSyntax startingValue)

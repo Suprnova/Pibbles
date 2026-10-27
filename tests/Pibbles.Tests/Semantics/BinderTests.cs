@@ -173,6 +173,16 @@ public class BinderTests
             "Did you mean `$has_key`?"
         },
         {
+            "@prefix kitchen\n@var $.attempts = 0\n\n== .door\n@set $.atempts += 1\n",
+            "I don't know a variable called `$.atempts`.",
+            "Did you mean `$.attempts`?"
+        },
+        {
+            "@var $kitchen.attempts = 0\n\n== a.b\n@set $kitchen.atempts += 1\n",
+            "I don't know a variable called `$kitchen.atempts`.",
+            "Did you mean `$kitchen.attempts`?"
+        },
+        {
             "@var $count = 0\n\n== a.b\n@set $count += 1s\n",
             "`$count` holds a `number`, but this is a `duration`.",
             "Write a number, like `1` or `0.5`."
@@ -282,6 +292,12 @@ public class BinderTests
     [InlineData("== a.b\n@pause \"0\"\n")]
     public void Compile_PacingValueOfWrongType_ReportsOnlyTheType(string text) =>
         Assert.Equal(["PIB2031"], Diagnose(text).Select(diagnostic => diagnostic.Code));
+
+    [Theory]
+    [InlineData("@prefix kitchen\n@var $attempts = 0\n\n== .door\n@set $.attempts += 1\n")]
+    [InlineData("@prefix kitchen\n@var $.attempts = 0\n\n== .door\n@set $attempts += 1\n")]
+    public void Compile_VariableWrittenRelativelyOrNot_NeverFallsBackToTheOther(string text) =>
+        Assert.Equal(["PIB2030"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Fact]
     public void Compile_ProblemInsideBrokenExpression_ReportsOnce()

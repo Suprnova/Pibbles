@@ -99,7 +99,7 @@ Declarations make up the contract between the story and the host ([boundaries](.
 | --- | --- |
 | `@actor id` | A character. `name:` is the display name, plain text in which every character counts, and defaults to the ID. `poses:` lists valid poses; the first one is the default. |
 | `@enum name: a, b, c` | A closed set of values. Use it for positions, rooms, sound IDs, anything that should be typo-proof. |
-| `@var $name [: type] = literal` | A variable, saved with the game. The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
+| `@var $name [: type] = literal` | A variable, saved with the game. The name may be dotted or [relative](#prefixes). The type comes from the initial value unless written out. A name as the initial value (an enum member, actor or node) needs the type written out. |
 | `@command name(params) [inline] [waits]` | A host instruction. `inline` allows it inside a line's text ([below](#commands)). `waits` means the story waits for it to finish by default. |
 | `@markup name[(params)]` | A span tag. |
 | `@icon a, b, …` | Inline icon names. |
@@ -132,12 +132,14 @@ A node header gives a globally unique name, full or [relative](#prefixes), and o
 
 ## Prefixes
 
-A file that keeps its nodes under one group name can declare it once:
+A file that keeps its nodes and their variables under one group name can declare it once:
 
 ```pib
 @prefix kitchen
+@var $.attempts = 0
 
 == .door
+@set $.attempts += 1
 @if $door_open
     @jump .exit
 @call common.stuck
@@ -150,12 +152,13 @@ mira (sad): Nope.
 ```
 
 - **`@prefix name`** comes before everything else in the file except comments, at most once. The name is a node name, so it may contain dots (`@prefix rooms.kitchen`). It's always a full name: a dot at its start does nothing, so `@prefix .kitchen` means `@prefix kitchen`, and the analyzer points the dot out.
-- **A name starting with a dot is relative:** in the file above, `.door` means `kitchen.door`. Relative names work anywhere a node name does: headers, `@jump`, `@call`, `visits()`, `node` arguments (`on_exit=.leave`) and `#was:`.
-- **A name without a leading dot is always the full name,** in every file.
-- **There is no lookup order.** A relative name never falls back to a global one, and a full name is never tried under the prefix. Adding a node can't change what an existing reference points to.
+- **A name starting with a dot is relative:** in the file above, `.door` means `kitchen.door`. Relative names work anywhere a node name does: headers, `@jump`, `@call`, `visits()`, `node` arguments (`on_exit=.leave`) and `#was:`. A variable's name works the same way, in declarations and uses alike: `$.attempts` means `$kitchen.attempts`.
+- **A name without a leading dot is always the full name,** in every file. A plain `$attempts` is a story-wide variable, whatever the file's prefix.
+- **There is no lookup order.** A relative name never falls back to a global one, and a full name is never tried under the prefix: `$.attempts` never finds `$attempts`, and `$attempts` never finds `$kitchen.attempts`. Adding a node or variable can't change what an existing reference points to.
 - **A relative name in a file without `@prefix` is an error.**
-- **Only the source uses relative names.** The host API, saves, diagnostics and the CLI always use full names.
-- **The prefix is part of each relative node's name.** Changing a file's prefix renames its relative-named nodes, and so does moving one into a file with a different prefix. Writing the full name in the moved header keeps it. Once the game's code, scenes or saves use the old name, a rename needs a `#was:` alias like any other.
+- **Only the source uses relative names.** The host API, saves, diagnostics and the CLI always use full names: `GetVariable("kitchen.attempts")`, `set $kitchen.attempts = 3`.
+- **The dot stands for the prefix, and doesn't mean local.** `$.attempts` is an ordinary variable that any file reaches by its full name, and every file with the same prefix shares it, as they share `.door`.
+- **The prefix is part of each relative name.** Changing a file's prefix renames its relative-named nodes and variables, and so does moving one into a file with a different prefix. Writing the full name in the moved header or declaration keeps it. Once the game's code, scenes or saves use the old name, a node's rename needs a `#was:` alias like any other, and a variable's saved value is lost.
 
 The prefix is written in the file, not derived from its name or folder, so renaming or moving files never renames nodes.
 
@@ -698,7 +701,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 
 - A span closes with the name it opened with, innermost first.
 - Arguments come positional first, then named, then `wait` or `nowait`. Spans take no `wait` or `nowait`.
-- A name being declared is a single identifier, except in `@prefix` and node headers. A leading dot marks a relative node name, and is valid only where a node is expected.
+- A name being declared is a single identifier, except in `@prefix`, node headers and `@var`. A leading dot marks a relative node or variable name, and is valid only where a node or variable is expected.
 - Declarations come before a file's first node, and `@prefix` comes before everything but comments.
 - A variation block holds only alternatives.
 - A speaker is a declared actor. Otherwise the analyzer suggests escaping the colon.

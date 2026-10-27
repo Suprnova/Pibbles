@@ -439,8 +439,8 @@ public static class DiagnosticCatalog
         "I can't find a node called `{0}`.",
         help: "Did you mean `{1}`?");
 
-    /// <summary>PIB2021: a relative node name in a file with no <c>@prefix</c>.</summary>
-    /// <remarks>Argument: the name as written, such as <c>.leave</c>.</remarks>
+    /// <summary>PIB2021: a relative node or variable name in a file with no <c>@prefix</c>.</summary>
+    /// <remarks>Argument: the name as written, such as <c>.leave</c> or <c>$.attempts</c>.</remarks>
     public static DiagnosticDescriptor RelativeWithoutPrefix { get; } = new(
         "PIB2021",
         DiagnosticSeverity.Error,
