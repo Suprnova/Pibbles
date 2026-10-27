@@ -251,7 +251,7 @@ mira (happy): Only the pose that's actually seen is written.
 
 Flags waits and pauses that do nothing or could be one:
 - PIB5011: `{w}` at the very end of a line. The end of a line already waits for a click.
-- PIB5017: `{w}` directly before `{p}`. The page break already waits.
+- PIB5017: `{w}` directly before `{page}`. The page break already waits.
 - PIB5018: timed pauses right next to each other.
 
 Timed pauses at the end of a line aren't flagged, because they add a delay in auto mode.
@@ -260,7 +260,7 @@ Non-compliant:
 
 ```
 This line waits for a click that happens anyway.{w}
-This line waits twice here.{w}{p}New page.
+This line waits twice here.{w}{page}New page.
 This line pauses{pause 0.2}{pause 0.3} in two steps.
 ```
 
@@ -268,7 +268,7 @@ Compliant:
 
 ```
 This line ends normally.
-This line waits once here.{p}New page.
+This line waits once here.{page}New page.
 This line pauses{pause 0.5} in one step.
 ```
 
@@ -412,7 +412,7 @@ Compliant:
 
 **Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters) for lines, PIB5030, and `pibbles_max_option_length` (default 80) for options, PIB5034
 
-Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length, an icon counts as one character, and a value shown with `{…}` counts nothing, since its length isn't known. For conditional text, the longest branch counts. A line counts its longest page, since `{p}` starts a new one. Long options also crowd the choice menu.
+Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length, an icon counts as one character, and a value shown with `{…}` counts nothing, since its length isn't known. For conditional text, the longest branch counts. A line counts its longest page, since `{page}` starts a new one. Long options also crowd the choice menu.
 
 Non-compliant:
 
@@ -432,7 +432,7 @@ mira: The next line continues it.
 Alternative, keeping one message (and one voice clip) but splitting it into pages:
 
 ```
-mira: This line makes its point.{p}The rest appears on the next page.
+mira: This line makes its point.{page}The rest appears on the next page.
 ```
 
 #### PIB5031 – Naming convention

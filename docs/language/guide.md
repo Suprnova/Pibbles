@@ -191,7 +191,7 @@ Curly braces mark a point in the line. These ones control timing as the text typ
 ```pib
 This line pauses briefly here,{pause 0.5} then keeps going.
 This line waits for the player to click here,{w} then keeps going.
-This line fills one box.{p}This part starts on a fresh page after a click.
+This line fills one box.{page}This part starts on a fresh page after a click.
 This line has a line break here{br}and continues on the next line.
 This part types at normal speed, {speed 0.3}this part types slowly,{speed 3} and this part fast.{speed} Back to normal.
 ```
@@ -200,7 +200,7 @@ This part types at normal speed, {speed 0.3}this part types slowly,{speed 3} and
 | --- | --- |
 | `{pause 0.5}` | Pause for that many seconds (the time is required) |
 | `{w}` | Wait for a click, then continue on the same page |
-| `{p}` | Wait for a click, clear the box, continue |
+| `{page}` | Wait for a click, clear the box, continue |
 | `{br}` | Start a new line |
 | `{speed 2}` | From here on, type faster (above 1) or slower (below 1), relative to the player's speed setting |
 | `{speed}` | Back to the player's speed setting (every line also starts there) |
@@ -529,7 +529,7 @@ This node used to be called kitchen.door.
 | `{speed 0.5}` / `{speed}` | Slower or faster typing / back to normal |
 | `{$x}` | Show a variable's value |
 | `{pause 0.5}` / `{w}` | Timed pause / wait for click |
-| `{p}` / `{br}` | New page / new line |
+| `{page}` / `{br}` | New page / new line |
 | `{@command}` | Effect at this point in the line (`inline` commands only) |
 | `{icon name}` | Inline icon |
 | `{if …}…{else}…{/if}` | Conditional wording |

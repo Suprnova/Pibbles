@@ -131,12 +131,12 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5014 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5015 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
 | PIB5016 | Hint | This pose change does nothing, because Mira already has that pose. | Leave the pose out of this line. |
-| PIB5017 | Hint | This wait does nothing, because the `{p}` after it already waits. | Remove it. |
+| PIB5017 | Hint | This wait does nothing, because the `{page}` after it already waits. | Remove it. |
 | PIB5018 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{pause 0.5}`. |
 | PIB5019 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
 | PIB5020 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5021 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
-| PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{p}`. |
+| PIB5030 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{page}`. |
 | PIB5031 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
 | PIB5032 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
 | PIB5033 | Hint | This speaker is spaced differently from the usual `mira (happy):`. | Write `mira (happy):`. |
@@ -270,7 +270,7 @@ If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning 
 
 ### PIB1016
 
-**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{pause}`, `{p}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
+**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{pause}`, `{page}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
 
 ```text
 -> Knock{w} and wait
@@ -285,7 +285,7 @@ Move the pause into the option's body:
 
 ### PIB1017
 
-**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{pause d}`, `{p}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
+**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{pause d}`, `{page}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
 
 ```text
 mira: Hi, {name}.
@@ -293,9 +293,17 @@ mira: Hi, {name}.
 
 Write `{$name}` for a variable, or `{name()}` for a function. If the braces are meant as text, escape the first one: `\{name}`.
 
+`{p}` is reported here too, since the page break is `{page}`. The help says so, and for `{p 0.5}`, which reads as a pause, it also offers `{pause 0.5}`.
+
+```text
+mira: First page.{p}Second page.
+```
+
+Write `{page}`.
+
 ### PIB1018
 
-**Some points take no value.** `{w}` waits for the player, `{p}` breaks the page and `{br}` breaks the line, so there is nothing for a value to say. A time belongs to `{pause}`.
+**Some points take no value.** `{w}` waits for the player, `{page}` breaks the page and `{br}` breaks the line, so there is nothing for a value to say. A time belongs to `{pause}`.
 
 ```text
 mira: Locked.{w 0.5} Of course it's locked.
@@ -307,7 +315,7 @@ Write the time with `{pause}`:
 mira: Locked.{pause 0.5} Of course it's locked.
 ```
 
-For `{p}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
+For `{page}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
 
 ### PIB1020
 
@@ -1241,10 +1249,10 @@ Leave the pose out: `mira: …`.
 
 ### PIB5017
 
-**A wait just before `{p}` does nothing,** since the page break already waits.
+**A wait just before `{page}` does nothing,** since the page break already waits.
 
 ```text
-This line waits twice here.{w}{p}New page.
+This line waits twice here.{w}{page}New page.
 ```
 
 Remove the `{w}`.
@@ -1292,13 +1300,13 @@ Write `@set $attempts += 1`.
 
 ### PIB5030
 
-**A line too long to read in one go** tires the player. Markup and pacing don't count, conditional text counts its longest branch, and a value shown with `{…}` counts nothing, since its length isn't known. A line counts its longest page, so `{p}` splits it. `pibbles_max_message_length` (300) in `.editorconfig` sets the limit.
+**A line too long to read in one go** tires the player. Markup and pacing don't count, conditional text counts its longest branch, and a value shown with `{…}` counts nothing, since its length isn't known. A line counts its longest page, so `{page}` splits it. `pibbles_max_message_length` (300) in `.editorconfig` sets the limit.
 
 ```text
 mira: This line keeps going and going, well past the point where it fits comfortably in a text box…
 ```
 
-Split it into two lines, or into pages with `{p}`, which keeps one message and one voice clip.
+Split it into two lines, or into pages with `{page}`, which keeps one message and one voice clip.
 
 ### PIB5031
 

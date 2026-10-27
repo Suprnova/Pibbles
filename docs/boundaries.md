@@ -36,7 +36,7 @@ The host **implements** it.
 | Screen effects | Same as sprite animations | Same as sprite animations |
 | Text speed | `{speed 0.5}` sets a multiplier relative to the player's setting, until `{speed}` or the end of the line. The reveal helper does the timing. | Player speed setting, rendering visible characters |
 | Pauses and input waits | `{pause 0.5}`, `{w}` and `@pause 1s` produce timing markers and steps | Drives the clock and input |
-| Newlines and page breaks | `{br}` and `{p}` produce markers | Renders them. Paginates text that overflows, since only the host knows box size and font. |
+| Newlines and page breaks | `{br}` and `{page}` produce markers | Renders them. Paginates text that overflows, since only the host knows box size and font. |
 | Choices | Which options exist, whether each is available, which have been chosen before, `@once`, where flow goes next | Choice UI. Whether unavailable or already-chosen options are hidden or shown greyed out (based on option tags and flags). Choice timers. |
 | Variables and flags | Declared, type-checked variables for facts the story decides, stored in a serializable state | Reads and writes variables from game code, and persists the state. Owns facts from gameplay and anything that outlives a save slot (unlocks), exposed through functions and commands. |
 | Game events (camera, switching to other gameplay) | Host-declared commands. Typed parameters include `node`, so continuations are validated. | Implements them |
@@ -74,9 +74,9 @@ Any built-in list (`bounce`, `shake`, `jolt`) would be both too long and too sho
 
 A controller glyph takes up space in the text, carries information the player needs ("press ⓐ"), and has to be resolved at display time because the player may switch from keyboard to gamepad mid-line. Treating it as a one-character inline object (U+FFFC in the plain text) keeps positions correct for the reveal helper. Once localization arrives, translations must keep it too.
 
-### Why pagination is the host's job, but `{p}` exists
+### Why pagination is the host's job, but `{page}` exists
 
-Only the host knows the text box size and the font, so automatic pagination of overflowing text has to live in the host. `{p}` is the writer's (or translator's) way to force a page break at a meaningful spot. German runs about 30% longer than English, so translators need this power without changing the line structure.
+Only the host knows the text box size and the font, so automatic pagination of overflowing text has to live in the host. `{page}` is the writer's (or translator's) way to force a page break at a meaningful spot. German runs about 30% longer than English, so translators need this power without changing the line structure.
 
 ### Why variables live in Pibbles but persistence doesn't
 
