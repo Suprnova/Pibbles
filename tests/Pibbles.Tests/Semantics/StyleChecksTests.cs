@@ -115,6 +115,8 @@ public class StyleChecksTests
         { "== a.b\n// pibbles-ignore PIB5011 PIB5014\n// Another comment.\n@return\n", [] },
         { "== a.b\n// pibbles-ignore pib5014\n@return\n", [] },
         { "== a.b\n// pibbles-ignore PIB5014\n\n@return\n", ["PIB5014"] },
+        { "== a.b\n// pibbles-ignore PIB5014\n@set $n = 1 // Not a comment line.\n@return\n", ["PIB5014"] },
+        { "== a.b\n// pibbles-ignore PIB5011\n// pibbles-ignore PIB5014\n@return\n", [] },
         { "== a.b\n// pibbles-ignore PIB5011\n@return\n", ["PIB5014"] },
         { "== a.b\n@set $n = 1 // pibbles-ignore PIB5014\n@return\n", ["PIB5014"] },
         { "// pibbles-ignore PIB5014\n== a.b\n@return\n== a.c\n@return\n", [] },

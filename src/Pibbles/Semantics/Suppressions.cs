@@ -19,10 +19,11 @@ internal sealed class Suppressions
     {
         var suppressions = new Suppressions();
         int firstNode = tree.Root.Nodes.Count > 0 ? tree.Source.GetLinePosition(tree.Root.Nodes[0].Span.Start).Line : int.MaxValue;
-        foreach (Comment comment in tree.Comments)
+        for (int i = 0; i < tree.Comments.Count; i++)
         {
+            Comment comment = tree.Comments[i];
             int line = tree.Source.GetLinePosition(comment.Span.Start).Line;
-            if (Codes(comment.Text) is not [_, ..] codes || !IsOwnLine(tree.Source, comment))
+            if (!comment.OnOwnLine || Codes(comment.Text) is not [_, ..] codes)
                 continue;
 
             if (line < firstNode)
@@ -31,7 +32,7 @@ internal sealed class Suppressions
             }
             else
             {
-                int target = NextLine(tree.Source, line);
+                int target = NextLine(tree, i, line);
                 if (!suppressions.byLine.TryGetValue(target, out HashSet<string>? silenced))
                     suppressions.byLine[target] = silenced = [];
 
@@ -53,16 +54,11 @@ internal sealed class Suppressions
             ? [.. text[Directive.Length..].Split([' ', '\t', ','], StringSplitOptions.RemoveEmptyEntries).Select(code => code.ToUpperInvariant())]
             : [];
 
-    private static bool IsOwnLine(SourceText source, Comment comment)
-    {
-        TextSpan line = source.GetLineSpan(source.GetLinePosition(comment.Span.Start).Line);
-        return source.Text.AsSpan(line.Start, comment.Span.Start - line.Start).Trim(" \t").IsEmpty;
-    }
-
-    private static int NextLine(SourceText source, int line)
+    /// <summary>The first line after <paramref name="line"/> that isn't a comment line, given that the comment at <paramref name="index"/> is on <paramref name="line"/>.</summary>
+    private static int NextLine(SyntaxTree tree, int index, int line)
     {
         int next = line + 1;
-        while (next < source.LineCount && LineClassifier.KindOf(source.Text.AsSpan(source.GetLineSpan(next).Start, source.GetLineSpan(next).Length).TrimStart(" \t")) is LineKind.Comment)
+        for (int i = index + 1; i < tree.Comments.Count && tree.Comments[i] is { OnOwnLine: true } comment && tree.Source.GetLinePosition(comment.Span.Start).Line == next; i++)
             next++;
 
         return next;
