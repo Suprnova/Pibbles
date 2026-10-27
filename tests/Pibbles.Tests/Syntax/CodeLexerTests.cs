@@ -27,6 +27,9 @@ public class CodeLexerTests
     [InlineData("#thought #box:phone #box: #id:k7qp2x", "Tag #thought|Tag #box:phone|Tag #box:|Tag #id:k7qp2x")]
     [InlineData("#box:a-b.c/d", "Tag #box:a-b.c/d")]
     [InlineData("jump // a comment", "Name jump|Comment // a comment")]
+    [InlineData("#thought//a comment", "Tag #thought|Comment //a comment")]
+    [InlineData("#thought:a//b #next", "Tag #thought:a//b|Tag #next")]
+    [InlineData("#show-disabled//a comment", "Tag #show-disabled|Comment //a comment")]
     [InlineData("$a-1", "Variable $a|Minus -|Number 1")]
     public void Next_SingleConstruct_ReadsOneTokenEach(string text, string expected)
     {

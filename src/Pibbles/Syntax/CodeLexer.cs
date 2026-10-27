@@ -181,15 +181,15 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
             Report(DiagnosticCatalog.InvalidEscape, start, text[start..Position]);
     }
 
-    /// <summary>Reads a tag. A name holding anything but letters, digits and <c>_</c> is reported, and runs to the next whitespace or <c>:</c>.</summary>
+    /// <summary>Reads a tag. A name holding anything but letters, digits and <c>_</c> is reported, and runs to the next whitespace, <c>:</c> or comment.</summary>
     private TokenKind ReadTag()
     {
         int start = Position++;
         SkipIdentifier();
 
-        if (Position < span.End && text[Position] is not (' ' or '\t' or ':'))
+        if (!AtTagNameEnd())
         {
-            while (Position < span.End && text[Position] is not (' ' or '\t' or ':'))
+            while (!AtTagNameEnd())
                 Position++;
 
             string name = text[start..Position];
@@ -204,6 +204,8 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
         return TokenKind.Tag;
     }
+
+    private bool AtTagNameEnd() => Position >= span.End || text[Position] is ' ' or '\t' or ':' || Peek(0) is '/' && Peek(1) is '/';
 
     private static string Suggest(string tag)
     {

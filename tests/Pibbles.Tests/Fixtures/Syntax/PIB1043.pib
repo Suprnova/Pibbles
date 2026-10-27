@@ -12,3 +12,6 @@
 @call fixture.other #box:any-value.at/all
 @call fixture.other #box:
 @call fixture.other #id:k7qp2x #thought
+@call fixture.other #thought//a comment
+mira: Hi. #thought//a comment
+-> Go #thought//a comment
