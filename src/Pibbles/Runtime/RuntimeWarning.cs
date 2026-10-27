@@ -11,13 +11,10 @@ public enum RuntimeWarningKind
     /// <summary>A number or duration too large to hold, which was clamped to the nearest limit.</summary>
     Overflow,
 
-    /// <summary>A <c>@wait</c> that wasn't for more than zero time, which the runner skipped.</summary>
-    NonPositiveWait,
-
     /// <summary>A dialogue that ran a very long time without showing anything, which the runner ended.</summary>
     InfiniteLoop,
 
-    /// <summary>A <c>{pause d}</c> whose duration wasn't more than zero, which was left out of the line.</summary>
+    /// <summary>A <c>@pause</c> or <c>{pause d}</c> whose duration wasn't more than zero, which the runner skipped or left out of the line.</summary>
     NonPositivePause,
 
     /// <summary>A <c>{speed x}</c> whose factor wasn't more than zero, which was left out of the line.</summary>

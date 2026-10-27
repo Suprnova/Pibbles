@@ -72,7 +72,7 @@ public class DialogueRunnerTests
         string[] run = game.Play("t.n");
 
         Assert.Equal(["Pause 0.5s", "Pause 1s", "End"], run);
-        Assert.Equal([RuntimeWarningKind.NonPositiveWait, RuntimeWarningKind.NonPositiveWait], game.Warnings.Select(warning => warning.Kind));
+        Assert.Equal([RuntimeWarningKind.NonPositivePause, RuntimeWarningKind.NonPositivePause], game.Warnings.Select(warning => warning.Kind));
         Assert.Equal(["story.pib", "story.pib"], game.Warnings.Select(warning => warning.Location.Path));
         Assert.True(game.Warnings[0].Location.Start.Line < game.Warnings[1].Location.Start.Line);
     }

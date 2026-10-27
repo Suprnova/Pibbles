@@ -517,7 +517,7 @@ public sealed class DialogueRunner
         decimal seconds = Evaluator.Evaluate(pause.Duration, context).AsDecimal;
         if (seconds <= 0)
         {
-            Warn(new(RuntimeWarningKind.NonPositiveWait, "This wait isn't for more than zero time, so I skipped it.", pause.Location));
+            Warn(new(RuntimeWarningKind.NonPositivePause, "This pause isn't for more than zero time, so I skipped it.", pause.Location));
             index++;
             return null;
         }
