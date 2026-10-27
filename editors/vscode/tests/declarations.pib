@@ -65,3 +65,8 @@ name: Narration once the block has ended.
 //        ^^^^^^^^ entity.name.function.pibbles
 //                             ^^ punctuation.separator.type.pibbles
 //                                ^^^^ entity.name.type.pibbles
+
+@actor sam
+    name: Sam Ortiz // The display name stops here.
+//        ^^^^^^^^^ string.unquoted.display-name.pibbles - comment.line.double-slash.pibbles
+//                  ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles

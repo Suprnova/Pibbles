@@ -55,3 +55,52 @@ If you say so.
 #idea is a tag, but #identity isn't an ID.
 // <----- meta.tag.pibbles - comment.other.line-id.pibbles
 //                  ^^^^^^^^^ meta.tag.pibbles - comment.other.line-id.pibbles
+
+mira: Hello there. // Said warmly.
+//    ^^^^^^^^^^^^ - comment.line.double-slash.pibbles
+//                 ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+//                   ^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+Visit https:\//example.com for the recipe.
+//          ^^ constant.character.escape.pibbles
+//             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ - comment.line.double-slash.pibbles
+
+mira: Read #link:https://example.com // After the tag.
+//         ^^^^^ meta.tag.pibbles entity.name.tag.pibbles
+//               ^^^^^^^^^^^^^^^^^^^ string.unquoted.tag-value.pibbles - comment.line.double-slash.pibbles
+//                                   ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+//                                     ^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+mira: Hi. #thought//Right after the tag.
+//        ^^^^^^^^ meta.tag.pibbles entity.name.tag.pibbles
+//                ^^^^^^^^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+mira: Hello. /// Not a note.
+//           ^^^^^^^^^^^^^^^ invalid.illegal.note-in-line.pibbles - comment.line.double-slash.pibbles
+
+mira: Hello. //// A banner.
+//           ^^^^^^^^^^^^^^ comment.line.double-slash.pibbles - invalid.illegal.note-in-line.pibbles
+
+-> Leave @if $has_key // The polite exit.
+// <-- keyword.control.option.pibbles
+//       ^^^ keyword.control.modifier.pibbles
+//                    ^^ comment.line.double-slash.pibbles punctuation.definition.comment.pibbles
+//                      ^^^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+-> Wave // Friendly.
+// ^^^^ - comment.line.double-slash.pibbles
+//      ^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+- mira: Hello. // Said warmly.
+// <- keyword.control.alternative.pibbles
+//^^^^ entity.name.type.speaker.pibbles
+//             ^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+mira: Hi, {$name // The brace is never closed.
+//        ^ meta.point.pibbles punctuation.definition.point.pibbles
+//         ^^^^^ variable.other.pibbles
+//               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+mira: Hi {f("a//b")} // The string keeps its slashes.
+//          ^^^^^^ string.quoted.double.pibbles - comment.line.double-slash.pibbles
+//                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles

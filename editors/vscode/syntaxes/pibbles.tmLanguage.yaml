@@ -33,11 +33,20 @@ repository:
     captures:
       '1': { name: punctuation.definition.comment.pibbles }
 
+  # A comment can end any line, so every rule that reads a line's content includes it. Where a rule also matches
+  # text that holds slashes (an escape, a tag's value, a string), it comes first, so those slashes stay what they are.
   comment:
-    match: '(//).*$'
-    name: comment.line.double-slash.pibbles
-    captures:
-      '1': { name: punctuation.definition.comment.pibbles }
+    patterns:
+      - include: '#note-in-line'
+      - match: '(//).*$'
+        name: comment.line.double-slash.pibbles
+        captures:
+          '1': { name: punctuation.definition.comment.pibbles }
+
+  # A note is a whole line, so a `///` after the start of a line is an error. Four or more slashes are a comment.
+  note-in-line:
+    match: '(?<!/)///(?!/).*$'
+    name: invalid.illegal.note-in-line.pibbles
 
   header:
     begin: '^[ \t]*(==)[ \t]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
@@ -60,7 +69,7 @@ repository:
     name: meta.actor.pibbles
     patterns:
       - include: '#comment'
-      - match: '^[ \t]+(name)[ \t]*(:)[ \t]*(.*?)[ \t]*$'
+      - match: '^[ \t]+(name)[ \t]*(:)[ \t]*((?:(?!//).)*?)[ \t]*(?=//|$)'
         captures:
           '1': { name: support.type.property-name.pibbles }
           '2': { name: punctuation.separator.key-value.pibbles }
@@ -131,6 +140,7 @@ repository:
     patterns:
       - include: '#escape'
       - include: '#tags'
+      - include: '#comment'
       - include: '#modifiers'
       - include: '#inline'
 
@@ -164,6 +174,7 @@ repository:
       - include: '#speaker'
       - include: '#escape'
       - include: '#tags'
+      - include: '#comment'
       - include: '#inline'
 
   speaker:
@@ -257,6 +268,7 @@ repository:
     patterns:
       - include: '#string'
       - include: '#tags'
+      - include: '#comment'
       - match: '(?<![\p{L}\p{M}\p{N}_.])(?:\d+(?:\.\d*)?|\.\d+)(?:ms|s)(?![\p{L}\p{M}\p{N}_.])'
         name: constant.numeric.duration.pibbles
       - match: '(?<![\p{L}\p{M}\p{N}_.])(?:\d+(?:\.\d*)?|\.\d+)(?![\p{L}\p{M}\p{N}_.])'
