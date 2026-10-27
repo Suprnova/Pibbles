@@ -8,6 +8,11 @@ namespace Pibbles.Syntax;
 /// </summary>
 internal sealed partial class Parser
 {
+    private bool lineHasComment;
+
+    /// <summary>What a message about an unclosed bracket, brace or span adds when a comment may have taken the closer.</summary>
+    private string CommentHelp => lineHasComment ? DiagnosticCatalog.CommentSwallowedCloserHelp : "";
+
     /// <summary>
     /// The end of <paramref name="line"/>'s content: before its trailing comment, if it has one, and without trailing
     /// whitespace. A trailing comment is recorded.
@@ -28,6 +33,7 @@ internal sealed partial class Parser
 
     private int EndBeforeComment(int start, int end, int? comment)
     {
+        lineHasComment = comment is not null;
         if (comment is not { } at)
             return end;
 

@@ -138,7 +138,7 @@ internal sealed partial class Parser
         int end = inlinePosition;
         if (pendingClose is not { } close)
         {
-            Fail(DiagnosticCatalog.UnclosedMarkup, new(open, tagEnd - open), name.Text);
+            Fail(DiagnosticCatalog.UnclosedMarkup, new(open, tagEnd - open), name.Text, CommentHelp);
         }
         else if (close.Name == name.Text)
         {
@@ -336,7 +336,7 @@ internal sealed partial class Parser
         }
 
         if (!closed)
-            Fail(DiagnosticCatalog.Unclosed, openSpan, "{/if}", "{if}");
+            Fail(DiagnosticCatalog.Unclosed, openSpan, "{/if}", "{if}", CommentHelp);
 
         return new(condition, content, elseIfs, @else) { Span = new(open, inlinePosition - open) };
     }
@@ -413,7 +413,7 @@ internal sealed partial class Parser
 
         int? resume = NextCloser(closerText[0], previousEnd);
         if (token.Kind is TokenKind.EndOfLine || resume is null)
-            Fail(DiagnosticCatalog.Unclosed, openSpan, closerText, opener);
+            Fail(DiagnosticCatalog.Unclosed, openSpan, closerText, opener, CommentHelp);
         else
             Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
 

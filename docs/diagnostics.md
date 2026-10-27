@@ -220,6 +220,8 @@ mira: That's [clue]the master key.
 
 Close it where the styling should end: `mira: That's [clue]the master key[/clue].`
 
+A comment runs to the end of its line, so a `[/clue]` written after a `//` is part of the comment and doesn't close the span. The help says so when the line has a comment.
+
 ### PIB1011
 
 **Spans close innermost first,** like brackets: `[b][i]…[/i][/b]`, never `[b][i]…[/b][/i]`. The span that was opened last has to close first. The close is still read as closing both, so nothing else is reported.
@@ -249,6 +251,8 @@ rex: {if $bravery > 2}Maybe stop hitting it?
 ```
 
 Add the closer where it belongs: `rex: {if $bravery > 2}Maybe stop hitting it?{/if}`.
+
+A comment runs to the end of its line, so a closer written after a `//` is part of the comment and doesn't close anything. The help says so when the line has a comment.
 
 ### PIB1014
 

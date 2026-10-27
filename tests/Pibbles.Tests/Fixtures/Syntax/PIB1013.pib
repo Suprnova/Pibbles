@@ -10,8 +10,16 @@ mira: [wave amplitude=2
 mira: {if $a}Yes{else}No
 //    ^^^ PIB1013
 
+mira: Hi, {$name // }
+//        ^ PIB1013
+mira: {if $a}Yes // {/if}
+//    ^^^ PIB1013
+-> Go [wave // ]
+//    ^ PIB1013
+
 // Must not trigger
 
 mira: Hi, {$name}.
 mira: {if $a}Yes{else}No{/if}
 mira: A } and a ] on their own.
+mira: Hi, {$name}. // An open { in a comment.

@@ -8,9 +8,13 @@ mira: {if $a}[b]bold{/if}
 mira: [wave amplitude=2]Spooky
 //    ^^^^^^^^^^^^^^^^^^ PIB1010
 
+mira: [clue]The key // [/clue]
+//    ^^^^^^ PIB1010
+
 // Must not trigger
 
 mira: [clue]The key[/clue]
 mira: [b]Bold, then[/b] plain.
 mira: {if $a}[b]bold[/b]{/if}
 mira: \[clue] is escaped.
+mira: [clue]The key[/clue] // [clue] in a comment

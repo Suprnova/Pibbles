@@ -50,13 +50,16 @@ public static class DiagnosticCatalog
         "`///` notes aren't supported yet.",
         help: "For a comment, use `//`.");
 
+    /// <summary>What PIB1010 and PIB1013's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
+    public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
+
     /// <summary>PIB1010: a markup span with no close on its line, or none before a conditional-text boundary.</summary>
-    /// <remarks>Argument: the markup's name.</remarks>
+    /// <remarks>Arguments: the markup's name, and <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.</remarks>
     public static DiagnosticDescriptor UnclosedMarkup { get; } = new(
         "PIB1010",
         DiagnosticSeverity.Error,
         "I can't find the end of this `[{0}]`.",
-        help: "Close it on the same line with `[/{0}]`.");
+        help: "Close it on the same line with `[/{0}]`.{1}");
 
     /// <summary>PIB1011: a markup close for an outer span while an inner one is still open.</summary>
     /// <remarks>Argument: the name of the innermost open span.</remarks>
@@ -75,12 +78,15 @@ public static class DiagnosticCatalog
         help: "If you meant the text `[/{0}]`, put a backslash before it: `\\[/{0}]`.");
 
     /// <summary>PIB1013: a bracket, brace or <c>{if}</c> that isn't closed on its line.</summary>
-    /// <remarks>Arguments: the missing closer, such as <c>}</c> or <c>{/if}</c>, and the opener it should close.</remarks>
+    /// <remarks>
+    /// Arguments: the missing closer, such as <c>}</c> or <c>{/if}</c>; the opener it should close; and
+    /// <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.
+    /// </remarks>
     public static DiagnosticDescriptor Unclosed { get; } = new(
         "PIB1013",
         DiagnosticSeverity.Error,
         "I can't find the `{0}` that ends this `{1}`.",
-        help: "Close it on the same line.");
+        help: "Close it on the same line.{2}");
 
     /// <summary>PIB1014: a backslash followed by something other than ASCII punctuation.</summary>
     /// <remarks>Argument: the backslash and the character after it.</remarks>

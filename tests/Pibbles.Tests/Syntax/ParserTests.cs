@@ -250,6 +250,20 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: Hi {$name // }", "Close it on the same line. The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.")]
+    [InlineData("mira: [b]bold // [/b]", "Close it on the same line with `[/b]`. The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.")]
+    [InlineData("mira: Hi {$name", "Close it on the same line.")]
+    [InlineData("mira: [b]bold", "Close it on the same line with `[/b]`.")]
+    public void Parse_UnclosedWhereACommentMayHaveTakenTheCloser_SaysSoInTheHelp(string line, string help)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(help, diagnostic.Help);
+    }
+
+    [Theory]
     [InlineData("name: Mira Okafor // the cast list", "Mira Okafor")]
     [InlineData("name: Mira//Okafor", "Mira")]
     [InlineData("name: Mira \\ Okafor", "Mira \\ Okafor")]
