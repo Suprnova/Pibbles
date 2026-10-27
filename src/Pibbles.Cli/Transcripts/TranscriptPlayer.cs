@@ -290,7 +290,7 @@ internal sealed class TranscriptPlayer
         {
             InputWaitMarker => "⟨w⟩",
             PauseMarker pause => $"⟨pause {ValueText.FormatSeconds(pause.Duration)}⟩",
-            PageBreakMarker => "⟨p⟩",
+            PageBreakMarker => "⟨page⟩",
             SpeedMarker { Factor: 1 } => "⟨speed⟩",
             SpeedMarker speed => $"⟨speed {ValueText.FormatNumber(speed.Factor)}⟩",
             CommandMarker command => $"⟨@{command.Command.Name}{Arguments(command.Command.Parameters, command.Command.GetValue)}{(command.Waits ? " wait" : "")}⟩",
