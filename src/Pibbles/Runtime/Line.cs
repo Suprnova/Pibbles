@@ -76,7 +76,7 @@ public abstract record Marker
 /// <summary><c>{w}</c>: wait for the player, then continue on the same page.</summary>
 public sealed record InputWaitMarker(int Position) : Marker(Position);
 
-/// <summary><c>{w 0.5}</c>: pause the reveal.</summary>
+/// <summary><c>{pause 0.5}</c>: pause the reveal.</summary>
 /// <param name="Position">Where the pause is.</param>
 /// <param name="Duration">How long.</param>
 public sealed record PauseMarker(int Position, TimeSpan Duration) : Marker(Position);

@@ -41,7 +41,7 @@ internal sealed record CommandElement(CommandSymbol Command, IReadOnlyList<Expr>
 /// <summary><c>{w}</c>: waits for the player.</summary>
 internal sealed record InputWaitElement : TemplateElement;
 
-/// <summary><c>{w d}</c>: pauses the reveal.</summary>
+/// <summary><c>{pause d}</c>: pauses the reveal.</summary>
 /// <param name="Duration">How long.</param>
 /// <param name="Location">Where the pause is written, for a warning.</param>
 internal sealed record PauseElement(Expr Duration, SourceLocation Location) : TemplateElement;
