@@ -17,7 +17,15 @@ internal readonly record struct SpeakerPrefix(TextSpan? Name, TextSpan? Parenthe
 /// <summary>Finds a <see cref="SpeakerPrefix"/> at the start of a text line.</summary>
 internal static class SpeakerScanner
 {
-    /// <summary>Reads what starts the text between <paramref name="start"/> and <paramref name="end"/>, or returns <see langword="null"/> if it isn't a name, then an optional parenthesis, then a colon.</summary>
+    /// <summary>
+    /// Reads the prefix of the text between <paramref name="start"/> and <paramref name="end"/>: a name, an optional
+    /// parenthesis, then a colon. Narration's values have no name, so the text starts with the parenthesis.
+    /// </summary>
+    /// <returns>
+    /// The prefix, which says by <see cref="SpeakerPrefix.IsSpeaker"/> whether it is a speaker, or <see langword="null"/> if
+    /// the text doesn't have that shape: it starts with neither a name nor a parenthesis, a parenthesis is unclosed, or the
+    /// colon is missing.
+    /// </returns>
     public static SpeakerPrefix? Scan(string text, int start, int end)
     {
         int nameEnd = SkipIdentifier(text, start, end);
@@ -54,7 +62,8 @@ internal static class SpeakerScanner
         return new(name, parentheses, values, extra, position, isSpeaker);
     }
 
-    /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas, or returns an empty list if there's anything else, or no name at all.</summary>
+    /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas.</summary>
+    /// <returns>The span of each name, or an empty array if anything else is there, or no name at all.</returns>
     private static TextSpan[] ReadValues(string text, int start, int end)
     {
         List<TextSpan> values = [];
