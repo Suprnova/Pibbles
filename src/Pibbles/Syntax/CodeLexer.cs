@@ -40,15 +40,15 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         return c switch
         {
             '"' => ReadString(),
-            '#' when IsIdentifierStart(Position + 1, allowUnderscore: false) => ReadTag(),
+            '#' when AtIdentifierStart(Position + 1, allowUnderscore: false) => ReadTag(),
             '$' when IsNameStart(Position + 1) => ReadVariable(),
-            '@' when IsIdentifierStart(Position + 1) => ReadAtWord(),
+            '@' when AtIdentifierStart(Position + 1) => ReadAtWord(),
             '/' when Peek(1) is '/' => ReadComment(),
             '.' when IsDigit(Peek(1)) => ReadNumber(),
-            '.' when IsIdentifierStart(Position + 1) => ReadName(),
+            '.' when AtIdentifierStart(Position + 1) => ReadName(),
             '(' when touching && previous is TokenKind.Name => Punctuation(1, TokenKind.CallOpen),
             _ when IsDigit(c) => ReadNumber(),
-            _ when IsIdentifierStart(Position) => ReadName(),
+            _ when AtIdentifierStart(Position) => ReadName(),
             _ => ReadPunctuation(c),
         };
     }
@@ -95,7 +95,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
             SkipIdentifier();
         }
-        while (Peek(0) is '.' && IsIdentifierStart(Position + 1));
+        while (Peek(0) is '.' && AtIdentifierStart(Position + 1));
 
         return TokenKind.Name;
     }
@@ -206,7 +206,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         return TokenKind.Tag;
     }
 
-    private bool AtTagNameEnd() => Position >= span.End || text[Position] is ' ' or '\t' or ':' || Peek(0) is '/' && Peek(1) is '/';
+    private bool AtTagNameEnd() => Position >= span.End || text[Position] is ' ' or '\t' or ':' || (Peek(0) is '/' && Peek(1) is '/');
 
     private static string Suggest(string tag)
     {
@@ -235,10 +235,10 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private char Peek(int offset) => Position + offset < span.End ? text[Position + offset] : '\0';
 
-    private bool IsIdentifierStart(int index, bool allowUnderscore = true) =>
+    private bool AtIdentifierStart(int index, bool allowUnderscore = true) =>
         index < span.End && (char.IsLetter(text, index) || allowUnderscore && text[index] is '_');
 
-    private bool IsNameStart(int index) => IsIdentifierStart(index) || index < span.End && text[index] is '.' && IsIdentifierStart(index + 1);
+    private bool IsNameStart(int index) => AtIdentifierStart(index) || index < span.End && text[index] is '.' && AtIdentifierStart(index + 1);
 
     /// <summary>Whether a character can start an identifier: a letter or <c>_</c>.</summary>
     internal static bool IsIdentifierStart(string text, int index) => char.IsLetter(text, index) || text[index] is '_';

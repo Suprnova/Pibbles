@@ -83,7 +83,7 @@ internal sealed class LineClassifier
     /// </summary>
     private void Indent(SourceLine line, TextSpan indentation)
     {
-        bool mixed = HasMixedIndentation(indentation);
+        bool mixed = ReportMixedIndentation(indentation);
 
         if (indentation.Length > widths.Peek())
         {
@@ -100,7 +100,7 @@ internal sealed class LineClassifier
     }
 
     /// <summary>Reports a line that indents differently from the file. The first indented line decides how the file indents.</summary>
-    private bool HasMixedIndentation(TextSpan indentation)
+    private bool ReportMixedIndentation(TextSpan indentation)
     {
         ReadOnlySpan<char> text = source.Text.AsSpan(indentation.Start, indentation.Length);
         if (text.IsEmpty)
@@ -110,7 +110,13 @@ internal sealed class LineClassifier
         if (!text.ContainsAnyExcept(indentCharacter.Value))
             return false;
 
-        string used = text.ContainsAnyExcept('\t') ? text.ContainsAnyExcept(' ') ? "tabs and spaces" : "spaces" : "tabs";
+        string used = (text.ContainsAnyExcept('\t'), text.ContainsAnyExcept(' ')) switch
+        {
+            (true, true) => "tabs and spaces",
+            (true, false) => "spaces",
+            _ => "tabs",
+        };
+
         Report(DiagnosticCatalog.MixedIndentation, indentation, used, indentCharacter is '\t' ? "tabs" : "spaces");
         return true;
     }
