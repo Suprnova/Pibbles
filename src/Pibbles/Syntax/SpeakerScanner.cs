@@ -21,13 +21,13 @@ internal static class SpeakerScanner
     public static SpeakerPrefix? Scan(string text, int start, int end)
     {
         int nameEnd = SkipIdentifier(text, start, end);
-        if (nameEnd == start)
-            return start < end && text[start] is '(' ? ScanNarration(text, start, end) : null;
+        bool hasName = nameEnd > start;
+        if (!hasName && !(start < end && text[start] is '('))
+            return null;
 
         int position = SkipWhitespace(text, nameEnd, end);
-        TextSpan? parentheses = null;
+        TextSpan? parentheses = null, extra = null;
         TextSpan[] values = [];
-        TextSpan? extra = null;
         if (position < end && text[position] is '(')
         {
             int close = text.IndexOf(')', position, end - position);
@@ -38,7 +38,7 @@ internal static class SpeakerScanner
             values = ReadValues(text, position + 1, close);
 
             int extraStart = SkipWhitespace(text, close + 1, end);
-            int extraEnd = SkipExtra(text, extraStart, end);
+            int extraEnd = hasName ? SkipExtra(text, extraStart, end) : extraStart;
             if (extraEnd > extraStart)
                 extra = new TextSpan(extraStart, extraEnd - extraStart);
 
@@ -49,23 +49,9 @@ internal static class SpeakerScanner
             return null;
 
         bool spaced = position + 1 >= end || text[position + 1] is ' ' or '\t';
-        return new(new(start, nameEnd - start), parentheses, values, extra, position, spaced && extra is null && (parentheses is null || values.Length > 0));
-    }
-
-    /// <summary>Reads narration's values: a parenthesis at the start of the line, then a colon.</summary>
-    private static SpeakerPrefix? ScanNarration(string text, int start, int end)
-    {
-        int close = text.IndexOf(')', start, end - start);
-        if (close < 0)
-            return null;
-
-        int colon = SkipWhitespace(text, close + 1, end);
-        if (colon >= end || text[colon] is not ':')
-            return null;
-
-        TextSpan[] values = ReadValues(text, start + 1, close);
-        bool spaced = colon + 1 >= end || text[colon + 1] is ' ' or '\t';
-        return new(null, new TextSpan(start, close + 1 - start), values, null, colon, spaced && values.Length > 0);
+        bool isSpeaker = spaced && extra is null && (parentheses is null || values.Length > 0);
+        TextSpan? name = hasName ? new TextSpan(start, nameEnd - start) : null;
+        return new(name, parentheses, values, extra, position, isSpeaker);
     }
 
     /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas, or returns an empty list if there's anything else, or no name at all.</summary>

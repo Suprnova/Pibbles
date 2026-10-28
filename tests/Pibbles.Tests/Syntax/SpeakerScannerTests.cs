@@ -60,6 +60,7 @@ public class SpeakerScannerTests
     [InlineData("(sad: Hi.")]
     [InlineData("(sad) Hi.")]
     [InlineData("(sad)hi: Hi.")]
+    [InlineData("(sad) loudly: Hi.")]
     public void Scan_NoColonOrUnclosedParenthesis_IsNull(string text) => Assert.Null(Scan(text));
 
     private static SpeakerPrefix? Scan(string text) => SpeakerScanner.Scan(text, 0, text.Length);
