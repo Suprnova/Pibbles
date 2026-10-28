@@ -250,7 +250,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         || CharUnicodeInfo.GetUnicodeCategory(text, index) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark;
 
     private bool IsNumberContinuation(int index) =>
-        index < span.End && (char.IsLetterOrDigit(text, index) || text[index] is '_' or '.');
+        index < span.End && (IsIdentifierPart(text, index) || text[index] is '.');
 
     private static bool IsDigit(char c) => char.IsAsciiDigit(c);
 

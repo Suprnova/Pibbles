@@ -142,6 +142,15 @@ public class CodeLexerTests
         Assert.Equal(("PIB1042", $"`{number}` isn't a number I can read."), (diagnostics[0].Code, diagnostics[0].Message));
     }
 
+    [Fact]
+    public void Next_NumberBeforeCombiningMark_IsOneNumberAndOneDiagnostic()
+    {
+        string tokens = Describe("5é");
+
+        Assert.Equal("Number 5é", tokens);
+        Assert.Equal("PIB1042", Assert.Single(diagnostics).Code);
+    }
+
     [Theory]
     [InlineData("#show-disabled", "#show_disabled")]
     [InlineData("#box.big:phone", "#box_big")]
