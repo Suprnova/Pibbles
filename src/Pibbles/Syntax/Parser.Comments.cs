@@ -37,7 +37,7 @@ internal sealed partial class Parser
         if (comment is not { } at)
             return end;
 
-        if (Comment.IsNote(source.Text, at, end))
+        if (Comment.IsNote(source.Text.AsSpan(at, end - at)))
             Report(DiagnosticCatalog.UnsupportedNote, new(at, 3));
         else
             comments.Add(Comment.Read(source.Text, new(at, end - at), onOwnLine: false));

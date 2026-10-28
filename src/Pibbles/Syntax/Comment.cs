@@ -11,9 +11,9 @@ namespace Pibbles.Syntax;
 /// <param name="OnOwnLine">Whether only whitespace comes before the comment on its line. A comment after the content of a line isn't.</param>
 public sealed record Comment(TextSpan Span, string Text, bool OnOwnLine)
 {
-    /// <summary>Whether the comment starting at <paramref name="start"/> is a <c>///</c> note, which is only ever a whole line, rather than a comment.</summary>
-    internal static bool IsNote(string text, int start, int end) =>
-        start + 2 < end && text.AsSpan(start, end - start) is ['/', '/', '/', ..] and not ['/', '/', '/', '/', ..];
+    /// <summary>Whether <paramref name="comment"/>, which starts at its <c>//</c>, is a <c>///</c> note, which is only ever a whole line, rather than a comment.</summary>
+    internal static bool IsNote(ReadOnlySpan<char> comment) =>
+        comment is ['/', '/', '/', ..] and not ['/', '/', '/', '/', ..];
 
     /// <summary>Reads the comment that starts at <paramref name="span"/>'s <c>//</c> and runs to its end.</summary>
     internal static Comment Read(string text, TextSpan span, bool onOwnLine)

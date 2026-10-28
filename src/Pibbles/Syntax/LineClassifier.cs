@@ -68,8 +68,7 @@ internal sealed class LineClassifier
     internal static LineKind KindOf(ReadOnlySpan<char> content) => content switch
     {
         [] => LineKind.Blank,
-        ['/', '/', '/'] or ['/', '/', '/', not '/', ..] => LineKind.Note,
-        ['/', '/', ..] => LineKind.Comment,
+        ['/', '/', ..] => Comment.IsNote(content) ? LineKind.Note : LineKind.Comment,
         ['=', '=', ..] => LineKind.Header,
         ['@', ..] => LineKind.At,
         ['-', '>', ..] => LineKind.Option,

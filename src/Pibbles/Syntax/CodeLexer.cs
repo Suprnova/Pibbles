@@ -116,7 +116,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private TokenKind ReadComment()
     {
-        if (Comment.IsNote(text, Position, span.End))
+        if (Comment.IsNote(text.AsSpan(Position, span.End - Position)))
             diagnostics.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
         else
             comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
