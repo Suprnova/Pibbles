@@ -210,8 +210,12 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     private static string Suggest(string tag)
     {
         var suggestion = new StringBuilder("#");
-        foreach (char c in tag.AsSpan(1))
-            suggestion.Append(char.IsLetterOrDigit(c) || c is '_' ? c : '_');
+        for (int index = 1; index < tag.Length;)
+        {
+            int length = char.IsSurrogatePair(tag, index) ? 2 : 1;
+            suggestion.Append(IsIdentifierPart(tag, index) ? tag.AsSpan(index, length) : "_");
+            index += length;
+        }
 
         return suggestion.ToString();
     }

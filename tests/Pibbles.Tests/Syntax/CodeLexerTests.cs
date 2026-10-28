@@ -145,6 +145,8 @@ public class CodeLexerTests
     [Theory]
     [InlineData("#show-disabled", "#show_disabled")]
     [InlineData("#box.big:phone", "#box_big")]
+    [InlineData("#tag٣", "#tag_")]
+    [InlineData("#a.𝐀", "#a_𝐀")]
     public void Next_MalformedTagName_ReportsSuggestion(string text, string suggestion)
     {
         string tokens = Describe(text);
