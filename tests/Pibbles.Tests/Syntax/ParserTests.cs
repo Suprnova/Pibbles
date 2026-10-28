@@ -412,16 +412,17 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("mira: Hi /// note", 1)]
-    [InlineData("-> Go /// note", 1)]
-    [InlineData("mira: Hi //// banner", 0)]
-    [InlineData("mira: Hi ///// banner", 0)]
-    public void Parse_NoteAfterContent_IsReportedUnlessItHasFourSlashes(string line, int diagnostics)
+    [InlineData("mira: Hi /// note", 1, 0)]
+    [InlineData("-> Go /// note", 1, 0)]
+    [InlineData("@jump kitchen.door /// note", 1, 0)]
+    [InlineData("mira: Hi //// banner", 0, 1)]
+    [InlineData("mira: Hi ///// banner", 0, 1)]
+    public void Parse_NoteAfterContent_IsReportedAndNotRecordedUnlessItHasFourSlashes(string line, int diagnostics, int comments)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal((diagnostics, 1), (tree.Diagnostics.Count, tree.Comments.Count));
+        Assert.Equal((diagnostics, comments), (tree.Diagnostics.Count, tree.Comments.Count));
     }
 }

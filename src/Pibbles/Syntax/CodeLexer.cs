@@ -118,8 +118,9 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     {
         if (Comment.IsNote(text, Position, span.End))
             diagnostics.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
+        else
+            comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
 
-        comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
         Position = span.End;
         return TokenKind.Comment;
     }

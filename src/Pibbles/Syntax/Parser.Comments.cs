@@ -39,8 +39,9 @@ internal sealed partial class Parser
 
         if (Comment.IsNote(source.Text, at, end))
             Report(DiagnosticCatalog.UnsupportedNote, new(at, 3));
+        else
+            comments.Add(Comment.Read(source.Text, new(at, end - at), onOwnLine: false));
 
-        comments.Add(Comment.Read(source.Text, new(at, end - at), onOwnLine: false));
         return start + source.Text.AsSpan(start, at - start).TrimEnd(" \t").Length;
     }
 
