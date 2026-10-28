@@ -27,7 +27,7 @@ internal sealed partial class Parser
         if (SpeakerScanner.Scan(source.Text, start, inlineEnd) is { IsSpeaker: true } match)
         {
             NameSyntax? name = match.Name is { } nameSpan ? new(TextOf(nameSpan)) { Span = nameSpan } : null;
-            List<NameSyntax> values = [.. (match.Values ?? []).Select(span => new NameSyntax(TextOf(span)) { Span = span })];
+            List<NameSyntax> values = [.. match.Values.Select(span => new NameSyntax(TextOf(span)) { Span = span })];
             speaker = new(name, values) { Span = new(start, (match.Parentheses?.End ?? match.Name!.Value.End) - start) };
             if (name is not null)
                 textOwner = new SpeakerMention(name.Text, "what {0} says");

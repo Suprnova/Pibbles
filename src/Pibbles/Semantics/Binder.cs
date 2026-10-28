@@ -208,7 +208,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
 
         string before = TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start));
-        if (prefix is { Parentheses: { } parentheses, Values: null })
+        if (prefix is { Parentheses: { } parentheses, Values: [] })
         {
             Report(DiagnosticCatalog.NotValues, parentheses, TextOf(parentheses), before);
         }

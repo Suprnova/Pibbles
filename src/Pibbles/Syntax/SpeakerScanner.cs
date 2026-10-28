@@ -8,11 +8,11 @@ namespace Pibbles.Syntax;
 /// </summary>
 /// <param name="Name">The name before the parenthesis or colon, or <see langword="null"/> when the line starts with the parenthesis.</param>
 /// <param name="Parentheses">The parenthesis, brackets included, or <see langword="null"/> if there's none.</param>
-/// <param name="Values">The names inside the parenthesis, separated by commas, or <see langword="null"/> if there's no parenthesis or it holds something else.</param>
+/// <param name="Values">The names inside the parenthesis, separated by commas. Empty if there's no parenthesis or it holds something else; <paramref name="Parentheses"/> tells which.</param>
 /// <param name="Extra">What stands between the parenthesis and the colon, or <see langword="null"/> if there's nothing: further parentheses and at most one word.</param>
 /// <param name="Colon">Where the colon is.</param>
 /// <param name="IsSpeaker">Whether the line has a speaker, rather than starting with something that looks like one.</param>
-internal readonly record struct SpeakerPrefix(TextSpan? Name, TextSpan? Parentheses, IReadOnlyList<TextSpan>? Values, TextSpan? Extra, int Colon, bool IsSpeaker);
+internal readonly record struct SpeakerPrefix(TextSpan? Name, TextSpan? Parentheses, IReadOnlyList<TextSpan> Values, TextSpan? Extra, int Colon, bool IsSpeaker);
 
 /// <summary>Finds a <see cref="SpeakerPrefix"/> at the start of a text line.</summary>
 internal static class SpeakerScanner
@@ -26,7 +26,7 @@ internal static class SpeakerScanner
 
         int position = SkipWhitespace(text, nameEnd, end);
         TextSpan? parentheses = null;
-        List<TextSpan>? values = null;
+        TextSpan[] values = [];
         TextSpan? extra = null;
         if (position < end && text[position] is '(')
         {
@@ -49,7 +49,7 @@ internal static class SpeakerScanner
             return null;
 
         bool spaced = position + 1 >= end || text[position + 1] is ' ' or '\t';
-        return new(new(start, nameEnd - start), parentheses, values, extra, position, spaced && extra is null && (parentheses is null || values is not null));
+        return new(new(start, nameEnd - start), parentheses, values, extra, position, spaced && extra is null && (parentheses is null || values.Length > 0));
     }
 
     /// <summary>Reads narration's values: a parenthesis at the start of the line, then a colon.</summary>
@@ -63,13 +63,13 @@ internal static class SpeakerScanner
         if (colon >= end || text[colon] is not ':')
             return null;
 
-        List<TextSpan>? values = ReadValues(text, start + 1, close);
+        TextSpan[] values = ReadValues(text, start + 1, close);
         bool spaced = colon + 1 >= end || text[colon + 1] is ' ' or '\t';
-        return new(null, new TextSpan(start, close + 1 - start), values, null, colon, spaced && values is not null);
+        return new(null, new TextSpan(start, close + 1 - start), values, null, colon, spaced && values.Length > 0);
     }
 
-    /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas, or returns <see langword="null"/> if there's anything else, or no name at all.</summary>
-    private static List<TextSpan>? ReadValues(string text, int start, int end)
+    /// <summary>Reads the names between <paramref name="start"/> and <paramref name="end"/>, separated by commas, or returns an empty list if there's anything else, or no name at all.</summary>
+    private static TextSpan[] ReadValues(string text, int start, int end)
     {
         List<TextSpan> values = [];
         int position = SkipWhitespace(text, start, end);
@@ -77,15 +77,15 @@ internal static class SpeakerScanner
         {
             int valueEnd = SkipIdentifier(text, position, end);
             if (valueEnd == position)
-                return null;
+                return [];
 
             values.Add(new(position, valueEnd - position));
             position = SkipWhitespace(text, valueEnd, end);
             if (position == end)
-                return values;
+                return [.. values];
 
             if (text[position] is not ',')
-                return null;
+                return [];
 
             position = SkipWhitespace(text, position + 1, end);
         }

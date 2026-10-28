@@ -13,7 +13,8 @@ public class SpeakerScannerTests
         SpeakerPrefix prefix = Scan(text)!.Value;
 
         Assert.Equal((true, name, colon), (prefix.IsSpeaker, Read(text, prefix.Name), prefix.Colon));
-        Assert.Equal((null, null, null), (prefix.Parentheses, prefix.Values, prefix.Extra));
+        Assert.Equal((null, null), (prefix.Parentheses, prefix.Extra));
+        Assert.Empty(prefix.Values);
     }
 
     [Theory]
