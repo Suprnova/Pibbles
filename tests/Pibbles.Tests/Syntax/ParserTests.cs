@@ -339,6 +339,10 @@ public class ParserTests
     [InlineData("mira(shake ,happy) : Hi.", new[] { "shake", "happy" }, true)]
     [InlineData("mira (happy, shake):", new[] { "happy", "shake" }, false)]
     [InlineData("mira: Hi.", new string[0], true)]
+    [InlineData("mira（happy、shake）：Hi.", new[] { "happy", "shake" }, true)]
+    [InlineData("mira (happy，shake) : Hi.", new[] { "happy", "shake" }, true)]
+    [InlineData("mira（happy） : Hi.", new[] { "happy" }, true)]
+    [InlineData("mira (happy, shake)：", new[] { "happy", "shake" }, false)]
     public void Parse_SpeakerValues_AreTheNamesInTheParenthesisInTheOrderWritten(string line, string[] values, bool hasText)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
@@ -369,6 +373,8 @@ public class ParserTests
     [InlineData("(shake): The floor rumbles.", new[] { "shake" }, true)]
     [InlineData("(shake, orbit_scene):", new[] { "shake", "orbit_scene" }, false)]
     [InlineData("( shake ,orbit ) : Spacing doesn't matter.", new[] { "shake", "orbit" }, true)]
+    [InlineData("（shake、orbit）：The floor rumbles.", new[] { "shake", "orbit" }, true)]
+    [InlineData("（shake）：", new[] { "shake" }, false)]
     public void Parse_NarrationParenthesis_HasValuesAndNoName(string line, string[] values, bool hasText)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
@@ -387,6 +393,8 @@ public class ParserTests
     [InlineData("(Note: this is an aside) and more.")]
     [InlineData("(shake):Hi.")]
     [InlineData("\\(shake): Hi.")]
+    [InlineData("\\（shake）：Hi.")]
+    [InlineData("（to the room）：Hi.")]
     public void Parse_ParenthesisAtTheStartThatIsNotNarrationsValues_IsNarration(string line)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
@@ -395,6 +403,17 @@ public class ParserTests
 
         var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
         Assert.Null(text.Speaker);
+    }
+
+    [Fact]
+    public void Parse_EscapedFullWidthColon_IsNarrationThatShowsTheColon()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n他说\\：“你好。”\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var text = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal((null, "他说：“你好。”", 0), (text.Speaker, ((TextRunSyntax)Assert.Single(text.Content)).Text, tree.Diagnostics.Count));
     }
 
     [Fact]

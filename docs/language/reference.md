@@ -186,7 +186,8 @@ mira (sad):
 ```
 
 - **`speaker:`** where `speaker` is a declared actor, followed by whitespace or the end of the line. Whitespace between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):` and `mira (happy, shake):`. Anything else is narration.
-- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds anything but names separated by commas (`mira (to Rex): Fine.`, `(to the room): Fine.`) is an error, so a stage direction is never read as values. So is anything between a declared actor's values and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
+- **The speaker prefix's punctuation may be full-width,** in any mix with the ASCII forms: `：` for `:`, `（` and `）` for `(` and `)`, and `，` or `、` for `,` between values. `mira（happy、shake）：Fine.` is the same prefix as `mira (happy, shake): Fine.`, and `（shake）：` sets narration's values. A full-width colon needs nothing after it, while an ASCII colon still needs whitespace or the end of the line.
+- **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A full-width colon counts the same way: `他说：“你好。”` is an unknown actor until it's written `他说\：“你好。”`. A parenthesis that holds anything but names separated by commas (`mira (to Rex): Fine.`, `(to the room): Fine.`) is an error, so a stage direction is never read as values. So is anything between a declared actor's values and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
 - **`speaker (a, b):`** sets the speaker's values, then shows the line. A value is one of the speaker's values in any of its channels, and names its channel by itself. A line sets at most one value in each channel, in any order. A value stays until a line of the same speaker changes it again, and it goes to the host on the line that set it.
 - **`(a, b):` at the start of a line,** with no name before the parenthesis, sets narration's values the same way. A narration line that starts with a parenthesis and a colon is read as values: `(Meanwhile): …` reports an unknown value, and a backslash before the `(` makes it text.
 - **A parenthesis with no text** sets the values without showing a line.
@@ -576,8 +577,12 @@ PUNCT           ::= "(" | ")" | "," | ":" | "?" | "=" | "+=" | "-=" | "->"
 Inline mode:
 
 ```ebnf
-SPEAKER         ::= (ident ws* values? | values) ws* ":"      /* followed by ws or the end of the line; no name means narration */
-values          ::= "(" ws* ident (ws* "," ws* ident)* ws* ")"
+SPEAKER         ::= (ident ws* values? | values) ws* colon     /* an ASCII colon is followed by ws or the end of the line; no name means narration */
+values          ::= open ws* ident (ws* comma ws* ident)* ws* close
+open            ::= "(" | "（"
+close           ::= ")" | "）"
+comma           ::= "," | "，" | "、"
+colon           ::= ":" | "："
 TEXT            ::= text_char+
 text_char       ::= [^[{#x5C#xA#xD]              /* except where a tag, a COMMENT or, in option text, a modifier starts */
 ESCAPE          ::= #x5C escapable

@@ -2,9 +2,11 @@ namespace Pibbles.Syntax;
 
 /// <summary>
 /// What starts a text line when it looks like a speaker: a name, an optional parenthesis, and a colon, with any spacing
-/// between them. Narration's own values have a parenthesis and a colon with no name before them. It's a speaker only
-/// when the parenthesis holds a list of names and the colon has whitespace or the end of the line after it. Anything
-/// else is narration, which the analyzer checks for lines that almost look like a speaker.
+/// between them. Narration's own values have a parenthesis and a colon with no name before them. The colon, the
+/// parentheses and the commas between values are ASCII or full-width (<c>：</c>, <c>（</c>, <c>）</c>, <c>，</c>, <c>、</c>), in any
+/// mix. It's a speaker only when the parenthesis holds a list of names and an ASCII colon has whitespace or the end of
+/// the line after it; a full-width colon needs nothing after it. Anything else is narration, which the analyzer checks
+/// for lines that almost look like a speaker.
 /// </summary>
 /// <param name="Name">The name before the parenthesis or colon, or <see langword="null"/> when the line starts with the parenthesis.</param>
 /// <param name="Parentheses">The parenthesis, brackets included, or <see langword="null"/> if there's none.</param>
@@ -30,15 +32,15 @@ internal static class SpeakerScanner
     {
         int nameEnd = Identifiers.Skip(text, start, end);
         bool hasName = nameEnd > start;
-        if (!hasName && !(start < end && text[start] is '('))
+        if (!hasName && !(start < end && IsOpen(text[start])))
             return null;
 
         int position = Whitespace.Skip(text, nameEnd, end);
         TextSpan? parentheses = null, extra = null;
         TextSpan[] values = [];
-        if (position < end && text[position] is '(')
+        if (position < end && IsOpen(text[position]))
         {
-            int close = text.IndexOf(')', position, end - position);
+            int close = FindClose(text, position, end);
             if (close < 0)
                 return null;
 
@@ -53,10 +55,10 @@ internal static class SpeakerScanner
             position = Whitespace.Skip(text, extraEnd, end);
         }
 
-        if (position >= end || text[position] is not ':')
+        if (position >= end || !IsColon(text[position]))
             return null;
 
-        bool spaced = position + 1 >= end || Whitespace.Is(text[position + 1]);
+        bool spaced = text[position] is '：' || position + 1 >= end || Whitespace.Is(text[position + 1]);
         bool isSpeaker = spaced && extra is null && (parentheses is null || values.Length > 0);
         TextSpan? name = hasName ? new TextSpan(start, nameEnd - start) : null;
         return new(name, parentheses, values, extra, position, isSpeaker);
@@ -79,7 +81,7 @@ internal static class SpeakerScanner
             if (position == end)
                 return [.. values];
 
-            if (text[position] is not ',')
+            if (!IsComma(text[position]))
                 return [];
 
             position = Whitespace.Skip(text, position + 1, end);
@@ -94,9 +96,9 @@ internal static class SpeakerScanner
         bool hasWord = false;
         while (position < end)
         {
-            if (text[position] is '(')
+            if (IsOpen(text[position]))
             {
-                int close = text.IndexOf(')', position, end - position);
+                int close = FindClose(text, position, end);
                 if (close < 0)
                     break;
 
@@ -116,5 +118,18 @@ internal static class SpeakerScanner
         }
 
         return extraEnd;
+    }
+
+    private static bool IsOpen(char c) => c is '(' or '（';
+
+    private static bool IsComma(char c) => c is ',' or '，' or '、';
+
+    private static bool IsColon(char c) => c is ':' or '：';
+
+    /// <summary>The position of the first closing parenthesis, ASCII or full-width, from <paramref name="start"/> to <paramref name="end"/>, or -1 if there is none.</summary>
+    private static int FindClose(string text, int start, int end)
+    {
+        int offset = text.AsSpan(start, end - start).IndexOfAny(')', '）');
+        return offset < 0 ? -1 : start + offset;
     }
 }

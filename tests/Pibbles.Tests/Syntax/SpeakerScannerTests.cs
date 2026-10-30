@@ -29,9 +29,26 @@ public class SpeakerScannerTests
     }
 
     [Theory]
+    [InlineData("guide：こんにちは。", "guide", 5)]
+    [InlineData("guide ：", "guide", 6)]
+    [InlineData("田中：こんにちは。", "田中", 2)]
+    public void Scan_FullWidthColon_IsSpeakerWithNoSpaceNeeded(string text, string name, int colon)
+    {
+        SpeakerPrefix prefix = Scan(text)!.Value;
+
+        Assert.Equal((true, name, colon), (prefix.IsSpeaker, Read(text, prefix.Name), prefix.Colon));
+    }
+
+    [Theory]
     [InlineData("mira (sad, happy): Hi.", "mira", "sad|happy")]
     [InlineData("mira (sad): Hi.", "mira", "sad")]
     [InlineData("(sad, happy): Hi.", null, "sad|happy")]
+    [InlineData("田中（笑顔、揺れ）：こんにちは。", "田中", "笑顔|揺れ")]
+    [InlineData("mira（sad，happy）: Hi.", "mira", "sad|happy")]
+    [InlineData("mira (sad、happy）：Hi.", "mira", "sad|happy")]
+    [InlineData("mira（sad）: Hi.", "mira", "sad")]
+    [InlineData("（揺れ）：こんにちは。", null, "揺れ")]
+    [InlineData("(sad, happy)：", null, "sad|happy")]
     public void Scan_ParenthesisOfNames_IsSpeakerWithValues(string text, string? name, string values)
     {
         SpeakerPrefix prefix = Scan(text)!.Value;
@@ -45,6 +62,10 @@ public class SpeakerScannerTests
     [InlineData("mira (): Hi.")]
     [InlineData("mira (a,): Hi.")]
     [InlineData("(): Hi.")]
+    [InlineData("（）：Hi.")]
+    [InlineData("mira（a、）：Hi.")]
+    [InlineData("mira（to Rex）：Hi.")]
+    [InlineData("mira（sad）:Hi.")]
     public void Scan_PrefixThatAlmostLooksLikeASpeaker_IsNotASpeaker(string text)
     {
         SpeakerPrefix? prefix = Scan(text);
@@ -63,6 +84,16 @@ public class SpeakerScannerTests
         Assert.Equal((false, "loudly", "mira"), (prefix.IsSpeaker, Read(text, prefix.Extra), Read(text, prefix.Name)));
     }
 
+    [Fact]
+    public void Scan_FullWidthParenthesesAfterValues_AreExtraAndNotASpeaker()
+    {
+        const string text = "mira（sad）（shake）：Hi.";
+
+        SpeakerPrefix prefix = Scan(text)!.Value;
+
+        Assert.Equal((false, "（shake）"), (prefix.IsSpeaker, Read(text, prefix.Extra)));
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("mira")]
@@ -72,6 +103,9 @@ public class SpeakerScannerTests
     [InlineData("(sad) Hi.")]
     [InlineData("(sad)hi: Hi.")]
     [InlineData("(sad) loudly: Hi.")]
+    [InlineData("mira（sad：Hi.")]
+    [InlineData("（sad：Hi.")]
+    [InlineData("他说\\：“你好。”")]
     public void Scan_NoColonOrUnclosedParenthesis_IsNull(string text) => Assert.Null(Scan(text));
 
     private static SpeakerPrefix? Scan(string text) => SpeakerScanner.Scan(text, 0, text.Length);

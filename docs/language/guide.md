@@ -60,6 +60,7 @@ This line has no speaker, so it's narration.
 - Each line is shown as one message.
 - The name before the colon is the character's ID from the cast list ([Declarations](#declarations-the-cast-and-vocabulary)). The name the player sees can be different.
 - If a narration line happens to start with a word and a colon (`Note: something`), Pibbles will think "Note" is a character and tell you so. Put a backslash before the colon to fix it: `Note\: something`.
+- If you write in Japanese or Chinese, the colon, the parentheses and the commas between values can be full-width, as your input method types them: `mira（smug）：I knew you'd come.` A full-width colon needs no space after it. A narration line that starts with a word and a full-width colon (`他说：“你好。”`) gets the same treatment as `Note:`, and the same fix: `他说\：“你好。”`.
 
 ## Poses
 

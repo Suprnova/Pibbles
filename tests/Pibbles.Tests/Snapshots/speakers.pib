@@ -1,0 +1,12 @@
+// Speaker prefixes written with full-width punctuation, alone and mixed with ASCII.
+
+== snapshot.speakers
+mira：Hello there.
+mira（smug）：I knew you'd come.
+mira（happy、shake）：Several values.
+mira (happy，shake): Mixed punctuation.
+mira（sad）: An ASCII colon after full-width parentheses.
+（shake）：Narration sets values too.
+（shake、orbit）：
+mira：{w}
+Chinese narration escapes the colon: 他说\：“你好。”
