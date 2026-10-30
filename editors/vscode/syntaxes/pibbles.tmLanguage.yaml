@@ -25,11 +25,11 @@ patterns:
 
 repository:
   note:
-    match: '^[ \t]*///(?!/).*$'
+    match: '^[\t\p{Zs}]*///(?!/).*$'
     name: comment.line.note.pibbles
 
   comment-line:
-    match: '^[ \t]*(//).*$'
+    match: '^[\t\p{Zs}]*(//).*$'
     name: comment.line.double-slash.pibbles
     captures:
       '1': { name: punctuation.definition.comment.pibbles }
@@ -50,7 +50,7 @@ repository:
     name: invalid.illegal.note-in-line.pibbles
 
   header:
-    begin: '^[ \t]*(==)[ \t]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
+    begin: '^[\t\p{Zs}]*(==)[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
     beginCaptures:
       '1': { name: keyword.control.header.pibbles }
       '2': { name: entity.name.section.node.pibbles }
@@ -62,7 +62,7 @@ repository:
 
   # `@actor` and `@narration` take the same block: the display name, and what the speaker does to each channel.
   actor:
-    begin: '^([ \t]*)(@(?:actor|narration))(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    begin: '^([ \t]*)(@(?:actor|narration))(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
     beginCaptures:
       '2': { name: storage.type.declaration.pibbles }
       '3': { name: entity.name.type.pibbles }
@@ -71,12 +71,12 @@ repository:
     name: meta.actor.pibbles
     patterns:
       - include: '#comment'
-      - match: '^[ \t]+(name)[ \t]*(:)[ \t]*((?:(?!//).)*?)[ \t]*(?=//|$)'
+      - match: '^[ \t]+(name)[\t\p{Zs}]*(:)[\t\p{Zs}]*((?:(?!//).)*?)[\t\p{Zs}]*(?=//|$)'
         captures:
           '1': { name: support.type.property-name.pibbles }
           '2': { name: punctuation.separator.key-value.pibbles }
           '3': { name: string.unquoted.display-name.pibbles }
-      - begin: '^[ \t]+(no)(?=[ \t]+[\p{L}_])'
+      - begin: '^[ \t]+(no)(?=[\t\p{Zs}]+[\p{L}_])'
         beginCaptures:
           '1': { name: keyword.operator.word.pibbles }
         end: '$'
@@ -84,7 +84,7 @@ repository:
           - include: '#comment'
           - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*'
             name: entity.name.type.channel.pibbles
-      - begin: '^[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*)[ \t]*(:|\+=)'
+      - begin: '^[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*)[\t\p{Zs}]*(:|\+=)'
         beginCaptures:
           '1': { name: entity.name.type.channel.pibbles }
           '2': { name: punctuation.separator.key-value.pibbles }
@@ -95,7 +95,7 @@ repository:
             name: constant.other.channel-value.pibbles
 
   channel:
-    begin: '(?:^|\G)[ \t]*(@channel)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    begin: '(?:^|\G)[\t\p{Zs}]*(@channel)(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
     beginCaptures:
       '1': { name: storage.type.declaration.pibbles }
       '2': { name: entity.name.type.channel.pibbles }
@@ -107,7 +107,7 @@ repository:
         name: constant.other.channel-value.pibbles
 
   enum:
-    begin: '(?:^|\G)[ \t]*(@enum)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    begin: '(?:^|\G)[\t\p{Zs}]*(@enum)(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
     beginCaptures:
       '1': { name: storage.type.declaration.pibbles }
       '2': { name: entity.name.type.pibbles }
@@ -119,21 +119,21 @@ repository:
         name: constant.other.enum-member.pibbles
 
   at-line:
-    begin: '(?:^|\G)[ \t]*(?=@)'
+    begin: '(?:^|\G)[\t\p{Zs}]*(?=@)'
     end: '$'
     name: meta.statement.pibbles
     patterns:
-      - match: '\G(@prefix)(?![\p{L}\p{M}\p{N}_])(?:[ \t]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
+      - match: '\G(@prefix)(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
         captures:
           '1': { name: storage.type.declaration.pibbles }
           '2': { name: entity.name.section.node.pibbles }
-      - match: '\G(@(?:command|markup|function))(?![\p{L}\p{M}\p{N}_])(?:[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+      - match: '\G(@(?:command|markup|function))(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
         captures:
           '1': { name: storage.type.declaration.pibbles }
           '2': { name: entity.name.function.pibbles }
       - match: '\G@(?:var|icon|tag)(?![\p{L}\p{M}\p{N}_])'
         name: storage.type.declaration.pibbles
-      - match: '\G(@(?:jump|call))(?![\p{L}\p{M}\p{N}_])(?:[ \t]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
+      - match: '\G(@(?:jump|call))(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
         captures:
           '1': { name: keyword.control.pibbles }
           '2': { name: entity.name.section.node.pibbles }
@@ -144,9 +144,9 @@ repository:
       - include: '#comment'
       - match: '(?<![\p{L}\p{M}\p{N}_])(inline|waits)(?![\p{L}\p{M}\p{N}_])'
         name: keyword.other.flag.pibbles
-      - match: '([\p{L}_][\p{L}\p{M}\p{N}_]*)(?=[ \t]*:)'
+      - match: '([\p{L}_][\p{L}\p{M}\p{N}_]*)(?=[\t\p{Zs}]*:)'
         name: variable.parameter.pibbles
-      - match: '(:|->)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)(\?)?'
+      - match: '(:|->)[\t\p{Zs}]*([\p{L}_][\p{L}\p{M}\p{N}_]*)(\?)?'
         captures:
           '1': { name: punctuation.separator.type.pibbles }
           '2': { name: entity.name.type.pibbles }
@@ -154,7 +154,7 @@ repository:
       - include: '#code'
 
   option:
-    begin: '(?:^|\G)[ \t]*(->)'
+    begin: '(?:^|\G)[\t\p{Zs}]*(->)'
     beginCaptures:
       '1': { name: keyword.control.option.pibbles }
     end: '$'
@@ -176,12 +176,12 @@ repository:
       - include: '#code'
 
   alternative:
-    begin: '^[ \t]*(-)(?=[ \t]|$)'
+    begin: '^[\t\p{Zs}]*(-)(?=[\t\p{Zs}]|$)'
     beginCaptures:
       '1': { name: keyword.control.alternative.pibbles }
     end: '$'
     patterns:
-      - match: '\G[ \t]*(//).*$'
+      - match: '\G[\t\p{Zs}]*(//).*$'
         name: comment.line.double-slash.pibbles
         captures:
           '1': { name: punctuation.definition.comment.pibbles }
@@ -190,7 +190,7 @@ repository:
       - include: '#text-line'
 
   text-line:
-    begin: '(?:^|\G)[ \t]*(?=\S)'
+    begin: '(?:^|\G)[\t\p{Zs}]*(?=\S)'
     end: '$'
     patterns:
       - include: '#speaker'
@@ -203,15 +203,15 @@ repository:
   # have no name before the parenthesis.
   speaker:
     patterns:
-      - match: '\G([\p{L}_][\p{L}\p{M}\p{N}_]*)[ \t]*(:)(?=[ \t]|$)'
+      - match: '\G([\p{L}_][\p{L}\p{M}\p{N}_]*)[\t\p{Zs}]*(:)(?=[\t\p{Zs}]|$)'
         captures:
           '1': { name: entity.name.type.speaker.pibbles }
           '2': { name: punctuation.separator.speaker.pibbles }
-      - begin: '\G(?:([\p{L}_][\p{L}\p{M}\p{N}_]*)[ \t]*)?(\()(?=[^()]*\)[ \t]*:(?:[ \t]|$))'
+      - begin: '\G(?:([\p{L}_][\p{L}\p{M}\p{N}_]*)[\t\p{Zs}]*)?(\()(?=[^()]*\)[\t\p{Zs}]*:(?:[\t\p{Zs}]|$))'
         beginCaptures:
           '1': { name: entity.name.type.speaker.pibbles }
           '2': { name: punctuation.definition.values.pibbles }
-        end: '(\))[ \t]*(:)'
+        end: '(\))[\t\p{Zs}]*(:)'
         endCaptures:
           '1': { name: punctuation.definition.values.pibbles }
           '2': { name: punctuation.separator.speaker.pibbles }
@@ -232,7 +232,7 @@ repository:
     name: constant.character.escape.pibbles
 
   markup-close:
-    match: '(\[)[ \t]*(/)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?[ \t]*(\])'
+    match: '(\[)[\t\p{Zs}]*(/)[\t\p{Zs}]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?[\t\p{Zs}]*(\])'
     name: meta.markup.pibbles
     captures:
       '1': { name: punctuation.definition.markup.pibbles }
@@ -241,7 +241,7 @@ repository:
       '4': { name: punctuation.definition.markup.pibbles }
 
   markup:
-    begin: '(\[)[ \t]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?'
+    begin: '(\[)[\t\p{Zs}]*([\p{L}_][\p{L}\p{M}\p{N}_]*)?'
     beginCaptures:
       '1': { name: punctuation.definition.markup.pibbles }
       '2': { name: entity.name.tag.markup.pibbles }
@@ -261,17 +261,17 @@ repository:
       '1': { name: punctuation.definition.point.pibbles }
     name: meta.point.pibbles
     patterns:
-      - match: '\G[ \t]*(/[ \t]*if|if|elif|else)(?![\p{L}\p{M}\p{N}_])'
+      - match: '\G[\t\p{Zs}]*(/[\t\p{Zs}]*if|if|elif|else)(?![\p{L}\p{M}\p{N}_])'
         captures:
           '1': { name: keyword.control.conditional.pibbles }
-      - match: '\G[ \t]*(icon)[ \t]+([\p{L}_][\p{L}\p{M}\p{N}_]*)'
+      - match: '\G[\t\p{Zs}]*(icon)[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*)'
         captures:
           '1': { name: keyword.other.point.pibbles }
           '2': { name: constant.other.icon.pibbles }
-      - match: '\G[ \t]*(w|pause|page|br|speed)(?![\p{L}\p{M}\p{N}_])'
+      - match: '\G[\t\p{Zs}]*(w|pause|page|br|speed)(?![\p{L}\p{M}\p{N}_])'
         captures:
           '1': { name: keyword.other.point.pibbles }
-      - match: '\G[ \t]*(@[\p{L}_][\p{L}\p{M}\p{N}_]*)'
+      - match: '\G[\t\p{Zs}]*(@[\p{L}_][\p{L}\p{M}\p{N}_]*)'
         captures:
           '1': { name: entity.name.function.command.pibbles }
       - include: '#code'
@@ -316,7 +316,7 @@ repository:
         name: keyword.other.wait.pibbles
       - match: '\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*(?=\()'
         name: entity.name.function.pibbles
-      - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*(?=[ \t]*=(?!=))'
+      - match: '[\p{L}_][\p{L}\p{M}\p{N}_]*(?=[\t\p{Zs}]*=(?!=))'
         name: variable.parameter.pibbles
       - match: '==|!=|<=|>=|\+=|-=|->|[<>=+\-*/%]'
         name: keyword.operator.pibbles

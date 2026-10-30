@@ -127,3 +127,23 @@ mira: Hi, {$name // The brace is never closed.
 mira: Hi {f("a//b")} // The string keeps its slashes.
 //          ^^^^^^ string.quoted.double.pibbles - comment.line.double-slash.pibbles
 //                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.double-slash.pibbles
+
+// Every space separator counts as whitespace, as in the compiler.
+
+guide :　Bonjour.
+// <----- entity.name.type.speaker.pibbles
+//    ^ punctuation.separator.speaker.pibbles
+
+mira: Hi #box:phone　#thought
+//            ^^^^^ string.unquoted.tag-value.pibbles
+//                  ^^^^^^^^ meta.tag.pibbles entity.name.tag.pibbles
+
+->　Go
+// <-- keyword.control.option.pibbles
+
+-　mira: Hello.
+// <- keyword.control.alternative.pibbles
+//^^^^ entity.name.type.speaker.pibbles
+
+==　kitchen.door
+// ^^^^^^^^^^^^ entity.name.section.node.pibbles
