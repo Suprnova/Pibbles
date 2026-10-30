@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { clickColumn, endColumn, enterColumn, hiddenColumn, isLineId, joinLines, selectsOnlyId, stepsIntoId, trailingId } from '../../src/lineId.ts';
+import { clickColumn, commentColumn, endColumn, enterColumn, hiddenColumn, isLineId, joinLines, selectsOnlyId, stepsIntoId, trailingId } from '../../src/lineId.ts';
 
 const line = 'mira: Locked. #id:k7qp2x';
 const contentEnd = 'mira: Locked.'.length;
+const commented = 'mira: Locked. #id:k7qp2x   // Said quietly.';
+const commentAt = commented.indexOf('//');
 
 test('trailingId finds the ID that ends a line', () => {
-    assert.deepEqual(trailingId(line), { contentEnd, idStart: contentEnd + 1, idEnd: line.length, value: 'k7qp2x' });
-    assert.deepEqual(trailingId(`${line}  `), { contentEnd, idStart: contentEnd + 1, idEnd: line.length, value: 'k7qp2x' });
+    const found = { contentEnd, idStart: contentEnd + 1, idEnd: line.length, value: 'k7qp2x', commentStart: undefined, hiddenStart: contentEnd };
+
+    assert.deepEqual(trailingId(line), { ...found, hiddenEnd: line.length });
+    assert.deepEqual(trailingId(`${line}  `), { ...found, hiddenEnd: line.length + 2 });
 });
 
 test('trailingId counts whitespace before the separating space as content', () => {
@@ -15,9 +19,29 @@ test('trailingId counts whitespace before the separating space as content', () =
 });
 
 test('trailingId ignores an ID that isn\'t last, and a line without one', () => {
-    assert.equal(trailingId('@call kitchen.stuck #id:r4hc6v // Back down.'), undefined);
+    assert.equal(trailingId('mira: Locked. #id:k7qp2x More.'), undefined);
     assert.equal(trailingId('mira: Locked.'), undefined);
     assert.equal(trailingId('mira: Locked.#id:k7qp2x'), undefined);
+});
+
+test('trailingId finds an ID that a comment follows, and hides it but not the space before it', () => {
+    assert.deepEqual(trailingId(commented), {
+        contentEnd,
+        idStart: contentEnd + 1,
+        idEnd: line.length,
+        value: 'k7qp2x',
+        commentStart: commentAt,
+        hiddenStart: contentEnd + 1,
+        hiddenEnd: commentAt,
+    });
+    assert.equal(trailingId('@call kitchen.stuck #id:r4hc6v // Back down.')?.value, 'r4hc6v');
+    assert.equal(trailingId('mira: Visit https:\\//example.com #id:k7qp2x')?.value, 'k7qp2x');
+});
+
+test('trailingId ignores an ID inside a comment', () => {
+    assert.equal(trailingId('mira: Locked. // See #id:k7qp2x'), undefined);
+    assert.equal(trailingId('// See #id:k7qp2x'), undefined);
+    assert.equal(trailingId('mira: Locked. #id:k7qp2x // See #id:p3m8tz')?.value, 'k7qp2x');
 });
 
 test('endColumn stops before the ID, then goes to the real end', () => {
@@ -95,13 +119,59 @@ test('hiddenColumn keeps a cursor out of a hidden ID', () => {
 });
 
 test('selectsOnlyId is true only for a selection that starts after the content', () => {
-    assert.equal(selectsOnlyId(line, contentEnd), true);
-    assert.equal(selectsOnlyId(line, contentEnd + 5), true);
-    assert.equal(selectsOnlyId(line, contentEnd - 1), false);
-    assert.equal(selectsOnlyId('mira: Locked.', contentEnd), false);
+    assert.equal(selectsOnlyId(line, contentEnd, line.length), true);
+    assert.equal(selectsOnlyId(line, contentEnd + 5, line.length), true);
+    assert.equal(selectsOnlyId(line, contentEnd - 1, line.length), false);
+    assert.equal(selectsOnlyId('mira: Locked.', contentEnd, contentEnd), false);
 });
 
 test('hiddenColumn lets a selection take a whole line, but not part of its ID', () => {
     assert.equal(hiddenColumn(line, line.length, false), line.length);
     assert.equal(hiddenColumn(line, contentEnd + 3, false), contentEnd);
+});
+
+test('hiddenColumn keeps a cursor out of the hidden ID and the start of the comment after it', () => {
+    assert.equal(hiddenColumn(commented, contentEnd + 1, true), contentEnd);
+    assert.equal(hiddenColumn(commented, commentAt, true), contentEnd);
+    assert.equal(hiddenColumn(commented, commentAt + 1, true), commentAt + 1);
+    assert.equal(hiddenColumn(commented, commented.length, true), commented.length);
+    assert.equal(hiddenColumn(commented, 4, true), 4);
+});
+
+test('hiddenColumn lets a selection end where the comment starts, but not inside the ID', () => {
+    assert.equal(hiddenColumn(commented, commentAt, false), commentAt);
+    assert.equal(hiddenColumn(commented, commentAt - 1, false), contentEnd);
+    assert.equal(hiddenColumn(commented, commented.length, false), commented.length);
+});
+
+test('selectsOnlyId is false for a selection that reaches into the comment', () => {
+    assert.equal(selectsOnlyId(commented, contentEnd, commentAt), true);
+    assert.equal(selectsOnlyId(commented, commentAt, commented.length), false);
+    assert.equal(selectsOnlyId(commented, contentEnd + 1, commentAt + 3), false);
+});
+
+test('endColumn leaves End at the comment\'s end', () => {
+    assert.equal(endColumn(commented, 3, commented.length), commented.length);
+});
+
+test('clickColumn leaves a click past the comment\'s end alone', () => {
+    assert.equal(clickColumn(commented, commented.length), commented.length);
+});
+
+test('enterColumn breaks after the comment when the cursor is before the ID or the comment', () => {
+    assert.equal(enterColumn(commented, contentEnd), commented.length);
+    assert.equal(enterColumn(commented, commentAt), commented.length);
+    assert.equal(enterColumn(commented, commentAt + 4), commentAt + 4);
+    assert.equal(enterColumn(commented, 4), 4);
+});
+
+test('stepsIntoId is false at the content\'s end when a comment follows the ID', () => {
+    assert.equal(stepsIntoId(commented, contentEnd), false);
+});
+
+test('commentColumn goes past the comment\'s // from the content\'s end, and only there', () => {
+    assert.equal(commentColumn(commented, contentEnd), commentAt + 2);
+    assert.equal(commentColumn(commented, contentEnd - 1), undefined);
+    assert.equal(commentColumn(line, contentEnd), undefined);
+    assert.equal(commentColumn('mira: Locked.', contentEnd), undefined);
 });

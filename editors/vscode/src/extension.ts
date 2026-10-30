@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as alternatives from './alternatives.ts';
-import { clickColumn, endColumn, enterColumn, hiddenColumn, isLineId, joinLines, selectsOnlyId, stepsIntoId, trailingId } from './lineId.ts';
+import { clickColumn, commentColumn, endColumn, enterColumn, hiddenColumn, isLineId, joinLines, selectsOnlyId, stepsIntoId, trailingId } from './lineId.ts';
 import { openSpan } from './spans.ts';
 
 /**
@@ -70,7 +70,7 @@ function noteTypedId(event: vscode.TextDocumentChangeEvent): void {
 
     const line = change.range.start.line;
     const id = trailingId(event.document.lineAt(line).text);
-    if (id && change.range.start.character > id.contentEnd) {
+    if (id && change.range.start.character > id.contentEnd && change.range.start.character <= id.hiddenEnd) {
         typedId = { document: event.document, line };
     }
 }
@@ -94,7 +94,7 @@ function skipsIds(): boolean {
 
 /**
  * Hides each trailing ID in a `.pib` editor, with the space before it and any whitespace after it, except the one being
- * typed. Or shows them all again.
+ * typed. Or shows them all again. A comment after an ID stays, and so does the space before the ID, to separate them.
  */
 function hideIds(editor: vscode.TextEditor, hidden: vscode.TextEditorDecorationType): void {
     if (!isPibbles(editor)) {
@@ -104,7 +104,7 @@ function hideIds(editor: vscode.TextEditor, hidden: vscode.TextEditorDecorationT
     const ranges = hidesIds()
         ? lines(editor).flatMap((text, index) => {
             const id = trailingId(text);
-            return id && !isTypedId(editor, index) ? [new vscode.Range(index, id.contentEnd, index, text.length)] : [];
+            return id && !isTypedId(editor, index) ? [new vscode.Range(index, id.hiddenStart, index, id.hiddenEnd)] : [];
         })
         : [];
     editor.setDecorations(hidden, ranges);
@@ -143,7 +143,10 @@ async function cursorEnd(select: boolean): Promise<void> {
     });
 }
 
-/** **Right**: VS Code's own, except that from the content's end it goes to the next line, as from a line's real end. */
+/**
+ * **Right**: VS Code's own, except that from the content's end it goes to the next line, as from a line's real end, or
+ * past the `//` of a comment that follows the ID.
+ */
 async function cursorRight(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -154,21 +157,31 @@ async function cursorRight(): Promise<void> {
     await vscode.commands.executeCommand('cursorRight');
     editor.selections = editor.selections.map((after, i) => {
         const was = before[i];
-        if (!was?.isEmpty || !stepsIntoId(lineAt(editor, was.active.line), was.active.character) || was.active.line + 1 >= editor.document.lineCount) {
+        if (!was?.isEmpty) {
             return after;
         }
 
-        const next = new vscode.Position(was.active.line + 1, 0);
-        return new vscode.Selection(next, next);
+        const text = lineAt(editor, was.active.line);
+        const column = commentColumn(text, was.active.character);
+        const next = column !== undefined
+            ? new vscode.Position(was.active.line, column)
+            : stepsIntoId(text, was.active.character) && was.active.line + 1 < editor.document.lineCount ? new vscode.Position(was.active.line + 1, 0) : undefined;
+        return next ? new vscode.Selection(next, next) : after;
     });
 }
 
 /**
  * **Backspace** and **Delete**: VS Code's own, except where they join lines, which they do so that each ID stays with
- * its line. Delete at the content's end joins the next line, as from the line's real end.
+ * its line. Delete at the content's end joins the next line, as from the line's real end, unless a comment follows the
+ * ID, when it does nothing, since the space before the ID is not the writer's to delete.
  */
 async function deleteJoining(command: 'deleteLeft' | 'deleteRight'): Promise<void> {
     const editor = vscode.window.activeTextEditor;
+    const at = editor?.selection.isEmpty ? editor.selection.active : undefined;
+    if (editor && at && command === 'deleteRight' && commentColumn(lineAt(editor, at.line), at.character) !== undefined) {
+        return;
+    }
+
     const range = editor && joinedRange(editor, command);
     const joined = range && joinLines(lineAt(editor, range.start.line), range.start.character, lineAt(editor, range.end.line), range.end.character);
     if (!joined) {
@@ -240,7 +253,7 @@ function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent): void 
             return selection;
         }
 
-        const isCursor = selection.isSingleLine && selectsOnlyId(lineAt(editor, selection.start.line), selection.start.character);
+        const isCursor = selection.isSingleLine && selectsOnlyId(lineAt(editor, selection.start.line), selection.start.character, selection.end.character);
         const place = (position: vscode.Position) => {
             if (hidden && isTypedId(editor, position.line)) {
                 return position;

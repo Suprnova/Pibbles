@@ -1,4 +1,9 @@
-/** Where a line's trailing `#id:` tag is, the line's last thing apart from whitespace, and its ID. */
+import { commentStart } from './comments.ts';
+
+/**
+ * Where a line's trailing `#id:` tag is, the line's last thing apart from whitespace and a comment, and its ID. A
+ * comment after the ID stays visible, so the space before the ID separates the content from it.
+ */
 export interface TrailingId {
     /**
      * Where the line's content ends, before the one space or tab that separates it from the ID. Any other whitespace
@@ -11,19 +16,37 @@ export interface TrailingId {
     idEnd: number;
     /** The ID itself, without `#id:`. */
     value: string;
+    /** Where the line's comment starts, at its `//`, or `undefined` if it has none. */
+    commentStart: number | undefined;
+    /** Where the hidden text starts: the separating space with no comment, and the ID itself before a comment. */
+    hiddenStart: number;
+    /** Where the hidden text ends: the line's end, or the comment's start. */
+    hiddenEnd: number;
 }
 
 const Trailing = /[ \t]#id:([a-z][a-z0-9_]*)[ \t]*$/;
 
-/** Finds the line's trailing `#id:` tag, or `undefined` if the line doesn't end with one. */
+/**
+ * Finds the line's trailing `#id:` tag, or `undefined` if the line doesn't end with one. Only a comment may follow it,
+ * and an ID inside a comment isn't the line's.
+ */
 export function trailingId(line: string): TrailingId | undefined {
-    const match = Trailing.exec(line);
+    const comment = commentStart(line);
+    const match = Trailing.exec(line.slice(0, comment));
     if (!match) {
         return undefined;
     }
 
     const idStart = match.index + 1;
-    return { contentEnd: match.index, idStart, idEnd: idStart + '#id:'.length + match[1].length, value: match[1] };
+    return {
+        contentEnd: match.index,
+        idStart,
+        idEnd: idStart + '#id:'.length + match[1].length,
+        value: match[1],
+        commentStart: comment,
+        hiddenStart: comment === undefined ? match.index : idStart,
+        hiddenEnd: comment ?? line.length,
+    };
 }
 
 /** Whether `value` has a line ID's shape: a lowercase letter, then lowercase letters, digits and `_`. */
@@ -34,43 +57,58 @@ export function isLineId(value: string): boolean {
 /**
  * Where a cursor or selection end at `column` goes when the line's ID is hidden, so typing never lands in or after text
  * the writer can't see: a cursor goes no further than the content's end, and a selection end inside the hidden text
- * goes back to it. A selection end at the line's real end stays, so a selection can still take whole lines.
+ * goes back to it. A selection end at the line's real end stays, so a selection can still take whole lines. With a
+ * comment after the ID, a cursor can't be at the comment's `//` either, since text typed there would follow the ID, but
+ * a selection end can, so a comment can be selected without the ID.
  */
 export function hiddenColumn(line: string, column: number, isCursor: boolean): number {
     const id = trailingId(line);
-    return id && column > id.contentEnd && (isCursor || column < line.length) ? id.contentEnd : column;
+    const limit = id?.commentStart ?? line.length;
+    return id && column > id.contentEnd && (isCursor ? column <= limit : column < limit) ? id.contentEnd : column;
 }
 
 /**
  * Where **End** should leave a cursor that was at `before` and that VS Code's own End moved to `after`: before the ID,
  * if it moved from the content to past the content's end. Pressed again from there, End goes to the line's real end.
+ * With a comment after the ID, the comment's end is the visible end of the line, so VS Code's own End stands.
  */
 export function endColumn(line: string, before: number, after: number): number {
     const id = trailingId(line);
-    return id && before < id.contentEnd && after > id.contentEnd ? id.contentEnd : after;
+    return id && id.commentStart === undefined && before < id.contentEnd && after > id.contentEnd ? id.contentEnd : after;
 }
 
-/** Whether `column` is the content's end, where **Right** and **Delete** would step into the space before the ID. */
+/** Whether `column` is the content's end of a line whose ID no comment follows, where **Right** and **Delete** would step into the space before the ID. */
 export function stepsIntoId(line: string, column: number): boolean {
-    return trailingId(line)?.contentEnd === column;
+    const id = trailingId(line);
+    return id !== undefined && id.commentStart === undefined && id.contentEnd === column;
+}
+
+/**
+ * Where **Right** goes from `column`, if it is the content's end of a line whose ID a comment follows: past the
+ * comment's `//`, since the cursor can't stop in the hidden ID or before the `//`. **Delete** there does nothing,
+ * because the space before the ID is what keeps the ID a tag. `undefined` elsewhere.
+ */
+export function commentColumn(line: string, column: number): number | undefined {
+    const id = trailingId(line);
+    return id?.commentStart !== undefined && id.contentEnd === column ? id.commentStart + '//'.length : undefined;
 }
 
 /**
  * Where Enter should break the line, for a cursor at `column`: at the line's end if the cursor is between the content
- * and its trailing ID, so the ID stays on its own line instead of moving to the new one.
+ * and its trailing ID, or its comment, so the ID and the comment stay on their line instead of moving to the new one.
  */
 export function enterColumn(line: string, column: number): number {
     const id = trailingId(line);
-    return id && column >= id.contentEnd && column <= id.idStart ? line.length : column;
+    return id && column >= id.contentEnd && column <= (id.commentStart ?? id.idStart) ? line.length : column;
 }
 
 /**
  * Where a click should leave the cursor: before the ID, if the click landed past the end of the line. A click directly
- * on the ID stays where it is.
+ * on the ID stays where it is. With a comment after the ID, the end of the line is the comment's end, so it stays.
  */
 export function clickColumn(line: string, column: number): number {
     const id = trailingId(line);
-    return id && column >= line.length ? id.contentEnd : column;
+    return id && id.commentStart === undefined && column >= line.length ? id.contentEnd : column;
 }
 
 /** The line a deletion that joins two lines leaves, and where the cursor goes in it. */
@@ -80,12 +118,13 @@ export interface JoinedLine {
 }
 
 /**
- * Whether a selection within the line that starts at `start` holds only the hidden ID and the whitespace around it, as
+ * Whether a selection within the line from `start` to `end` holds only the hidden ID and the whitespace around it, as
  * a double-click past the end of the line selects. It acts as a cursor then, so the ID can't be selected or dragged.
+ * A selection that reaches into a comment after the ID isn't one.
  */
-export function selectsOnlyId(line: string, start: number): boolean {
+export function selectsOnlyId(line: string, start: number, end: number): boolean {
     const id = trailingId(line);
-    return id !== undefined && start >= id.contentEnd;
+    return id !== undefined && start >= id.contentEnd && end <= (id.commentStart ?? end);
 }
 
 /**
