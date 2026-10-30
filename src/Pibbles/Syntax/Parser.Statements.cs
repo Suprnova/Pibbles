@@ -1,9 +1,12 @@
+using System.Buffers;
 using Pibbles.Diagnostics;
 
 namespace Pibbles.Syntax;
 
 internal sealed partial class Parser
 {
+    private static readonly SearchValues<char> LineIdCharacters = SearchValues.Create("abcdefghijklmnopqrstuvwxyz0123456789_");
+
     /// <summary>
     /// Parses the statement on <paramref name="line"/>, and any block it owns, into <paramref name="statements"/>. The line
     /// is usually the current one, but an alternative passes the part of its line after the <c>- </c>.
@@ -329,30 +332,29 @@ internal sealed partial class Parser
     /// Checks where the reserved tags go. <c>#id</c> holds a line ID, at most once, and not on a line that only sets values. <c>#was</c>
     /// only goes on a node header. A variation block takes no tag but <c>#id</c>.
     /// </summary>
-    private void CheckTags(IReadOnlyList<TagSyntax> tags, TagPlace place)
+    private void CheckTags(List<TagSyntax> tags, TagPlace place)
     {
         bool hasId = false;
         foreach (TagSyntax tag in tags)
         {
-            string text = TextOf(tag.Span);
             if (tag.Name is "was")
             {
-                Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, PlaceName(place), "`#was:` only goes on a node header, where it records the node's old names.");
+                Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, TextOf(tag.Span), PlaceName(place), "`#was:` only goes on a node header, where it records the node's old names.");
             }
             else if (tag.Name is "id")
             {
                 if (place is TagPlace.ValuesOnly)
-                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, PlaceName(place), "Setting values shows nothing, so a save never stops on it. Remove the `#id`.");
+                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, TextOf(tag.Span), PlaceName(place), "Setting values shows nothing, so a save never stops on it. Remove the `#id`.");
                 else if (hasId)
-                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, "a line that already has an `#id`", "A line has one ID. Remove one of them.");
+                    Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, TextOf(tag.Span), "a line that already has an `#id`", "A line has one ID. Remove one of them.");
                 else if (!IsLineId(tag.Value))
-                    Fail(DiagnosticCatalog.InvalidLineId, tag.Span, text);
+                    Fail(DiagnosticCatalog.InvalidLineId, tag.Span, TextOf(tag.Span));
 
                 hasId = true;
             }
             else if (place is TagPlace.Variation)
             {
-                Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, text, PlaceName(place), "A variation block only takes an `#id:` tag. Put other tags on the lines inside it.");
+                Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, TextOf(tag.Span), PlaceName(place), "A variation block only takes an `#id:` tag. Put other tags on the lines inside it.");
             }
         }
     }
@@ -368,7 +370,7 @@ internal sealed partial class Parser
 
     /// <summary>Whether a value is a line ID: a lowercase ASCII letter, then lowercase letters, digits and <c>_</c>.</summary>
     private static bool IsLineId(string? value) =>
-        value is [>= 'a' and <= 'z', ..] && value.All(c => c is >= 'a' and <= 'z' or >= '0' and <= '9' or '_');
+        value is [>= 'a' and <= 'z', ..] && !value.AsSpan().ContainsAnyExcept(LineIdCharacters);
 
     /// <summary>Reports an <c>@elif</c> or <c>@else</c> with no <c>@if</c> above it. The statements in its block join the block around it.</summary>
     private void ParseStrayClause(List<StatementSyntax> statements)

@@ -311,11 +311,13 @@ internal sealed partial class Parser
 
     private TagSyntax TagFrom(Token tag)
     {
-        string text = TextOf(tag.Span);
-        int colon = text.IndexOf(':', StringComparison.Ordinal);
+        string text = source.Text;
+        int name = tag.Span.Start + 1;
+        int end = tag.Span.End;
+        int colon = text.IndexOf(':', name, end - name);
         return colon < 0
-            ? new TagSyntax(text[1..], null) { Span = tag.Span }
-            : new TagSyntax(text[1..colon], text[(colon + 1)..]) { Span = tag.Span };
+            ? new TagSyntax(text[name..end], null) { Span = tag.Span }
+            : new TagSyntax(text[name..colon], text[(colon + 1)..end]) { Span = tag.Span };
     }
 
     private TextSpan SpanFrom(int start) => new(start, previousEnd - start);
