@@ -12,7 +12,7 @@ namespace Pibbles.Tests.Properties;
 /// </summary>
 public class TotalityTests
 {
-    private const string Alphabet = "@-=>[]{}$#\\:(),.\"'/%*+<!?_ abxyz019\té́﻿\uD83D";
+    private const string Alphabet = "@-=>[]{}$#\\:(),.\"'/%*+<!?_ abxyz019\té́﻿\uD83D" + Spaces.Ideographic + Spaces.NoBreak;
 
     private static readonly string[] Punctuation = ["@", "->", "==", "-", "[", "]", "{", "}", "$", "#", "\\", ":", "(", "\"", " ", "    ", "\t", "\n"];
 

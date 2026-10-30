@@ -1,5 +1,6 @@
 using CsCheck;
 using Pibbles.Syntax;
+using Pibbles.Tests.Syntax;
 
 namespace Pibbles.Tests.Properties;
 
@@ -40,7 +41,9 @@ internal static class SyntaxGenerators
     private static readonly Gen<string> Piece = Gen.Frequency(
         (30, Gen.Char["abcdefghij klmnop ABC 0123 .,!?'\"-:;()]}[{#@\\/=<>*&%$~^|é"].Select(c => c.ToString())),
         (1, Gen.Const("😀")),
-        (1, Gen.Const("é")));
+        (1, Gen.Const("é")),
+        (1, Gen.Const(Spaces.Ideographic)),
+        (1, Gen.Const(Spaces.NoBreak)));
 
     private static readonly Gen<string> Text = Piece.Array[1, 8].Select(string.Concat);
 
@@ -271,10 +274,10 @@ internal static class SyntaxGenerators
     private static InlineSyntax[] Trim(InlineSyntax[] items)
     {
         if (items is [TextRunSyntax first, ..])
-            items = [new TextRunSyntax(first.Text.TrimStart(' ')) { Span = default }, .. items[1..]];
+            items = [new TextRunSyntax(first.Text.TrimStart()) { Span = default }, .. items[1..]];
 
         if (items is [.., TextRunSyntax last])
-            items = [.. items[..^1], new TextRunSyntax(last.Text.TrimEnd(' ')) { Span = default }];
+            items = [.. items[..^1], new TextRunSyntax(last.Text.TrimEnd()) { Span = default }];
 
         return [.. items.Where(item => item is not TextRunSyntax { Text.Length: 0 })];
     }
