@@ -97,6 +97,42 @@ test('joinLines leaves lines without IDs, and deletions inside an ID, to VS Code
     assert.equal(joinLines('mira: Locked.', 13, line, contentEnd + 3), undefined);
 });
 
+test('joinLines keeps the first line\'s comment after its ID', () => {
+    const next = 'More. #id:p3m8tz';
+
+    assert.deepEqual(joinLines(commented, commented.length, next, 0), { text: 'mira: Locked.More. #id:k7qp2x   // Said quietly.', cursor: contentEnd });
+    assert.deepEqual(joinLines(commented, commented.length, 'More.', 0), { text: 'mira: Locked.More. #id:k7qp2x   // Said quietly.', cursor: contentEnd });
+});
+
+test('joinLines drops the first line\'s comment when the deletion starts before it', () => {
+    assert.deepEqual(joinLines(commented, contentEnd, 'More. #id:p3m8tz', 0), { text: 'mira: Locked.More. #id:k7qp2x', cursor: contentEnd });
+    assert.deepEqual(joinLines(commented, commentAt, 'More. #id:p3m8tz', 0), { text: 'mira: Locked.More. #id:k7qp2x', cursor: contentEnd });
+});
+
+test('joinLines keeps the last line\'s comment after the first line\'s ID', () => {
+    assert.deepEqual(joinLines(line, line.length, 'More. #id:p3m8tz // Again.', 0), { text: 'mira: Locked.More. #id:k7qp2x // Again.', cursor: contentEnd });
+    assert.deepEqual(joinLines(line, line.length, 'More. // Again.', 0), { text: 'mira: Locked.More. #id:k7qp2x // Again.', cursor: contentEnd });
+    assert.deepEqual(joinLines(commented, commented.length, 'More. #id:p3m8tz // Again.', 0), { text: 'mira: Locked.More. #id:k7qp2x   // Said quietly. // Again.', cursor: contentEnd });
+});
+
+test('joinLines drops the last line\'s comment when the deletion takes all of it', () => {
+    const next = 'More. #id:p3m8tz // Again.';
+
+    assert.deepEqual(joinLines(line, line.length, next, next.length), { text: line, cursor: contentEnd });
+});
+
+test('joinLines keeps the last line\'s comment when nothing of the first line\'s content is left', () => {
+    const next = '    mira: Again. #id:p3m8tz // Once more.';
+
+    assert.deepEqual(joinLines('    mira: Gone. #id:k7qp2x // Bye.', 4, next, 4), { text: next, cursor: 4 });
+});
+
+test('joinLines leaves a deletion that starts or ends inside a comment\'s text to VS Code', () => {
+    assert.equal(joinLines(commented, commentAt + 4, 'More. #id:p3m8tz', 0), undefined);
+    assert.equal(joinLines(line, line.length, 'More. #id:p3m8tz // Again.', 'More. #id:p3m8tz // A'.length), undefined);
+    assert.equal(joinLines('mira: Locked. // Quietly.', 17, 'More. #id:p3m8tz', 0), undefined);
+});
+
 test('clickColumn moves a click past the line\'s end before the ID', () => {
     assert.equal(clickColumn(line, line.length), contentEnd);
     assert.equal(clickColumn(line, contentEnd + 3), contentEnd + 3);

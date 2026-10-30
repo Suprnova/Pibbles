@@ -130,23 +130,37 @@ export function selectsOnlyId(line: string, start: number, end: number): boolean
 /**
  * What deleting from `start` on the line `first` to `end` on a later line `last` should leave, so each ID stays with its
  * line. If any of `first`'s content is left, the joined line is `first`'s and keeps its ID at the end, and `last`'s ID
- * goes with the deleted text. Otherwise, the joined line is `last`'s, and only its ID is left. `undefined` if neither
- * line has an ID, or the deletion starts or ends inside one, which is a deliberate edit of that ID.
+ * goes with the deleted text. `first`'s comment stays unless the deletion starts before it, and `last`'s comment
+ * follows `first`'s ID unless the deletion reaches into it. Otherwise, the joined line is `last`'s, and only its ID is
+ * left. `undefined` if neither line has an ID, or the deletion starts or ends inside an ID, which is a deliberate edit
+ * of that ID, or inside a comment's text.
  */
 export function joinLines(first: string, start: number, last: string, end: number): JoinedLine | undefined {
     const firstId = trailingId(first);
     const lastId = trailingId(last);
-    if (!firstId && !lastId || inside(firstId, start) || inside(lastId, end)) {
+    if (!firstId && !lastId || inside(firstId, start) || inside(lastId, end) || inComment(first, start) || inComment(last, end)) {
         return undefined;
     }
 
     const head = first.slice(0, Math.min(start, firstId?.contentEnd ?? start));
-    const text = head.trim()
-        ? head + last.slice(end, Math.max(end, lastId?.contentEnd ?? last.length)) + (firstId ? first.slice(firstId.contentEnd) : '')
-        : head + last.slice(end);
+    if (!head.trim()) {
+        return { text: head + last.slice(end), cursor: head.length };
+    }
+
+    const lastComment = commentStart(last);
+    const lastContentEnd = lastId?.contentEnd ?? (lastComment === undefined ? last.length : last.slice(0, lastComment).trimEnd().length);
+    const firstEnd = start > (firstId?.commentStart ?? -1) ? undefined : firstId?.idEnd;
+    const kept = lastComment !== undefined && end <= lastComment ? ` ${last.slice(lastComment)}` : '';
+    const text = head + last.slice(end, Math.max(end, lastContentEnd)) + (firstId ? first.slice(firstId.contentEnd, firstEnd) : '') + kept;
     return { text, cursor: head.length };
 }
 
 function inside(id: TrailingId | undefined, column: number): boolean {
     return id !== undefined && column > id.idStart && column < id.idEnd;
+}
+
+/** Whether `column` is in the text of the line's comment, after its `//` and before its end. */
+function inComment(line: string, column: number): boolean {
+    const start = commentStart(line);
+    return start !== undefined && column > start && column < line.length;
 }
