@@ -485,11 +485,7 @@ internal sealed partial class Parser
     /// <summary>The <c>@</c> word a line starts with, read without lexing the line.</summary>
     private string AtWordOf(SourceLine line)
     {
-        ReadOnlySpan<char> text = source.Text.AsSpan(line.Content.Start, line.Content.Length);
-        int length = 1;
-        while (length < text.Length && (char.IsLetterOrDigit(text[length]) || text[length] is '_'))
-            length++;
-
-        return text[..length].ToString();
+        int start = line.Content.Start;
+        return source.Text[start..Identifiers.Skip(source.Text, start + 1, line.Content.End)];
     }
 }

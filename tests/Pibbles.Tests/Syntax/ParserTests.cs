@@ -51,6 +51,16 @@ public class ParserTests
         Assert.IsType<ErrorExpressionSyntax>(((PauseStatementSyntax)tree.Root.Nodes[0].Body[0]).Duration);
     }
 
+    [Fact]
+    public void Parse_AtWordWithNonAsciiDigitInAlternative_ReportsTheOpener()
+    {
+        var source = new SourceText("story.pib", "== fixture.start\n@cycle\n    - @if٣ $a\n");
+
+        var tree = SyntaxTree.Parse(source);
+
+        Assert.Contains(tree.Diagnostics, diagnostic => diagnostic.Code is "PIB1032" && diagnostic.Message == "`@if` can't start an alternative.");
+    }
+
     [Theory]
     [InlineData("@prefix kitchen\n@prefix cellar", 1)]
     [InlineData("// A comment.\n\n@prefix kitchen\n== .door\n@prefix cellar", 3)]
