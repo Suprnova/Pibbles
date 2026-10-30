@@ -51,7 +51,7 @@ internal sealed partial class Parser
     {
         ParseTopLevel();
         var root = new FileSyntax(prefix, declarations, nodes) { Span = new(0, source.Text.Length) };
-        return new(source, root, [.. comments.DistinctBy(comment => comment.Span).OrderBy(comment => comment.Span.Start)], diagnostics);
+        return new(source, root, [.. comments.OrderBy(comment => comment.Span.Start)], diagnostics);
     }
 
     private void ParseTopLevel()
@@ -158,7 +158,6 @@ internal sealed partial class Parser
     {
         SourceLine header = Current.Line;
         StartLine(new(header.Content.Start + 2, header.Content.Length - 2));
-        previousEnd = header.Content.Start + 2;
 
         NameSyntax name = ExpectName("a node name", "==");
         List<NameSyntax> aliases = [];
@@ -280,13 +279,6 @@ internal sealed partial class Parser
             Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
 
         index++;
-    }
-
-    /// <summary>Reads the rest of the line, so the lexer reports any malformed tokens in it.</summary>
-    private void SkipRestOfLine()
-    {
-        while (token.Kind is not TokenKind.EndOfLine)
-            Advance();
     }
 
     private NameSyntax ExpectName(string what, string after)

@@ -183,7 +183,7 @@ internal sealed partial class Parser
             index++;
             List<T> items = parseBlock();
             SkipDedent();
-            return (items, items.Count > 0 ? Math.Max(items[^1].Span.End, lineEnd) : lineEnd);
+            return (items, items.Count > 0 ? items[^1].Span.End : lineEnd);
         }
 
         if (!openerFailed)

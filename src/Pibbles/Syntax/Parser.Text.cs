@@ -133,7 +133,7 @@ internal sealed partial class Parser
             SkipDedent();
         }
 
-        int end = body.Count > 0 ? Math.Max(body[^1].Span.End, lineEnd) : lineEnd;
+        int end = body.Count > 0 ? body[^1].Span.End : lineEnd;
         return new(text, condition, isOnce, tags, body) { Span = new(start, end - start) };
     }
 

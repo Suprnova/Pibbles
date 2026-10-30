@@ -29,7 +29,7 @@ internal sealed partial class Parser
         pendingClose = null;
 
         List<InlineSyntax> items = ParseInlineItems();
-        while (AtInline('{') && BraceKeyword() is ({ } and not "if", _))
+        while (AtInline('{'))
         {
             int close = FindCloser('}', inlinePosition);
             var stray = new TextSpan(inlinePosition, close - inlinePosition);
@@ -369,13 +369,6 @@ internal sealed partial class Parser
             inlinePosition = position;
             if (!AtTagStart())
             {
-                var rest = new TextSpan(position, inlineEnd - position);
-                if (tags.Count == 0)
-                {
-                    Fail(DiagnosticCatalog.Unexpected, rest, $"`{TextOf(rest).TrimEnd()}`");
-                    break;
-                }
-
                 ReportTextAfterTag(tags[0]);
                 return [];
             }
