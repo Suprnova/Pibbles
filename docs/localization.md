@@ -55,7 +55,7 @@ Both are listed in the snapshot's report, which suggests running `pibbles ids`. 
 
 ### Keeping them out of the way
 
-The IDs live in the file, but writers don't have to look at them. The VS Code extension fades `#id:` tags from Phase 1, through the TextMate grammar alone. From Phase 2, when `pibbles ids` writes them, trailing IDs are hidden, and the status bar shows the ID of the line under the cursor, where it can be edited. The cursor never lands in or after a hidden ID, so new text never ends up after one, and a deleted line takes its ID with it ([tooling design](tooling.md#vs-code-extension)).
+The IDs live in the file, but writers don't have to look at them. The VS Code extension fades `#id:` tags from Phase 1, through the TextMate grammar alone. From Phase 2, when `pibbles ids` writes them, trailing IDs are hidden, and the status bar shows the ID of the line under the cursor, where it can be edited. A comment after an ID stays visible. The cursor never lands in or after a hidden ID, so new text never ends up after one, and a deleted line takes its ID with it ([tooling design](tooling.md#vs-code-extension)).
 
 ### Alternatives considered
 
