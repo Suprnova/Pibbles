@@ -14,10 +14,14 @@ mira (): Fine.
 //   ^^ PIB2003
 Breakfast (served daily): eggs.
 //        ^^^^^^^^^^^^^^ PIB2003
+mira（to Rex）：Fine.
+//  ^^^^^^^^ PIB2003
 
 // Must not trigger
 
 mira (happy, shake): Fine.
+mira（happy、shake）：Fine.
 Breakfast (served daily)\: eggs.
+Breakfast（served daily）\：eggs.
 // To Rex.
 mira: Fine.

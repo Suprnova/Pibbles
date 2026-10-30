@@ -143,7 +143,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             else
             {
                 string meant = DiagnosticCatalog.DidYouMean(Suggestions.Closest(name.Text, symbols.Actors.Keys));
-                Report(DiagnosticCatalog.UnknownSpeaker, name.Span, name.Text, meant, BeforeColon(line));
+                Report(DiagnosticCatalog.UnknownSpeaker, name.Span, name.Text, meant, EscapeColon(PrefixOf(line)));
             }
         }
         else if (line.Speaker is { } narration)
@@ -192,7 +192,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 _ => $"{owner}'s values are {Phrase.And(values)}.",
             };
         if (line.Speaker is { Name: null })
-            help += $" If this is text, put a backslash before the `(`: `\\{BeforeColon(line)}:`.";
+            help += $" If this is text, put a backslash before the `(`: `\\{PrefixOf(line)}`.";
 
         Report(DiagnosticCatalog.UnknownChannelValue, value.Span, owner, value.Text, help);
     }
@@ -207,28 +207,34 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         if (SpeakerScanner.Scan(Tree.Source.Text, line.Span.Start, line.Span.End) is not { } prefix)
             return;
 
-        string before = TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start));
+        string written = PrefixOf(line, prefix);
+        string escaped = EscapeColon(written);
         if (prefix is { Parentheses: { } parentheses, Values: [] })
         {
-            Report(DiagnosticCatalog.NotValues, parentheses, TextOf(parentheses), before);
+            Report(DiagnosticCatalog.NotValues, parentheses, TextOf(parentheses), escaped);
         }
         else if (prefix is { Extra: { } extra, Parentheses: { } valuesParentheses } && IsActor(prefix))
         {
-            Report(DiagnosticCatalog.AfterValues, extra, TextOf(extra), TextOf(valuesParentheses), before);
+            Report(DiagnosticCatalog.AfterValues, extra, TextOf(extra), TextOf(valuesParentheses), escaped);
         }
         else if (IsActor(prefix))
         {
             int textEnd = line.Tags.Count > 0 ? line.Tags[0].Span.Start : line.Span.End;
             string after = TextOf(new(prefix.Colon + 1, textEnd - prefix.Colon - 1)).TrimEnd();
-            Report(DiagnosticCatalog.NoSpaceAfterSpeaker, new(line.Span.Start, prefix.Colon + 1 - line.Span.Start), before, $"{before}\\:{after}");
+            Report(DiagnosticCatalog.NoSpaceAfterSpeaker, new(line.Span.Start, prefix.Colon + 1 - line.Span.Start), written[..^1], $"{escaped}{after}");
         }
     }
 
     private bool IsActor(SpeakerPrefix prefix) => prefix.Name is { } name && symbols.Actors.ContainsKey(TextOf(name));
 
-    /// <summary>A text line's start up to its speaker's colon, as written.</summary>
-    private string BeforeColon(TextLineSyntax line) =>
-        SpeakerScanner.Scan(Tree.Source.Text, line.Span.Start, line.Span.End) is { } prefix ? TextOf(new(line.Span.Start, prefix.Colon - line.Span.Start)) : "";
+    /// <summary>A text line's start through its speaker's colon, as written.</summary>
+    private string PrefixOf(TextLineSyntax line) =>
+        SpeakerScanner.Scan(Tree.Source.Text, line.Span.Start, line.Span.End) is { } prefix ? PrefixOf(line, prefix) : "";
+
+    private string PrefixOf(TextLineSyntax line, SpeakerPrefix prefix) => TextOf(new(line.Span.Start, prefix.Colon + 1 - line.Span.Start));
+
+    /// <summary><paramref name="prefix"/>, which ends in the colon, with a backslash before the colon.</summary>
+    private static string EscapeColon(string prefix) => $"{prefix[..^1]}\\{prefix[^1]}";
 
     private void BindInline(IEnumerable<InlineSyntax> content)
     {

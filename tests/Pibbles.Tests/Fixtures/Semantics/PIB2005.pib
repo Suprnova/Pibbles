@@ -13,8 +13,13 @@ mira(mad)(shake): Fine.
 //       ^^^^^^^ PIB2005
 mira (mad) shake: Fine.
 //         ^^^^^ PIB2005
+mira（mad）（shake）：Fine.
+//       ^^^^^^^ PIB2005
 
 // Must not trigger
+
+mira（mad）shake\：Fine.
+mira（mad）：Fine.
 
 mira (mad) leaves the room.
 mira (mad) leaves the room: she said.

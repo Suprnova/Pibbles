@@ -627,6 +627,8 @@ Note: the door is locked.
 
 If it's narration, escape the colon: `Note\: the door is locked.` If it's a speaker, fix the spelling, or declare the actor. The help suggests the closest actor, if one is close.
 
+A full-width colon starts a speaker the same way, so `他说：“你好。”` is reported too, and its help escapes the colon as written: `他说\：“你好。”`.
+
 ### PIB2002
 
 **A value in a speaker's parenthesis is one of the values its actor has,** in the channels the actor has. Narration's parenthesis, at the start of a line, takes narration's own values. The help suggests the closest one, lists them all, or says which channel the speaker dropped when the value belongs to it.
@@ -640,7 +642,7 @@ If it's narration, escape the colon: `Note\: the door is locked.` If it's a spea
 mira (smirk): I knew it.
 ```
 
-Use one of the actor's values, `mira (smug):`, or add the value to the actor's channel with `pose += smirk`. If a narration line that starts with a parenthesis and a colon is plain text, such as `(Meanwhile): …`, put a backslash before the `(`: `\(Meanwhile): …`.
+Use one of the actor's values, `mira (smug):`, or add the value to the actor's channel with `pose += smirk`. If a narration line that starts with a parenthesis and a colon is plain text, such as `(Meanwhile): …`, put a backslash before the `(`: `\(Meanwhile): …`. With full-width punctuation it's the same: `\（Meanwhile）：…`.
 
 ### PIB2003
 
@@ -650,7 +652,7 @@ Use one of the actor's values, `mira (smug):`, or add the value to the actor's c
 mira (to Rex): Fine.
 ```
 
-Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If the line is narration, escape the colon: `Breakfast (served daily)\: eggs.` Narration's own parenthesis, at the start of a line, is read the same way, so `(to the room): Fine.` is reported too.
+Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If the line is narration, escape the colon: `Breakfast (served daily)\: eggs.` Narration's own parenthesis, at the start of a line, is read the same way, so `(to the room): Fine.` is reported too. So are the full-width forms, `mira（to Rex）：Fine.`, whose help escapes the colon as written: `mira（to Rex）\：`.
 
 ### PIB2004
 
@@ -660,7 +662,7 @@ Write the direction as a comment, `// To Rex.`, and the line as `mira: Fine.` If
 mira:Hi.
 ```
 
-Add the space, `mira: Hi.`, or escape the colon if the line really is narration: `mira\:Hi.` Names that aren't actors, as in `Time:3pm`, are never reported.
+Add the space, `mira: Hi.`, or escape the colon if the line really is narration: `mira\:Hi.` Names that aren't actors, as in `Time:3pm`, are never reported. A full-width colon needs no space, so `mira：Hi.` is a speaker.
 
 ### PIB2005
 

@@ -193,6 +193,11 @@ public class BinderTests
             "Did you mean `mira`? If this line is narration, escape the colon: `mria\\:`."
         },
         {
+            $"{Cast}他说：“你好。”\n",
+            "I don't know an actor called `他说`.",
+            "If this line is narration, escape the colon: `他说\\：`."
+        },
+        {
             $"{Cast}mira (smirk): Hi.\n",
             "Mira has no value called `smirk`.",
             "Mira's values are `neutral` and `smug`."
@@ -213,14 +218,34 @@ public class BinderTests
             "Narration has no `camera`, which has `orbit`. If this is text, put a backslash before the `(`: `\\(orbit):`."
         },
         {
+            $"{Cast}（Meanwhile）：Fine.\n",
+            "Narration has no value called `Meanwhile`.",
+            "Narration has no values to set. Declare a channel such as `@channel pose`, then list Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\（Meanwhile）：`."
+        },
+        {
             $"{Cast}mira (to Rex): Fine.\n",
             "`(to Rex)` isn't a list of values: each value is a single name.",
             "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\\:`."
         },
         {
+            $"{Cast}mira（to Rex）：Fine.\n",
+            "`（to Rex）` isn't a list of values: each value is a single name.",
+            "For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira（to Rex）\\：`."
+        },
+        {
             $"{Cast}mira (smug) shake: Fine.\n",
             "`shake` has no place after `(smug)`, before the colon.",
             "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (smug) shake\\:`."
+        },
+        {
+            $"{Cast}mira（smug）（still）：Fine.\n",
+            "`（still）` has no place after `（smug）`, before the colon.",
+            "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira（smug）（still）\\：`."
+        },
+        {
+            $"{Cast}mira（smug）:Hi there.\n",
+            "There's no space after `mira（smug）:`.",
+            "Add one, or escape the colon if this is narration: `mira（smug）\\:Hi there.`."
         },
         {
             $"{Cast}mira:Hi there. #id:k7qp2x\n",

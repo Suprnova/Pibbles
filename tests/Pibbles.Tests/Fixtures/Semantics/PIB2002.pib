@@ -22,9 +22,13 @@ rex (shake): Hm.
 //   ^^^^^ PIB2002
 (still, shake): The effect list is narration's own.
 //      ^^^^^ PIB2002
+mira（smirk）：I knew it.
+//   ^^^^^ PIB2002
 
 // Must not trigger
 
+mira（smug）：I knew it.
+（still）：Narration's own value.
 mira (smug): I knew it.
 mira (neutral):
 mira (smug, shake): Both channels.

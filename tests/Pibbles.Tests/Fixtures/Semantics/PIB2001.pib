@@ -8,8 +8,12 @@ Note: the door is locked.
 // PIB2001
 mria: Hello?
 // PIB2001
+他说：“你好。”
+// PIB2001
 
 // Must not trigger
 
 Note\: the door is locked.
+他说\：“你好。”
 mira: Hello?
+mira：Hello?

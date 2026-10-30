@@ -336,13 +336,13 @@ public static class DiagnosticCatalog
     /// <summary>PIB2001: a speaker that isn't a declared actor.</summary>
     /// <remarks>
     /// Arguments: the speaker as written; <see cref="DidYouMean"/>'s sentence for the closest actor, or nothing; and the line's
-    /// start up to its colon, which the help escapes.
+    /// start through its colon, with the colon escaped.
     /// </remarks>
     public static DiagnosticDescriptor UnknownSpeaker { get; } = new(
         "PIB2001",
         DiagnosticSeverity.Error,
         "I don't know an actor called `{0}`.",
-        help: "{1}If this line is narration, escape the colon: `{2}\\:`.");
+        help: "{1}If this line is narration, escape the colon: `{2}`.");
 
     /// <summary>PIB2002: a value the speaker doesn't have.</summary>
     /// <remarks>Arguments: the actor's display name; the value; and a suggestion, the actor's values or where the value went, or <see langword="null"/> to leave out the help.</remarks>
@@ -353,12 +353,12 @@ public static class DiagnosticCatalog
         help: "{2}");
 
     /// <summary>PIB2003: a parenthesis after a name, before a colon, that doesn't hold a list of names, as in <c>mira (to Rex):</c>.</summary>
-    /// <remarks>Arguments: the parenthesis, and the line's start up to its colon, which the help escapes.</remarks>
+    /// <remarks>Arguments: the parenthesis, and the line's start through its colon, with the colon escaped.</remarks>
     public static DiagnosticDescriptor NotValues { get; } = new(
         "PIB2003",
         DiagnosticSeverity.Error,
         "`{0}` isn't a list of values: each value is a single name.",
-        help: "For how a line is said, use a `//` comment. If this is narration, escape the colon: `{1}\\:`.");
+        help: "For how a line is said, use a `//` comment. If this is narration, escape the colon: `{1}`.");
 
     /// <summary>PIB2004: a declared actor and a colon with no space after it, as in <c>mira:Hi</c>.</summary>
     /// <remarks>Arguments: the line's start up to its colon, and the line with its colon escaped.</remarks>
@@ -369,12 +369,12 @@ public static class DiagnosticCatalog
         help: "Add one, or escape the colon if this is narration: `{1}`.");
 
     /// <summary>PIB2005: more between a declared actor's values and the colon, as in <c>mira (smug) (shake):</c> or <c>mira (smug) shake:</c>.</summary>
-    /// <remarks>Arguments: what comes after the values; the values' parenthesis; and the line's start up to its colon, which the help escapes.</remarks>
+    /// <remarks>Arguments: what comes after the values; the values' parenthesis; and the line's start through its colon, with the colon escaped.</remarks>
     public static DiagnosticDescriptor AfterValues { get; } = new(
         "PIB2005",
         DiagnosticSeverity.Error,
         "`{0}` has no place after `{1}`, before the colon.",
-        help: "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}\\:`.");
+        help: "A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}`.");
 
     /// <summary>PIB2006: two values of one channel on one line, as in <c>mira (mad, sad):</c>.</summary>
     /// <remarks>Arguments: the first value; the second value; the speaker's display name; and the channel.</remarks>
