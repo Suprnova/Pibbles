@@ -50,6 +50,14 @@ public static class DiagnosticCatalog
         "`///` notes aren't supported yet.",
         help: "For a comment, use `//`.");
 
+    /// <summary>PIB1006: a line starts with a space separator other than a space or a tab, which doesn't indent.</summary>
+    /// <remarks>Argument: the first such character, such as <c>U+3000 (an ideographic space)</c>.</remarks>
+    public static DiagnosticDescriptor NonIndentingSpace { get; } = new(
+        "PIB1006",
+        DiagnosticSeverity.Error,
+        "This line starts with {0}, which doesn't indent.",
+        help: "Indent with spaces or tabs. A space at the start of a line doesn't show in the game, since Pibbles trims it, so delete it if you only meant to space the text.");
+
     /// <summary>What PIB1010 and PIB1013's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
     public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
 
@@ -924,6 +932,7 @@ public static class DiagnosticCatalog
         UnexpectedIndentation,
         MissingBlock,
         UnsupportedNote,
+        NonIndentingSpace,
         UnclosedMarkup,
         MarkupOutOfOrder,
         UnopenedMarkup,

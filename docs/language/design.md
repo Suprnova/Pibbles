@@ -61,6 +61,7 @@ These are the tie-breakers for decisions the docs don't cover.
 Writers type with the input method of their language, and the markers of Pibbles are ASCII. These rules keep the difference from causing mistakes that nothing reports.
 
 - **Every space separates.** Wherever the grammar has whitespace, a tab or any space separator (Unicode category Zs) counts: between tokens, around a speaker's colon, after an alternative's `-`, at the end of a tag's name and value, before a comment, and at the ends of a line's text. A Japanese input method types U+3000 for the space bar, and French typography puts U+00A0 or U+202F before a colon. Treating each as a space means a writer never has to find the half-width one.
+- **Only space and tab indent.** Indentation carries the structure, and a file already can't mix its two characters. A line that starts with any other space is an error, and the line still goes in the block its width fits. Tab and Enter indent under every input method, while the space bar types the full-width space. A line's leading and trailing whitespace is trimmed from what it shows, whatever kind it is, so a paragraph indent in a Japanese script belongs to the game's text box, which applies it to every line in every language.
 
 ## Why build it
 

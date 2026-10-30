@@ -113,7 +113,7 @@ This line appears before the choice.
 This line appears after any option, once that option's lines are done.
 ```
 
-- Indent with spaces or tabs, but don't mix both in one file.
+- Indent with spaces or tabs, but don't mix both in one file. Press Tab, or let Enter indent for you: the space bar under a Japanese input method types a full-width space, which doesn't indent.
 - An option doesn't need anything under it. The third option above just carries on.
 - After an option's lines finish, the story continues below the whole choice.
 - Options stay available after they're picked, so if the story comes back to the same choice, the player can pick them again. The game knows which options were already picked, so it can grey them out. To remove an option after its first use, see [Option extras](#option-extras).

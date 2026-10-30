@@ -1,0 +1,22 @@
+// A line can indent only with spaces or tabs. Another space doesn't indent, though the line still goes in the block it fits.
+
+== fixture.spaces
+-> An option
+　　mira: Still under the option.
+// PIB1006
+　　rex: And its other line.
+// PIB1006
+-> Another option
+Back at the top.
+ Indented by a no-break space.
+// PIB1006
+    　Indented by spaces, then a full-width one.
+// PIB1006
+
+// Must not trigger
+
+mira: Done!　Nothing else to do.
+mira: Hello.　
+　// A comment can sit at any indentation.
+　
+mira:　Two spaces separate.

@@ -164,6 +164,80 @@ public class LineClassifierTests
         Assert.Equal((LineKind.EndOfFile, 2, new TextSpan(text.Length, 0)), (end.Kind, end.Number, end.Content));
     }
 
+    [Fact]
+    public void Classify_OptionBodyIndentedWithOtherSpace_KeepsItsOptionAndReportsOnce()
+    {
+        var source = new SourceText("story.pib", $"-> Ask\n{Spaces.Ideographic}{Spaces.Ideographic}mira: Hm.\n-> Leave");
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal(["-> Ask", "Indent", "mira: Hm.", "Dedent", "-> Leave", "EndOfFile"], Describe(source, classified));
+        Assert.Equal([("PIB1006", 1)], Codes(classified));
+    }
+
+    [Theory]
+    [InlineData("mira: Hi.\n{0}mira: Hm.")]
+    [InlineData("== kitchen.door\n{0}mira: Hm.")]
+    public void Classify_ParagraphIndent_DoesNotIndentAndReportsOnce(string template)
+    {
+        var source = new SourceText("story.pib", template.Replace("{0}", Spaces.Ideographic, StringComparison.Ordinal));
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.DoesNotContain("Indent", Describe(source, classified));
+        Assert.Equal([("PIB1006", 1)], Codes(classified));
+    }
+
+    [Fact]
+    public void Classify_TabsThenOtherSpace_ReportsItAsNonIndentingNotAsMixed()
+    {
+        var source = new SourceText("story.pib", $"@if a\n\t\tx\n    {Spaces.NoBreak}y");
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal([("PIB1006", 2)], Codes(classified));
+    }
+
+    [Theory]
+    [InlineData(Spaces.NoBreak, "U+00A0 (a no-break space)")]
+    [InlineData(Spaces.NarrowNoBreak, "U+202F (a narrow no-break space)")]
+    [InlineData(Spaces.Ideographic, "U+3000 (an ideographic space)")]
+    [InlineData("\x2003", "U+2003")]
+    public void Classify_OtherSpace_NamesTheFirstOne(string space, string expected)
+    {
+        var source = new SourceText("story.pib", $"-> Ask\n  {space}{Spaces.Ideographic}mira: Hm.");
+
+        Diagnostic diagnostic = Assert.Single(LineClassifier.Classify(source).Diagnostics);
+
+        Assert.Equal(($"This line starts with {expected}, which doesn't indent.", new TextSpan(7, 4)), (diagnostic.Message, diagnostic.Location.Span));
+    }
+
+    [Theory]
+    [InlineData(Spaces.Ideographic)]
+    [InlineData($"{Spaces.Ideographic}// A comment.")]
+    [InlineData($"  {Spaces.NoBreak}")]
+    public void Classify_BlankOrCommentWithOtherSpace_LeavesItOutAndReportsNothing(string text)
+    {
+        var source = new SourceText("story.pib", text);
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal([LineKind.EndOfFile], classified.Tokens.Select(token => token.Line.Kind));
+        Assert.Empty(classified.Diagnostics);
+    }
+
+    [Fact]
+    public void Classify_OtherSpaceInsideText_IsNotIndentation()
+    {
+        string line = $"mira: Done!{Spaces.Ideographic}Next.{Spaces.Ideographic}";
+        var source = new SourceText("story.pib", line);
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal([line, "EndOfFile"], Describe(source, classified));
+        Assert.Empty(classified.Diagnostics);
+    }
+
     private static string[] Describe(SourceText source, ClassifiedLines classified) =>
         [.. classified.Tokens.Select(token => token switch
         {

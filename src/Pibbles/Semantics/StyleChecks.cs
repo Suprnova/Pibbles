@@ -89,7 +89,7 @@ internal sealed partial class StyleChecks(SymbolTable symbols, ReferenceIndex re
     }
 
     /// <summary>Whether a line holds something, rather than being blank or a comment.</summary>
-    private bool HoldsContent(int line) => LineClassifier.KindOf(LineText(line).AsSpan().TrimStart(" \t")) is not (LineKind.Blank or LineKind.Comment or LineKind.Note);
+    private bool HoldsContent(int line) => LineClassifier.KindOf(Whitespace.TrimStart(LineText(line))) is not (LineKind.Blank or LineKind.Comment or LineKind.Note);
 
     /// <summary>The text from the start of a run's first item to the end of its last.</summary>
     private static TextSpan SpanOf(IReadOnlyList<InlineSyntax> content) => new(content[0].Span.Start, content[^1].Span.End - content[0].Span.Start);

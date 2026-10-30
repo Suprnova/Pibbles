@@ -54,7 +54,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 ## Lexical basics
 
-- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
+- **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. Only spaces and tabs indent: a line that starts with any other space, such as the ideographic space U+3000, is an error (PIB1006). A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
 - **Whitespace** between the parts of a line is a tab or any space separator (Unicode category Zs), such as the no-break space U+00A0 and the ideographic space U+3000. A Japanese input method types U+3000 for the space bar, and French typography puts a no-break space before a colon, so each separates exactly as a space does. Only [indentation](#line-classification) is narrower.
 - **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
@@ -509,7 +509,7 @@ W3C EBNF, the notation of the XML specification. `::=` defines a production, `|`
 source          ::= #xFEFF? line (newline line)*
 newline         ::= #xD #xA | #xA | #xD
 line            ::= indent content
-indent          ::= (#x20 | #x9)*
+indent          ::= ws*          /* only #x20 and #x9 indent; any other ws is an error */
 ws              ::= #x9 | /* any character in Unicode category Zs */
 content         ::= [^#xA#xD]*
 ```
@@ -536,7 +536,7 @@ A byte-order mark at the start of the file is skipped. Four or more slashes star
 
 **Indentation** turns widths into tokens:
 
-1. A stack of widths starts as `[0]`. A line's width is the number of characters in its `indent`. A file indents with spaces or with tabs, never both, so each character counts as one.
+1. A stack of widths starts as `[0]`. A line's width is the number of characters in its `indent`. A file indents with spaces or with tabs, never both, so each character counts as one. A line whose `indent` holds another `ws` is an error, and still indents by its width, so its block stays whole; it opens a block only under an option, an alternative or an `@` line, so a paragraph indent after text is one error. A line holding only `ws` is BLANK.
 2. BLANK, COMMENT and NOTE lines are skipped.
 3. A line wider than the top of the stack pushes its width and emits INDENT. A narrower line pops widths and emits a DEDENT for each until the top is no wider than the line. If the top then isn't equal to the line's width, the indentation is inconsistent: that's an error, and the line joins the innermost block it fits in.
 4. Every line ends with EOL. At the end of the file, each width left above 0 emits a DEDENT.

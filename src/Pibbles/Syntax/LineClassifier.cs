@@ -23,6 +23,7 @@ internal sealed class LineClassifier
     private readonly List<Diagnostic> diagnostics = [];
     private readonly Stack<int> widths = new([0]);
     private char? indentCharacter;
+    private LineKind lineAbove = LineKind.Blank;
 
     private LineClassifier(SourceText source) => this.source = source;
 
@@ -47,7 +48,7 @@ internal sealed class LineClassifier
         int start = number == 0 && source.Text.AsSpan(span.Start, span.Length) is [ByteOrderMark, ..] ? span.Start + 1 : span.Start;
         ReadOnlySpan<char> text = source.Text.AsSpan(start, span.End - start);
 
-        ReadOnlySpan<char> content = text.TrimStart(" \t");
+        ReadOnlySpan<char> content = Whitespace.TrimStart(text);
         var indentation = new TextSpan(start, text.Length - content.Length);
         var line = new SourceLine(number, KindOf(content), new(indentation.End, content.Length));
 
@@ -62,6 +63,7 @@ internal sealed class LineClassifier
 
         Indent(line, indentation);
         tokens.Add(new(LineTokenKind.Line, line));
+        lineAbove = line.Kind;
     }
 
     /// <summary>Classifies a line by how its content starts. A bare <c>-</c> is an alternative marker, like <c>- </c> followed by text.</summary>
@@ -79,14 +81,19 @@ internal sealed class LineClassifier
     /// <summary>
     /// Emits the indents or dedents before a line. A line that lines up with no block joins the innermost block it fits in.
     /// A line that mixes tabs and spaces still indents by its width, so a region pasted with the other character keeps its
-    /// structure, and only reports that it mixes them.
+    /// structure, and only reports that it mixes them. So does a line that starts with another kind of space, except that
+    /// it opens a block only under a line that can have one, so a paragraph indent after text is reported once.
     /// </summary>
     private void Indent(SourceLine line, TextSpan indentation)
     {
-        bool mixed = ReportMixedIndentation(indentation);
+        bool nonIndenting = ReportNonIndentingSpace(indentation);
+        bool mixed = nonIndenting || ReportMixedIndentation(indentation);
 
         if (indentation.Length > widths.Peek())
         {
+            if (nonIndenting && lineAbove is not (LineKind.Option or LineKind.Dash or LineKind.At))
+                return;
+
             widths.Push(indentation.Length);
             tokens.Add(new(LineTokenKind.Indent, line));
             return;
@@ -98,6 +105,26 @@ internal sealed class LineClassifier
         if (indentation.Length != widths.Peek() && !mixed)
             Report(DiagnosticCatalog.InconsistentIndentation, indentation);
     }
+
+    /// <summary>Reports a line whose indentation holds a space separator other than a space or a tab, which doesn't indent.</summary>
+    private bool ReportNonIndentingSpace(TextSpan indentation)
+    {
+        ReadOnlySpan<char> text = source.Text.AsSpan(indentation.Start, indentation.Length);
+        int index = text.IndexOfAnyExcept(' ', '\t');
+        if (index < 0)
+            return false;
+
+        Report(DiagnosticCatalog.NonIndentingSpace, indentation, Describe(text[index]));
+        return true;
+    }
+
+    private static string Describe(char space) => (int)space switch
+    {
+        0x00A0 => "U+00A0 (a no-break space)",
+        0x202F => "U+202F (a narrow no-break space)",
+        0x3000 => "U+3000 (an ideographic space)",
+        _ => $"U+{(int)space:X4}",
+    };
 
     /// <summary>Reports a line that indents differently from the file. The first indented line decides how the file indents.</summary>
     private bool ReportMixedIndentation(TextSpan indentation)
