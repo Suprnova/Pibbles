@@ -151,7 +151,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5040 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 | PIB5050 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
 
-The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment on its own line above it, or for a whole file by one above the file's first node.
+The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment at the end of that line or on its own line above it, or for a whole file by one on its own line above the file's first node.
 
 ## Explanations
 

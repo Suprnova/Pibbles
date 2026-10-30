@@ -4,9 +4,10 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// The <c>// pibbles-ignore</c> comments in a file, such as <c>// pibbles-ignore PIB5003 PIB5010</c>. One on its own line
-/// silences the codes it lists on the next line that isn't a comment, and one above the file's first node silences them
-/// in the whole file. Only the style and spelling categories can be silenced, since a mistake gets fixed, not hidden.
+/// The <c>// pibbles-ignore</c> comments in a file, such as <c>// pibbles-ignore PIB5003 PIB5010</c>. One at the end of a
+/// line silences the codes it lists on that line. One on its own line silences them on the next line that isn't a
+/// comment, and one above the file's first node silences them in the whole file. Only the style and spelling categories
+/// can be silenced, since a mistake gets fixed, not hidden.
 /// </summary>
 internal sealed class Suppressions
 {
@@ -23,24 +24,26 @@ internal sealed class Suppressions
         {
             Comment comment = tree.Comments[i];
             int line = tree.Source.GetLinePosition(comment.Span.Start).Line;
-            if (!comment.OnOwnLine || Codes(comment.Text) is not [_, ..] codes)
+            if (Codes(comment.Text) is not [_, ..] codes)
                 continue;
 
-            if (line < firstNode)
-            {
+            if (!comment.OnOwnLine)
+                suppressions.Silence(line, codes);
+            else if (line < firstNode)
                 suppressions.everywhere.UnionWith(codes);
-            }
             else
-            {
-                int target = NextLine(tree, i, line);
-                if (!suppressions.byLine.TryGetValue(target, out HashSet<string>? silenced))
-                    suppressions.byLine[target] = silenced = [];
-
-                silenced.UnionWith(codes);
-            }
+                suppressions.Silence(NextLine(tree, i, line), codes);
         }
 
         return suppressions;
+    }
+
+    private void Silence(int line, string[] codes)
+    {
+        if (!byLine.TryGetValue(line, out HashSet<string>? silenced))
+            byLine[line] = silenced = [];
+
+        silenced.UnionWith(codes);
     }
 
     /// <summary>Whether one of the file's <c>// pibbles-ignore</c> comments silences a diagnostic.</summary>
