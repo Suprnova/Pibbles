@@ -451,11 +451,5 @@ internal sealed partial class Parser
     private bool AtModifierStart() =>
         inOption && AtInline('@') && inlinePosition + 1 < inlineEnd && Identifiers.IsStart(source.Text, inlinePosition + 1);
 
-    private int SkipWhitespace(int position)
-    {
-        while (position < inlineEnd && source.Text[position] is ' ' or '\t')
-            position++;
-
-        return position;
-    }
+    private int SkipWhitespace(int position) => Whitespace.Skip(source.Text, position, inlineEnd);
 }

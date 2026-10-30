@@ -268,9 +268,7 @@ internal sealed partial class Parser
     private AlternativeSyntax ParseAlternative(SourceLine line)
     {
         int start = line.Content.Start;
-        int after = start + 1;
-        while (after < line.Content.End && source.Text[after] is ' ' or '\t')
-            after++;
+        int after = Whitespace.Skip(source.Text, start + 1, line.Content.End);
 
         var content = new TextSpan(after, line.Content.End - after);
         var inner = new SourceLine(line.Number, LineClassifier.KindOf(source.Text.AsSpan(content.Start, content.Length)), content);

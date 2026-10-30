@@ -23,8 +23,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     public Token Next()
     {
         int whitespace = Position;
-        while (Position < span.End && text[Position] is ' ' or '\t')
-            Position++;
+        Position = Whitespace.Skip(text, Position, span.End);
 
         bool touching = Position == whitespace;
         int start = Position;

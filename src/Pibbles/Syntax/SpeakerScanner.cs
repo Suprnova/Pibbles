@@ -33,7 +33,7 @@ internal static class SpeakerScanner
         if (!hasName && !(start < end && text[start] is '('))
             return null;
 
-        int position = SkipWhitespace(text, nameEnd, end);
+        int position = Whitespace.Skip(text, nameEnd, end);
         TextSpan? parentheses = null, extra = null;
         TextSpan[] values = [];
         if (position < end && text[position] is '(')
@@ -45,12 +45,12 @@ internal static class SpeakerScanner
             parentheses = new TextSpan(position, close + 1 - position);
             values = ReadValues(text, position + 1, close);
 
-            int extraStart = SkipWhitespace(text, close + 1, end);
+            int extraStart = Whitespace.Skip(text, close + 1, end);
             int extraEnd = hasName ? SkipExtra(text, extraStart, end) : extraStart;
             if (extraEnd > extraStart)
                 extra = new TextSpan(extraStart, extraEnd - extraStart);
 
-            position = SkipWhitespace(text, extraEnd, end);
+            position = Whitespace.Skip(text, extraEnd, end);
         }
 
         if (position >= end || text[position] is not ':')
@@ -67,7 +67,7 @@ internal static class SpeakerScanner
     private static TextSpan[] ReadValues(string text, int start, int end)
     {
         List<TextSpan> values = [];
-        int position = SkipWhitespace(text, start, end);
+        int position = Whitespace.Skip(text, start, end);
         while (true)
         {
             int valueEnd = Identifiers.Skip(text, position, end);
@@ -75,14 +75,14 @@ internal static class SpeakerScanner
                 return [];
 
             values.Add(new(position, valueEnd - position));
-            position = SkipWhitespace(text, valueEnd, end);
+            position = Whitespace.Skip(text, valueEnd, end);
             if (position == end)
                 return [.. values];
 
             if (text[position] is not ',')
                 return [];
 
-            position = SkipWhitespace(text, position + 1, end);
+            position = Whitespace.Skip(text, position + 1, end);
         }
     }
 
@@ -112,18 +112,9 @@ internal static class SpeakerScanner
                 break;
             }
 
-            position = SkipWhitespace(text, extraEnd, end);
+            position = Whitespace.Skip(text, extraEnd, end);
         }
 
         return extraEnd;
-    }
-
-    private static int SkipWhitespace(string text, int start, int end)
-    {
-        int position = start;
-        while (position < end && text[position] is ' ' or '\t')
-            position++;
-
-        return position;
     }
 }
