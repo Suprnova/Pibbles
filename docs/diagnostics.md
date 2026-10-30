@@ -1451,6 +1451,8 @@ mira : This line has a space before the colon.
 
 Write `mira (happy):`, `mira (happy, shake):` and `mira:`.
 
+A speaker with a full-width colon keeps its punctuation's width, with no spaces: `mira（happy、shake）：`. The colon decides, so `mira（happy）:` is tidied to `mira (happy):`.
+
 ### PIB5034
 
 **An option too long to read in one go** crowds the choice. Markup and pacing don't count, and a value shown with `{…}` counts nothing, since its length isn't known. `pibbles_max_option_length` (80) in `.editorconfig` sets the limit.

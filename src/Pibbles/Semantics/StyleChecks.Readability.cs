@@ -169,7 +169,10 @@ internal sealed partial class StyleChecks
         _ => $"{count} tabs",
     };
 
-    /// <summary>PIB5033: a speaker written other than <c>name:</c> or <c>name (a, b):</c>.</summary>
+    /// <summary>
+    /// PIB5033: a speaker written other than <c>name:</c> or <c>name (a, b):</c>, or <c>name：</c> or <c>name（a、b）：</c> when its
+    /// colon is full-width.
+    /// </summary>
     private void CheckSpeakerSpacing(TextLineSyntax line)
     {
         if (line.Speaker is not { } speaker)
@@ -179,8 +182,11 @@ internal sealed partial class StyleChecks
         if (SpeakerScanner.Scan(Tree.Source.Text, speaker.Span.Start, lineSpan.End) is not { IsSpeaker: true } prefix)
             return;
 
-        string values = speaker.Values.Count > 0 ? $"({string.Join(", ", speaker.Values.Select(value => value.Text))})" : "";
-        string usual = $"{speaker.Name?.Text} {values}".Trim() + ":";
+        (string gap, string open, string separator, string close, string colon) = Tree.Source.Text[prefix.Colon] is '：'
+            ? ("", "（", "、", "）", "：")
+            : (" ", "(", ", ", ")", ":");
+        string values = speaker.Values.Count > 0 ? $"{open}{string.Join(separator, speaker.Values.Select(value => value.Text))}{close}" : "";
+        string usual = $"{speaker.Name?.Text}{gap}{values}".Trim() + colon;
         var written = new TextSpan(speaker.Span.Start, prefix.Colon + 1 - speaker.Span.Start);
         if (TextOf(written) != usual)
             Report(DiagnosticCatalog.SpeakerSpacing, written, usual);

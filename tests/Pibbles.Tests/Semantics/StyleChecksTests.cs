@@ -35,6 +35,22 @@ public class StyleChecksTests
     }
 
     [Theory]
+    [InlineData("mira(happy,shake): Hi.\n", "Write `mira (happy, shake):`.")]
+    [InlineData("mira : Hi.\n", "Write `mira:`.")]
+    [InlineData("mira （ happy ， shake ）： Hi.\n", "Write `mira（happy、shake）：`.")]
+    [InlineData("mira ：Hi.\n", "Write `mira：`.")]
+    [InlineData("mira（happy）: Hi.\n", "Write `mira (happy):`.")]
+    [InlineData("mira (happy)：Hi.\n", "Write `mira（happy）：`.")]
+    public void Create_SpeakerSpacing_SuggestsTheFormOfTheColonsWidth(string line, string help)
+    {
+        var source = new SourceText("story.pib", $"@channel pose\n@channel effect: still, shake\n@actor mira\n    name: Mira\n    pose: neutral, happy\n\n== a.b\n{line}");
+
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5033");
+
+        Assert.Equal(help, diagnostic.Help);
+    }
+
+    [Theory]
     [InlineData("Wait.{w}\n", "PIB5011", "This wait does nothing, because the end of the line already waits for a click.")]
     [InlineData("Wait.{w}{page}Done.\n", "PIB5017", "This wait does nothing, because the `{page}` after it already waits.")]
     [InlineData("Wait.{pause 0.2}{pause 0.3} Done.\n", "PIB5018", "This pause comes right after another one, so the two could be one.")]

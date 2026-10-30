@@ -491,7 +491,7 @@ Compliant:
 
 **Level:** hint
 
-Flags a speaker prefix with spacing other than `name (a, b):`: one space before the parenthesis, a comma and a space between values, and none inside the parentheses or before the colon. Any spacing works, but one form keeps scripts easy to scan.
+Flags a speaker prefix with spacing other than `name (a, b):`: one space before the parenthesis, a comma and a space between values, and none inside the parentheses or before the colon. A prefix with a full-width colon keeps its punctuation's width and has no spaces at all: `name（a、b）：`. The colon decides, so `name（a）:` is tidied to `name (a):`. Any spacing works, but one form keeps scripts easy to scan.
 
 Non-compliant:
 
@@ -500,6 +500,7 @@ mira(happy): This line has no space before the values.
 mira (happy,shake): This line has no space after the comma.
 mira ( happy ): This line has spaces inside the parentheses.
 mira : This line has a space before the colon.
+mira （happy 、shake）：This line has spaces around full-width punctuation.
 ```
 
 Compliant:
@@ -507,6 +508,7 @@ Compliant:
 ```
 mira (happy): This line uses the usual spacing.
 mira: So does this one.
+mira（happy、shake）：This line uses the usual full-width spacing.
 ```
 
 ---
