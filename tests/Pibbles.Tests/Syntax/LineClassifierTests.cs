@@ -44,13 +44,37 @@ public class LineClassifierTests
     }
 
     [Fact]
-    public void Classify_ByteOrderMark_IsSkipped()
+    public void Classify_ByteOrderMark_ReportsItAndClassifiesTheRest()
     {
         var source = new SourceText("story.pib", "\uFEFF== kitchen.door");
 
         ClassifiedLines classified = LineClassifier.Classify(source);
 
         Assert.Equal((LineKind.Header, new TextSpan(1, 15)), (classified.Tokens[0].Line.Kind, classified.Tokens[0].Line.Content));
+        Diagnostic diagnostic = Assert.Single(classified.Diagnostics);
+        Assert.Equal(("PIB1007", new TextSpan(0, 1)), (diagnostic.Code, diagnostic.Location.Span));
+    }
+
+    [Fact]
+    public void Classify_ByteOrderMarkAlone_ReportsItAndIsBlank()
+    {
+        var source = new SourceText("story.pib", "\uFEFF");
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal([LineKind.EndOfFile], classified.Tokens.Select(token => token.Line.Kind));
+        Assert.Equal([("PIB1007", 0)], Codes(classified));
+    }
+
+    [Fact]
+    public void Classify_ByteOrderMarkAfterTheFirstCharacter_IsText()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n\uFEFFmira: Hm.");
+
+        ClassifiedLines classified = LineClassifier.Classify(source);
+
+        Assert.Equal(["== kitchen.door", "\uFEFFmira: Hm.", "EndOfFile"], Describe(source, classified));
+        Assert.Empty(classified.Diagnostics);
     }
 
     [Fact]

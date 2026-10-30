@@ -12,7 +12,7 @@ public class DiagnosticFixtureTests
     [MemberData(nameof(Fixtures))]
     public void Fixture_ProducesExactlyMarkedDiagnostics(string fixture)
     {
-        string text = File.ReadAllText(Path.Combine(FixtureFile.Directory, fixture));
+        string text = FixtureFile.Read(Path.Combine(FixtureFile.Directory, fixture));
         var source = new SourceText(fixture, text);
 
         string annotated = FixtureFile.Annotate(source, Diagnose(fixture, source));

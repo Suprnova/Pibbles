@@ -42,6 +42,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1004 | Error | I expected indented lines under `@if $door_open`. | Put the lines it controls below it, indented. |
 | PIB1005 | Error | `///` notes aren't supported yet. | For a comment, use `//`. |
 | PIB1006 | Error | This line starts with U+3000 (an ideographic space), which doesn't indent. | Indent with spaces or tabs. A space at the start of a line doesn't show in the game, since Pibbles trims it, so delete it if you only meant to space the text. |
+| PIB1007 | Error | This file starts with a byte-order mark (U+FEFF), which isn't part of the text. | Delete this first character, or save the file as UTF-8 without a byte-order mark. A program that reads story files should decode them as UTF-8, which removes it. |
 | PIB1010 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
 | PIB1011 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
 | PIB1012 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
@@ -227,6 +228,16 @@ Write it as an ordinary comment for now: `// Mira is joking here.`
 The second line starts with U+3000 twice (shown as `→`), which doesn't indent. Pibbles still reads the line as indented by its width, so it stays under the option and the choice stays whole, and reports it once. Indent with spaces or tabs: Tab and Enter do it under every input method, while the space bar types U+3000 under a Japanese one.
 
 A space at the start of a line isn't text either. Pibbles trims it from what the line shows, so a paragraph indent written that way, as Japanese prose does, never reaches the player. A text box that indents its narration does it for every line, in every language.
+
+### PIB1007
+
+**A file's text doesn't start with a byte-order mark.** Some editors save UTF-8 files with a few extra bytes at the start, the byte-order mark, and a program that reads the file as UTF-8 text removes them. If the character (U+FEFF) reaches Pibbles, the program that read the file didn't decode it, and every column on the first line would be one too high next to what an editor shows. It's invisible, so a story with one looks fine.
+
+```text
+﻿== kitchen.door
+```
+
+The line above starts with U+FEFF, which is invisible. Pibbles reads the rest of the line as usual, so this is the only problem reported. If you're writing a program that reads story files, decode them as UTF-8, for example with `File.ReadAllText` in .NET. If you're saving the file, choose UTF-8 without a byte-order mark.
 
 ### PIB1010
 

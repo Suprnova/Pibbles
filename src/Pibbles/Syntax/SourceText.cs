@@ -6,7 +6,8 @@ namespace Pibbles.Syntax;
 /// One source file's text, with a line map that turns character positions into lines and columns.
 /// </summary>
 /// <remarks>
-/// The core never reads files. Hosts pass each file in as a path and its text. A line ends at
+/// The core never reads files. Hosts pass each file in as a path and its text, decoded from UTF-8, which removes
+/// a leading byte-order mark. One that reaches the text is reported as an error. A line ends at
 /// <c>\r\n</c>, <c>\n</c> or <c>\r</c>.
 /// </remarks>
 /// <param name="path">

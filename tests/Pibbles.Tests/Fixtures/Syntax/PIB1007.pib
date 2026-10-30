@@ -1,0 +1,9 @@
+﻿// A byte-order mark at the start of the text is an error. The tool that reads a file decodes it away.
+// PIB1007
+
+== fixture.bom
+mira: Hello.
+
+// Must not trigger
+
+﻿mira: Only the start of the text counts.

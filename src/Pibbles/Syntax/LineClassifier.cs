@@ -45,7 +45,13 @@ internal sealed class LineClassifier
     private void Read(int number)
     {
         TextSpan span = source.GetLineSpan(number);
-        int start = number == 0 && source.Text.AsSpan(span.Start, span.Length) is [ByteOrderMark, ..] ? span.Start + 1 : span.Start;
+        int start = span.Start;
+        if (number == 0 && source.Text.StartsWith(ByteOrderMark))
+        {
+            Report(DiagnosticCatalog.ByteOrderMark, new(start, 1));
+            start++;
+        }
+
         ReadOnlySpan<char> text = source.Text.AsSpan(start, span.End - start);
 
         ReadOnlySpan<char> content = Whitespace.TrimStart(text);

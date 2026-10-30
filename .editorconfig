@@ -6,6 +6,9 @@ end_of_line = lf
 insert_final_newline = true
 indent_style = space
 
+[tests/Pibbles.Tests/Fixtures/Syntax/PIB1007.pib]
+charset = utf-8-bom
+
 [*.cs]
 indent_size = 4
 

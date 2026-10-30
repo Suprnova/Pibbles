@@ -22,6 +22,9 @@ internal static partial class FixtureFile
 
     public static IEnumerable<string> FindAll() => System.IO.Directory.EnumerateFiles(Directory, "*.pib", SearchOption.AllDirectories);
 
+    /// <summary>Reads a fixture's text. Unlike <see cref="File.ReadAllText(string)"/>, it keeps a leading byte-order mark, which PIB1007's fixture needs.</summary>
+    public static string Read(string path) => new UTF8Encoding().GetString(File.ReadAllBytes(path));
+
     public static IEnumerable<string> MarkedCodes(string text) => Marker().Matches(text).Select(match => match.Groups["code"].Value);
 
     /// <summary>Rewrites a fixture's markers to show the given diagnostics, with line breaks normalized to <c>\n</c>.</summary>

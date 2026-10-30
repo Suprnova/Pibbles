@@ -30,7 +30,7 @@ rex: {if $bravery > 2}Maybe stop hitting it?{else}Well, that didn't work.{/if}
 
 ## Files and structure
 
-- Source files use the `.pib` extension and are UTF-8. Any line-ending style is accepted.
+- Source files use the `.pib` extension and are UTF-8, with or without a byte-order mark, which belongs to the encoding and not to the text. Any line-ending style is accepted.
 - A story is every `.pib` file under the story folder, compiled together. Names are global across files, and file names and folders carry no meaning to the language.
 - A file has two regions: **declarations** first, then **nodes**. The node region starts at the first node header (`==`). A file may contain only declarations or only nodes. An optional [`@prefix`](#prefixes) line comes before both.
 - An optional `pibbles.json` in the project root holds project settings, such as `storyFolders`, the folders the story is in (`story` by default). Without it, defaults apply. `pibbles init` creates it, and the [tooling design](../tooling.md#project-settings) lists every setting.
@@ -506,7 +506,7 @@ W3C EBNF, the notation of the XML specification. `::=` defines a production, `|`
 ### Lines
 
 ```ebnf
-source          ::= #xFEFF? line (newline line)*
+source          ::= line (newline line)*
 newline         ::= #xD #xA | #xA | #xD
 line            ::= indent content
 indent          ::= ws*          /* only #x20 and #x9 indent; any other ws is an error */
@@ -532,7 +532,7 @@ The parser reads two classes by context, which the classifier doesn't know:
 - **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. A `-` with nothing after it but a comment has no content: its alternative is the block below it. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
 - **TEXT** inside an `@actor` block is an actor property.
 
-A byte-order mark at the start of the file is skipped. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error. The same counts apply anywhere else on a line: a run of two slashes, or of four or more, starts a comment, and a run of exactly three is a NOTE, an error in v1.
+A file's text doesn't start with a byte-order mark: the tool that reads the file removes it when it decodes the file, and one that reaches the parser is an error (PIB1007), after which the line is read without it. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error. The same counts apply anywhere else on a line: a run of two slashes, or of four or more, starts a comment, and a run of exactly three is a NOTE, an error in v1.
 
 **Indentation** turns widths into tokens:
 

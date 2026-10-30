@@ -58,6 +58,13 @@ public static class DiagnosticCatalog
         "This line starts with {0}, which doesn't indent.",
         help: "Indent with spaces or tabs. A space at the start of a line doesn't show in the game, since Pibbles trims it, so delete it if you only meant to space the text.");
 
+    /// <summary>PIB1007: the text starts with a byte-order mark, which the host should have removed when it decoded the file.</summary>
+    public static DiagnosticDescriptor ByteOrderMark { get; } = new(
+        "PIB1007",
+        DiagnosticSeverity.Error,
+        "This file starts with a byte-order mark (U+FEFF), which isn't part of the text.",
+        help: "Delete this first character, or save the file as UTF-8 without a byte-order mark. A program that reads story files should decode them as UTF-8, which removes it.");
+
     /// <summary>What PIB1010 and PIB1013's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
     public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
 
@@ -933,6 +940,7 @@ public static class DiagnosticCatalog
         MissingBlock,
         UnsupportedNote,
         NonIndentingSpace,
+        ByteOrderMark,
         UnclosedMarkup,
         MarkupOutOfOrder,
         UnopenedMarkup,
