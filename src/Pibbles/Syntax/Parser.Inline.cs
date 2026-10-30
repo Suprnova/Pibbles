@@ -17,6 +17,9 @@ internal sealed partial class Parser
     private List<string> openMarkup = [];
     private (string Name, TextSpan Span, int End)? pendingClose;
 
+    /// <summary>The run of text being read. Every run is flushed before reading moves into a nested span or branch, so they all share it.</summary>
+    private readonly StringBuilder inlineText = new();
+
     /// <summary>Parses the inline text of one line, from <paramref name="start"/> to where its tags or modifiers begin, with trailing whitespace trimmed.</summary>
     private List<InlineSyntax> ParseInlineText(int start, int end, bool option)
     {
@@ -53,7 +56,6 @@ internal sealed partial class Parser
     private List<InlineSyntax> ParseInlineItems()
     {
         List<InlineSyntax> items = [];
-        var text = new StringBuilder();
         int textStart = inlinePosition;
 
         while (inlinePosition < inlineEnd && !AtTagStart() && !AtModifierStart())
@@ -61,7 +63,7 @@ internal sealed partial class Parser
             char c = source.Text[inlinePosition];
             if (c is '\\')
             {
-                ReadEscape(text);
+                ReadEscape();
                 continue;
             }
 
@@ -70,7 +72,7 @@ internal sealed partial class Parser
                 if (c is '\uFFFC')
                     Fail(DiagnosticCatalog.ObjectReplacementCharacter, new(inlinePosition, 1));
 
-                text.Append(c);
+                inlineText.Append(c);
                 inlinePosition++;
                 continue;
             }
@@ -78,7 +80,7 @@ internal sealed partial class Parser
             if (c is '{' && BraceKeyword().Word is "elif" or "else" or "/")
                 break;
 
-            Flush(items, text, textStart);
+            Flush(items, textStart);
             if (c is '[' && IsMarkupClose())
             {
                 if (ReadMarkupClose())
@@ -92,20 +94,20 @@ internal sealed partial class Parser
             textStart = inlinePosition;
         }
 
-        Flush(items, text, textStart);
+        Flush(items, textStart);
         return items;
     }
 
-    private void Flush(List<InlineSyntax> items, StringBuilder text, int textStart)
+    private void Flush(List<InlineSyntax> items, int textStart)
     {
-        if (text.Length == 0)
+        if (inlineText.Length == 0)
             return;
 
-        items.Add(new TextRunSyntax(text.ToString()) { Span = new(textStart, inlinePosition - textStart) });
-        text.Clear();
+        items.Add(new TextRunSyntax(inlineText.ToString()) { Span = new(textStart, inlinePosition - textStart) });
+        inlineText.Clear();
     }
 
-    private void ReadEscape(StringBuilder text)
+    private void ReadEscape()
     {
         int start = inlinePosition++;
         if (inlinePosition >= inlineEnd)
@@ -119,7 +121,7 @@ internal sealed partial class Parser
         if (!CodeLexer.IsEscapable(source.Text, inlinePosition))
             Fail(DiagnosticCatalog.InvalidEscape, new(start, length + 1), "\\" + escaped);
 
-        text.Append(escaped);
+        inlineText.Append(escaped);
         inlinePosition += length;
     }
 
