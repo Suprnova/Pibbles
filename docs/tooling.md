@@ -101,7 +101,7 @@ stub has_item = false
 - It prints `Added 27 IDs in 1 file.` (`Added 26 IDs and replaced 1 in 1 file.`, with the replacements listed under it), or `Every line already has an ID.`, so running it twice changes nothing the second time.
 - **`pibbles init`** gives its example story IDs the same way, so a new project passes `pibbles check --warnaserror`.
 
-The core does the work in `LineIds.AddMissing`, which returns the text to insert and touches no files, so the language server can offer the same as a code action.
+The core does the work in `LineIds.Assign`, which returns the edits to make and touches no files, so the language server can offer the same as a code action.
 
 ## VS Code extension
 
