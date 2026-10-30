@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using Pibbles.Diagnostics;
 
@@ -176,7 +177,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     {
         int start = Position++;
         Position += char.IsSurrogatePair(text, Position) ? 2 : 1;
-        if (!IsEscapable(text[start + 1]))
+        if (!IsEscapable(text, start + 1))
             Report(DiagnosticCatalog.InvalidEscape, start, text[start..Position]);
     }
 
@@ -239,8 +240,14 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
     private static bool IsDigit(char c) => char.IsAsciiDigit(c);
 
-    /// <summary>ASCII punctuation, the characters a backslash can make literal.</summary>
-    internal static bool IsEscapable(char c) => char.IsAscii(c) && (char.IsPunctuation(c) || char.IsSymbol(c));
+    /// <summary>Whether the code point at <paramref name="index"/> is punctuation or a symbol, in any script: what a backslash can make literal. U+FFFC, which stands for an icon, is never literal.</summary>
+    internal static bool IsEscapable(string text, int index) =>
+        text[index] is not '\uFFFC'
+        && CharUnicodeInfo.GetUnicodeCategory(text, index) is
+            UnicodeCategory.ConnectorPunctuation or UnicodeCategory.DashPunctuation or UnicodeCategory.OpenPunctuation
+            or UnicodeCategory.ClosePunctuation or UnicodeCategory.InitialQuotePunctuation or UnicodeCategory.FinalQuotePunctuation
+            or UnicodeCategory.OtherPunctuation or UnicodeCategory.MathSymbol or UnicodeCategory.CurrencySymbol
+            or UnicodeCategory.ModifierSymbol or UnicodeCategory.OtherSymbol;
 
     private void Report(DiagnosticDescriptor descriptor, int start, params object?[] arguments) =>
         diagnostics.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));

@@ -285,7 +285,7 @@ A comment runs to the end of its line, so a closer written after a `//` is part 
 
 ### PIB1014
 
-**A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only ASCII punctuation can follow a backslash. A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
+**A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only punctuation and symbols can follow a backslash, in any script (`\：` is fine). A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
 
 ```text
 @set $path = "C:\Users\mira"

@@ -182,6 +182,8 @@ public class CodeLexerTests
     [InlineData("\"\\n\"", "\\n")]
     [InlineData("\"\\a\"", "\\a")]
     [InlineData("\"\\ \"", "\\ ")]
+    [InlineData("\"\\あ\"", "\\あ")]
+    [InlineData($"\"\\{Spaces.Ideographic}\"", $"\\{Spaces.Ideographic}")]
     public void Next_EscapeBeforeNonPunctuation_Reports(string text, string escape)
     {
         Describe(text);
@@ -196,6 +198,28 @@ public class CodeLexerTests
         Describe("\"\\\" \\\\ \\# \\{ \\$ \\~ \\_\"");
 
         Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("：")]
+    [InlineData("＠")]
+    [InlineData("。")]
+    [InlineData("￥")]
+    [InlineData("「")]
+    [InlineData("\U0001F600")]
+    public void Next_EscapedNonAsciiPunctuationOrSymbol_ReportsNothing(string escaped)
+    {
+        Describe($"\"\\{escaped}\"");
+
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Next_EscapedObjectReplacementCharacter_Reports()
+    {
+        Describe($"\"\\{(char)0xFFFC}\"");
+
+        Assert.Equal("PIB1014", Assert.Single(diagnostics).Code);
     }
 
     private string Describe(string text)

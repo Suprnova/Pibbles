@@ -13,9 +13,12 @@ mira: Ends with a backslash\
 //                         ^ PIB1014
 -> Option \t text
 //        ^^ PIB1014
+mira: A \あ escape.
+//      ^^ PIB1014
 
 // Must not trigger
 
 @set $x = "A \"quote\" and a backslash \\ inside."
 @set $x = "\# \{ \[ \: \@ \$ \~"
 mira: \[ \] \{ \} \# \: \@ \\ \" \~
+mira: \： \＠ \。 \「 \￥

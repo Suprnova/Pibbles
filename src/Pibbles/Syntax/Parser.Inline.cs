@@ -116,7 +116,7 @@ internal sealed partial class Parser
 
         int length = char.IsSurrogatePair(source.Text, inlinePosition) ? 2 : 1;
         string escaped = source.Text.Substring(inlinePosition, length);
-        if (!CodeLexer.IsEscapable(escaped[0]))
+        if (!CodeLexer.IsEscapable(source.Text, inlinePosition))
             Fail(DiagnosticCatalog.InvalidEscape, new(start, length + 1), "\\" + escaped);
 
         text.Append(escaped);
