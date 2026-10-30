@@ -145,6 +145,27 @@ public class TranscriptTests
     }
 
     [Fact]
+    public void Play_StoryThatLoopsShowingLines_FailsNamingTheLimitAndTheLastLine()
+    {
+        Story story = Compile("== t.loop\nAgain. #id:aaaaaa\n@jump t.loop\n");
+
+        var exception = Assert.Throws<TranscriptException>(() => TranscriptPlayer.Play(story, "start t.loop\n"));
+
+        Assert.Equal($"The run passed {TranscriptPlayer.StepLimit} steps without ending. It started at `t.loop` and was last at line #aaaaaa. A story that shows a line every time round a loop never ends.", exception.Message);
+    }
+
+    [Fact]
+    public void Play_StoryThatLoopsWithAnInput_StopsWhenTheInputDoes()
+    {
+        Story story = Compile("== t.loop\nAgain. #id:aaaaaa\n@jump t.loop\n");
+        var walk = new TranscriptWalk(_ => throw new InvalidOperationException(), TranscriptPlayer.StepLimit + 5);
+
+        string transcript = TranscriptPlayer.Play(story, "start t.loop\n", input: walk);
+
+        Assert.Equal(TranscriptPlayer.StepLimit + 5, transcript.Split("  narration: Again.").Length - 1);
+    }
+
+    [Fact]
     public void Play_ScriptWithoutStart_Fails()
     {
         Story story = Compile("== t.n\n");

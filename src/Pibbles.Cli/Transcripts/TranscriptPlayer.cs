@@ -17,6 +17,9 @@ namespace Pibbles.Cli.Transcripts;
 /// </remarks>
 internal sealed class TranscriptPlayer
 {
+    /// <summary>How many steps a run without an input may take before it fails, since a story that loops while showing lines never ends.</summary>
+    internal const int StepLimit = 10_000;
+
     private const string Indent = "  ";
 
     private readonly Story story;
@@ -29,6 +32,7 @@ internal sealed class TranscriptPlayer
     private readonly List<string> supplied = [];
     private readonly HashSet<string> called = [];
     private int started;
+    private int steps;
     private StoryState state = null!;
     private DialogueRunner runner = null!;
 
@@ -62,7 +66,7 @@ internal sealed class TranscriptPlayer
     /// <param name="scriptText">The script, or an earlier transcript.</param>
     /// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
     /// <param name="input">Answers what the script doesn't, for tests that walk a story at random.</param>
-    /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, or the story fails.</exception>
+    /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, the story fails, or a run without an input passes <see cref="StepLimit"/> steps.</exception>
     public static string Play(Story story, string scriptText, ISet<Type>? kinds = null, IPlayInput? input = null)
     {
         var steps = new StringWriter();
@@ -92,7 +96,7 @@ internal sealed class TranscriptPlayer
 
     /// <summary>Plays to the end, or until the input stops it. Call it once.</summary>
     /// <returns>Whether the run reached its end, as opposed to its input stopping it.</returns>
-    /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, or the story fails.</exception>
+    /// <exception cref="TranscriptException">The script can't be played: a function has no stub, a choice has no answer, the story fails, or a run without an input passes <see cref="StepLimit"/> steps.</exception>
     public bool Run()
     {
         HostFunctions functions = Stubs();
@@ -112,6 +116,9 @@ internal sealed class TranscriptPlayer
         {
             if (Next() is not { } step)
                 return false;
+
+            if (input is null && ++steps > StepLimit)
+                throw new TranscriptException($"The run passed {StepLimit} steps without ending. It started at `{script.Starts[started - 1]}` and was last at {(step is LineStep line ? $"line #{line.Line.Id}" : "a step that isn't a line")}. A story that shows a line every time round a loop never ends.");
 
             PrintVariableChanges();
             PrintWarnings();

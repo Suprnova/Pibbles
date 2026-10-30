@@ -26,6 +26,10 @@ public sealed partial class PlayTests : IDisposable
 
         == t.other
         mira: Elsewhere. #id:l5
+
+        == t.loop
+        Again. #id:aaaaaa
+        @jump t.loop
         """;
 
     private static readonly string Kitchen = Path.Combine(RepositoryRoot.Path, "samples", "kitchen");
@@ -133,6 +137,17 @@ public sealed partial class PlayTests : IDisposable
 
         Assert.Equal(Play.Failed, exitCode);
         Assert.Contains(message, error.ToString());
+    }
+
+    [Fact]
+    public void Play_ScriptThatNeverEnds_StopsAtTheStepLimitAndFails()
+    {
+        string script = Write("run.script", "start t.loop\nstub price = 1\nstub lucky = true\n");
+
+        int exitCode = Run(new(".", Script: script));
+
+        Assert.Equal(Play.Failed, exitCode);
+        Assert.StartsWith("The run passed 10000 steps without ending. It started at `t.loop`", error.ToString());
     }
 
     [Fact]

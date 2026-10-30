@@ -14,7 +14,7 @@ public sealed class TestCommandTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(root.FullName, "story"));
         Directory.CreateDirectory(Path.Combine(root.FullName, "transcripts", "nested"));
-        File.WriteAllText(Path.Combine(root.FullName, "story", "story.pib"), "@actor mira\n    name: Mira\n\n== t.n\nmira: Hello. #id:l1\n");
+        File.WriteAllText(Path.Combine(root.FullName, "story", "story.pib"), "@actor mira\n    name: Mira\n\n== t.n\nmira: Hello. #id:l1\n\n== t.loop\nAgain. #id:aaaaaa\n@jump t.loop\n");
     }
 
     public void Dispose()
@@ -60,6 +60,19 @@ public sealed class TestCommandTests : IDisposable
 
         Assert.Equal(Test.Failed, exitCode);
         Assert.StartsWith("FAILED transcripts/hello.transcript: The story has no node called `t.nope`.", output.ToString());
+    }
+
+    [Fact]
+    public void Run_TranscriptWhoseScriptNeverEnds_FailsNamingTheLimitAndRunsTheRest()
+    {
+        WriteTranscript("hello.transcript", Transcript);
+        WriteTranscript("loop.transcript", "start t.loop\n");
+
+        int exitCode = Test.Run(".", root.FullName, update: false, output, error, color: false);
+
+        Assert.Equal(Test.Failed, exitCode);
+        Assert.StartsWith("FAILED transcripts/loop.transcript: The run passed 10000 steps without ending. It started at `t.loop` and was last at line #aaaaaa.", output.ToString());
+        Assert.EndsWith("Ran 2 transcripts: 1 passed, 1 failed.\n", output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Fact]
