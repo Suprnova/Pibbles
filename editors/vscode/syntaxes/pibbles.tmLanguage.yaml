@@ -12,6 +12,7 @@ scopeName: source.pibbles
 fileTypes: [pib]
 
 patterns:
+  - include: '#indentation'
   - include: '#note'
   - include: '#comment-line'
   - include: '#header'
@@ -24,6 +25,23 @@ patterns:
   - include: '#text-line'
 
 repository:
+  # Only spaces and tabs indent. A line starting with another space separator is marked, and the rest of it is read as
+  # usual, which is why it holds the line rules. Comment lines and blank lines may start with one.
+  indentation:
+    begin: '^([ \t]*(?:(?! )\p{Zs})[\t\p{Zs}]*)(?=\S)(?!//)'
+    beginCaptures:
+      '1': { name: invalid.illegal.indentation.pibbles }
+    end: '$'
+    patterns:
+      - include: '#header'
+      - include: '#actor'
+      - include: '#channel'
+      - include: '#enum'
+      - include: '#at-line'
+      - include: '#option'
+      - include: '#alternative'
+      - include: '#text-line'
+
   note:
     match: '^[\t\p{Zs}]*///(?!/).*$'
     name: comment.line.note.pibbles
@@ -50,7 +68,7 @@ repository:
     name: invalid.illegal.note-in-line.pibbles
 
   header:
-    begin: '^[\t\p{Zs}]*(==)[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
+    begin: '(?:^|\G)[ \t]*(==)[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
     beginCaptures:
       '1': { name: keyword.control.header.pibbles }
       '2': { name: entity.name.section.node.pibbles }
@@ -62,7 +80,7 @@ repository:
 
   # `@actor` and `@narration` take the same block: the display name, and what the speaker does to each channel.
   actor:
-    begin: '^([ \t]*)(@(?:actor|narration))(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
+    begin: '(?:^|\G)([ \t]*)(@(?:actor|narration))(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+([\p{L}_][\p{L}\p{M}\p{N}_]*))?'
     beginCaptures:
       '2': { name: storage.type.declaration.pibbles }
       '3': { name: entity.name.type.pibbles }
@@ -70,6 +88,7 @@ repository:
     end: '^(?!\1[ \t]+\S|[ \t]*//)(?=[ \t]*\S)'
     name: meta.actor.pibbles
     patterns:
+      - include: '#indentation'
       - include: '#comment'
       - match: '^[ \t]+(name)[\t\p{Zs}]*(:)[\t\p{Zs}]*((?:(?!//).)*?)[\t\p{Zs}]*(?=//|$)'
         captures:
@@ -176,7 +195,7 @@ repository:
       - include: '#code'
 
   alternative:
-    begin: '^[\t\p{Zs}]*(-)(?=[\t\p{Zs}]|$)'
+    begin: '(?:^|\G)[ \t]*(-)(?=[\t\p{Zs}]|$)'
     beginCaptures:
       '1': { name: keyword.control.alternative.pibbles }
     end: '$'

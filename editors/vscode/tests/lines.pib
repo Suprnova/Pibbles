@@ -147,3 +147,30 @@ mira: Hi #box:phone　#thought
 
 ==　kitchen.door
 // ^^^^^^^^^^^^ entity.name.section.node.pibbles
+
+// Only spaces and tabs indent.
+
+　　mira: Hello.
+// <-- invalid.illegal.indentation.pibbles
+//^^^^ entity.name.type.speaker.pibbles
+
+   -> Go
+// <--- invalid.illegal.indentation.pibbles
+// ^^ keyword.control.option.pibbles
+
+　== kitchen.door
+// <- invalid.illegal.indentation.pibbles
+//^ keyword.control.header.pibbles
+
+　// A comment may start with one.
+// <- comment.line.double-slash.pibbles - invalid.illegal.indentation.pibbles
+
+mira: Done!　Next.
+//         ^ - invalid.illegal.indentation.pibbles
+
+@actor mira
+　name: Mira
+// <- invalid.illegal.indentation.pibbles
+
+    name: Mira
+//  ^^^^ support.type.property-name.pibbles - invalid.illegal.indentation.pibbles
