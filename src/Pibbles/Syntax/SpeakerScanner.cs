@@ -28,7 +28,7 @@ internal static class SpeakerScanner
     /// </returns>
     public static SpeakerPrefix? Scan(string text, int start, int end)
     {
-        int nameEnd = SkipIdentifier(text, start, end);
+        int nameEnd = Identifiers.Skip(text, start, end);
         bool hasName = nameEnd > start;
         if (!hasName && !(start < end && text[start] is '('))
             return null;
@@ -70,7 +70,7 @@ internal static class SpeakerScanner
         int position = SkipWhitespace(text, start, end);
         while (true)
         {
-            int valueEnd = SkipIdentifier(text, position, end);
+            int valueEnd = Identifiers.Skip(text, position, end);
             if (valueEnd == position)
                 return [];
 
@@ -102,7 +102,7 @@ internal static class SpeakerScanner
 
                 extraEnd = close + 1;
             }
-            else if (!hasWord && SkipIdentifier(text, position, end) is var wordEnd && wordEnd > position)
+            else if (!hasWord && Identifiers.Skip(text, position, end) is var wordEnd && wordEnd > position)
             {
                 hasWord = true;
                 extraEnd = wordEnd;
@@ -116,18 +116,6 @@ internal static class SpeakerScanner
         }
 
         return extraEnd;
-    }
-
-    private static int SkipIdentifier(string text, int start, int end)
-    {
-        if (start >= end || !CodeLexer.IsIdentifierStart(text, start))
-            return start;
-
-        int position = start;
-        while (position < end && CodeLexer.IsIdentifierPart(text, position))
-            position += char.IsSurrogatePair(text, position) ? 2 : 1;
-
-        return position;
     }
 
     private static int SkipWhitespace(string text, int start, int end)

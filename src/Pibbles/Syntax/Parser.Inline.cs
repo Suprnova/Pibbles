@@ -438,10 +438,7 @@ internal sealed partial class Parser
         if (start < inlineEnd && source.Text[start] is '/')
             return ("/", start + 1);
 
-        int end = start;
-        while (end < inlineEnd && CodeLexer.IsIdentifierPart(source.Text, end))
-            end++;
-
+        int end = Identifiers.Skip(source.Text, start, inlineEnd);
         string word = source.Text[start..end];
         return word is "if" or "elif" or "else" ? (word, end) : (null, start);
     }
@@ -452,7 +449,7 @@ internal sealed partial class Parser
         AtInline('#') && inlinePosition + 1 < inlineEnd && char.IsLetter(source.Text, inlinePosition + 1);
 
     private bool AtModifierStart() =>
-        inOption && AtInline('@') && inlinePosition + 1 < inlineEnd && CodeLexer.IsIdentifierStart(source.Text, inlinePosition + 1);
+        inOption && AtInline('@') && inlinePosition + 1 < inlineEnd && Identifiers.IsStart(source.Text, inlinePosition + 1);
 
     private int SkipWhitespace(int position)
     {

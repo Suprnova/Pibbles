@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using Pibbles.Diagnostics;
 
@@ -214,18 +213,14 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
         for (int index = 1; index < tag.Length;)
         {
             int length = char.IsSurrogatePair(tag, index) ? 2 : 1;
-            suggestion.Append(IsIdentifierPart(tag, index) ? tag.AsSpan(index, length) : "_");
+            suggestion.Append(Identifiers.IsPart(tag, index) ? tag.AsSpan(index, length) : "_");
             index += length;
         }
 
         return suggestion.ToString();
     }
 
-    private void SkipIdentifier()
-    {
-        while (Position < span.End && IsIdentifierPart(text, Position))
-            Position += char.IsSurrogatePair(text, Position) ? 2 : 1;
-    }
+    private void SkipIdentifier() => Position = Identifiers.Skip(text, Position, span.End);
 
     private void SkipDigits()
     {
@@ -236,22 +231,12 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     private char Peek(int offset) => Position + offset < span.End ? text[Position + offset] : '\0';
 
     private bool AtIdentifierStart(int index, bool allowUnderscore = true) =>
-        index < span.End && (char.IsLetter(text, index) || allowUnderscore && text[index] is '_');
+        index < span.End && Identifiers.IsStart(text, index) && (allowUnderscore || text[index] is not '_');
 
     private bool IsNameStart(int index) => AtIdentifierStart(index) || index < span.End && text[index] is '.' && AtIdentifierStart(index + 1);
 
-    /// <summary>Whether a character can start an identifier: a letter or <c>_</c>.</summary>
-    internal static bool IsIdentifierStart(string text, int index) => char.IsLetter(text, index) || text[index] is '_';
-
-    /// <summary>Whether a character can continue an identifier: a letter, a combining mark, an ASCII digit or <c>_</c>.</summary>
-    internal static bool IsIdentifierPart(string text, int index) =>
-        char.IsLetter(text, index)
-        || IsDigit(text[index])
-        || text[index] is '_'
-        || CharUnicodeInfo.GetUnicodeCategory(text, index) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark;
-
     private bool IsNumberContinuation(int index) =>
-        index < span.End && (IsIdentifierPart(text, index) || text[index] is '.');
+        index < span.End && (Identifiers.IsPart(text, index) || text[index] is '.');
 
     private static bool IsDigit(char c) => char.IsAsciiDigit(c);
 

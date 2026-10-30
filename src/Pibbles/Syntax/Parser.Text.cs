@@ -47,17 +47,7 @@ internal sealed partial class Parser
         return new(speaker, content, tags) { Span = new(start, inlineEnd - start) };
     }
 
-    private int SkipIdentifier(int start)
-    {
-        if (start >= inlineEnd || !CodeLexer.IsIdentifierStart(source.Text, start))
-            return start;
-
-        int end = start;
-        while (end < inlineEnd && CodeLexer.IsIdentifierPart(source.Text, end))
-            end += char.IsSurrogatePair(source.Text, end) ? 2 : 1;
-
-        return end;
-    }
+    private int SkipIdentifier(int start) => Identifiers.Skip(source.Text, start, inlineEnd);
 
     private ChoiceSyntax ParseChoice(SourceLine first)
     {

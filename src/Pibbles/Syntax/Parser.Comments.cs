@@ -72,7 +72,7 @@ internal sealed partial class Parser
                 '[' => TokenKind.CloseBracket,
                 '{' => TokenKind.CloseBrace,
                 '#' when i + 1 < end && char.IsLetter(text, i + 1) => TokenKind.Tag,
-                '@' when option && i + 1 < end && CodeLexer.IsIdentifierStart(text, i + 1) => TokenKind.EndOfLine,
+                '@' when option && i + 1 < end && Identifiers.IsStart(text, i + 1) => TokenKind.EndOfLine,
                 _ => null,
             };
 
