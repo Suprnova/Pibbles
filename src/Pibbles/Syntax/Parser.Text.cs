@@ -136,12 +136,12 @@ internal sealed partial class Parser
     private void ReportTextAfterTag(TagSyntax tag)
     {
         string before = source.Text[textLineStart..tag.Span.Start];
-        string after = source.Text[tag.Span.Start..inlineEnd].TrimEnd(' ', '\t');
+        string after = Whitespace.TrimEnd(source.Text.AsSpan(tag.Span.Start, inlineEnd - tag.Span.Start)).ToString();
         Fail(DiagnosticCatalog.TextAfterTag, tag.Span, TextOf(tag.Span), textOwner, $"{before}\\{after}");
     }
 
     private int TrimmedEnd(SourceLine line) =>
-        line.Content.Start + source.Text.AsSpan(line.Content.Start, line.Content.Length).TrimEnd(" \t").Length;
+        line.Content.Start + Whitespace.TrimEnd(source.Text.AsSpan(line.Content.Start, line.Content.Length)).Length;
 
     /// <summary>
     /// Reads arguments up to the end of the line or a closing <c>]</c> or <c>}</c>: positional ones, then named ones,

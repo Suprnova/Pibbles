@@ -18,7 +18,7 @@ public sealed record Comment(TextSpan Span, string Text, bool OnOwnLine)
     /// <summary>Reads the comment that starts at <paramref name="span"/>'s <c>//</c> and runs to its end.</summary>
     internal static Comment Read(string text, TextSpan span, bool onOwnLine)
     {
-        ReadOnlySpan<char> comment = text.AsSpan(span.Start, span.Length).TrimEnd(" \t");
-        return new(new(span.Start, comment.Length), comment[2..].Trim(" \t").ToString(), onOwnLine);
+        ReadOnlySpan<char> comment = Whitespace.TrimEnd(text.AsSpan(span.Start, span.Length));
+        return new(new(span.Start, comment.Length), Whitespace.Trim(comment[2..]).ToString(), onOwnLine);
     }
 }

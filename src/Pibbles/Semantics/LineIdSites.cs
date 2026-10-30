@@ -45,6 +45,6 @@ internal static class LineIdSites
         int number = source.GetLinePosition(position).Line;
         TextSpan line = source.GetLineSpan(number);
         int end = commentStarts.TryGetValue(number, out int comment) ? comment : line.End;
-        return line.Start + source.Text.AsSpan(line.Start, end - line.Start).TrimEnd(" \t").Length;
+        return line.Start + Whitespace.TrimEnd(source.Text.AsSpan(line.Start, end - line.Start)).Length;
     }
 }

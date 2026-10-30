@@ -56,6 +56,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 - **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
+- **Whitespace** between the parts of a line is a tab or any space separator (Unicode category Zs), such as the no-break space U+00A0 and the ideographic space U+3000. A Japanese input method types U+3000 for the space bar, and French typography puts a no-break space before a colon, so each separates exactly as a space does. Only [indentation](#line-classification) is narrower.
 - **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
@@ -184,7 +185,7 @@ The kitchen smells of old coffee.
 mira (sad):
 ```
 
-- **`speaker:`** where `speaker` is a declared actor, followed by a space or the end of the line. Spaces between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):` and `mira (happy, shake):`. Anything else is narration.
+- **`speaker:`** where `speaker` is a declared actor, followed by whitespace or the end of the line. Whitespace between the parts don't matter: `mira (happy):`, `mira(happy):` and `mira :` are all speaker prefixes, and a style hint tidies them to `mira (happy):` and `mira (happy, shake):`. Anything else is narration.
 - **Lines that almost look like a speaker are reported, never silently shown as narration.** If a narration line happens to look like a speaker (`Note: the door is locked.`), the analyzer reports an unknown actor and suggests escaping: `Note\: …`. A parenthesis that holds anything but names separated by commas (`mira (to Rex): Fine.`, `(to the room): Fine.`) is an error, so a stage direction is never read as values. So is anything between a declared actor's values and the colon, such as a second parenthesis or a word (`mira (mad) (shake): Fine.`, `mira (mad) shake: Fine.`). A declared actor followed directly by a colon and text (`mira:Hi`) is a warning that suggests adding a space.
 - **`speaker (a, b):`** sets the speaker's values, then shows the line. A value is one of the speaker's values in any of its channels, and names its channel by itself. A line sets at most one value in each channel, in any order. A value stays until a line of the same speaker changes it again, and it goes to the host on the line that set it.
 - **`(a, b):` at the start of a line,** with no name before the parenthesis, sets narration's values the same way. A narration line that starts with a parenthesis and a colon is read as values: `(Meanwhile): …` reports an unknown value, and a backslash before the `(` makes it text.
@@ -508,8 +509,8 @@ W3C EBNF, the notation of the XML specification. `::=` defines a production, `|`
 source          ::= #xFEFF? line (newline line)*
 newline         ::= #xD #xA | #xA | #xD
 line            ::= indent content
-indent          ::= ws*
-ws              ::= #x20 | #x9
+indent          ::= (#x20 | #x9)*
+ws              ::= #x9 | /* any character in Unicode category Zs */
 content         ::= [^#xA#xD]*
 ```
 

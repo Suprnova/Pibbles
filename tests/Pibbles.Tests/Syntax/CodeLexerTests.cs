@@ -65,6 +65,20 @@ public class CodeLexerTests
     }
 
     [Theory]
+    [InlineData($"jump{Spaces.Ideographic}kitchen.door", "Name jump|Name kitchen.door")]
+    [InlineData($"a{Spaces.NoBreak}={Spaces.NarrowNoBreak}b", "Name a|Equals =|Name b")]
+    [InlineData($"has_item{Spaces.Ideographic}(x)", "Name has_item|OpenParen (|Name x|CloseParen )")]
+    [InlineData($"#box:phone{Spaces.Ideographic}#thought", "Tag #box:phone|Tag #thought")]
+    [InlineData($"#box{Spaces.NoBreak}#thought", "Tag #box|Tag #thought")]
+    [InlineData($"#thought{Spaces.Ideographic}// a comment", "Tag #thought|Comment // a comment")]
+    public void Next_OtherSpaceSeparator_SeparatesLikeASpace(string text, string expected)
+    {
+        string tokens = Describe(text);
+
+        Assert.Equal(expected, tokens);
+    }
+
+    [Theory]
     [InlineData("$", "Bad $")]
     [InlineData("$.", "Bad $|Bad .")]
     [InlineData("$.1", "Bad $|Number .1")]

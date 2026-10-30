@@ -208,6 +208,52 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parse_TagValueFollowedByOtherSpaceSeparator_EndsAtIt()
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi #box:phone{Spaces.Ideographic}#thought\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var line = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal(["box:phone", "thought:"], line.Tags.Select(tag => $"{tag.Name}:{tag.Value}"));
+        Assert.Empty(tree.Diagnostics);
+    }
+
+    [Fact]
+    public void Parse_OtherSpaceSeparators_AreSpeakerSpacingAndTrimmedFromText()
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nguide{Spaces.NoBreak}:{Spaces.Ideographic}Bonjour.{Spaces.NarrowNoBreak}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var line = (TextLineSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal(("guide", "Bonjour."), (line.Speaker!.Name!.Text, ((TextRunSyntax)Assert.Single(line.Content)).Text));
+        Assert.Empty(tree.Diagnostics);
+    }
+
+    [Fact]
+    public void Parse_DashFollowedByOtherSpaceSeparator_IsAnAlternative()
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n@cycle\n    -{Spaces.Ideographic}mira: Hi\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var variation = (VariationStatementSyntax)tree.Root.Nodes[0].Body[0];
+        Assert.Equal((1, 0), (Assert.Single(variation.Alternatives).Body.Count, tree.Diagnostics.Count));
+    }
+
+    [Fact]
+    public void Parse_DisplayNameAndCommentAroundOtherSpaceSeparators_AreTrimmed()
+    {
+        var source = new SourceText("story.pib", $"@actor mira\n    name:{Spaces.Ideographic}Mira{Spaces.NoBreak}//{Spaces.Ideographic}said warmly{Spaces.NoBreak}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var actor = (ActorDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal(("Mira", "said warmly"), (actor.DisplayName, Assert.Single(tree.Comments).Text));
+    }
+
+    [Fact]
     public void Parse_CommentAfterTextInAlternative_EndsTheAlternativeBeforeIt()
     {
         var source = new SourceText("story.pib", "== kitchen.door\n@sequence\n    - mira: Hi // said warmly\n");

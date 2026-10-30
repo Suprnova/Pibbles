@@ -42,7 +42,7 @@ internal sealed partial class Parser
         else
             comments.Add(Comment.Read(source.Text, new(at, end - at), onOwnLine: false));
 
-        return start + source.Text.AsSpan(start, at - start).TrimEnd(" \t").Length;
+        return start + Whitespace.TrimEnd(source.Text.AsSpan(start, at - start)).Length;
     }
 
     /// <summary>

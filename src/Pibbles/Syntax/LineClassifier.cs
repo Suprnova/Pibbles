@@ -72,7 +72,7 @@ internal sealed class LineClassifier
         ['=', '=', ..] => LineKind.Header,
         ['@', ..] => LineKind.At,
         ['-', '>', ..] => LineKind.Option,
-        ['-'] or ['-', ' ' or '\t', ..] => LineKind.Dash,
+        ['-', ..] when content.Length is 1 || Whitespace.Is(content[1]) => LineKind.Dash,
         _ => LineKind.Text,
     };
 

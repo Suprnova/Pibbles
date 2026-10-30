@@ -197,14 +197,14 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
 
         if (Peek(0) is ':')
         {
-            while (Position < span.End && text[Position] is not (' ' or '\t'))
+            while (Position < span.End && !Whitespace.Is(text[Position]))
                 Position++;
         }
 
         return TokenKind.Tag;
     }
 
-    private bool AtTagNameEnd() => Position >= span.End || text[Position] is ' ' or '\t' or ':' || (Peek(0) is '/' && Peek(1) is '/');
+    private bool AtTagNameEnd() => Position >= span.End || Whitespace.Is(text[Position]) || text[Position] is ':' || (Peek(0) is '/' && Peek(1) is '/');
 
     private static string Suggest(string tag)
     {

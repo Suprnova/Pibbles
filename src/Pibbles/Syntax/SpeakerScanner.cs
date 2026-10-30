@@ -56,7 +56,7 @@ internal static class SpeakerScanner
         if (position >= end || text[position] is not ':')
             return null;
 
-        bool spaced = position + 1 >= end || text[position + 1] is ' ' or '\t';
+        bool spaced = position + 1 >= end || Whitespace.Is(text[position + 1]);
         bool isSpeaker = spaced && extra is null && (parentheses is null || values.Length > 0);
         TextSpan? name = hasName ? new TextSpan(start, nameEnd - start) : null;
         return new(name, parentheses, values, extra, position, isSpeaker);

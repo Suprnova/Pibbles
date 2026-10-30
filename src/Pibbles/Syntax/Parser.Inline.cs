@@ -41,7 +41,7 @@ internal sealed partial class Parser
 
         if (items is [.., TextRunSyntax last])
         {
-            string trimmed = last.Text.TrimEnd(' ', '\t');
+            string trimmed = Whitespace.TrimEnd(last.Text).ToString();
             items.RemoveAt(items.Count - 1);
             if (trimmed.Length > 0)
                 items.Add(new TextRunSyntax(trimmed) { Span = last.Span with { Length = last.Span.Length - (last.Text.Length - trimmed.Length) } });

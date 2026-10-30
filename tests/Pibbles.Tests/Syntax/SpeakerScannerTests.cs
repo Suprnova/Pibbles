@@ -18,6 +18,17 @@ public class SpeakerScannerTests
     }
 
     [Theory]
+    [InlineData($"guide{Spaces.NoBreak}: Bonjour.", "guide", 6)]
+    [InlineData($"guide:{Spaces.Ideographic}Bonjour.", "guide", 5)]
+    [InlineData($"guide{Spaces.NarrowNoBreak}:{Spaces.NoBreak}Bonjour.", "guide", 6)]
+    public void Scan_OtherSpaceSeparator_ActsLikeASpace(string text, string name, int colon)
+    {
+        SpeakerPrefix prefix = Scan(text)!.Value;
+
+        Assert.Equal((true, name, colon), (prefix.IsSpeaker, Read(text, prefix.Name), prefix.Colon));
+    }
+
+    [Theory]
     [InlineData("mira (sad, happy): Hi.", "mira", "sad|happy")]
     [InlineData("mira (sad): Hi.", "mira", "sad")]
     [InlineData("(sad, happy): Hi.", null, "sad|happy")]

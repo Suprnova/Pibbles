@@ -56,6 +56,12 @@ These are the tie-breakers for decisions the docs don't cover.
 8. **Small language, open vocabulary.** New needs are met by host declarations, not new keywords. Adding a keyword needs a strong reason.
 9. **Portable across Godot projects.** No reflection, and safe to trim and compile ahead of time, because some Godot export targets use NativeAOT. The core targets the oldest .NET version that Godot's C# packages support, as well as the newest.
 
+## Writing in other languages
+
+Writers type with the input method of their language, and the markers of Pibbles are ASCII. These rules keep the difference from causing mistakes that nothing reports.
+
+- **Every space separates.** Wherever the grammar has whitespace, a tab or any space separator (Unicode category Zs) counts: between tokens, around a speaker's colon, after an alternative's `-`, at the end of a tag's name and value, before a comment, and at the ends of a line's text. A Japanese input method types U+3000 for the space bar, and French typography puts U+00A0 or U+202F before a colon. Treating each as a space means a writer never has to find the half-width one.
+
 ## Why build it
 
 Pibbles exists because designing it is the fun part, and because a library built around a real game's needs can fit them exactly. It is open source and anyone is welcome to use it, but it doesn't try to compete with mature tools like [Yarn Spinner](https://www.yarnspinner.dev/) or [Ink](https://www.inklestudios.com/ink/), and its docs don't pitch it as an alternative to them. If someone needs a proven dialogue system today, those are the better choice.
