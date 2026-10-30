@@ -177,7 +177,7 @@ public static class DiagnosticCatalog
     public static DiagnosticDescriptor NotAlternative { get; } = new(
         "PIB1031",
         DiagnosticSeverity.Error,
-        "A `{0}:` block can only hold alternatives.",
+        "A `{0}` block can only hold alternatives.",
         help: "Start each alternative with `- `.");
 
     /// <summary>PIB1032: a block opener right after an alternative's <c>- </c>.</summary>
