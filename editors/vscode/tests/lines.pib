@@ -66,6 +66,33 @@ mira (mad, shake , pan_left): Several values, in any order.
 // <- - punctuation.definition.values.pibbles
 //  ^^^^^ - constant.other.channel-value.pibbles
 
+mira（smug）：I knew you'd come.
+// <---- entity.name.type.speaker.pibbles
+//  ^ punctuation.definition.values.pibbles
+//   ^^^^ constant.other.channel-value.pibbles
+//       ^ punctuation.definition.values.pibbles
+//        ^ punctuation.separator.speaker.pibbles
+
+mira (happy、shake): Several values, mixed punctuation.
+// <---- entity.name.type.speaker.pibbles
+//    ^^^^^ constant.other.channel-value.pibbles
+//          ^^^^^ constant.other.channel-value.pibbles
+//                ^ punctuation.separator.speaker.pibbles
+
+mira：No space needed after a full-width colon.
+// <---- entity.name.type.speaker.pibbles
+//  ^ punctuation.separator.speaker.pibbles
+
+（shake）：Narration sets values too.
+// <- punctuation.definition.values.pibbles
+//^^^^ constant.other.channel-value.pibbles
+//    ^ punctuation.definition.values.pibbles
+//     ^ punctuation.separator.speaker.pibbles
+
+他说\：“你好。”
+// <-- - entity.name.type.speaker.pibbles
+//^^ constant.character.escape.pibbles
+
 Note\: the door is locked. Not \#winning, but my #1 fan.
 // <---- - entity.name.type.speaker.pibbles
 //  ^^ constant.character.escape.pibbles
