@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Pibbles.Runtime;
 using Pibbles.Semantics;
+using Pibbles.Tests.Syntax;
 
 namespace Pibbles.Tests.Runtime;
 
@@ -69,6 +70,16 @@ public class LineRevealTests
     public void PageBreak_SpaceAfterBreak_PageStartMovesPastSpace()
     {
         LineReveal reveal = Reveal("ab cd", new PageBreakMarker(2));
+
+        Assert.Equal("WaitingForInput page=0 visible=2 fired=[p@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+        Assert.Equal("Revealing page=3 visible=3 fired=[]", Show(reveal.Resume()));
+        Assert.Equal("Complete page=3 visible=5 fired=[]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
+    }
+
+    [Fact]
+    public void PageBreak_OtherSpaceSeparatorAfterBreak_PageStartMovesPastIt()
+    {
+        LineReveal reveal = Reveal($"ab{Spaces.Ideographic}cd", new PageBreakMarker(2));
 
         Assert.Equal("WaitingForInput page=0 visible=2 fired=[p@2]", Show(reveal.Advance(TimeSpan.FromSeconds(5))));
         Assert.Equal("Revealing page=3 visible=3 fired=[]", Show(reveal.Resume()));

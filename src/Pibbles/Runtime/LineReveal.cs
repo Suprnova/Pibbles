@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Pibbles.Syntax;
 
 namespace Pibbles.Runtime;
 
@@ -240,7 +241,7 @@ public sealed class LineReveal
     private int PageStartAfter(int position)
     {
         int limit = markerIndex < line.Markers.Length ? line.Markers[markerIndex].Position : line.Text.Length;
-        while (position < limit && line.Text[position] is ' ' or '\t' or '\n' or '\r')
+        while (position < limit && (Whitespace.Is(line.Text[position]) || line.Text[position] is '\n' or '\r'))
             position++;
 
         return position;
