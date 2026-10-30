@@ -1,8 +1,8 @@
+using Pibbles.Compiler;
+using Pibbles.Runtime;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
-using Pibbles.Compiler;
-using Pibbles.Runtime;
 
 namespace Pibbles.Cli.Transcripts;
 
@@ -15,18 +15,27 @@ namespace Pibbles.Cli.Transcripts;
 /// Steps are printed indented by two spaces, and anything free-form in them has its backslashes and line breaks
 /// escaped, so no printed line can start at column 0 and be read as a directive or an answer.
 /// </remarks>
-internal sealed class TranscriptPlayer
+/// <remarks>
+/// Prepares to play a script, writing the steps to <paramref name="output"/> as they happen. The directives aren't
+/// written, since the input can add stubs as the run goes; <see cref="Transcript"/> puts them on top.
+/// </remarks>
+/// <param name="story">The compiled story.</param>
+/// <param name="script">The script, or an earlier transcript.</param>
+/// <param name="output">Where the steps go.</param>
+/// <param name="input">Answers what the script doesn't: a person at a terminal, or a test's random walk.</param>
+/// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
+internal sealed class TranscriptPlayer(Story story, TranscriptScript script, TextWriter output, IPlayInput? input = null, ISet<Type>? kinds = null)
 {
     /// <summary>How many steps a run without an input may take before it fails, since a story that loops while showing lines never ends.</summary>
     internal const int StepLimit = 10_000;
 
     private const string Indent = "  ";
 
-    private readonly Story story;
-    private readonly TranscriptScript script;
-    private readonly TextWriter output;
-    private readonly IPlayInput? input;
-    private readonly ISet<Type>? kinds;
+    private readonly Story story = story;
+    private readonly TranscriptScript script = script;
+    private readonly TextWriter output = output;
+    private readonly IPlayInput? input = input;
+    private readonly ISet<Type>? kinds = kinds;
     private readonly List<RuntimeWarning> warnings = [];
     private readonly Dictionary<string, string> printed = [];
     private readonly List<string> supplied = [];
@@ -35,24 +44,6 @@ internal sealed class TranscriptPlayer
     private int steps;
     private StoryState state = null!;
     private DialogueRunner runner = null!;
-
-    /// <summary>
-    /// Prepares to play a script, writing the steps to <paramref name="output"/> as they happen. The directives aren't
-    /// written, since the input can add stubs as the run goes; <see cref="Transcript"/> puts them on top.
-    /// </summary>
-    /// <param name="story">The compiled story.</param>
-    /// <param name="script">The script, or an earlier transcript.</param>
-    /// <param name="output">Where the steps go.</param>
-    /// <param name="input">Answers what the script doesn't: a person at a terminal, or a test's random walk.</param>
-    /// <param name="kinds">Collects the kinds of step and marker that were printed, for tests that check every kind is covered.</param>
-    public TranscriptPlayer(Story story, TranscriptScript script, TextWriter output, IPlayInput? input = null, ISet<Type>? kinds = null)
-    {
-        this.story = story;
-        this.script = script;
-        this.output = output;
-        this.input = input;
-        this.kinds = kinds;
-    }
 
     /// <summary>
     /// The transcript's directives, which go above its steps: the script's, then a <c>stub</c> line for every value the
@@ -85,11 +76,12 @@ internal sealed class TranscriptPlayer
     /// <exception cref="TranscriptException">The answer names no option on offer, or one that isn't available.</exception>
     public static ChoiceOption Pick(ChoiceStep choice, string answer)
     {
-        ChoiceOption? picked = answer.StartsWith('#')
+        ChoiceOption picked = (answer.StartsWith('#')
             ? choice.Options.FirstOrDefault(option => option.Id == answer[1..])
-            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? choice.Options.FirstOrDefault(option => option.Number == number) : null;
-        if (picked is null)
-            throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
+            : int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out int number)
+                ? choice.Options.FirstOrDefault(option => option.Number == number)
+                : null)
+            ?? throw new TranscriptException($"The answer `> {answer}` isn't one of the options on offer: {string.Join(", ", choice.Options.Select(option => $"{option.Number} ({Name(option)})"))}.");
 
         return picked.IsAvailable ? picked : throw new TranscriptException($"The answer `> {answer}` is an option that isn't available.");
     }
