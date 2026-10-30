@@ -14,8 +14,6 @@ public class TotalityTests
 {
     private const string Alphabet = "@-=>[]{}$#\\:(),.\"'/%*+<!?_ abxyz019\té́﻿\uD83D：（）、，" + Spaces.Ideographic + Spaces.NoBreak;
 
-    private static readonly string[] Punctuation = ["@", "->", "==", "-", "[", "]", "{", "}", "$", "#", "\\", ":", "(", "\"", " ", "    ", "\t", "\n"];
-
     private static readonly Gen<string> RandomLine = Gen.Select(
         Gen.OneOfConst("", "", "    ", "        ", "\t", "  ", " \t"),
         Gen.OneOfConst("", "==", "@", "->", "- ", "-", "//", "///", "@if ", "@elif ", "@else", "@once", "@cycle", "@sequence", "@actor ", "@var ",
@@ -27,24 +25,13 @@ public class TotalityTests
         Gen.Select(RandomLine.Array[0, 12], Gen.OneOfConst("\n", "\r\n", "\r"), (lines, newline) => string.Join(newline, lines)),
         Gen.String[Gen.Char[Alphabet + "\n\r"], 0, 80]);
 
-    private static readonly Gen<Mutation> AnyMutation = Gen.Select(
-        Gen.OneOfConst(Enum.GetValues<MutationKind>()),
-        Gen.Int[0, int.MaxValue],
-        Gen.OneOfConst(Punctuation),
-        (kind, position, text) => new Mutation(kind, position, text));
-
-    private static readonly Gen<(string Name, string Text)> MutatedFile = Gen.Select(
-        Gen.Int[0, Corpus.Files.Count - 1],
-        AnyMutation.Array[1, 6],
-        (index, mutations) => (Corpus.Files[index].Path, mutations.Aggregate(Corpus.Files[index].Text, (text, mutation) => mutation.Apply(text))));
-
     [Fact]
     public void Compile_RandomInput_IsTotal() =>
         PropertyCheck.Run(RandomInput, AssertTotal, iterations: 3000, print: Visible);
 
     [Fact]
     public void Compile_MutatedFile_IsTotal() =>
-        PropertyCheck.Run(MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     [Fact]
     public void Compile_CorpusFileWithoutErrors_LowersWithoutThrowing() =>
@@ -52,7 +39,7 @@ public class TotalityTests
 
     [Fact]
     public void Compile_MutatedFileWithoutErrors_LowersWithoutThrowing() =>
-        PropertyCheck.Run(MutatedFile, file => AssertLowers(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertLowers(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     /// <summary>Compiling lowers a story with no errors, and a name the binder left unresolved there would throw.</summary>
     private static void AssertLowers(string text)
@@ -91,43 +78,4 @@ public class TotalityTests
 
     /// <summary>Shows line breaks and tabs, which a failure message would otherwise hide.</summary>
     private static string Visible(string text) => text.Replace("\r", "\\r", StringComparison.Ordinal).Replace("\t", "\\t", StringComparison.Ordinal);
-
-    private enum MutationKind
-    {
-        DeleteCharacter,
-        DuplicateCharacter,
-        SwapCharacters,
-        ReplaceCharacter,
-        Insert,
-        DeleteLine,
-        DuplicateLine,
-        SwapLines,
-        ReplaceLine,
-    }
-
-    /// <summary>One edit to a file. <see cref="Position"/> is reduced to fit the file, so any value is valid.</summary>
-    private sealed record Mutation(MutationKind Kind, int Position, string Text)
-    {
-        public string Apply(string text)
-        {
-            int at = Position % (text.Length + 1);
-            int character = text.Length == 0 ? 0 : Position % text.Length;
-            string[] lines = text.Split('\n');
-            int line = Position % lines.Length;
-
-            return Kind switch
-            {
-                MutationKind.DeleteCharacter when text.Length > 0 => text.Remove(character, 1),
-                MutationKind.DuplicateCharacter when text.Length > 0 => text.Insert(character, text[character].ToString()),
-                MutationKind.SwapCharacters when character + 1 < text.Length => $"{text[..character]}{text[character + 1]}{text[character]}{text[(character + 2)..]}",
-                MutationKind.ReplaceCharacter when text.Length > 0 => text.Remove(character, 1).Insert(character, Text),
-                MutationKind.Insert => text.Insert(at, Text),
-                MutationKind.DeleteLine => string.Join('\n', lines.Where((_, i) => i != line)),
-                MutationKind.DuplicateLine => string.Join('\n', lines.SelectMany((content, i) => i == line ? [content, content] : new[] { content })),
-                MutationKind.SwapLines when line + 1 < lines.Length => string.Join('\n', [.. lines[..line], lines[line + 1], lines[line], .. lines[(line + 2)..]]),
-                MutationKind.ReplaceLine => string.Join('\n', lines.Select((content, i) => i == line ? Text : content)),
-                _ => text,
-            };
-        }
-    }
 }
