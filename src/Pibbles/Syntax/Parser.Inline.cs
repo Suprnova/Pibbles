@@ -26,20 +26,16 @@ internal sealed partial class Parser
         inlinePosition = start;
         inlineEnd = end;
         inOption = option;
-        openMarkup = [];
         pendingClose = null;
 
-        List<InlineSyntax> items = [];
-        while (true)
+        List<InlineSyntax> items = ParseInlineItems();
+        while (AtInline('{') && BraceKeyword() is ({ } and not "if", _))
         {
-            items.AddRange(ParseInlineItems());
-            if (!AtInline('{') || BraceKeyword() is not ({ } and not "if", _))
-                break;
-
             int close = FindCloser('}', inlinePosition);
             var stray = new TextSpan(inlinePosition, close - inlinePosition);
             Fail(DiagnosticCatalog.Unexpected, stray, $"`{TextOf(stray)}`");
             inlinePosition = close;
+            items.AddRange(ParseInlineItems());
         }
 
         if (items is [.., TextRunSyntax last])
