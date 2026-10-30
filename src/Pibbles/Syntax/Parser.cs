@@ -324,6 +324,8 @@ internal sealed partial class Parser
 
     private string TextOf(TextSpan span) => source.Text.Substring(span.Start, span.Length);
 
+    private ReadOnlySpan<char> SpanOf(TextSpan span) => source.Text.AsSpan(span.Start, span.Length);
+
     /// <summary>Reports the line's first problem. Later problems on the same line are dropped.</summary>
     private void Fail(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
     {

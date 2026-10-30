@@ -200,16 +200,16 @@ internal sealed partial class Parser
     private (InlineSyntax Point, string? OptionForm) ReadPointBody(int open)
     {
         Token first = token;
-        string text = TextOf(first.Span);
+        ReadOnlySpan<char> text = SpanOf(first.Span);
         switch (first.Kind)
         {
             case TokenKind.Variable:
                 Advance();
-                return (new InterpolationSyntax(new VariableExpressionSyntax(text[1..]) { Span = first.Span }) { Span = default }, null);
+                return (new InterpolationSyntax(new VariableExpressionSyntax(text[1..].ToString()) { Span = first.Span }) { Span = default }, null);
 
             case TokenKind.AtWord:
                 Advance();
-                var command = new NameSyntax(text[1..]) { Span = new(first.Span.Start + 1, first.Span.Length - 1) };
+                var command = new NameSyntax(text[1..].ToString()) { Span = new(first.Span.Start + 1, first.Span.Length - 1) };
                 List<ArgumentSyntax> arguments = ParseArguments(allowWait: true, out CommandWait wait);
                 return (new InlineCommandSyntax(command, arguments, wait) { Span = default }, $"{{{text}}}");
 
@@ -256,7 +256,7 @@ internal sealed partial class Parser
                     return (new InterpolationSyntax(ParseNameValue(first, argument: false)) { Span = default }, null);
 
                 Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)), DiagnosticCatalog.UnknownPointHelp);
-                return (new InterpolationSyntax(new NameExpressionSyntax(text) { Span = first.Span }) { Span = default }, null);
+                return (new InterpolationSyntax(new NameExpressionSyntax(text.ToString()) { Span = first.Span }) { Span = default }, null);
 
             default:
                 Fail(DiagnosticCatalog.UnknownPoint, PointSpan(open), TextOf(PointSpan(open)), DiagnosticCatalog.UnknownPointHelp);
@@ -438,8 +438,13 @@ internal sealed partial class Parser
             return ("/", start + 1);
 
         int end = Identifiers.Skip(source.Text, start, inlineEnd);
-        string word = source.Text[start..end];
-        return word is "if" or "elif" or "else" ? (word, end) : (null, start);
+        return source.Text.AsSpan(start, end - start) switch
+        {
+            "if" => ("if", end),
+            "elif" => ("elif", end),
+            "else" => ("else", end),
+            _ => (null, start),
+        };
     }
 
     private bool AtInline(char c) => inlinePosition < inlineEnd && source.Text[inlinePosition] == c;

@@ -193,7 +193,7 @@ internal sealed partial class Parser
         return new() { Span = new(previousEnd, 0) };
     }
 
-    private bool IsWord(string word) => token.Kind is TokenKind.Name && TextOf(token.Span) == word;
+    private bool IsWord(string word) => token.Kind is TokenKind.Name && SpanOf(token.Span).SequenceEqual(word);
 
     /// <summary>
     /// Reads a number the lexer accepted. Returns <see langword="null"/> for one it reported as malformed, and for one too

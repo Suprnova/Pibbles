@@ -158,7 +158,7 @@ internal sealed partial class Parser
         wait = CommandWait.Default;
         while (!AtLineEnd && token.Kind is not (TokenKind.CloseBracket or TokenKind.CloseBrace) && !lineFailed)
         {
-            if (token.Kind is TokenKind.Name && TextOf(token.Span) is "wait" or "nowait")
+            if (token.Kind is TokenKind.Name && SpanOf(token.Span) is "wait" or "nowait")
             {
                 if (!allowWait)
                 {
@@ -166,7 +166,7 @@ internal sealed partial class Parser
                     break;
                 }
 
-                wait = TextOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
+                wait = SpanOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
                 Advance();
                 break;
             }
