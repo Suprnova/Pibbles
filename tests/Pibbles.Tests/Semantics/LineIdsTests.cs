@@ -108,6 +108,28 @@ public partial class LineIdsTests
         Assert.Equal("== a.b\n@call a.c #thought #id:ID // Aside.\n",NewId().Replace(result, "#id:ID"));
     }
 
+    [Theory]
+    [InlineData("Hello.// Aside.", "Hello. #id:ID // Aside.")]
+    [InlineData("mira: Hello.// Aside.", "mira: Hello. #id:ID // Aside.")]
+    [InlineData("-> Go// Aside.\n    mira: Inside.", "-> Go #id:ID // Aside.\n    mira: Inside. #id:ID")]
+    [InlineData("@call a.c// Aside.", "@call a.c #id:ID // Aside.")]
+    [InlineData("@sequence// Aside.\n    - One.", "@sequence #id:ID // Aside.\n    - One. #id:ID")]
+    [InlineData("@cycle// Aside.\n    - One.", "@cycle #id:ID // Aside.\n    - One. #id:ID")]
+    [InlineData("@once// Aside.\n    One.", "@once #id:ID // Aside.\n    One. #id:ID")]
+    [InlineData("One. #id// Aside.", "One. #id:ID // Aside.")]
+    public void Assign_CommentTouchingTheLine_SpacesTheIdFromItAndCompilesCleanly(string line, string expected)
+    {
+        const string Header = "@actor mira\n    name: Mira\n\n== a.b\n";
+        const string Footer = "\n\n== a.c\nLast. #id:k7qp2x\n";
+
+        string result = AddIds(Header + line + Footer);
+        var compilation = Compilation.Create([new SourceText("story.pib", result)]);
+
+        Assert.Equal(Header + expected + Footer, NewId().Replace(result, "#id:ID"));
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Empty(LineIds.Assign(compilation, random));
+    }
+
     [Fact]
     public void Assign_InvalidIdAndMissingId_FixesBothAndCompilesCleanly()
     {

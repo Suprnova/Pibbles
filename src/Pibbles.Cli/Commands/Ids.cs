@@ -38,7 +38,7 @@ internal static class Ids
             foreach (TextEdit edit in replaced)
             {
                 SourceText source = sources.First(source => source.Path == edit.Path);
-                output.WriteLine($"  {edit.Path}:{source.GetLinePosition(edit.Start).Line + 1}  {source.Text.Substring(edit.Start, edit.Length)} -> {edit.Text}");
+                output.WriteLine($"  {edit.Path}:{source.GetLinePosition(edit.Start).Line + 1}  {source.Text.Substring(edit.Start, edit.Length)} -> {edit.Text.TrimEnd()}");
             }
         }
 

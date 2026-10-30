@@ -36,7 +36,7 @@ public static class LineIds
     /// <summary>
     /// Finds every line that needs an ID, and makes a new one for each. A line with none gets <c> #id:k7qp2x</c> at the end
     /// of the line, after its tags and before a trailing comment; a line whose ID isn't a valid line ID gets its
-    /// <c>#id</c> tag replaced. Files that <see cref="CanEdit"/> says no to are left out.
+    /// <c>#id</c> tag replaced. A comment that touches the end of the line or the replaced tag gets a space before it. Files that <see cref="CanEdit"/> says no to are left out.
     /// </summary>
     /// <param name="compilation">The story.</param>
     /// <param name="random">Where new IDs come from. A new ID never matches an ID, node name or old node name already in the story.</param>
@@ -57,13 +57,16 @@ public static class LineIds
                 HashSet<TextSpan> invalid = [.. tree.Diagnostics.Select(diagnostic => diagnostic.Location.Span)];
                 return LineIdSites.In(tree).Select(site => site switch
                 {
-                    { Id: null } => new TextEdit(tree.Source.Path, site.Insert, 0, $" #id:{NewId(random, taken)}"),
-                    { Id: { } id } when invalid.Contains(id.Span) => new TextEdit(tree.Source.Path, id.Span.Start, id.Span.Length, $"#id:{NewId(random, taken)}"),
+                    { Id: null } => new TextEdit(tree.Source.Path, site.Insert, 0, $" #id:{NewId(random, taken)}{Gap(tree.Source, site.Insert)}"),
+                    { Id: { } id } when invalid.Contains(id.Span) => new TextEdit(tree.Source.Path, id.Span.Start, id.Span.Length, $"#id:{NewId(random, taken)}{Gap(tree.Source, id.Span.End)}"),
                     _ => (TextEdit?)null,
                 }).OfType<TextEdit>();
             }),
         ];
     }
+
+    /// <summary>A space when a comment starts at <paramref name="position"/>, which a tag's value would otherwise swallow.</summary>
+    private static string Gap(SourceText source, int position) => source.Text.AsSpan(position).StartsWith("//") ? " " : "";
 
     /// <summary>Makes a lowercase letter and five lowercase letters or digits, different from every taken name, and takes it.</summary>
     private static string NewId(Random random, HashSet<string> taken)

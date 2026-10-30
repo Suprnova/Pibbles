@@ -94,7 +94,7 @@ stub has_item = false
 
 `pibbles ids` gives every line that needs a [line ID](localization.md#line-ids) and has none, or one that isn't valid, a new one: text lines that show text, options, `@call` and variation block openers. It finds the project the way `check` does.
 
-- **An ID goes at the end of its line,** after the line's tags, and before a trailing `//` comment, on any kind of line: `@call kitchen.stuck #id:r4hc6v // Back down.` Nothing else in the file changes, including its line endings and any byte-order mark.
+- **An ID goes at the end of its line,** after the line's tags, and before a trailing `//` comment, on any kind of line: `@call kitchen.stuck #id:r4hc6v // Back down.` A comment that touches the ID's place, as in `@call kitchen.stuck// Back down.`, gets a space before it, since an ID's value would otherwise swallow it. This holds for a replaced ID too. Nothing else in the file changes, including its line endings and any byte-order mark.
 - **An invalid `#id:` tag is replaced** where it stands (PIB1052), and the command prints the old and new ID for each, since a recording or a `#voice:` tag that names the old ID needs the new one. A story with an invalid ID doesn't compile, so no save or translation can hold it.
 - **A new ID is a lowercase letter and five lowercase letters or digits,** and never matches an ID, node name or old node name already in the story.
 - **A file with a PIB1xxx mistake other than a bad `#id:`,** the kind found while reading its lines, is left alone and listed, since a misread line could get its ID in the wrong place. The other files still get their IDs, and the command exits 1. Mistakes found later, such as an unknown actor, don't stop it.

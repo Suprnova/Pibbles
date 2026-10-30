@@ -76,6 +76,16 @@ public sealed class IdsTests : IDisposable
     }
 
     [Fact]
+    public void Run_InvalidIdBesideAComment_ListsTheNewIdWithoutTheSpaceBeforeTheComment()
+    {
+        File.WriteAllText(Path.Combine(story, "kitchen.pib"), "== kitchen.door\nLocked. #id// Aside.\n");
+
+        Ids.Run(".", root.FullName, random, output, error);
+
+        Assert.Matches("\n  story/kitchen.pib:2  #id -> #id:[a-z0-9]{6}\n$", output.ToString().ReplaceLineEndings("\n"));
+    }
+
+    [Fact]
     public void Run_InvalidIdInFileWithAnotherMistake_LeavesItAloneAndFails()
     {
         string broken = Path.Combine(story, "broken.pib");
