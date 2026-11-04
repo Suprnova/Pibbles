@@ -31,28 +31,28 @@ internal sealed partial class Parser
         inOption = option;
         pendingClose = null;
 
-        List<InlineSyntax> items = ParseInlineItems();
+        List<InlineSyntax> items = ParseInlineItems(trimEnd: true);
         while (AtInline('{'))
         {
             int close = FindCloser('}', inlinePosition);
             var stray = new TextSpan(inlinePosition, close - inlinePosition);
             Fail(DiagnosticCatalog.Unexpected, stray, $"`{TextOf(stray)}`");
             inlinePosition = close;
-            items.AddRange(ParseInlineItems());
+            items.AddRange(ParseInlineItems(trimEnd: true));
         }
 
-        if (items is [.., TextRunSyntax last])
+        if (items is [.., TextRunSyntax last] && Whitespace.TrimEnd(last.Text) is var trimmed && trimmed.Length < last.Text.Length)
         {
-            string trimmed = Whitespace.TrimEnd(last.Text).ToString();
             items.RemoveAt(items.Count - 1);
             if (trimmed.Length > 0)
-                items.Add(new TextRunSyntax(trimmed) { Span = last.Span with { Length = last.Span.Length - (last.Text.Length - trimmed.Length) } });
+                items.Add(new TextRunSyntax(trimmed.ToString()) { Span = last.Span with { Length = last.Span.Length - (last.Text.Length - trimmed.Length) } });
         }
 
         return items;
     }
 
-    private List<InlineSyntax> ParseInlineItems()
+    /// <summary>Reads items up to the end of the region or a boundary. With <paramref name="trimEnd"/>, a final text run that reaches the end of the region, a tag or a modifier is made without its trailing whitespace.</summary>
+    private List<InlineSyntax> ParseInlineItems(bool trimEnd = false)
     {
         List<InlineSyntax> items = [];
         int textStart = inlinePosition;
@@ -82,7 +82,7 @@ internal sealed partial class Parser
             if (c is '{' && BraceKeyword().Word is "elif" or "else" or "/")
                 break;
 
-            Flush(items, textStart);
+            Flush(items, textStart, inlinePosition);
             if (c is '[' && IsMarkupClose())
             {
                 if (ReadMarkupClose())
@@ -96,17 +96,32 @@ internal sealed partial class Parser
             textStart = inlinePosition;
         }
 
-        Flush(items, textStart);
+        int end = inlinePosition;
+        if (trimEnd && (end >= inlineEnd || AtTagStart() || AtModifierStart()))
+            end -= TrimEndOfText();
+
+        Flush(items, textStart, end);
         return items;
     }
 
-    private void Flush(List<InlineSyntax> items, int textStart)
+    private void Flush(List<InlineSyntax> items, int textStart, int end)
     {
         if (inlineText.Length == 0)
             return;
 
-        items.Add(new TextRunSyntax(inlineText.ToString()) { Span = new(textStart, inlinePosition - textStart) });
+        items.Add(new TextRunSyntax(inlineText.ToString()) { Span = new(textStart, end - textStart) });
         inlineText.Clear();
+    }
+
+    private int TrimEndOfText()
+    {
+        int length = inlineText.Length;
+        while (length > 0 && Whitespace.Is(inlineText[length - 1]))
+            length--;
+
+        int trimmed = inlineText.Length - length;
+        inlineText.Length = length;
+        return trimmed;
     }
 
     private void ReadEscape()
