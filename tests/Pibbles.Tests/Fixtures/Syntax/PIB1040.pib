@@ -16,3 +16,5 @@
 
 @jump fixture.other // A comment after a statement.
 @return
+-> Mail @_mira now // An `@` before `_` is text.
+    @end

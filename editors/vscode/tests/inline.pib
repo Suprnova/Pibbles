@@ -12,6 +12,8 @@
 -> Email me \@ home, or @ the office
 //          ^^ constant.character.escape.pibbles
 //                      ^ - keyword.control.modifier.pibbles
+-> Mail @_mira or later
+//             ^^ - keyword.operator.logical.pibbles
 
 mira: That's [b]not[/b] a [wave amplitude=2 frequency=$speed]key[/wave].
 //           ^ meta.markup.pibbles punctuation.definition.markup.pibbles

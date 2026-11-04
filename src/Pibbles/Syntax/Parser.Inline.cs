@@ -492,7 +492,7 @@ internal sealed partial class Parser
         AtInline('#') && inlinePosition + 1 < inlineEnd && char.IsLetter(source.Text, inlinePosition + 1);
 
     private bool AtModifierStart() =>
-        inOption && AtInline('@') && inlinePosition + 1 < inlineEnd && Identifiers.IsStart(source.Text, inlinePosition + 1);
+        inOption && AtInline('@') && inlinePosition + 1 < inlineEnd && char.IsLetter(source.Text, inlinePosition + 1);
 
     private int SkipWhitespace(int position) => Whitespace.Skip(source.Text, position, inlineEnd);
 }
