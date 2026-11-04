@@ -461,9 +461,10 @@ internal sealed partial class Parser
     /// <summary>
     /// Reads an argument's value. Operators need parentheses in arguments, so a value starting with <c>-</c> is reported
     /// with a suggestion to bracket it, or as missing when no value follows the <c>-</c>. Anything else that can't start a
-    /// value is reported as unexpected.
+    /// value is reported as unexpected. A point's value is its only one, so only a call can follow a name there, and
+    /// <paramref name="argument"/> is <see langword="false"/> to report a space before the call's <c>(</c>.
     /// </summary>
-    private ExpressionSyntax? ParseArgumentValue()
+    private ExpressionSyntax? ParseArgumentValue(bool argument = true)
     {
         if (token.Kind is TokenKind.Minus)
         {
@@ -483,7 +484,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return ParsePrimary(argument: true);
+        return ParsePrimary(argument);
     }
 
     private static bool StartsValue(TokenKind kind) =>

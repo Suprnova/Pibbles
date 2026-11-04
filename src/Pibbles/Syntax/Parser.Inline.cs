@@ -248,12 +248,12 @@ internal sealed partial class Parser
 
             case TokenKind.Name when text is "pause":
                 Advance();
-                ExpressionSyntax duration = (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? MissingValue() : ParseArgumentValue()) ?? new ErrorExpressionSyntax { Span = new(previousEnd, 0) };
+                ExpressionSyntax duration = (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? MissingValue() : ParseArgumentValue(argument: false)) ?? new ErrorExpressionSyntax { Span = new(previousEnd, 0) };
                 return (new PauseSyntax(duration) { Span = default }, "{pause}");
 
             case TokenKind.Name when text is "speed":
                 Advance();
-                ExpressionSyntax? factor = token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? null : ParseArgumentValue();
+                ExpressionSyntax? factor = token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine ? null : ParseArgumentValue(argument: false);
                 return (new SpeedSyntax(factor) { Span = default }, "{speed}");
 
             case TokenKind.Name when text is "page":

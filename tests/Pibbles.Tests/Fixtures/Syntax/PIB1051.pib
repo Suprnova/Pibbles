@@ -6,6 +6,10 @@
     @end
 @set $n = visits  (fixture.calls)
 //              ^^ PIB1051
+Wait.{pause delay (1)} Then more.
+//               ^ PIB1051
+Fast.{speed rate (2)} Then more.
+//              ^ PIB1051
 
 // Must not trigger
 
