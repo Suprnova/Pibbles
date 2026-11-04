@@ -318,6 +318,14 @@ public static class DiagnosticCatalog
         "A negative argument has to go in brackets.",
         help: "Write `({0})`.");
 
+    /// <summary>PIB1056: a text line of only tags, with no speaker and no text for them to go with.</summary>
+    /// <remarks>Argument: the tags as written.</remarks>
+    public static DiagnosticDescriptor TagsOnlyLine { get; } = new(
+        "PIB1056",
+        DiagnosticSeverity.Error,
+        "`{0}` has no line to go with.",
+        help: "Tags go at the end of the line they're for. Move them onto it.");
+
     /// <summary>PIB1060: a <c>(</c> with no <c>)</c> on its line.</summary>
     public static DiagnosticDescriptor UnclosedParenthesis { get; } = new(
         "PIB1060",
@@ -972,6 +980,7 @@ public static class DiagnosticCatalog
         TagNotAllowed,
         EmptyLine,
         NegativeArgument,
+        TagsOnlyLine,
         UnclosedParenthesis,
         ChainedComparison,
         UnknownSpeaker,

@@ -74,6 +74,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1053 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
 | PIB1054 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`. |
 | PIB1055 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
+| PIB1056 | Error | `#cam:pan_left #anim:shake` has no line to go with. | Tags go at the end of the line they're for. Move them onto it. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
@@ -596,6 +597,17 @@ Write what Mira says, or `mira (happy):` to set her pose without a line. For a m
 ```
 
 Write `@shake_screen (-1)`. A negative value elsewhere, as in `@set $x = -1`, needs no brackets.
+
+### PIB1056
+
+**Tags go with a line, at its end.** A line that holds only tags, with no speaker and no text, has nothing for them to go with.
+
+```text
+mira: I AM YELLING NOW!!!
+#cam:pan_left #anim:shake
+```
+
+Move the tags onto the end of the line they're for: `mira: I AM YELLING NOW!!! #cam:pan_left #anim:shake`. To send tags with a change of values and no line, put them after the parenthesis: `mira (mad): #anim:shake`.
 
 ### PIB1060
 

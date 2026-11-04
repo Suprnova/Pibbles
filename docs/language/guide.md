@@ -389,7 +389,7 @@ mira: This line might be shown as a thought bubble. #thought
 mira: This line might be shown in a phone-message box. #box:phone
 ```
 
-Which tags mean something depends on the game, so the available tags are listed in the cast list. Pibbles tells you if you use one that isn't listed, so a typo like `#thougth` never slips through. Tags always come last on the line: once a tag starts, only more tags can follow it. To write a hashtag as part of the text, escape it: `\#winning`.
+Which tags mean something depends on the game, so the available tags are listed in the cast list. Pibbles tells you if you use one that isn't listed, so a typo like `#thougth` never slips through. Tags always come last on the line: once a tag starts, only more tags can follow it. They need a line to go with, so a line of only tags is an error. To write a hashtag as part of the text, escape it: `\#winning`.
 
 Some tags are on or off, like `#thought`. Others need a value after a colon, like `#box:phone`. The cast list says which is which, and Pibbles tells you if a value is missing or shouldn't be there.
 

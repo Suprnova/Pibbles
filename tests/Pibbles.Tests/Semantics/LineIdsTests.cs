@@ -160,6 +160,10 @@ public partial class LineIdsTests
     public void Compile_LineWithSyntaxError_IsNotReportedForMissingId() =>
         Assert.Equal(["PIB1015"], Compilation.Create([new SourceText("story.pib", "== a.b\nI'm #winning today.\n")]).Diagnostics.Select(diagnostic => diagnostic.Code));
 
+    [Fact]
+    public void Compile_LineOfOnlyTags_ReportsItAndNoMissingId() =>
+        Assert.Equal(["PIB1056"], Compilation.Create([new SourceText("story.pib", "@tag thought\n\n== a.b\n#thought\n")]).Diagnostics.Select(diagnostic => diagnostic.Code));
+
     private string AddIds(string text)
     {
         var compilation = Compilation.Create([new SourceText("story.pib", text)]);

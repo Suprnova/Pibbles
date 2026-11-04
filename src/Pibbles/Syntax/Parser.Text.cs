@@ -40,6 +40,11 @@ internal sealed partial class Parser
 
         if (speaker is { Name: { } speakerName, Values.Count: 0 } && content.Count == 0)
             Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speakerName.Text, new SpeakerMention(speakerName.Text));
+        else if (speaker is null && content.Count == 0 && tags is [{ Span.Start: int first }, ..])
+        {
+            TextSpan span = new(first, tags[^1].Span.End - first);
+            Fail(DiagnosticCatalog.TagsOnlyLine, span, TextOf(span));
+        }
 
         CheckTags(tags, speaker is { Values.Count: > 0 } && content.Count == 0 ? TagPlace.ValuesOnly : TagPlace.TextLine);
 
