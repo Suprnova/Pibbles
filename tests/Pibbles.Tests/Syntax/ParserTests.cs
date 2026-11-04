@@ -577,4 +577,26 @@ public class ParserTests
 
         Assert.Equal((diagnostics, comments), (tree.Diagnostics.Count, tree.Comments.Count));
     }
+
+    [Theory]
+    [InlineData("@jump \"abc", "PIB1041")]
+    [InlineData("@jump 1x", "PIB1042")]
+    [InlineData("@foo #a!b", "PIB1043")]
+    [InlineData("mira: {pause \"abc}", "PIB1041")]
+    [InlineData("mira: #a!b more", "PIB1043")]
+    [InlineData("mira: [///", "PIB1005")]
+    public void Parse_TokenTheLexerReported_IsNotReportedAgain(string line, string code)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Assert.Equal(code, Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Parse_SeparateLexerProblemsOnOneLine_AreEachReported()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n@foo \"\\n\" 1x\n");
+
+        Assert.Equal(["PIB1014", "PIB1042"], SyntaxTree.Parse(source).Diagnostics.Select(diagnostic => diagnostic.Code));
+    }
 }

@@ -8,8 +8,8 @@ namespace Pibbles.Syntax;
 /// </summary>
 /// <remarks>
 /// After the first problem in a line, the parser reports it and skips the rest of that line, so a line gets at most one
-/// diagnostic from the parser. An indented block where none is allowed is reported once, and its lines join the block
-/// around it.
+/// diagnostic from the parser, and none once the lexer has reported one of its tokens or the line has a note. An indented
+/// block where none is allowed is reported once, and its lines join the block around it.
 /// </remarks>
 internal sealed partial class Parser
 {
@@ -261,15 +261,29 @@ internal sealed partial class Parser
         lineFailed = false;
         previousEnd = content.Start;
         previousSpan = new(content.Start, 0);
-        token = lexer.Next();
+        token = NextToken();
     }
 
     private void Advance()
     {
         previousSpan = token.Span;
         previousEnd = token.Span.End;
-        token = lexer.Next();
+        token = NextToken();
     }
+
+    /// <summary>Reads the next token. Once the lexer reports a problem on a line, the parser reports nothing more on it.</summary>
+    private Token NextToken()
+    {
+        int count = diagnostics.Count;
+        Token next = lexer.Next();
+        if (diagnostics.Count > count)
+            MuteLineOf(diagnostics[^1].Location.Span.Start);
+
+        return next;
+    }
+
+    /// <summary>Makes the parser report nothing more on the line that holds <paramref name="position"/>.</summary>
+    private void MuteLineOf(int position) => reportedLine = source.GetLineSpan(source.GetLinePosition(position).Line);
 
     private bool AtLineEnd => token.Kind is TokenKind.EndOfLine or TokenKind.Comment;
 

@@ -395,7 +395,7 @@ internal sealed partial class Parser
             }
 
             lexer.Start(new(position, inlineEnd - position));
-            Token tag = lexer.Next();
+            Token tag = NextToken();
             tags.Add(TagFrom(tag));
             inlinePosition = tag.Span.End;
         }
@@ -409,7 +409,7 @@ internal sealed partial class Parser
         lexer.Start(new(start, inlineEnd - start));
         previousEnd = previous.End;
         previousSpan = previous;
-        token = lexer.Next();
+        token = NextToken();
     }
 
     /// <summary>
