@@ -59,9 +59,9 @@ internal sealed partial class Parser
     /// <summary>Finishes the line of an actor or narration and parses the block under it, which has the same lines for both.</summary>
     private (string? DisplayName, List<ChannelEditSyntax> Channels, int End) ParseSpeakerBlock(int start, TextSpan keyword)
     {
-        bool failed = lineFailed;
         int end = previousEnd;
         FinishLine();
+        bool failed = lineFailed;
 
         string? displayName = null;
         List<ChannelEditSyntax> channels = [];

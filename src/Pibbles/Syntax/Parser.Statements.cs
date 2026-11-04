@@ -152,10 +152,9 @@ internal sealed partial class Parser
     private (List<StatementSyntax> Body, int End) ParseOpenerEnd(string keyword, TextSpan keywordSpan, int start)
     {
         RejectColon(keyword, start);
-        bool failed = lineFailed;
         int lineEnd = previousEnd;
         FinishLine();
-        return ParseBlockUnder(keywordSpan, start, failed, lineEnd, () => ParseStatements(nodeLevel: false));
+        return ParseBlockUnder(keywordSpan, start, lineFailed, lineEnd, () => ParseStatements(nodeLevel: false));
     }
 
     /// <summary>
@@ -204,9 +203,9 @@ internal sealed partial class Parser
             tags.Add(ReadTag());
 
         CheckTags(tags, TagPlace.Variation);
-        bool failed = lineFailed;
         int lineEnd = previousEnd;
         FinishLine();
+        bool failed = lineFailed;
 
         if (word is "@once")
         {

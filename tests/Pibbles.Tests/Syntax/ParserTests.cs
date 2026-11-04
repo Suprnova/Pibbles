@@ -438,6 +438,19 @@ public class ParserTests
         Assert.Equal("PIB1004", Assert.Single(tree.Diagnostics).Code);
     }
 
+    [Theory]
+    [InlineData("== kitchen.door\n@if $open foo\n")]
+    [InlineData("== kitchen.door\n@once foo\n")]
+    [InlineData("== kitchen.door\n@sequence foo\n")]
+    [InlineData("@actor mira foo\n")]
+    [InlineData("@narration foo\n")]
+    public void Parse_OpenerWithLeftoverTextAndNoBlock_ReportsOnlyTheLeftover(string text)
+    {
+        var source = new SourceText("story.pib", text);
+
+        Assert.Equal("PIB1040", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+    }
+
     [Fact]
     public void Parse_ChannelDeclarations_HaveValuesOrNone()
     {
