@@ -292,15 +292,20 @@ internal sealed partial class Parser
         }
     }
 
-    /// <summary>Reads the value written after a point's keyword, so the point still closes, and returns where it is, or <see langword="null"/> if there is none.</summary>
+    /// <summary>
+    /// Reads what's written after the keyword of a point that takes no value, up to its <c>}</c>, without checking it, since
+    /// it's rejected whatever it is. Returns where it is, or <see langword="null"/> if there is nothing.
+    /// </summary>
     private TextSpan? ReadPointValue()
     {
-        if (token.Kind is TokenKind.CloseBrace or TokenKind.EndOfLine)
+        if (token.Kind is TokenKind.CloseBrace || AtLineEnd)
             return null;
 
         int start = token.Span.Start;
-        ParseArgumentValue();
-        return new TextSpan(start, Math.Max(previousEnd - start, 0));
+        while (token.Kind is not TokenKind.CloseBrace && !AtLineEnd)
+            Advance();
+
+        return new TextSpan(start, previousEnd - start);
     }
 
     /// <summary>Reports a value written after a point that takes none, such as <c>{w 0.5}</c>, and reads it so the point still closes.</summary>

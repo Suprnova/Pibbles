@@ -130,6 +130,8 @@ public class ParserTests
     [InlineData("w", "$delay", "To pause for that long, write `{pause $delay}`.")]
     [InlineData("page", "2", "Remove `2`.")]
     [InlineData("br", "(1 + 1)", "Remove `(1 + 1)`.")]
+    [InlineData("w", "-1", "To pause for that long, write `{pause -1}`.")]
+    [InlineData("page", "-", "Remove `-`.")]
     public void Parse_ValueAfterPointThatTakesNone_NamesThePointAndOffersAFix(string point, string value, string help)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi{{{point} {value}}} there\n");
@@ -142,6 +144,7 @@ public class ParserTests
     [Theory]
     [InlineData("{p}", "To break the page, write `{page}`.")]
     [InlineData("{p 0.5}", "To break the page, write `{page}`. To pause for that long, write `{pause 0.5}`.")]
+    [InlineData("{p -1}", "To break the page, write `{page}`. To pause for that long, write `{pause -1}`.")]
     public void Parse_OldPageBreak_NamesThePointAndOffersThePageBreak(string point, string help)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\nmira: Hi{point} there\n");
