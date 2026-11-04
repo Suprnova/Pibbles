@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 using Pibbles.Diagnostics;
 
@@ -11,6 +12,8 @@ namespace Pibbles.Syntax;
 /// </summary>
 internal sealed partial class Parser
 {
+    private static readonly SearchValues<char> InlineBreaks = SearchValues.Create("\\[{#@\uFFFC");
+
     private int inlinePosition;
     private int inlineEnd;
     private bool inOption;
@@ -68,8 +71,11 @@ internal sealed partial class Parser
                 if (c is '\uFFFC')
                     Fail(DiagnosticCatalog.ObjectReplacementCharacter, new(inlinePosition, 1));
 
-                inlineText.Append(c);
-                inlinePosition++;
+                ReadOnlySpan<char> rest = source.Text.AsSpan(inlinePosition + 1, inlineEnd - inlinePosition - 1);
+                int next = rest.IndexOfAny(InlineBreaks);
+                int length = 1 + (next < 0 ? rest.Length : next);
+                inlineText.Append(source.Text, inlinePosition, length);
+                inlinePosition += length;
                 continue;
             }
 
