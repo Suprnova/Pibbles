@@ -117,7 +117,7 @@ public class CodeLexerTests
     [Fact]
     public void Next_EmptySpan_IsEndOfLine()
     {
-        var lexer = new CodeLexer(new SourceText("story.pib", "   "), new(0, 3), diagnostics);
+        CodeLexer lexer = Lexer("   ", new(0, 3));
 
         Token token = lexer.Next();
 
@@ -127,7 +127,7 @@ public class CodeLexerTests
     [Fact]
     public void Next_SpanInsideLine_StopsAtSpanEnd()
     {
-        var lexer = new CodeLexer(new SourceText("story.pib", "{$a} text"), new(1, 2), diagnostics);
+        CodeLexer lexer = Lexer("{$a} text", new(1, 2));
 
         (Token first, Token second) = (lexer.Next(), lexer.Next());
 
@@ -150,7 +150,7 @@ public class CodeLexerTests
     [InlineData("2sec", "2sec")]
     public void Next_MalformedNumber_IsOneNumberAndReports(string text, string number)
     {
-        Token token = new CodeLexer(new SourceText("story.pib", text), new(0, text.Length), diagnostics).Next();
+        Token token = Lexer(text, new(0, text.Length)).Next();
 
         Assert.Equal((TokenKind.Number, number.Length), (token.Kind, token.Span.Length));
         Assert.Equal(("PIB1042", $"`{number}` isn't a number I can read."), (diagnostics[0].Code, diagnostics[0].Message));
@@ -222,10 +222,60 @@ public class CodeLexerTests
         Assert.Equal("PIB1014", Assert.Single(diagnostics).Code);
     }
 
+    [Fact]
+    public void Next_WithoutDiagnostics_ReadsMalformedTokenSilently()
+    {
+        var lexer = new CodeLexer(new SourceText("story.pib", "1e5"), diagnostics: null);
+        lexer.Start(new(0, 3));
+
+        Token token = lexer.Next();
+
+        Assert.Equal(new(TokenKind.Number, new(0, 3)), token);
+    }
+
+    [Fact]
+    public void Start_AfterName_ReadsTouchingParenAsOpenParen()
+    {
+        CodeLexer lexer = Lexer("a(", new(0, 1));
+        lexer.Next();
+        lexer.Start(new(1, 1));
+
+        Token token = lexer.Next();
+
+        Assert.Equal(new(TokenKind.OpenParen, new(1, 1)), token);
+    }
+
+    [Fact]
+    public void Start_WithoutComments_RecordsOnlyEarlierStretchComments()
+    {
+        List<Comment> comments = [];
+        var lexer = new CodeLexer(new SourceText("story.pib", "a // one\nb // two"), diagnostics);
+        lexer.Start(new(0, 8), comments);
+        ReadToEnd(lexer);
+        lexer.Start(new(9, 8));
+
+        ReadToEnd(lexer);
+
+        Assert.Equal("one", Assert.Single(comments).Text);
+    }
+
+    private CodeLexer Lexer(string text, TextSpan span)
+    {
+        var lexer = new CodeLexer(new SourceText("story.pib", text), diagnostics);
+        lexer.Start(span);
+        return lexer;
+    }
+
+    private static void ReadToEnd(CodeLexer lexer)
+    {
+        while (lexer.Next().Kind is not TokenKind.EndOfLine)
+        {
+        }
+    }
+
     private string Describe(string text)
     {
-        var source = new SourceText("story.pib", text);
-        var lexer = new CodeLexer(source, new(0, text.Length), diagnostics);
+        CodeLexer lexer = Lexer(text, new(0, text.Length));
         List<string> tokens = [];
 
         for (Token token = lexer.Next(); token.Kind is not TokenKind.EndOfLine; token = lexer.Next())

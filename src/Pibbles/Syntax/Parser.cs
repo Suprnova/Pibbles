@@ -23,7 +23,8 @@ internal sealed partial class Parser
     private bool sawContent;
     private int index;
 
-    private CodeLexer lexer = null!;
+    private readonly CodeLexer lexer;
+    private readonly CodeLexer scratch;
     private Token token;
     private int previousEnd;
     private TextSpan previousSpan;
@@ -36,6 +37,8 @@ internal sealed partial class Parser
         lines = classified.Tokens;
         comments = [.. classified.Comments];
         diagnostics = [.. classified.Diagnostics];
+        lexer = new(source, diagnostics);
+        scratch = new(source, diagnostics: null);
     }
 
     public static SyntaxTree Parse(SourceText source) => new Parser(source).ParseTree();
@@ -180,7 +183,8 @@ internal sealed partial class Parser
     private NameSyntax? ParseAlias(TagSyntax tag)
     {
         var value = new TextSpan(tag.Span.Start + "#was:".Length, Math.Max(tag.Span.Length - "#was:".Length, 0));
-        Token name = new CodeLexer(source, value, []).Next();
+        scratch.Start(value);
+        Token name = scratch.Next();
         if (tag.Value is not null && name.Kind is TokenKind.Name && name.Span == value)
             return new(tag.Value) { Span = value };
 
@@ -253,7 +257,7 @@ internal sealed partial class Parser
 
     private void StartLine(TextSpan content)
     {
-        lexer = new(source, content, diagnostics, comments);
+        lexer.Start(content, comments);
         lineFailed = false;
         previousEnd = content.Start;
         previousSpan = new(content.Start, 0);

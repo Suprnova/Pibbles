@@ -11,14 +11,30 @@ namespace Pibbles.Syntax;
 /// <remarks>
 /// Whitespace between tokens is skipped, except that a <c>(</c> touching the name before it is a
 /// <see cref="TokenKind.CallOpen"/>. Malformed strings, numbers and tags are reported and still produce one token each.
+/// A parser keeps one lexer and calls <see cref="Start"/> for each stretch of code it reads.
 /// </remarks>
-internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnostic> diagnostics, List<Comment>? comments = null)
+/// <param name="source">The file the stretches are in.</param>
+/// <param name="diagnostics">Where problems are reported, or <see langword="null"/> to read without reporting them.</param>
+internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics)
 {
     private readonly string text = source.Text;
+    private TextSpan span;
+    private List<Comment>? comments;
     private TokenKind? previous;
 
     /// <summary>Where the next token starts looking.</summary>
-    public int Position { get; private set; } = span.Start;
+    public int Position { get; private set; }
+
+    /// <summary>Starts reading <paramref name="span"/>, as a new lexer would.</summary>
+    /// <param name="span">The stretch to read.</param>
+    /// <param name="comments">Where a comment that ends the stretch is recorded, or <see langword="null"/> to skip it.</param>
+    public void Start(TextSpan span, List<Comment>? comments = null)
+    {
+        this.span = span;
+        this.comments = comments;
+        previous = null;
+        Position = span.Start;
+    }
 
     /// <summary>Reads the next token, or <see cref="TokenKind.EndOfLine"/> at the end of the span.</summary>
     public Token Next()
@@ -116,7 +132,7 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
     private TokenKind ReadComment()
     {
         if (Comment.IsNote(text.AsSpan(Position, span.End - Position)))
-            diagnostics.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
+            diagnostics?.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
         else
             comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
 
@@ -250,5 +266,5 @@ internal sealed class CodeLexer(SourceText source, TextSpan span, List<Diagnosti
             or UnicodeCategory.ModifierSymbol or UnicodeCategory.OtherSymbol;
 
     private void Report(DiagnosticDescriptor descriptor, int start, params object?[] arguments) =>
-        diagnostics.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));
+        diagnostics?.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));
 }

@@ -80,7 +80,7 @@ internal sealed partial class Parser
                 continue;
 
             int from = c is '[' or '{' ? i + 1 : i;
-            var scratch = new CodeLexer(source, new(from, end - from), []);
+            scratch.Start(new(from, end - from));
             Token token;
             do
             {

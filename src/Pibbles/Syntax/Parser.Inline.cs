@@ -382,7 +382,8 @@ internal sealed partial class Parser
                 return [];
             }
 
-            Token tag = new CodeLexer(source, new(position, inlineEnd - position), diagnostics).Next();
+            lexer.Start(new(position, inlineEnd - position));
+            Token tag = lexer.Next();
             tags.Add(TagFrom(tag));
             inlinePosition = tag.Span.End;
         }
@@ -393,7 +394,7 @@ internal sealed partial class Parser
     /// <summary>Starts reading code mode at <paramref name="start"/>, up to the end of the inline region.</summary>
     private void StartCode(int start, TextSpan previous)
     {
-        lexer = new(source, new(start, inlineEnd - start), diagnostics);
+        lexer.Start(new(start, inlineEnd - start));
         previousEnd = previous.End;
         previousSpan = previous;
         token = lexer.Next();
