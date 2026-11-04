@@ -621,4 +621,14 @@ public class ParserTests
 
         Assert.Equal("PIB1010", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
+
+    [Theory]
+    [InlineData("[i][b]x[/i#x]", "PIB1043")]
+    [InlineData("[i][c][b]x[/i \"abc]", "PIB1041")]
+    public void Parse_MalformedCloseOfAnOuterSpan_IsLexedOnce(string text, string code)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: {text}\n");
+
+        Assert.Equal(code, Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+    }
 }

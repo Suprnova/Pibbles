@@ -181,11 +181,14 @@ internal sealed partial class Parser
 
     /// <summary>
     /// Reads <c>[/name]</c>. A close that belongs to an open span is left for that span, and returns <see langword="true"/>.
-    /// A close with no open span is reported and skipped.
+    /// A close already left for a span further out isn't read again. A close with no open span is reported and skipped.
     /// </summary>
     private bool ReadMarkupClose()
     {
         int open = inlinePosition;
+        if (pendingClose?.Span.Start == open)
+            return true;
+
         int slash = SkipWhitespace(open + 1);
         StartCode(slash + 1, new(open, slash + 1 - open));
         NameSyntax name = ExpectName("a markup name", "[/");
