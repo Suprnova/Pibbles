@@ -502,6 +502,19 @@ public class ParserTests
         Assert.Equal((1, 1), (tree.Diagnostics.Count, actor.Channels.Count));
     }
 
+    [Theory]
+    [InlineData("mood", "`mood`")]
+    [InlineData("@set $x = 1", "`@set`")]
+    [InlineData("-> Go", "`->`")]
+    [InlineData("== kitchen.door", "`==`")]
+    [InlineData("- Hm.", "`-`")]
+    public void Parse_ActorBlockLineThatIsNoneOfThose_NamesItsFirstWord(string line, string word)
+    {
+        var source = new SourceText("story.pib", $"@actor mira\n    {line}\n");
+
+        Assert.Equal($"I didn't expect {word} here.", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Message);
+    }
+
     [Fact]
     public void Parse_OverIndentedActorBlockLine_IsReportedAndRead()
     {

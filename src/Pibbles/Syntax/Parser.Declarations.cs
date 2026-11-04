@@ -119,7 +119,13 @@ internal sealed partial class Parser
 
         if (line.Kind is not LineKind.Text || wordEnd == start || !(colon || plusEquals || (word is "no" && next > wordEnd && SkipIdentifier(next) > next)))
         {
-            var unexpected = new TextSpan(start, Math.Max(wordEnd, start + 1) - start);
+            int unexpectedEnd = line.Kind switch
+            {
+                LineKind.At => Identifiers.Skip(source.Text, start + 1, inlineEnd),
+                LineKind.Option or LineKind.Header => start + 2,
+                _ => Math.Max(wordEnd, start + 1),
+            };
+            var unexpected = new TextSpan(start, unexpectedEnd - start);
             Fail(DiagnosticCatalog.Unexpected, unexpected, $"`{TextOf(unexpected)}`");
             index++;
             SkipBlock();
