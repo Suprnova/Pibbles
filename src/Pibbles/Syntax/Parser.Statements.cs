@@ -280,6 +280,8 @@ internal sealed partial class Parser
         {
             if (inner.Kind is LineKind.Comment)
                 comments.Add(Comment.Read(source.Text, content, onOwnLine: false));
+            else if (inner.Kind is LineKind.Note)
+                ReportLine(line, DiagnosticCatalog.UnsupportedNote, new(after, 3));
 
             index++;
             if (Current.Kind is LineTokenKind.Indent)

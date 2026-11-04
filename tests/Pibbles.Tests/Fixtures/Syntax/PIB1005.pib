@@ -15,6 +15,10 @@ mira: Hello. /// Not a comment.
 //           ^^^ PIB1005
 -> Go /// Not a comment.
 //    ^^^ PIB1005
+@cycle
+    - /// Not a comment, so the alternative is empty.
+//    ^^^ PIB1005
+    - mira: Hm.
 
 // Must not trigger
 
