@@ -178,12 +178,15 @@ internal sealed partial class Parser
         return new(function, arguments) { Span = SpanFrom(name.Span.Start) };
     }
 
+    /// <summary>Reads the <c>)</c> for <paramref name="open"/>. It's missing at the end of the line or of a bracket or brace, and anything else in its place is unexpected.</summary>
     private void ExpectCloseParen(TextSpan open)
     {
         if (token.Kind is TokenKind.CloseParen)
             Advance();
-        else
+        else if (AtLineEnd || token.Kind is TokenKind.CloseBracket or TokenKind.CloseBrace)
             Fail(DiagnosticCatalog.UnclosedParenthesis, open);
+        else
+            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
     }
 
     /// <summary>Reports a value missing after the previous token, and stands in for it with a zero-length error node.</summary>

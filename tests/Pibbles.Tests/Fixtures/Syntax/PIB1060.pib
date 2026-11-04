@@ -14,3 +14,7 @@
 @set $x = ((1 + 2) * 3)
 @if has_item("key")
     @end
+@shake_screen f(1 2)
+//                ^ PIB1040
+@set $x = (1 2)
+//           ^ PIB1040
