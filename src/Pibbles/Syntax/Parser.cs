@@ -29,6 +29,7 @@ internal sealed partial class Parser
     private int previousEnd;
     private TextSpan previousSpan;
     private bool lineFailed;
+    private TextSpan? reportedLine;
 
     private Parser(SourceText source)
     {
@@ -328,6 +329,18 @@ internal sealed partial class Parser
         Report(descriptor, span, arguments);
     }
 
-    private void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
+    /// <summary>Reports a problem with a whole line before the line is parsed, so parsing it reports nothing more.</summary>
+    private void ReportLine(SourceLine line, DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
+    {
+        Report(descriptor, span, arguments);
+        reportedLine = line.Content;
+    }
+
+    private void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
+    {
+        if (reportedLine is { } line && span.Start >= line.Start && span.Start <= line.End)
+            return;
+
         diagnostics.Add(descriptor.Create(source.GetLocation(span), arguments));
+    }
 }

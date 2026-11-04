@@ -249,7 +249,7 @@ internal sealed partial class Parser
             else
             {
                 if (!reported)
-                    Report(DiagnosticCatalog.NotAlternative, new(Current.Line.Content.Start, TrimmedEnd(Current.Line) - Current.Line.Content.Start), keyword);
+                    ReportLine(Current.Line, DiagnosticCatalog.NotAlternative, new(Current.Line.Content.Start, TrimmedEnd(Current.Line) - Current.Line.Content.Start), keyword);
 
                 reported = true;
                 ParseStatement(stray, Current.Line);
@@ -303,7 +303,7 @@ internal sealed partial class Parser
         {
             string opener = inner.Kind is LineKind.Option ? "->" : inner.Kind is LineKind.At ? AtWordOf(inner) : "";
             if (opener is "->" or "@if" or "@elif" or "@else" or "@sequence" or "@cycle" or "@once")
-                Report(DiagnosticCatalog.OpenerInAlternative, new(after, opener.Length), opener);
+                ReportLine(line, DiagnosticCatalog.OpenerInAlternative, new(after, opener.Length), opener);
 
             ParseStatement(body, inner);
             if (Current.Kind is LineTokenKind.Indent)

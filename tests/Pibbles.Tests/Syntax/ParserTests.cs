@@ -58,7 +58,20 @@ public class ParserTests
 
         var tree = SyntaxTree.Parse(source);
 
-        Assert.Contains(tree.Diagnostics, diagnostic => diagnostic.Code is "PIB1032" && diagnostic.Message == "`@if` can't start an alternative.");
+        Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
+        Assert.Equal(("PIB1032", "`@if` can't start an alternative."), (diagnostic.Code, diagnostic.Message));
+    }
+
+    [Theory]
+    [InlineData("@cycle\n    - @elif $a\n", "PIB1032")]
+    [InlineData("@cycle\n    - @if $a\n", "PIB1032")]
+    [InlineData("@cycle\n    - @if $a:\n", "PIB1032")]
+    [InlineData("@cycle\n    @var $a = 1\n", "PIB1031")]
+    public void Parse_LineReportedInVariationBlock_ReportsNothingMoreOnIt(string block, string code)
+    {
+        var source = new SourceText("story.pib", $"== fixture.start\n{block}");
+
+        Assert.Equal(code, Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
 
     [Theory]
