@@ -68,19 +68,7 @@ internal sealed partial class Parser
         if (Current.Kind is LineTokenKind.Indent)
         {
             index++;
-            while (!AtEndOfBlock)
-            {
-                if (Current.Kind is LineTokenKind.Indent)
-                {
-                    Report(DiagnosticCatalog.UnexpectedIndentation, IndentationOf(Current.Line));
-                    SkipBlock();
-                    continue;
-                }
-
-                end = TrimmedEnd(Current.Line);
-                ParseActorProperty(Current.Line, ref displayName, channels);
-            }
-
+            end = ParseSpeakerLines(ref displayName, channels, end);
             SkipDedent();
         }
         else if (!failed)
@@ -89,6 +77,29 @@ internal sealed partial class Parser
         }
 
         return (displayName, channels, end);
+    }
+
+    /// <summary>
+    /// Parses the lines of an actor's or narration's block, and returns where the last one ends. An over-indented line is
+    /// reported, and the lines indented with it are read as if they weren't.
+    /// </summary>
+    private int ParseSpeakerLines(ref string? displayName, List<ChannelEditSyntax> channels, int end)
+    {
+        while (!AtEndOfBlock)
+        {
+            if (Current.Kind is LineTokenKind.Indent)
+            {
+                ReportUnexpectedIndentation();
+                end = ParseSpeakerLines(ref displayName, channels, end);
+                SkipDedent();
+                continue;
+            }
+
+            end = TrimmedEnd(Current.Line);
+            ParseActorProperty(Current.Line, ref displayName, channels);
+        }
+
+        return end;
     }
 
     /// <summary>

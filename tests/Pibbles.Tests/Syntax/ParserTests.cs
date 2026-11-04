@@ -503,6 +503,18 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parse_OverIndentedActorBlockLine_IsReportedAndRead()
+    {
+        var source = new SourceText("story.pib", "@actor mira\n    name: Mira\n        pose: idle\n    mood += calm\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var actor = (ActorDeclarationSyntax)tree.Root.Declarations[0];
+        Assert.Equal("PIB1003", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal(["pose", "mood"], actor.Channels.Select(edit => edit.Channel.Text));
+    }
+
+    [Fact]
     public void Parse_DisplayNameThatIsOnlyAComment_ReportsMissingName()
     {
         var source = new SourceText("story.pib", "@actor mira\n    name: // Mira\n");
