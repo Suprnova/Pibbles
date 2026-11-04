@@ -599,4 +599,26 @@ public class ParserTests
 
         Assert.Equal(["PIB1014", "PIB1042"], SyntaxTree.Parse(source).Diagnostics.Select(diagnostic => diagnostic.Code));
     }
+
+    [Theory]
+    [InlineData("{if $a}x{else}y{else}z{/if}", "`{else}`")]
+    [InlineData("{if $a}x{else}y{elif $b}z{/if}", "`{elif $b}`")]
+    [InlineData("[b]x{else}y[/b]", "`{else}`")]
+    [InlineData("[b]x{/if}y[/b]", "`{/if}`")]
+    public void Parse_MisplacedBranchKeyword_IsUnexpectedNotAMissingCloser(string text, string keyword)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\nmira: {text}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1040", $"I didn't expect {keyword} here."), (diagnostic.Code, diagnostic.Message));
+    }
+
+    [Fact]
+    public void Parse_SpanCutByItsBranchsEnd_IsUnclosed()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\nmira: {if $a}x[b]y{else}z[/b]{/if}\n");
+
+        Assert.Equal("PIB1010", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+    }
 }

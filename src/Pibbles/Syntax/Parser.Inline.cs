@@ -17,6 +17,7 @@ internal sealed partial class Parser
     private int inlinePosition;
     private int inlineEnd;
     private bool inOption;
+    private bool inBranch;
     private List<string> openMarkup = [];
     private (string Name, TextSpan Span, int End)? pendingClose;
 
@@ -34,10 +35,7 @@ internal sealed partial class Parser
         List<InlineSyntax> items = ParseInlineItems(trimEnd: true);
         while (AtInline('{'))
         {
-            int close = FindCloser('}', inlinePosition);
-            var stray = new TextSpan(inlinePosition, close - inlinePosition);
-            Fail(DiagnosticCatalog.Unexpected, stray, $"`{TextOf(stray)}`");
-            inlinePosition = close;
+            SkipStrayKeyword();
             items.AddRange(ParseInlineItems(trimEnd: true));
         }
 
@@ -152,6 +150,12 @@ internal sealed partial class Parser
 
         openMarkup.Add(name.Text);
         List<InlineSyntax> content = ParseInlineItems();
+        while (pendingClose is null && !inBranch && AtInline('{'))
+        {
+            SkipStrayKeyword();
+            content.AddRange(ParseInlineItems());
+        }
+
         openMarkup.RemoveAt(openMarkup.Count - 1);
 
         int end = inlinePosition;
@@ -348,6 +352,12 @@ internal sealed partial class Parser
                 CloseCode(TokenKind.CloseBrace, "}", "{/", keywordSpan);
                 closed = true;
             }
+            else if (@else is not null && word is "elif" or "else")
+            {
+                SkipStrayKeyword();
+                List<InlineSyntax> rest = ParseBranchContent();
+                @else = new([.. @else.Content, .. rest]) { Span = new(@else.Span.Start, inlinePosition - @else.Span.Start) };
+            }
             else
             {
                 break;
@@ -372,10 +382,22 @@ internal sealed partial class Parser
     private List<InlineSyntax> ParseBranchContent()
     {
         List<string> outer = openMarkup;
+        bool outerBranch = inBranch;
         openMarkup = [];
+        inBranch = true;
         List<InlineSyntax> content = ParseInlineItems();
         openMarkup = outer;
+        inBranch = outerBranch;
         return content;
+    }
+
+    /// <summary>Reports an <c>{elif}</c>, <c>{else}</c> or <c>{/…}</c> that no open <c>{if}</c> can take, and reads past it.</summary>
+    private void SkipStrayKeyword()
+    {
+        int close = FindCloser('}', inlinePosition);
+        var stray = new TextSpan(inlinePosition, close - inlinePosition);
+        Fail(DiagnosticCatalog.Unexpected, stray, $"`{TextOf(stray)}`");
+        inlinePosition = close;
     }
 
     /// <summary>
