@@ -14,3 +14,7 @@
 @shake_screen strength=(-0.5)
 @set $x = -1
 @pause -1s - -2s
+@shake_screen -
+//             ^ PIB1046
+mira: Wait{pause -}.
+//                ^ PIB1046

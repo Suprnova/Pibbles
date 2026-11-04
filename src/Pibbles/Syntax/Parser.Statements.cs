@@ -460,7 +460,8 @@ internal sealed partial class Parser
 
     /// <summary>
     /// Reads an argument's value. Operators need parentheses in arguments, so a value starting with <c>-</c> is reported
-    /// with a suggestion to bracket it, and anything else that can't start a value is reported as unexpected.
+    /// with a suggestion to bracket it, or as missing when no value follows the <c>-</c>. Anything else that can't start a
+    /// value is reported as unexpected.
     /// </summary>
     private ExpressionSyntax? ParseArgumentValue()
     {
@@ -468,6 +469,9 @@ internal sealed partial class Parser
         {
             int start = token.Span.Start;
             Advance();
+            if (!StartsValue(token.Kind))
+                return MissingValue();
+
             var negative = new TextSpan(start, token.Span.End - start);
             Fail(DiagnosticCatalog.NegativeArgument, negative, TextOf(negative));
             return null;
