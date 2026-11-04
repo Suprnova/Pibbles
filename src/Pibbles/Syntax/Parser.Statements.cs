@@ -249,7 +249,7 @@ internal sealed partial class Parser
             else
             {
                 if (!reported)
-                    ReportLine(Current.Line, DiagnosticCatalog.NotAlternative, new(Current.Line.Content.Start, TrimmedEnd(Current.Line) - Current.Line.Content.Start), keyword);
+                    ReportLine(Current.Line, DiagnosticCatalog.NotAlternative, new(Current.Line.Content.Start, PeekContentEnd(Current.Line) - Current.Line.Content.Start), keyword);
 
                 reported = true;
                 ParseStatement(stray, Current.Line);

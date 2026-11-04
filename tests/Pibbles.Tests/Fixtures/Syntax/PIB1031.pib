@@ -9,6 +9,9 @@
     - mira: A real alternative.
     @set $x = 1
 //  ^^^^^^^^^^^ PIB1031
+@cycle
+    mira: Hm. // The span stops before a comment.
+//  ^^^^^^^^^ PIB1031
 
 // Must not trigger
 

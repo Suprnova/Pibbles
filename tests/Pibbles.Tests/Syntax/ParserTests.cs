@@ -347,6 +347,32 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("@actor mira\n    name: Mira // the cast list\n", "@actor mira\n    name: Mira")]
+    [InlineData("@narration\n    pose: idle // the default\n", "@narration\n    pose: idle")]
+    public void Parse_SpeakerBlockEndingInComment_EndsBeforeIt(string text, string spanned)
+    {
+        var source = new SourceText("story.pib", text);
+
+        TextSpan span = SyntaxTree.Parse(source).Root.Declarations[0].Span;
+
+        Assert.Equal(spanned, text.Substring(span.Start, span.Length));
+    }
+
+    [Theory]
+    [InlineData("mira: Hi. // a greeting", "mira: Hi.")]
+    [InlineData("-> Go // an option", "-> Go")]
+    [InlineData("@jump kitchen.door // a jump", "@jump kitchen.door")]
+    [InlineData("@jump \"//\" // a string", "@jump \"//\"")]
+    public void Parse_LineOutsideNodeWithComment_IsReportedUpToTheComment(string line, string reported)
+    {
+        var source = new SourceText("story.pib", $"{line}\n");
+
+        TextSpan span = Assert.Single(SyntaxTree.Parse(source).Diagnostics, diagnostic => diagnostic.Code is "PIB1022").Location.Span;
+
+        Assert.Equal(reported, line.Substring(span.Start, span.Length));
+    }
+
+    [Theory]
     [InlineData("mira (happy): Hi.", new[] { "happy" }, true)]
     [InlineData("mira (happy, shake, pan_left): Hi.", new[] { "happy", "shake", "pan_left" }, true)]
     [InlineData("mira(shake ,happy) : Hi.", new[] { "shake", "happy" }, true)]

@@ -95,8 +95,7 @@ internal sealed partial class Parser
                 continue;
             }
 
-            end = TrimmedEnd(Current.Line);
-            ParseActorProperty(Current.Line, ref displayName, channels);
+            end = ParseActorProperty(Current.Line, ref displayName, channels);
         }
 
         return end;
@@ -105,8 +104,9 @@ internal sealed partial class Parser
     /// <summary>
     /// Parses one line of an actor's or narration's block: <c>name: Display name</c>, read as plain text; <c>pose: a, b</c> or
     /// <c>pose += c</c> for a channel's values; or <c>no camera, effect</c> for the channels the actor doesn't have.
+    /// Returns where what it read ends: the whole line, before its comment, when the line is none of those.
     /// </summary>
-    private void ParseActorProperty(SourceLine line, ref string? displayName, List<ChannelEditSyntax> channels)
+    private int ParseActorProperty(SourceLine line, ref string? displayName, List<ChannelEditSyntax> channels)
     {
         lineFailed = false;
         inlineEnd = TrimmedEnd(line);
@@ -129,7 +129,7 @@ internal sealed partial class Parser
             Fail(DiagnosticCatalog.Unexpected, unexpected, $"`{TextOf(unexpected)}`");
             index++;
             SkipBlock();
-            return;
+            return PeekContentEnd(line);
         }
 
         if (word is "name" && colon)
@@ -141,7 +141,7 @@ internal sealed partial class Parser
 
             displayName = TextOf(value);
             index++;
-            return;
+            return value.End;
         }
 
         StartLine(line.Content);
@@ -159,7 +159,9 @@ internal sealed partial class Parser
             channels.Add(new(channel, edit, ParseNameList("a value", separator)) { Span = SpanFrom(start) });
         }
 
+        int end = previousEnd;
         FinishLine();
+        return end;
     }
 
     private ChannelDeclarationSyntax ParseChannel()

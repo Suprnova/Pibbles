@@ -24,6 +24,18 @@ internal sealed partial class Parser
         return EndBeforeComment(start, end, FindComment(start, end, option: line.Kind is LineKind.Option));
     }
 
+    /// <summary>
+    /// The same end, without recording the comment or reporting a note, for a line that's reported whole rather than read.
+    /// An <c>@</c> line's comment is found by the code lexer.
+    /// </summary>
+    private int PeekContentEnd(SourceLine line)
+    {
+        int start = line.Content.Start;
+        int end = TrimmedEnd(line);
+        int? comment = line.Kind is LineKind.At ? FindCodeComment(start, end) : FindComment(start, end, option: line.Kind is LineKind.Option);
+        return comment is { } at ? TrimmedBefore(start, at) : end;
+    }
+
     /// <summary>The same for a value that is plain text, such as a display name, where a backslash means nothing.</summary>
     private int PlainContentEnd(int start, int end)
     {
@@ -42,7 +54,21 @@ internal sealed partial class Parser
         else
             comments.Add(Comment.Read(source.Text, new(at, end - at), onOwnLine: false));
 
-        return start + Whitespace.TrimEnd(source.Text.AsSpan(start, at - start)).Length;
+        return TrimmedBefore(start, at);
+    }
+
+    private int TrimmedBefore(int start, int end) => start + Whitespace.TrimEnd(source.Text.AsSpan(start, end - start)).Length;
+
+    private int? FindCodeComment(int start, int end)
+    {
+        scratch.Start(new(start, end - start));
+        for (Token token = scratch.Next(); token.Kind is not TokenKind.EndOfLine; token = scratch.Next())
+        {
+            if (token.Kind is TokenKind.Comment)
+                return token.Span.Start;
+        }
+
+        return null;
     }
 
     /// <summary>

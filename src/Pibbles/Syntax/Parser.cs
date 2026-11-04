@@ -125,7 +125,7 @@ internal sealed partial class Parser
             }
         }
 
-        Report(DiagnosticCatalog.OutsideNode, line.Content);
+        Report(DiagnosticCatalog.OutsideNode, new(line.Content.Start, PeekContentEnd(line) - line.Content.Start));
         index++;
         SkipBlock();
     }
