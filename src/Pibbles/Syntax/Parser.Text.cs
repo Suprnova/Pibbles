@@ -156,7 +156,7 @@ internal sealed partial class Parser
     {
         List<ArgumentSyntax> arguments = [];
         wait = CommandWait.Default;
-        while (!AtLineEnd && token.Kind is not (TokenKind.CloseBracket or TokenKind.CloseBrace) && !lineFailed)
+        while (!AtArgumentsEnd && !lineFailed)
         {
             if (token.Kind is TokenKind.Name && SpanOf(token.Span) is "wait" or "nowait")
             {
@@ -182,4 +182,6 @@ internal sealed partial class Parser
 
         return arguments;
     }
+
+    private bool AtArgumentsEnd => AtLineEnd || token.Kind is TokenKind.CloseBracket or TokenKind.CloseBrace;
 }

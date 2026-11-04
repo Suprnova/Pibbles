@@ -26,6 +26,10 @@
     @end
 @show mira at=
 //            ^ PIB1046
+mira: [wave amplitude=]Hi[/wave]
+//                    ^ PIB1046
+mira: Hi{@show mira at=}.
+//                     ^ PIB1046
 @set $x = f(1,)
 //            ^ PIB1046
 ==

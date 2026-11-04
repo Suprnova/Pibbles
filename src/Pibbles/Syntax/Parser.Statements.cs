@@ -451,7 +451,7 @@ internal sealed partial class Parser
         }
 
         Advance();
-        if ((AtLineEnd ? MissingValue() : ParseArgumentValue()) is not { } named)
+        if ((AtArgumentsEnd ? MissingValue() : ParseArgumentValue()) is not { } named)
             return null;
 
         var parameter = new NameSyntax(TextOf(name.Span)) { Span = name.Span };
