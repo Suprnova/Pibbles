@@ -358,6 +358,14 @@ public static class DiagnosticCatalog
         "I can't compare three things at once: `{0}`.",
         help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
 
+    /// <summary>PIB1062: blocks, spans, branches, brackets or chained operators nested past the limit the parser reads.</summary>
+    /// <remarks>Argument: the limit.</remarks>
+    public static DiagnosticDescriptor NestingLimit { get; } = new(
+        "PIB1062",
+        DiagnosticSeverity.Error,
+        "I can't read anything nested more than {0} levels deep.",
+        help: "Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line.");
+
     /// <summary>PIB2001: a speaker that isn't a declared actor.</summary>
     /// <remarks>
     /// Arguments: the speaker as written; <see cref="DidYouMean"/>'s sentence for the closest actor, or nothing; and the line's
@@ -1001,6 +1009,7 @@ public static class DiagnosticCatalog
         TagsOnlyLine,
         UnclosedParenthesis,
         ChainedComparison,
+        NestingLimit,
         UnknownSpeaker,
         UnknownChannelValue,
         NotValues,

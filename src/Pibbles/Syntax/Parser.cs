@@ -13,6 +13,13 @@ namespace Pibbles.Syntax;
 /// </remarks>
 internal sealed partial class Parser
 {
+    /// <summary>
+    /// The most levels the parser nests: indented blocks, markup spans, conditional-text branches, parentheses, call
+    /// arguments, <c>not</c> and <c>-</c> operators, and chained operators. Past it the parser reports PIB1062 and builds
+    /// nothing deeper, so every pass that walks the tree recurses a bounded number of times.
+    /// </summary>
+    internal const int MaxNesting = 64;
+
     private readonly SourceText source;
     private readonly IReadOnlyList<LineToken> lines;
     private readonly List<Diagnostic> diagnostics;
@@ -22,6 +29,7 @@ internal sealed partial class Parser
     private bool sawContent;
     private bool sawNode;
     private int index;
+    private int nesting;
 
     private readonly CodeLexer lexer;
     private readonly CodeLexer scratch;
@@ -62,7 +70,12 @@ internal sealed partial class Parser
             if (Current.Kind is LineTokenKind.Indent)
             {
                 ReportUnexpectedIndentation();
-                ParseTopLevel();
+                if (TryEnterBlock())
+                {
+                    ParseTopLevel();
+                    nesting--;
+                }
+
                 SkipDedent();
             }
             else if (Current.Line.Kind is LineKind.Header)
@@ -196,6 +209,9 @@ internal sealed partial class Parser
 
     private List<StatementSyntax> ParseStatements(bool nodeLevel)
     {
+        if (!nodeLevel && !TryEnterBlock())
+            return [];
+
         List<StatementSyntax> statements = [];
         while (!AtEndOfBlock)
         {
@@ -221,7 +237,55 @@ internal sealed partial class Parser
             }
         }
 
+        if (!nodeLevel)
+            nesting--;
+
         return statements;
+    }
+
+    /// <summary>
+    /// Enters one more level of block, just inside its indent. At the limit it reports the block's first line, skips the
+    /// block and returns <see langword="false"/>, leaving the dedent that ends it for the caller.
+    /// </summary>
+    private bool TryEnterBlock()
+    {
+        if (nesting < MaxNesting)
+        {
+            nesting++;
+            return true;
+        }
+
+        SourceLine line = Current.Line;
+        Report(DiagnosticCatalog.NestingLimit, new(line.Content.Start, PeekContentEnd(line) - line.Content.Start), MaxNesting);
+        SkipRestOfBlock();
+        return false;
+    }
+
+    /// <summary>Enters one more level inside a line. At the limit it reports <paramref name="opener"/> and returns <see langword="false"/>.</summary>
+    private bool TryEnter(TextSpan opener)
+    {
+        if (nesting >= MaxNesting)
+        {
+            Fail(DiagnosticCatalog.NestingLimit, opener, MaxNesting);
+            return false;
+        }
+
+        nesting++;
+        return true;
+    }
+
+    /// <summary>Skips to the dedent that ends the block being read, or to the end of the file, without reading it.</summary>
+    private void SkipRestOfBlock()
+    {
+        for (int depth = 0; depth > 0 || !AtEndOfBlock; index++)
+        {
+            depth += Current.Kind switch
+            {
+                LineTokenKind.Indent => 1,
+                LineTokenKind.Dedent => -1,
+                _ => 0,
+            };
+        }
     }
 
     /// <summary>

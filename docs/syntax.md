@@ -16,9 +16,11 @@ Why hand-written, with no parser generator: the grammar is small, error recovery
 
 **Error tolerance:** a line that fails to parse becomes an error node with one diagnostic, and parsing carries on with the next line. A bad indent is reported once, and the line is attached to the closest sensible block. Unclosed inline markup is reported at its opening bracket, and the span is treated as running to the end of the line. Text after a tag means the tag was probably meant as text, so the line keeps no tags, and the analyzer never reports them as well.
 
+**Nesting limit:** the parser builds a tree at most 64 levels deep. Where a block, markup span or conditional-text branch would be the 65th level, it reports PIB1062 and skips what is inside, so the tree ends there. Every pass that recurses over the tree, from the binder to the evaluator, then recurses a bounded number of times, and no input can overflow the stack.
+
 ## Syntax checks
 
-The front end owns every check that needs only one file's text: indentation, malformed tokens, file and block structure, span nesting, escapes, where tags and `#id` may go, argument order, call adjacency, what option text may contain, and display names. These are the PIB1xxx codes ([diagnostics](diagnostics.md)). Anything that needs declarations or another file, such as whether a speaker is a declared actor, belongs to the [semantic passes](semantics.md#passes).
+The front end owns every check that needs only one file's text: indentation, malformed tokens, file and block structure, span nesting, nesting depth, escapes, where tags and `#id` may go, argument order, call adjacency, what option text may contain, and display names. These are the PIB1xxx codes ([diagnostics](diagnostics.md)). Anything that needs declarations or another file, such as whether a speaker is a declared actor, belongs to the [semantic passes](semantics.md#passes).
 
 ## Syntax tree
 

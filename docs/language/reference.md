@@ -724,6 +724,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 ### Checks
 
 - A span closes with the name it opened with, innermost first.
+- Nothing nests more than 64 levels deep. Each indented block, markup span and branch of conditional text is one level. The first one past the limit is an error, and what is inside it isn't read.
 - Arguments come positional first, then named, then `wait` or `nowait`. Spans take no `wait` or `nowait`.
 - A name being declared is a single identifier, except in `@prefix`, node headers and `@var`. A leading dot marks a relative node or variable name, and is valid only where a node or variable is expected.
 - Declarations come before a file's first node, or for `@var` also between nodes, and `@prefix` comes before everything but comments.

@@ -78,6 +78,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1056 | Error | `#cam:pan_left #anim:shake` has no line to go with. | Tags go at the end of the line they're for. Move them onto it. |
 | PIB1060 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB1061 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
+| PIB1062 | Error | I can't read anything nested more than 64 levels deep. | Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line. |
 | PIB2001 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
 | PIB2002 | Error | Mira has no value called `smirk`. | Did you mean `smug`? |
 | PIB2003 | Error | `(to Rex)` isn't a list of values: each value is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
@@ -656,6 +657,19 @@ Add the `)` where the brackets should close: `@if has_item("key")`.
 ```
 
 Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
+
+### PIB1062
+
+**Nesting stops at 64 levels.** Blocks, markup spans and the branches of conditional text each add a level, and a story that needs more is far past what a reader can follow. The limit also keeps every tool that reads a story, including a game loading one, from running out of stack on a file that nests without end. The message points at the first thing past the limit. Everything inside it is skipped, so it reports nothing more.
+
+```text
+@if $a
+ @if $a
+  @if $a
+   …
+```
+
+Move the inner part into a node of its own and `@jump` or `@call` to it. This is separate from the style warning about [deep nesting](#pib5001), which fires at three.
 
 ### PIB2001
 

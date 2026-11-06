@@ -1,0 +1,153 @@
+// Nothing nests more than 64 levels deep.
+
+== fixture.blocks
+@if a
+ @if a
+  @if a
+   @if a
+    @if a
+     @if a
+      @if a
+       @if a
+        @if a
+         @if a
+          @if a
+           @if a
+            @if a
+             @if a
+              @if a
+               @if a
+                @if a
+                 @if a
+                  @if a
+                   @if a
+                    @if a
+                     @if a
+                      @if a
+                       @if a
+                        @if a
+                         @if a
+                          @if a
+                           @if a
+                            @if a
+                             @if a
+                              @if a
+                               @if a
+                                @if a
+                                 @if a
+                                  @if a
+                                   @if a
+                                    @if a
+                                     @if a
+                                      @if a
+                                       @if a
+                                        @if a
+                                         @if a
+                                          @if a
+                                           @if a
+                                            @if a
+                                             @if a
+                                              @if a
+                                               @if a
+                                                @if a
+                                                 @if a
+                                                  @if a
+                                                   @if a
+                                                    @if a
+                                                     @if a
+                                                      @if a
+                                                       @if a
+                                                        @if a
+                                                         @if a
+                                                          @if a
+                                                           @if a
+                                                            @if a
+                                                             @if a
+                                                              @if a
+                                                               @if a
+                                                                @if a
+                                                                 Hi.
+//                                                               ^^^ PIB1062
+
+== fixture.markup
+[b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b]x[/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b]
+//                                                                                                                                                                                              ^ PIB1062
+
+== fixture.branches
+{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}x{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}
+//                                                                                                                                                                                                                                                                                                                                                                                              ^^^ PIB1062
+
+// Must not trigger
+
+== fixture.blocks_at_the_limit
+@if a
+ @if a
+  @if a
+   @if a
+    @if a
+     @if a
+      @if a
+       @if a
+        @if a
+         @if a
+          @if a
+           @if a
+            @if a
+             @if a
+              @if a
+               @if a
+                @if a
+                 @if a
+                  @if a
+                   @if a
+                    @if a
+                     @if a
+                      @if a
+                       @if a
+                        @if a
+                         @if a
+                          @if a
+                           @if a
+                            @if a
+                             @if a
+                              @if a
+                               @if a
+                                @if a
+                                 @if a
+                                  @if a
+                                   @if a
+                                    @if a
+                                     @if a
+                                      @if a
+                                       @if a
+                                        @if a
+                                         @if a
+                                          @if a
+                                           @if a
+                                            @if a
+                                             @if a
+                                              @if a
+                                               @if a
+                                                @if a
+                                                 @if a
+                                                  @if a
+                                                   @if a
+                                                    @if a
+                                                     @if a
+                                                      @if a
+                                                       @if a
+                                                        @if a
+                                                         @if a
+                                                          @if a
+                                                           @if a
+                                                            @if a
+                                                             @if a
+                                                              @if a
+                                                               @if a
+                                                                Hi.
+
+== fixture.markup_at_the_limit
+[b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b]x[/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b]
+
+== fixture.branches_at_the_limit
+{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}x{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}

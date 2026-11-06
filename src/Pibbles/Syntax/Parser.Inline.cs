@@ -150,15 +150,24 @@ internal sealed partial class Parser
         List<ArgumentSyntax> arguments = ParseArguments(allowWait: false, out _);
         int tagEnd = CloseCode(TokenKind.CloseBracket, "]", "[", new(open, 1));
 
-        openMarkup.Add(name.Text);
-        List<InlineSyntax> content = ParseInlineItems();
-        while (pendingClose is null && !inBranch && AtInline('{'))
+        List<InlineSyntax> content = [];
+        if (TryEnter(new(open, 1)))
         {
-            SkipStrayKeyword();
-            content.AddRange(ParseInlineItems());
-        }
+            openMarkup.Add(name.Text);
+            content = ParseInlineItems();
+            while (pendingClose is null && !inBranch && AtInline('{'))
+            {
+                SkipStrayKeyword();
+                content.AddRange(ParseInlineItems());
+            }
 
-        openMarkup.RemoveAt(openMarkup.Count - 1);
+            openMarkup.RemoveAt(openMarkup.Count - 1);
+            nesting--;
+        }
+        else
+        {
+            inlinePosition = inlineEnd;
+        }
 
         int end = inlinePosition;
         if (pendingClose is not { } close)
@@ -328,7 +337,7 @@ internal sealed partial class Parser
         int open = inlinePosition;
         var openSpan = new TextSpan(open, BraceKeyword().End - open);
         ExpressionSyntax condition = ParseBranchCondition(openSpan);
-        List<InlineSyntax> content = ParseBranchContent();
+        List<InlineSyntax> content = ParseBranchContent(openSpan);
 
         List<ElseIfTextSyntax> elseIfs = [];
         ElseTextSyntax? @else = null;
@@ -341,14 +350,14 @@ internal sealed partial class Parser
             if (word is "elif" && @else is null)
             {
                 ExpressionSyntax branchCondition = ParseBranchCondition(keywordSpan);
-                List<InlineSyntax> branchContent = ParseBranchContent();
+                List<InlineSyntax> branchContent = ParseBranchContent(keywordSpan);
                 elseIfs.Add(new(branchCondition, branchContent) { Span = new(branch, inlinePosition - branch) });
             }
             else if (word is "else" && @else is null)
             {
                 StartCode(keywordEnd, keywordSpan);
                 CloseCode(TokenKind.CloseBrace, "}", "{else", keywordSpan);
-                List<InlineSyntax> branchContent = ParseBranchContent();
+                List<InlineSyntax> branchContent = ParseBranchContent(keywordSpan);
                 @else = new(branchContent) { Span = new(branch, inlinePosition - branch) };
             }
             else if (word is "/")
@@ -365,7 +374,7 @@ internal sealed partial class Parser
             else if (@else is not null && word is "elif" or "else")
             {
                 SkipStrayKeyword();
-                List<InlineSyntax> rest = ParseBranchContent();
+                List<InlineSyntax> rest = ParseBranchContent(keywordSpan);
                 @else = new([.. @else.Content, .. rest]) { Span = new(@else.Span.Start, inlinePosition - @else.Span.Start) };
             }
             else
@@ -404,9 +413,18 @@ internal sealed partial class Parser
         return condition;
     }
 
-    /// <summary>Parses one branch of conditional text. Markup can't cross a branch boundary, so each branch starts with no open spans.</summary>
-    private List<InlineSyntax> ParseBranchContent()
+    /// <summary>
+    /// Parses one branch of conditional text, opened by the keyword at <paramref name="opener"/>. Markup can't cross a branch
+    /// boundary, so each branch starts with no open spans. Past the nesting limit the branch is reported and left unread.
+    /// </summary>
+    private List<InlineSyntax> ParseBranchContent(TextSpan opener)
     {
+        if (!TryEnter(opener))
+        {
+            inlinePosition = inlineEnd;
+            return [];
+        }
+
         List<string> outer = openMarkup;
         bool outerBranch = inBranch;
         openMarkup = [];
@@ -414,6 +432,7 @@ internal sealed partial class Parser
         List<InlineSyntax> content = ParseInlineItems();
         openMarkup = outer;
         inBranch = outerBranch;
+        nesting--;
         return content;
     }
 
