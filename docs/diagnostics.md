@@ -529,6 +529,17 @@ Put a backslash before the `#`: `mira: Go \#team!`.
 
 The first line reports `＄` and `＝`, and the second `（“` and `”）`, adjacent forms together. Each help gives the whole line typed half-width: `@set $met = true`. Switch the input method to direct input for the markers: the 半角/全角 key or 英数 on a Mac for Japanese, Shift for Chinese. Quoted strings, tag values, comments and display names are text, so their forms are never reported. The speaker prefix is the one marker typed either way ([text lines](language/reference.md#text-lines)).
 
+At the start of a line, a header, statement or option marker typed this way still makes that line, since as text it would take the lines after it along:
+
+```text
+＝＝ kitchen.door
+＠if $met
+    mira: You came back.
+ー＞ はい
+```
+
+Read as text, `＝＝` would leave every line below it outside a node, and `＠if` and `ー＞` would leave their bodies under a line that opens no block, running whatever the condition. Here each is read as `==`, `@` or `->`, and reported once. In a variation's block, `ー` or `－` before a space is read as an alternative's `-`. A line that really starts with one of these characters as text escapes it, which the help offers: `\＝＝ is a sign`. `ー` is a letter, so an arrow written `ー＞` escapes its `＞`.
+
 ### PIB1045
 
 **Names you declare are single names:** actors, channels and their values, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.

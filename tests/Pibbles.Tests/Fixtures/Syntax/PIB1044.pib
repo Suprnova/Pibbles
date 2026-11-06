@@ -40,8 +40,33 @@ mira: [b」Bold[/b].
 //        ^ PIB1044
 //         ^ PIB1046
 
+// At a line's start, a header, an `@` line or an option typed this way still makes that line, so the lines after it keep their place.
+
+＝＝ fixture.lines
+// PIB1044
+＠if $met
+// PIB1044
+    mira: Yes.
+ー＞ はい
+// PIB1044
+    mira: OK.
+－> いいえ
+// PIB1044
+-》 好的
+// PIB1044
+@sequence
+    - one
+    ー　two
+//  ^ PIB1044
+    － three
+//  ^ PIB1044
+
 // Must not trigger
 
+\＠if is text, and so is \＝＝.
+ーっと待って。
+＝ is one sign.
+ー
 mira: She said “hi” and left, ＝＝ then 「b」.
 mira（happy）：Hi.
 @set $quote = "he said “hi” to 「me」"

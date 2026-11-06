@@ -22,8 +22,9 @@ public static class DiagnosticCatalog
     internal static string DidYouMean(string? suggestion) => suggestion is null ? "" : $"Did you mean `{suggestion}`? ";
 
     /// <summary>The sentence a help offers when a <c>#</c> or <c>@</c> word may be text, such as <c>If `@home` is text, put a backslash before the `@`.</c>.</summary>
-    /// <param name="word">The word as written, starting with the character to escape.</param>
-    internal static string EscapeHelp(string word) => $"If `{word}` is text, put a backslash before the `{word[0]}`.";
+    /// <param name="word">The word as written.</param>
+    /// <param name="escaped">The character to put the backslash before, if it isn't the word's first.</param>
+    internal static string EscapeHelp(string word, char? escaped = null) => $"If `{word}` is text, put a backslash before the `{escaped ?? word[0]}`.";
 
     /// <summary>PIB1002: a line is indented less than the line above it, but not as far back as any block it could belong to.</summary>
     public static DiagnosticDescriptor InconsistentIndentation { get; } = new(
@@ -253,7 +254,8 @@ public static class DiagnosticCatalog
     /// <summary>PIB1044: a marker typed through an input method, such as <c>＝</c> for <c>=</c> or <c>」</c> for <c>]</c>, read as the marker.</summary>
     /// <remarks>
     /// Arguments: the form as written, one character or a run of them; their code points, such as <c>U+FF1D</c>; the marker it's
-    /// read as; and how to fix it, which is the line with every such form on it replaced by its marker.
+    /// read as; and how to fix it, which is the line with every such form on it replaced by its marker, followed for a marker
+    /// that starts a line by <see cref="EscapeHelp"/>'s sentence.
     /// </remarks>
     public static DiagnosticDescriptor InputMethodForm { get; } = new(
         "PIB1044",

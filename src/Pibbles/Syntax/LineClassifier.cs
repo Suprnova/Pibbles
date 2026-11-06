@@ -18,6 +18,7 @@ internal sealed class LineClassifier
     private const char ByteOrderMark = '\uFEFF';
 
     private readonly SourceText source;
+    private readonly MarkerFormLog? forms;
     private readonly List<LineToken> tokens = [];
     private readonly List<Comment> comments = [];
     private readonly List<Diagnostic> diagnostics = [];
@@ -25,9 +26,16 @@ internal sealed class LineClassifier
     private char? indentCharacter;
     private LineKind lineAbove = LineKind.Blank;
 
-    private LineClassifier(SourceText source) => this.source = source;
+    private LineClassifier(SourceText source, MarkerFormLog? forms)
+    {
+        this.source = source;
+        this.forms = forms;
+    }
 
-    public static ClassifiedLines Classify(SourceText source) => new LineClassifier(source).Run();
+    /// <summary>Classifies <paramref name="source"/>'s lines.</summary>
+    /// <param name="source">The file.</param>
+    /// <param name="forms">Where a line marker typed through an input method is recorded, or <see langword="null"/> to classify without recording it.</param>
+    public static ClassifiedLines Classify(SourceText source, MarkerFormLog? forms = null) => new LineClassifier(source, forms).Run();
 
     private ClassifiedLines Run()
     {
@@ -57,6 +65,8 @@ internal sealed class LineClassifier
         ReadOnlySpan<char> content = Whitespace.TrimStart(text);
         var indentation = new TextSpan(start, text.Length - content.Length);
         var line = new SourceLine(number, KindOf(content), new(indentation.End, content.Length));
+        if (forms is not null)
+            RecordForms(content, indentation.End, line.Kind, forms);
 
         if (line.Kind is LineKind.Note)
             Report(DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
@@ -72,7 +82,11 @@ internal sealed class LineClassifier
         lineAbove = line.Kind;
     }
 
-    /// <summary>Classifies a line by how its content starts. A bare <c>-</c> is an alternative marker, like <c>- </c> followed by text.</summary>
+    /// <summary>
+    /// Classifies a line by how its content starts. A bare <c>-</c> is an alternative marker, like <c>- </c> followed by text.
+    /// A header, <c>@</c> line or option marker typed through an input method, such as <c>＝＝</c>, <c>＠if</c> or <c>ー＞</c>,
+    /// makes the same kind of line, since reading it as text would change what the lines after it belong to.
+    /// </summary>
     internal static LineKind KindOf(ReadOnlySpan<char> content) => content switch
     {
         [] => LineKind.Blank,
@@ -81,8 +95,32 @@ internal sealed class LineClassifier
         ['@', ..] => LineKind.At,
         ['-', '>', ..] => LineKind.Option,
         ['-', ..] when content.Length is 1 || Whitespace.Is(content[1]) => LineKind.Dash,
+        ['=' or '＝', '=' or '＝', ..] => LineKind.Header,
+        ['＠', _, ..] when char.IsLetter(content[1]) => LineKind.At,
+        ['-' or '－' or 'ー', '>' or '＞' or '》', ..] => LineKind.Option,
         _ => LineKind.Text,
     };
+
+    /// <summary>Records each character of the marker that starts <paramref name="content"/>, a line of kind <paramref name="kind"/>, that was typed through an input method.</summary>
+    /// <param name="content">The line's content, from its first character that isn't indentation.</param>
+    /// <param name="start">Where the content starts in the file.</param>
+    /// <param name="kind">The line's kind, from <see cref="KindOf"/>.</param>
+    /// <param name="forms">Where the forms are recorded.</param>
+    internal static void RecordForms(ReadOnlySpan<char> content, int start, LineKind kind, MarkerFormLog forms)
+    {
+        int length = kind switch
+        {
+            LineKind.Header or LineKind.Option => 2,
+            LineKind.At or LineKind.Dash => 1,
+            _ => 0,
+        };
+
+        for (int i = 0; i < length; i++)
+        {
+            if (MarkerForms.Map(content[i], lineStart: true) is not '\0' and var marker)
+                forms.Record(start + i, marker, escapable: kind is not LineKind.Dash);
+        }
+    }
 
     /// <summary>
     /// Emits the indents or dedents before a line. A line that lines up with no block joins the innermost block it fits in.

@@ -242,6 +242,12 @@ internal sealed partial class Parser
                 alternatives.Add(ParseAlternative(Current.Line));
                 continue;
             }
+            else if (IsDashForm(Current.Line))
+            {
+                LineClassifier.RecordForms(source.Text.AsSpan(Current.Line.Content.Start, 1), Current.Line.Content.Start, LineKind.Dash, forms);
+                alternatives.Add(ParseAlternative(Current.Line with { Kind = LineKind.Dash }));
+                continue;
+            }
             else if (Current.Line.Kind is LineKind.Header)
             {
                 Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header", null);
@@ -275,7 +281,9 @@ internal sealed partial class Parser
         int after = Whitespace.Skip(source.Text, start + 1, line.Content.End);
 
         var content = new TextSpan(after, line.Content.End - after);
-        var inner = new SourceLine(line.Number, LineClassifier.KindOf(source.Text.AsSpan(content.Start, content.Length)), content);
+        ReadOnlySpan<char> innerText = source.Text.AsSpan(content.Start, content.Length);
+        var inner = new SourceLine(line.Number, LineClassifier.KindOf(innerText), content);
+        LineClassifier.RecordForms(innerText, content.Start, inner.Kind, forms);
         List<StatementSyntax> body = [];
 
         if (inner.Kind is LineKind.Blank or LineKind.Comment or LineKind.Note)
@@ -482,9 +490,15 @@ internal sealed partial class Parser
         kind is TokenKind.Name or TokenKind.Variable or TokenKind.Number or TokenKind.Duration or TokenKind.String or TokenKind.OpenParen;
 
     /// <summary>The <c>@</c> word a line starts with, read without lexing the line.</summary>
+    /// <summary>Whether <paramref name="line"/> starts with an alternative's dash typed through an input method, <c>ー</c> or <c>－</c>, which a variation's block can only mean as its dash.</summary>
+    private bool IsDashForm(SourceLine line) =>
+        line.Kind is LineKind.Text
+        && source.Text.AsSpan(line.Content.Start, line.Content.Length) is ['ー' or '－', .. var rest]
+        && (rest.IsEmpty || Whitespace.Is(rest[0]));
+
     private string AtWordOf(SourceLine line)
     {
         int start = line.Content.Start;
-        return source.Text[start..Identifiers.Skip(source.Text, start + 1, line.Content.End)];
+        return code[start..Identifiers.Skip(code, start + 1, line.Content.End)];
     }
 }

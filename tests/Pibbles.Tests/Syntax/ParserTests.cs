@@ -818,6 +818,36 @@ public class ParserTests
         Assert.Equal(["PIB1044", "PIB1044", "PIB1046"], tree.Diagnostics.OrderBy(diagnostic => diagnostic.Location.Span.Start).Select(diagnostic => diagnostic.Code));
     }
 
+    [Fact]
+    public void Parse_LineMarkersTypedThroughInputMethod_KeepTheLinesAfterThem()
+    {
+        var source = new SourceText("story.pib", "＝＝ kitchen.door\n＠if $met\n    mira: Yes.\nー＞ はい\n    mira: OK.\n@cycle\n    ー　one\n    － two\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        NodeSyntax node = Assert.Single(tree.Root.Nodes);
+        Assert.Equal("kitchen.door", node.Name.Text);
+        Assert.Single(((IfStatementSyntax)node.Body[0]).Body);
+        Assert.Single(Assert.Single(((ChoiceSyntax)node.Body[1]).Options).Body);
+        Assert.Equal(2, ((VariationStatementSyntax)node.Body[2]).Alternatives.Count);
+        Assert.Equal(5, tree.Diagnostics.Count(diagnostic => diagnostic.Code is "PIB1044"));
+        Assert.Equal(5, tree.Diagnostics.Count);
+    }
+
+    [Theory]
+    [InlineData("＝＝ a.b", "Write `== a.b`, typing markers in your input method's direct (half-width) mode. If `＝＝` is text, put a backslash before the `＝`.")]
+    [InlineData("== a.b\n＠jump c", "Write `@jump c`, typing markers in your input method's direct (half-width) mode. If `＠` is text, put a backslash before the `＠`.")]
+    [InlineData("== a.b\nー＞ はい", "Write `-> はい`, typing markers in your input method's direct (half-width) mode. If `ー＞` is text, put a backslash before the `＞`.")]
+    [InlineData("== a.b\n@cycle\n    ー　one", "Write `-　one`, typing markers in your input method's direct (half-width) mode.")]
+    public void Parse_LineMarkerTypedThroughInputMethod_OffersTheEscapeWhereOneWorks(string text, string help)
+    {
+        var source = new SourceText("story.pib", text);
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1044", help), (diagnostic.Code, diagnostic.Help));
+    }
+
     [Theory]
     [InlineData("@var $a = 1", "Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`.")]
     [InlineData("@command knock()", "Only `@var` can go between nodes. Move this above the first `==` line, or into another file.")]

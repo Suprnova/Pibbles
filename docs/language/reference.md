@@ -52,12 +52,14 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 **The text-first rule:** a line that doesn't start with one of these markers is always text. So *"If you say so."* is narration, not a broken `if` statement.
 
+A header, statement or option marker typed through an input method (`＝＝`, `＠` before a letter, or an arrow made of `-`, `－` or `ー` and `>`, `＞` or `》`) still makes a header, a statement or an option, since reading it as text would move the lines after it, and is an error ([lexical basics](#lexical-basics)). So is `ー` or `－` where a variation block expects an alternative's `-`.
+
 ## Lexical basics
 
 - **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. Only spaces and tabs indent: a line that starts with any other space, such as the ideographic space U+3000, is an error (PIB1006). A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
 - **Whitespace** between the parts of a line is a tab or any space separator (Unicode category Zs), such as the no-break space U+00A0 and the ideographic space U+3000. A Japanese input method types U+3000 for the space bar, and French typography puts a no-break space before a colon, so each separates exactly as a space does. Only [indentation](#line-classification) is narrower.
-- **Markers are half-width,** typed in ASCII, except the speaker prefix's punctuation, which may also be full-width ([text lines](#text-lines)). An input method types its own form of a marker key: a full-width form (U+FF01 to U+FF5E, apart from the letters and `＿`, which are identifier characters), or `「` and `【` for `[`, `」` and `】` for `]`, `『』` for `{}`, `・` for `/`, `、` for `,`, `。` for `.`, `￥` for `$`, `《》` for `<>` and `“”` for `"`. In code (an `@` line after its keyword, a header after its `==`, `[…]`, `{…}`, an option's modifiers, an actor's lines, and a tag's `#` and `:`), such a form is read as the marker it stands for and is an error (PIB1044), so the rest of the line is still checked. A quoted string opened with `"` closes only at `"`, so it can hold `“”`. A string's text, a tag's value, a comment and a display name keep their forms as written.
+- **Markers are half-width,** typed in ASCII, except the speaker prefix's punctuation, which may also be full-width ([text lines](#text-lines)). An input method types its own form of a marker key: a full-width form (U+FF01 to U+FF5E, apart from the letters and `＿`, which are identifier characters), or `「` and `【` for `[`, `」` and `】` for `]`, `『』` for `{}`, `・` for `/`, `、` for `,`, `。` for `.`, `￥` for `$`, `《》` for `<>` and `“”` for `"`. In code (an `@` line after its keyword, a header after its `==`, `[…]`, `{…}`, an option's modifiers, an actor's lines, and a tag's `#` and `:`), and as a header, statement, option or alternative marker at a line's start ([line classification](#line-classification)), such a form is read as the marker it stands for and is an error (PIB1044), so the rest of the line is still checked. A backslash before a form at a line's start makes the line text (`\＠`). A quoted string opened with `"` closes only at `"`, so it can hold `“”`. A string's text, a tag's value, a comment and a display name keep their forms as written.
 - **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
@@ -528,11 +530,14 @@ Each line is classified by how its `content` starts, checked in this order:
 | `@` | AT |
 | `->` | OPTION |
 | `-` followed by `ws` or the end of the line | DASH |
+| `==` with either character as `＝` | HEADER, and an error |
+| `＠` followed by a letter | AT, and an error |
+| `-`, `－` or `ー`, then `>`, `＞` or `》`, other than `->` | OPTION, and an error |
 | anything else | TEXT |
 
 The parser reads two classes by context, which the classifier doesn't know:
 
-- **DASH** is an alternative only as a direct child of a variation block. Its content after `- ` is classified again, as a line of its own. A `-` with nothing after it but a comment has no content: its alternative is the block below it. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
+- **DASH** is an alternative only as a direct child of a variation block. There, a TEXT line starting with `ー` or `－` followed by `ws` or the end of the line is a DASH too, and an error. Its content after `- ` is classified again, as a line of its own. A `-` with nothing after it but a comment has no content: its alternative is the block below it. Anywhere else, a DASH line is a TEXT line, by the text-first rule.
 - **TEXT** inside an `@actor` block is an actor property.
 
 A file's text doesn't start with a byte-order mark: the tool that reads the file removes it when it decodes the file, and one that reaches the parser is an error (PIB1007), after which the line is read without it. Four or more slashes start a COMMENT, so `////` banners stay comments. v1 reports every NOTE line as an error. The same counts apply anywhere else on a line: a run of two slashes, or of four or more, starts a comment, and a run of exactly three is a NOTE, an error in v1.
@@ -743,7 +748,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - Option text can't contain commands, `{w}`, `{pause}`, `{page}` or `{speed}` ([where inline elements are allowed](#where-inline-elements-are-allowed)).
 - A `(` separated from the NAME before it by whitespace, where only a call can follow the NAME (`{fn (x)}`, `has_item ("key")`), is an error that suggests removing the space.
 - A declared name isn't a [reserved word](#reserved-words) for its kind, and uses ASCII letters only.
-- A marker in code is half-width. A form an input method types in its place is read as the marker and reported ([lexical basics](#lexical-basics)).
+- A marker in code, and a header, statement, option or alternative marker, is half-width. A form an input method types in its place is read as the marker and reported ([lexical basics](#lexical-basics)).
 
 ### Definition order
 

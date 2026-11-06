@@ -27,6 +27,21 @@ public class LineClassifierTests
     }
 
     [Theory]
+    [InlineData("＝＝ kitchen.door", nameof(LineKind.Header))]
+    [InlineData("=＝ kitchen.door", nameof(LineKind.Header))]
+    [InlineData("＠if $door_open", nameof(LineKind.At))]
+    [InlineData("ー＞ はい", nameof(LineKind.Option))]
+    [InlineData("－> はい", nameof(LineKind.Option))]
+    [InlineData("-》 好的", nameof(LineKind.Option))]
+    [InlineData("＠ alone is text.", nameof(LineKind.Text))]
+    [InlineData("＝ One sign is text.", nameof(LineKind.Text))]
+    [InlineData("ー one", nameof(LineKind.Text))]
+    [InlineData("\\＠if is text.", nameof(LineKind.Text))]
+    [InlineData("・・ A comment typed this way is text.", nameof(LineKind.Text))]
+    public void KindOf_MarkerTypedThroughInputMethod_GivesTheMarkersKind(string text, string expected) =>
+        Assert.Equal(Enum.Parse<LineKind>(expected), LineClassifier.KindOf(text));
+
+    [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("\t")]

@@ -45,7 +45,7 @@ internal sealed partial class Parser
     private Parser(SourceText source)
     {
         this.source = source;
-        ClassifiedLines classified = LineClassifier.Classify(source);
+        ClassifiedLines classified = LineClassifier.Classify(source, forms);
         lines = classified.Tokens;
         comments = [.. classified.Comments];
         diagnostics = [.. classified.Diagnostics];
@@ -314,7 +314,7 @@ internal sealed partial class Parser
     private bool IsVariableDeclaration(SourceLine line)
     {
         int start = line.Content.Start;
-        return line.Kind is LineKind.At && source.Text.AsSpan(start, Identifiers.Skip(source.Text, start + 1, line.Content.End) - start) is "@var";
+        return line.Kind is LineKind.At && code.AsSpan(start, Identifiers.Skip(code, start + 1, line.Content.End) - start) is "@var";
     }
 
     private void ReportUnexpectedIndentation()

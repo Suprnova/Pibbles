@@ -18,8 +18,10 @@ internal static class MarkerForms
         [.. Enumerable.Range(0xFF01, 0x5E).Select(c => (char)c).Where(c => Map(c) is not '\0'), .. "「」【】『』・、。￥《》“”"]);
 
     /// <summary>The ASCII marker character <paramref name="c"/> stands for, or <c>'\0'</c> if it stands for none.</summary>
+    /// <param name="c">The character as written.</param>
+    /// <param name="lineStart">Whether it starts a line, where <c>ー</c> is a dash. Elsewhere it's a letter, the long-vowel mark.</param>
     /// <remarks>Full-width letters and <c>＿</c> aren't markers: they're part of identifiers, which read them as they're written.</remarks>
-    public static char Map(char c) => c switch
+    public static char Map(char c, bool lineStart = false) => c switch
     {
         >= '！' and <= '～' when !char.IsAsciiLetter((char)(c - 0xFEE0)) && c is not '＿' => (char)(c - 0xFEE0),
         '「' or '【' => '[',
@@ -33,6 +35,7 @@ internal static class MarkerForms
         '《' => '<',
         '》' => '>',
         '“' or '”' => '"',
+        'ー' when lineStart => '-',
         _ => '\0',
     };
 
@@ -62,12 +65,14 @@ internal static class MarkerForms
 /// </summary>
 internal sealed class MarkerFormLog
 {
-    private readonly SortedDictionary<int, char> forms = [];
+
+    private readonly SortedDictionary<int, (char Marker, bool Escapable)> forms = [];
 
     /// <summary>Records the form at <paramref name="position"/>, read as <paramref name="marker"/>. Reading it again records nothing more.</summary>
     /// <param name="position">Where the form is.</param>
     /// <param name="marker">The ASCII character it's read as.</param>
-    public void Record(int position, char marker) => forms.TryAdd(position, marker);
+    /// <param name="escapable">Whether a backslash before it would make it text, which is so only for the marker that starts a line.</param>
+    public void Record(int position, char marker, bool escapable = false) => forms.TryAdd(position, (marker, escapable));
 
     /// <summary>One diagnostic per run of adjacent forms, each with its line rewritten with every form on it replaced by its marker.</summary>
     public IEnumerable<Diagnostic> Report(SourceText source)
@@ -86,8 +91,13 @@ internal sealed class MarkerFormLog
         {
             string written = text[start..end];
             string codePoints = string.Join(", ", written.Distinct().Select(c => $"U+{(int)c:X4}"));
-            string marker = string.Concat(Enumerable.Range(start, end - start).Select(position => forms[position]));
-            yield return DiagnosticCatalog.InputMethodForm.Create(source.GetLocation(new(start, end - start)), written, codePoints, marker, $"Write `{Corrected(source, start)}`, typing markers in your input method's direct (half-width) mode.");
+            string marker = string.Concat(Enumerable.Range(start, end - start).Select(position => forms[position].Marker));
+            string help = $"Write `{Corrected(source, start)}`, typing markers in your input method's direct (half-width) mode.";
+            int escape = Enumerable.Range(0, written.Length).FirstOrDefault(index => CodeLexer.IsEscapable(written, index), -1);
+            if (forms[start].Escapable && escape >= 0)
+                help += " " + DiagnosticCatalog.EscapeHelp(written, written[escape]);
+
+            yield return DiagnosticCatalog.InputMethodForm.Create(source.GetLocation(new(start, end - start)), written, codePoints, marker, help);
         }
     }
 
@@ -95,7 +105,7 @@ internal sealed class MarkerFormLog
     {
         TextSpan line = source.GetLineSpan(source.GetLinePosition(position).Line);
         var corrected = new StringBuilder(source.Text, line.Start, line.Length, line.Length);
-        foreach ((int at, char marker) in forms.Where(form => form.Key >= line.Start && form.Key < line.End))
+        foreach ((int at, (char marker, _)) in forms.Where(form => form.Key >= line.Start && form.Key < line.End))
             corrected[at - line.Start] = marker;
 
         return Whitespace.Trim(corrected.ToString()).ToString();
