@@ -127,7 +127,9 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         foreach (VariableDeclarationSyntax declaration in file.Declarations.OfType<VariableDeclarationSyntax>())
         {
             var name = new NameSyntax(declaration.Variable.Name) { Span = declaration.Variable.Span };
-            TypeSymbol type = declaration.Type is { } written ? ResolveType(written) : TypeOfValue(declaration);
+            TypeSymbol type = declaration.Type is { } written ? ResolveType(written)
+                : name.IsMissing ? TypeSymbol.Error
+                : TypeOfValue(declaration);
             if (FullName(name.Text, name.Span, $"${name.Text}") is { } fullName)
                 Declare(symbols.Variables, new VariableSymbol(fullName, Location(name.Span), type, declaration.Value), name, SymbolKind.Variable, $"${fullName}");
         }

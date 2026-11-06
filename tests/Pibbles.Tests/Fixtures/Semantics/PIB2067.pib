@@ -15,5 +15,7 @@
 
 @var $there: position = left
 @var $count = -1
+@var = right
+//  ^ PIB1046
 
 == kitchen.door
