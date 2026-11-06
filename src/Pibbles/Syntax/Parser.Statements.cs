@@ -84,7 +84,9 @@ internal sealed partial class Parser
                 return;
 
             case var _ when DeclarationKeywords.Contains(word):
-                Fail(DiagnosticCatalog.DeclarationInNode, token.Span);
+                Fail(DiagnosticCatalog.DeclarationInNode, token.Span, word, word is "@var"
+                    ? "Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`."
+                    : "Only `@var` can go between nodes. Move this above the first `==` line, or into another file.");
                 index++;
                 SkipBlock();
                 return;

@@ -15,4 +15,4 @@ Comments:
 Diagnostics:
   PIB1046 4:11 I expected `=` after `$typo`.
   PIB1003 5:1 This line is indented, but the line above it doesn't open a block.
-  PIB1021 7:1 Declarations have to come before the file's first node.
+  PIB1021 7:1 `@command` can't go inside a node.

@@ -60,8 +60,8 @@ internal static class SyntaxGenerators
     public static Gen<FileSyntax> File { get; } = Gen.Select(
         Maybe(DottedName.Select(name => new PrefixSyntax(Name(name)) { Span = default })),
         Declaration().Array[0, 4],
-        Node().Array[0, 3],
-        (prefix, declarations, nodes) => new FileSyntax(prefix, [.. declarations, .. nodes]) { Span = default });
+        Gen.Select(Node(), VariableDeclaration().Array[0, 2], (node, variables) => (SyntaxNode[])[node, .. variables]).Array[0, 3],
+        (prefix, declarations, nodes) => new FileSyntax(prefix, [.. declarations, .. nodes.SelectMany(members => members)]) { Span = default });
 
     private static NameSyntax Name(string text) => new(text) { Span = default };
 
@@ -109,8 +109,7 @@ internal static class SyntaxGenerators
             narration,
             Gen.Select(Identifier, Identifier.Select(Name).Array[0, 3], DeclarationSyntax (name, values) => new ChannelDeclarationSyntax(Name(name), values) { Span = default }),
             Gen.Select(Identifier, names, DeclarationSyntax (name, members) => new EnumDeclarationSyntax(Name(name), members) { Span = default }),
-            Gen.Select(VariableName, Maybe(Identifier), Constant(),
-                DeclarationSyntax (name, type, value) => new VariableDeclarationSyntax(new(name) { Span = default }, type is null ? null : Name(type), value) { Span = default }),
+            VariableDeclaration(),
             Gen.Select(Identifier, parameter.Array[0, 2], Gen.Bool, Gen.Bool,
                 DeclarationSyntax (name, parameters, isInline, waits) => new CommandDeclarationSyntax(Name(name), parameters, isInline, waits) { Span = default }),
             Gen.Select(Identifier, parameter.Array[0, 2], DeclarationSyntax (name, parameters) => new MarkupDeclarationSyntax(Name(name), parameters) { Span = default }),
@@ -119,6 +118,9 @@ internal static class SyntaxGenerators
             Gen.Select(Identifier, parameter.Array[0, 2], Identifier,
                 DeclarationSyntax (name, parameters, type) => new FunctionDeclarationSyntax(Name(name), parameters, Name(type)) { Span = default }));
     }
+
+    private static Gen<DeclarationSyntax> VariableDeclaration() => Gen.Select(VariableName, Maybe(Identifier), Constant(),
+        DeclarationSyntax (name, type, value) => new VariableDeclarationSyntax(new(name) { Span = default }, type is null ? null : Name(type), value) { Span = default });
 
     /// <summary>A constant: a literal, a negative number or duration, or a bare name.</summary>
     private static Gen<ExpressionSyntax> Constant() => Gen.OneOf(

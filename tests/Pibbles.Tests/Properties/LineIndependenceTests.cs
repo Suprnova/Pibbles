@@ -14,7 +14,7 @@ namespace Pibbles.Tests.Properties;
 /// </summary>
 /// <remarks>
 /// Only a line with no deeper-indented line under it is replaced, since replacing a block's opener changes its block by
-/// design. Garbage never starts with a marker that changes structure: <c>==</c>, <c>-></c>, <c>- </c>, <c>@elif</c> or
+/// design, and a variable declaration between nodes isn't, since replacing it changes where the node above ends. Garbage never starts with a marker that changes structure: <c>==</c>, <c>-></c>, <c>- </c>, <c>@elif</c> or
 /// <c>@else</c>, or <c>//</c>. A choice is left out of a line's parse, since it starts on its first option's line.
 /// </remarks>
 public partial class LineIndependenceTests
@@ -58,17 +58,23 @@ public partial class LineIndependenceTests
         && garbage is not ("-" or ['-', ' ' or '\t', ..])
         && !ElseClause().IsMatch(garbage);
 
-    /// <summary>The lines that hold content, aren't headers, and have no deeper-indented line directly under them.</summary>
+    /// <summary>
+    /// The lines that hold content, aren't headers or variable declarations between nodes, and have no deeper-indented
+    /// line directly under them. Replacing one declaration of a run between nodes puts the ones above it in the node.
+    /// </summary>
     private static int[] ReplaceableLines(string text)
     {
         var source = new SourceText("file.pib", text);
-        (int Line, int Width, LineKind Kind)[] lines = [.. Enumerable.Range(0, source.LineCount)
+        (int Line, int Width, LineKind Kind, bool Variable)[] lines = [.. Enumerable.Range(0, source.LineCount)
             .Select(line => (Line: line, Text: LineText(source, line)))
-            .Select(line => (line.Line, Width: IndentationWidth(line.Text), Kind: LineClassifier.KindOf(line.Text.AsSpan(IndentationWidth(line.Text)))))
+            .Select(line => (line.Line, Width: IndentationWidth(line.Text), Kind: LineClassifier.KindOf(line.Text.AsSpan(IndentationWidth(line.Text))), Variable: VariableDeclaration().IsMatch(line.Text)))
             .Where(line => line.Kind is not (LineKind.Blank or LineKind.Comment or LineKind.Note))];
+        int firstHeader = Array.FindIndex(lines, line => line.Kind is LineKind.Header);
 
         return [.. lines
-            .Where((line, i) => line.Kind is not LineKind.Header && (i + 1 == lines.Length || lines[i + 1].Width <= line.Width))
+            .Where((line, i) => line.Kind is not LineKind.Header
+                && !(line.Variable && firstHeader >= 0 && i > firstHeader)
+                && (i + 1 == lines.Length || lines[i + 1].Width <= line.Width))
             .Select(line => line.Line)];
     }
 
@@ -123,6 +129,9 @@ public partial class LineIndependenceTests
 
     [GeneratedRegex(@"^@(elif|else)(?![\p{L}\p{Nd}_])")]
     private static partial Regex ElseClause();
+
+    [GeneratedRegex(@"^@var(?![\p{L}\p{Nd}_])")]
+    private static partial Regex VariableDeclaration();
 
     private sealed record Case(string Text, int Line, string Garbage)
     {

@@ -699,4 +699,41 @@ public class ParserTests
 
         Assert.Equal(code, Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
+
+    [Fact]
+    public void Parse_VariablesBeforeHeaderOrEndOfFile_BelongToTheFile()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\nmira: Hi\n@var $a = 1\n// A comment.\n\n@var $b = 2\n== kitchen.window\nmira: Bye\n@var $c = 3\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Empty(tree.Diagnostics);
+        Assert.Equal(
+            [nameof(NodeSyntax), nameof(VariableDeclarationSyntax), nameof(VariableDeclarationSyntax), nameof(NodeSyntax), nameof(VariableDeclarationSyntax)],
+            tree.Root.Members.Select(member => member.GetType().Name));
+        Assert.All(tree.Root.Nodes, node => Assert.Single(node.Body));
+    }
+
+    [Fact]
+    public void Parse_VariableWithNodeLinesAfterIt_IsReportedOnceAndTheLinesStayInTheNode()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\n@var $a = 1\nmira: Hi\n== kitchen.window\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal("PIB1021", Assert.Single(tree.Diagnostics).Code);
+        Assert.Single(tree.Root.Nodes[0].Body);
+    }
+
+    [Theory]
+    [InlineData("@var $a = 1", "Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`.")]
+    [InlineData("@command knock()", "Only `@var` can go between nodes. Move this above the first `==` line, or into another file.")]
+    public void Parse_DeclarationInNode_SaysWhereItsKindCanGo(string declaration, string help)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{declaration}\nmira: Hi\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1021", $"`{declaration.Split(' ')[0]}` can't go inside a node.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+    }
 }

@@ -53,7 +53,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1018 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
-| PIB1021 | Error | Declarations have to come before the file's first node. | Move this above the first `==` line, or into another file. |
+| PIB1021 | Error | `@var` can't go inside a node. | Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
 | PIB1023 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
 | PIB1030 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
@@ -367,14 +367,15 @@ Move `@prefix` above everything else. A second `@prefix` in the same file is [PI
 
 ### PIB1021
 
-**Declarations make up the contract between the story and the game, and they all come before a file's first node.** That keeps them easy to find, and keeps the cast list in one place. A file can hold only declarations.
+**A node's lines are steps, and a declaration isn't one.** In a node, `@var $door_open = false` would read as setting the variable each time the node runs, but a variable gets its starting value once, when a game starts. Variable declarations can also sit between nodes: at column 0, below a node's last line, with nothing after them but comments, blank lines and other variable declarations up to the next `==` line or the end of the file. Every other kind of declaration is part of the contract between the story and the game, and comes before a file's first node, where the game's programmers look for it. A file can hold only declarations.
 
 ```text
 == kitchen.door
 @var $door_open = false
+mira: It's stuck.
 ```
 
-Move the declaration above the first `==` line, or into the file that holds the story's other declarations.
+Move a variable's declaration above the first `==` line or below the node's last line, and use `@set` to change its value in the node. Move any other declaration above the first `==` line, or into the file that holds the story's other declarations.
 
 ### PIB1022
 

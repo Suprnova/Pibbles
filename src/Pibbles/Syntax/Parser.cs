@@ -71,7 +71,7 @@ internal sealed partial class Parser
                 sawNode = true;
                 members.Add(ParseNode());
             }
-            else if (sawNode)
+            else if (sawNode && !AtVariablesBeforeHeader())
             {
                 ContinueLastNode();
             }
@@ -83,8 +83,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>
-    /// Adds the lines after a node's body to that node. A body only ends before the next header when its header was
-    /// indented and the lines below it aren't, and those lines still come after the node.
+    /// Adds the lines after a node's body to that node. A body ends before the next header, or before the variable
+    /// declarations directly above it, except when its header was indented and the lines below it aren't. Those lines
+    /// still belong to the node.
     /// </summary>
     private void ContinueLastNode()
     {
@@ -204,11 +205,12 @@ internal sealed partial class Parser
                 statements.AddRange(ParseStatements(nodeLevel: false));
                 SkipDedent();
             }
+            else if (nodeLevel && (Current.Line.Kind is LineKind.Header || AtVariablesBeforeHeader()))
+            {
+                break;
+            }
             else if (Current.Line.Kind is LineKind.Header)
             {
-                if (nodeLevel)
-                    break;
-
                 Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header");
                 index++;
                 SkipBlock();
@@ -220,6 +222,30 @@ internal sealed partial class Parser
         }
 
         return statements;
+    }
+
+    /// <summary>
+    /// Whether the current line starts a run of variable declarations that reaches the next header or the end of the
+    /// file, with no other line in between. Such a run belongs to the file, not to the node above it.
+    /// </summary>
+    private bool AtVariablesBeforeHeader()
+    {
+        for (int i = index; lines[i] is { Kind: LineTokenKind.Line, Line: var line }; i++)
+        {
+            if (line.Kind is LineKind.Header or LineKind.EndOfFile)
+                return true;
+
+            if (!IsVariableDeclaration(line))
+                return false;
+        }
+
+        return false;
+    }
+
+    private bool IsVariableDeclaration(SourceLine line)
+    {
+        int start = line.Content.Start;
+        return line.Kind is LineKind.At && source.Text.AsSpan(start, Identifiers.Skip(source.Text, start + 1, line.Content.End) - start) is "@var";
     }
 
     private void ReportUnexpectedIndentation()

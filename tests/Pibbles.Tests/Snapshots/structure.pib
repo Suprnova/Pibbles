@@ -1,4 +1,4 @@
-// A file's structure: a prefix, declarations, then nodes.
+// A file's structure: a prefix, declarations, then nodes, with variable declarations between them and at the end.
 
 @prefix kitchen
 
@@ -16,6 +16,10 @@ mira: Locked.
     @return
 @end
 
+@var $.knocks = 0
+// A comment inside the run.
+
+@var $.left = false
 == .leave
 @once
     mira: Only the first time.
@@ -23,3 +27,4 @@ mira: Locked.
 
 == common.knock
 @return
+@var $last_knock = 0

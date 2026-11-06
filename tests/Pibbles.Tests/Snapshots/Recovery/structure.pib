@@ -4,4 +4,4 @@
 @var $typo == false
     == snapshot.indented
 Narration that still belongs to the node.
-@var $late = 1
+@command late()

@@ -157,12 +157,13 @@ public static class DiagnosticCatalog
         "`@prefix` has to come first in the file.",
         help: "Move it to the top. Only comments can go above it.");
 
-    /// <summary>PIB1021: a declaration inside a node.</summary>
+    /// <summary>PIB1021: a declaration inside a node, which for a kind other than <c>@var</c> is any declaration after the file's first node.</summary>
+    /// <remarks>Arguments: the declaration's keyword, and where it can go instead.</remarks>
     public static DiagnosticDescriptor DeclarationInNode { get; } = new(
         "PIB1021",
         DiagnosticSeverity.Error,
-        "Declarations have to come before the file's first node.",
-        help: "Move this above the first `==` line, or into another file.");
+        "`{0}` can't go inside a node.",
+        help: "{1}");
 
     /// <summary>PIB1022: a statement before the file's first node.</summary>
     public static DiagnosticDescriptor OutsideNode { get; } = new(

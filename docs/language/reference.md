@@ -32,7 +32,7 @@ rex: {if $bravery > 2}Maybe stop hitting it?{else}Well, that didn't work.{/if}
 
 - Source files use the `.pib` extension and are UTF-8, with or without a byte-order mark, which belongs to the encoding and not to the text. Any line-ending style is accepted.
 - A story is every `.pib` file under the story folder, compiled together. Names are global across files, and file names and folders carry no meaning to the language.
-- A file has two regions: **declarations** first, then **nodes**. The node region starts at the first node header (`==`). A file may contain only declarations or only nodes. An optional [`@prefix`](#prefixes) line comes before both.
+- A file has two regions: **declarations** first, then **nodes**. The node region starts at the first node header (`==`). Variable declarations can also sit [between nodes](#declarations). A file may contain only declarations or only nodes. An optional [`@prefix`](#prefixes) line comes before both.
 - An optional `pibbles.json` in the project root holds project settings, such as `storyFolders`, the folders the story is in (`story` by default). Without it, defaults apply. `pibbles init` creates it, and the [tooling design](../tooling.md#project-settings) lists every setting.
 - The project root is the nearest folder with a `pibbles.json`, starting from the folder the tools are pointed at (the CLI's `[root]` argument, or the current directory) and going up, the way git finds a repository. With no `pibbles.json` above it, the root is that folder itself. Diagnostic severities live in `.editorconfig` ([tooling design](../tooling.md#configuration)).
 
@@ -68,7 +68,7 @@ The parser classifies each line by how it starts, before looking at the rest of 
 
 ## Declarations
 
-Declarations make up the contract between the story and the host ([boundaries](../boundaries.md#the-contract-goes-both-ways)). They are global, order doesn't matter, and they may only appear before a file's first node.
+Declarations make up the contract between the story and the host ([boundaries](../boundaries.md#the-contract-goes-both-ways)). They are global, order doesn't matter, and they appear before a file's first node. A variable declaration can also sit between nodes: a run of `@var` lines at column 0, followed by nothing but comments, blank lines and other `@var` lines up to the next header or the end of the file, belongs to the file and not to the node above it. Where a declaration sits never changes what it means. A declaration inside a node is an error, since a node's lines are steps: `@set` changes a variable's value there.
 
 ```pib-standalone
 @channel pose: neutral, happy, sad, worried
@@ -132,7 +132,7 @@ Declared names share one namespace per kind, and each kind avoids the [reserved 
 == kitchen.fridge #was:kitchen.icebox
 ```
 
-A node header gives a globally unique name, full or [relative](#prefixes), and optional `#was:` aliases. The node's body is every line up to the next header or the end of the file, starting at column 0.
+A node header gives a globally unique name, full or [relative](#prefixes), and optional `#was:` aliases. The node's body is every line up to the next header or the end of the file, starting at column 0, except for the [variable declarations](#declarations) directly above the next header or at the end of the file.
 
 - The host starts dialogues at nodes by name. Nodes jump to and call each other.
 - A node's **visit count** goes up each time it's entered, whether by the host, `@jump` or `@call`, before its first statement runs. A node that jumps to itself counts its rounds. It doesn't go up when an `@call` returns, or when a save is restored. `visits(kitchen.fridge)` reads it.
@@ -614,7 +614,7 @@ RAW             ::= [^#xA#xD]*                         /* up to a COMMENT, trimm
 ### Structure
 
 ```ebnf
-file            ::= prefix_line? declaration* node*
+file            ::= prefix_line? declaration* (node var_decl*)*
 prefix_line     ::= "@prefix" NAME EOL
 node            ::= header_line statement*
 header_line     ::= "==" NAME TAG* EOL
@@ -726,7 +726,7 @@ primary         ::= literal | VARIABLE | NAME call_args? | "(" expr ")"
 - A span closes with the name it opened with, innermost first.
 - Arguments come positional first, then named, then `wait` or `nowait`. Spans take no `wait` or `nowait`.
 - A name being declared is a single identifier, except in `@prefix`, node headers and `@var`. A leading dot marks a relative node or variable name, and is valid only where a node or variable is expected.
-- Declarations come before a file's first node, and `@prefix` comes before everything but comments.
+- Declarations come before a file's first node, or for `@var` also between nodes, and `@prefix` comes before everything but comments.
 - A variation block holds only alternatives.
 - A speaker is a declared actor. Otherwise the analyzer suggests escaping the colon.
 - Each value in a speaker's parenthesis is one of the speaker's values, and a line sets at most one value in each channel. Narration's parenthesis takes narration's values.

@@ -415,7 +415,7 @@ Write the brackets right up against the name: `has_item("crowbar")`, not `has_it
 
 ## Declarations: the cast and vocabulary
 
-One or more files (usually a single file like `defs.pib`) list everything the story is allowed to use. Writers and programmers keep them together, because the game has to support everything listed. Declarations go above the first node in a file.
+One or more files (usually a single file like `defs.pib`) list everything the story is allowed to use. Writers and programmers keep them together, because the game has to support everything listed. Declarations go above the first node in a file. A variable can also be declared between two nodes, right above the one that uses it ([organizing your files](#organizing-your-files)). A declaration never goes inside a node: there, `@set` changes a variable's value.
 
 ```pib-standalone
 // What a line can set for its speaker, and the values every character starts with
@@ -493,15 +493,19 @@ story/
 
 - **Everything is shared.** A node in one file can jump to or call a node in any other file, and every file can use every character, variable and command, wherever it was declared. There's nothing to "include" or "import".
 - **Files are just for you.** Moving a node to another file, or renaming a file or folder, changes nothing for the game or for other files, as long as the node's full name stays the same ([prefixes](#shorter-names-with-a-prefix)).
-- **Declarations can sit next to the story that uses them.** A room's file can declare that room's variables at the top, above its first node. They still work everywhere, and a [prefix](#shorter-names-with-a-prefix) gives them the room's name, so two rooms can each have their own `$.attempts`.
+- **Declarations can sit next to the story that uses them.** A room's file can declare that room's variables at the top, above its first node, or each one right above the node that uses it, after the last line of the node before. They still work everywhere, and a [prefix](#shorter-names-with-a-prefix) gives them the room's name, so two rooms can each have their own `$.attempts`.
 - **Names are shared too,** so every node and variable name must be unique across all files. Starting them with the room or chapter (`kitchen.`, `cellar.`) keeps them apart. If two files use the same name, Pibbles points out both places.
 
 ```pib
 // rooms/kitchen.pib
 @prefix kitchen
-// The kitchen's own variable, declared above the first node. Its full name is $kitchen.drawer_open.
-@var $.drawer_open = false
 
+== .enter
+mira: Let's try the drawer.
+@jump .drawer
+
+// The kitchen's own variable, declared right above the node that uses it. Its full name is $kitchen.drawer_open.
+@var $.drawer_open = false
 == .drawer
 @set $.drawer_open = true
 This node continues in a node from another file.

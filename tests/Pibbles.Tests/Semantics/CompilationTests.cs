@@ -116,6 +116,25 @@ public class CompilationTests
         Assert.Empty(compilation.Diagnostics);
     }
 
+    [Fact]
+    public void Create_VariableDeclaredBetweenNodes_IsUsedAboveBelowAndInAnotherFile()
+    {
+        var compilation = WithoutStyle.Compile(
+            new("story/kitchen.pib", "@prefix kitchen\n\n== .door\n@set $.door_open = true\n@jump .window\n\n@var $.door_open = false\n== .window\n@set $.door_open = false\n"),
+            new("story/cellar.pib", "@prefix cellar\n\n== .stairs\n@set $kitchen.door_open = true\n"));
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Equal(["kitchen.door_open"], compilation.Symbols.Variables.Keys);
+    }
+
+    [Fact]
+    public void Create_VariableDeclaredAtTheTopAndBetweenNodes_IsReportedOnce()
+    {
+        var compilation = WithoutStyle.Compile(new SourceText("story/kitchen.pib", "@var $open = false\n== kitchen.door\n@set $open = true\n@var $open = true\n== kitchen.window\n"));
+
+        Assert.Equal("PIB2060", Assert.Single(compilation.Diagnostics).Code);
+    }
+
     public static TheoryData<string, string> LiteralTypes { get; } = new()
     {
         { "3", "number" },

@@ -68,6 +68,6 @@ Diagnostics:
   PIB1031 8:5 A `@cycle` block can only hold alternatives.
   PIB1032 12:7 `@if` can't start an alternative.
   PIB1004 14:5 I expected indented lines under `-`.
-  PIB1021 15:1 Declarations have to come before the file's first node.
+  PIB1021 15:1 `@var` can't go inside a node.
   PIB1053 16:13 `#id:k7qp2x` can't go on a line that only sets values.
   PIB1052 17:7 `#id:BAD` isn't a line ID I can use.
