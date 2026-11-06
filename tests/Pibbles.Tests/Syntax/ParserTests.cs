@@ -777,6 +777,47 @@ public class ParserTests
         Assert.Single(tree.Root.Nodes[0].Body);
     }
 
+    [Fact]
+    public void Parse_MarkersTypedThroughInputMethodInCode_ReadAsTheMarkers()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@jump ime。case\n@pause ０。５s\n@if has_item（“key”）\n    mira: Found it.\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        IReadOnlyList<StatementSyntax> body = tree.Root.Nodes[0].Body;
+        var condition = (CallExpressionSyntax)((IfStatementSyntax)body[2]).Condition;
+        Assert.Equal(
+            ("ime.case", 0.5m, "has_item", "key"),
+            (((JumpStatementSyntax)body[0]).Target.Text, ((DurationLiteralSyntax)((PauseStatementSyntax)body[1]).Duration).Seconds, condition.Function.Text, ((StringLiteralSyntax)condition.Arguments[0]).Value));
+        Assert.Single(((IfStatementSyntax)body[2]).Body);
+        Assert.All(tree.Diagnostics, diagnostic => Assert.Equal("PIB1044", diagnostic.Code));
+    }
+
+    [Fact]
+    public void Parse_MarkerTypedThroughInputMethod_NamesItAndGivesTheLineHalfWidth()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@set ＄met ＝ true\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal(
+            [
+                ("PIB1044", "I read `＄` (U+FF04) as `$`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
+                ("PIB1044", "I read `＝` (U+FF1D) as `=`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
+            ],
+            tree.Diagnostics.Select(diagnostic => (diagnostic.Code, diagnostic.Message, diagnostic.Help)));
+    }
+
+    [Fact]
+    public void Parse_MarkerTypedThroughInputMethodBeforeAnotherProblem_ReportsBoth()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@set ＄met ＝\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal(["PIB1044", "PIB1044", "PIB1046"], tree.Diagnostics.OrderBy(diagnostic => diagnostic.Location.Span.Start).Select(diagnostic => diagnostic.Code));
+    }
+
     [Theory]
     [InlineData("@var $a = 1", "Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`.")]
     [InlineData("@command knock()", "Only `@var` can go between nodes. Move this above the first `==` line, or into another file.")]

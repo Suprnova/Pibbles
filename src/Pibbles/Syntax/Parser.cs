@@ -9,7 +9,8 @@ namespace Pibbles.Syntax;
 /// <remarks>
 /// After the first problem in a line, the parser reports it and skips the rest of that line, so a line gets at most one
 /// diagnostic from the parser, and none once the lexer has reported one of its tokens or the line has a note. An indented
-/// block where none is allowed is reported once, and its lines join the block around it.
+/// block where none is allowed is reported once, and its lines join the block around it. A marker typed through an input
+/// method is read as the marker and reported once parsing is done, so it never stops the rest of its line from being checked.
 /// </remarks>
 internal sealed partial class Parser
 {
@@ -31,6 +32,8 @@ internal sealed partial class Parser
     private int index;
     private int nesting;
 
+    private readonly string code;
+    private readonly MarkerFormLog forms = new();
     private readonly CodeLexer lexer;
     private readonly CodeLexer scratch;
     private Token token;
@@ -46,8 +49,9 @@ internal sealed partial class Parser
         lines = classified.Tokens;
         comments = [.. classified.Comments];
         diagnostics = [.. classified.Diagnostics];
-        lexer = new(source, diagnostics);
-        scratch = new(source, diagnostics: null);
+        code = MarkerForms.Map(source.Text);
+        lexer = new(source, diagnostics, forms, code);
+        scratch = new(source, diagnostics: null, code: code);
     }
 
     public static SyntaxTree Parse(SourceText source) => new Parser(source).ParseTree();
@@ -60,6 +64,7 @@ internal sealed partial class Parser
     {
         ParseTopLevel();
         var root = new FileSyntax(prefix, members) { Span = new(0, source.Text.Length) };
+        diagnostics.AddRange(forms.Report(source));
         return new(source, root, [.. comments.OrderBy(comment => comment.Span.Start)], diagnostics);
     }
 
@@ -118,7 +123,7 @@ internal sealed partial class Parser
         if (line.Kind is LineKind.At)
         {
             StartLine(line.Content);
-            string word = TextOf(token.Span);
+            string word = CodeOf(token.Span);
             if (word is "@prefix")
             {
                 ParsePrefix(line, first);
@@ -391,7 +396,7 @@ internal sealed partial class Parser
     {
         if (token.Kind is TokenKind.Name)
         {
-            var name = new NameSyntax(TextOf(token.Span)) { Span = token.Span };
+            var name = new NameSyntax(CodeOf(token.Span)) { Span = token.Span };
             Advance();
             return name;
         }
@@ -405,7 +410,7 @@ internal sealed partial class Parser
     {
         if (token.Kind is TokenKind.Variable)
         {
-            var variable = new VariableExpressionSyntax(TextOf(token.Span)[1..]) { Span = token.Span };
+            var variable = new VariableExpressionSyntax(CodeOf(token.Span)[1..]) { Span = token.Span };
             Advance();
             return variable;
         }
@@ -416,7 +421,7 @@ internal sealed partial class Parser
             string corrected = $"{source.Text[line.Content.Start..name.Start]}${source.Text[name.Start..PeekContentEnd(line)]}";
             Fail(DiagnosticCatalog.MissingDollar, name, TextOf(name), corrected);
             Advance();
-            return new(TextOf(name)) { Span = name };
+            return new(CodeOf(name)) { Span = name };
         }
 
         Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), "a variable", after);
@@ -435,7 +440,7 @@ internal sealed partial class Parser
         string text = source.Text;
         int name = tag.Span.Start + 1;
         int end = tag.Span.End;
-        int colon = text.IndexOf(':', name, end - name);
+        int colon = code.IndexOf(':', name, end - name);
         return colon < 0
             ? new TagSyntax(text[name..end], null) { Span = tag.Span }
             : new TagSyntax(text[name..colon], text[(colon + 1)..end]) { Span = tag.Span };
@@ -445,7 +450,11 @@ internal sealed partial class Parser
 
     private string TextOf(TextSpan span) => source.Text.Substring(span.Start, span.Length);
 
-    private ReadOnlySpan<char> SpanOf(TextSpan span) => source.Text.AsSpan(span.Start, span.Length);
+    /// <summary>The text at <paramref name="span"/> as the code-mode lexer reads it, with any marker typed through an input method read as the marker, for a token's name or keyword.</summary>
+    private string CodeOf(TextSpan span) => code.Substring(span.Start, span.Length);
+
+    /// <inheritdoc cref="CodeOf"/>
+    private ReadOnlySpan<char> CodeSpanOf(TextSpan span) => code.AsSpan(span.Start, span.Length);
 
     /// <summary>Reports the line's first problem. Later problems on the same line are dropped.</summary>
     private void Fail(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)

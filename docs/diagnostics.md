@@ -64,6 +64,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1041 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1042 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
 | PIB1043 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
+| PIB1044 | Error | I read `＝` (U+FF1D) as `=`, but markers are typed half-width. | Write `@set $met = true`, typing markers in your input method's direct (half-width) mode. |
 | PIB1045 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1047 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
@@ -516,6 +517,17 @@ mira: Go #team!
 ```
 
 Put a backslash before the `#`: `mira: Go \#team!`.
+
+### PIB1044
+
+**Markers are typed half-width.** In the mode Japanese and Chinese prose is written in, an input method types its own form of a marker key: a full-width `＝` for `=`, `（` for `(`, `」` for `]`, `、` for `,`, `。` for `.`, `￥` for `$`, `“` for `"`. Inside `@` lines, `[…]`, `{…}`, an option's modifiers, an actor's lines and a tag's `#` and `:`, each one is read as the marker it stands for and reported once, so the rest of the line is still checked:
+
+```text
+@set ＄met ＝ true
+@if has_item（“key”）
+```
+
+The first line reports `＄` and `＝`, and the second `（“` and `”）`, adjacent forms together. Each help gives the whole line typed half-width: `@set $met = true`. Switch the input method to direct input for the markers: the 半角/全角 key or 英数 on a Mac for Japanese, Shift for Chinese. Quoted strings, tag values, comments and display names are text, so their forms are never reported. The speaker prefix is the one marker typed either way ([text lines](language/reference.md#text-lines)).
 
 ### PIB1045
 

@@ -296,6 +296,39 @@ public class CodeLexerTests
         return lexer;
     }
 
+    [Theory]
+    [InlineData("＄met ＝ true", "Variable ＄met|Equals ＝|Name true")]
+    [InlineData("￥met", "Variable ￥met")]
+    [InlineData("ime。case", "Name ime。case")]
+    [InlineData("０。５s", "Duration ０。５s")]
+    [InlineData("has_item（“key”）", "Name has_item|CallOpen （|String “key”|CloseParen ）")]
+    [InlineData("＃box：phone", "Tag ＃box：phone")]
+    [InlineData("x ／／ note", "Name x|Comment ／／ note")]
+    [InlineData("a、b」", "Name a|Comma 、|Name b|CloseBracket 」")]
+    [InlineData("＠show", "AtWord ＠show")]
+    public void Next_MarkerTypedThroughInputMethod_ReadsAsTheMarker(string text, string expected)
+    {
+        string tokens = Describe(text);
+
+        Assert.Equal(expected, tokens);
+    }
+
+    [Fact]
+    public void Next_StringOpenedWithAsciiQuote_ClosesOnlyAtAsciiQuote() => Assert.Equal("String \"he said “hi”\"", Describe("\"he said “hi”\""));
+
+    [Fact]
+    public void Next_FormsInStringTagValueAndComment_RecordsOnlyTheMarkers()
+    {
+        var source = new SourceText("story.pib", "“「x」” ＃box：「y」 ／／ 「z」");
+        var forms = new MarkerFormLog();
+        var lexer = new CodeLexer(source, diagnostics, forms);
+        lexer.Start(new(0, source.Text.Length));
+
+        ReadToEnd(lexer);
+
+        Assert.Equal([(0, 1), (4, 1), (6, 1), (10, 1), (15, 2)], forms.Report(source).Select(diagnostic => (diagnostic.Location.Span.Start, diagnostic.Location.Span.Length)));
+    }
+
     private static void ReadToEnd(CodeLexer lexer)
     {
         while (lexer.Next().Kind is not TokenKind.EndOfLine)

@@ -128,13 +128,13 @@ internal sealed partial class Parser
         {
             case TokenKind.Number:
                 Advance();
-                return ParseNumber(TextOf(current.Span), current.Span) is { } number
+                return ParseNumber(CodeOf(current.Span), current.Span) is { } number
                     ? new NumberLiteralSyntax(number) { Span = current.Span }
                     : new ErrorExpressionSyntax { Span = current.Span };
 
             case TokenKind.Duration:
                 Advance();
-                string duration = TextOf(current.Span);
+                string duration = CodeOf(current.Span);
                 decimal? seconds = duration.EndsWith("ms", StringComparison.Ordinal) ? ParseNumber(duration[..^2], current.Span) / 1000m : ParseNumber(duration[..^1], current.Span);
                 return seconds is { } value
                     ? new DurationLiteralSyntax(value) { Span = current.Span }
@@ -142,11 +142,11 @@ internal sealed partial class Parser
 
             case TokenKind.String:
                 Advance();
-                return new StringLiteralSyntax(Unquote(TextOf(current.Span))) { Span = current.Span };
+                return new StringLiteralSyntax(Unquote(current.Span)) { Span = current.Span };
 
             case TokenKind.Variable:
                 Advance();
-                return new VariableExpressionSyntax(TextOf(current.Span)[1..]) { Span = current.Span };
+                return new VariableExpressionSyntax(CodeOf(current.Span)[1..]) { Span = current.Span };
 
             case TokenKind.Name:
                 Advance();
@@ -171,7 +171,7 @@ internal sealed partial class Parser
     /// <summary>Finishes a value that starts with an already-read name: a boolean, a call or a bare name.</summary>
     private ExpressionSyntax ParseNameValue(Token name, bool argument)
     {
-        string text = TextOf(name.Span);
+        string text = CodeOf(name.Span);
         if (text is "true" or "false")
             return new BooleanLiteralSyntax(text is "true") { Span = name.Span };
 
@@ -212,7 +212,7 @@ internal sealed partial class Parser
         ExpectCloseParen(open);
         nesting--;
         height = tallest + 1;
-        var function = new NameSyntax(TextOf(name.Span)) { Span = name.Span };
+        var function = new NameSyntax(CodeOf(name.Span)) { Span = name.Span };
         return new CallExpressionSyntax(function, arguments) { Span = SpanFrom(name.Span.Start) };
     }
 
@@ -241,7 +241,7 @@ internal sealed partial class Parser
         return new() { Span = new(previousEnd, 0) };
     }
 
-    private bool IsWord(string word) => token.Kind is TokenKind.Name && SpanOf(token.Span).SequenceEqual(word);
+    private bool IsWord(string word) => token.Kind is TokenKind.Name && CodeSpanOf(token.Span).SequenceEqual(word);
 
     /// <summary>
     /// Reads a number the lexer accepted. Returns <see langword="null"/> for one it reported as malformed, and for one too
@@ -258,11 +258,13 @@ internal sealed partial class Parser
         return null;
     }
 
-    /// <summary>The text between a string's quotes, with each backslash removed and the character after it kept.</summary>
-    private static string Unquote(string text)
+    /// <summary>The text between a string's quotes, with each backslash removed and the character after it kept. A string opened with a form of <c>"</c> closes at any of them, as the lexer reads it.</summary>
+    private string Unquote(TextSpan literal)
     {
+        string text = TextOf(literal);
+        string closers = text[0] is '"' ? text : CodeOf(literal);
         var value = new StringBuilder();
-        for (int i = 1; i < text.Length && text[i] is not '"'; i++)
+        for (int i = 1; i < text.Length && closers[i] is not '"'; i++)
         {
             if (text[i] is '\\')
                 i++;

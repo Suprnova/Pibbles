@@ -84,7 +84,7 @@ internal sealed partial class Parser
             StartCode(inlinePosition, new(inlinePosition, 0));
             while (token.Kind is TokenKind.AtWord && !lineFailed)
             {
-                string modifier = TextOf(token.Span);
+                string modifier = CodeOf(token.Span);
                 if (modifier is "@if" && condition is null)
                 {
                     Advance();
@@ -97,7 +97,7 @@ internal sealed partial class Parser
                 }
                 else
                 {
-                    FailUnexpected(token.Span, modifier is not ("@if" or "@once") && condition is null && !isOnce ? DiagnosticCatalog.EscapeHelp(modifier) : null);
+                    FailUnexpected(token.Span, modifier is not ("@if" or "@once") && condition is null && !isOnce ? DiagnosticCatalog.EscapeHelp(TextOf(token.Span)) : null);
                 }
             }
 
@@ -160,7 +160,7 @@ internal sealed partial class Parser
         wait = CommandWait.Default;
         while (!AtArgumentsEnd && !lineFailed)
         {
-            if (token.Kind is TokenKind.Name && SpanOf(token.Span) is "wait" or "nowait")
+            if (token.Kind is TokenKind.Name && CodeSpanOf(token.Span) is "wait" or "nowait")
             {
                 if (!allowWait)
                 {
@@ -168,7 +168,7 @@ internal sealed partial class Parser
                     break;
                 }
 
-                wait = SpanOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
+                wait = CodeSpanOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
                 Advance();
                 break;
             }

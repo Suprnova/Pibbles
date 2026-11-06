@@ -11,13 +11,18 @@ namespace Pibbles.Syntax;
 /// <remarks>
 /// Whitespace between tokens is skipped, except that a <c>(</c> touching the name before it is a
 /// <see cref="TokenKind.CallOpen"/>. Malformed strings, numbers and tags are reported and still produce one token each.
-/// A parser keeps one lexer and calls <see cref="Start"/> for each stretch of code it reads.
+/// A form an input method types in a marker's place, such as <c>＝</c> or <c>」</c>, is read as its marker and recorded,
+/// except inside a string, a tag's value or a comment, which keep what's written. A parser keeps one lexer and calls
+/// <see cref="Start"/> for each stretch of code it reads.
 /// </remarks>
 /// <param name="source">The file the stretches are in.</param>
 /// <param name="diagnostics">Where problems are reported, or <see langword="null"/> to read without reporting them.</param>
-internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics)
+/// <param name="forms">Where forms read as markers are recorded, or <see langword="null"/> to read them without recording them.</param>
+/// <param name="code">The file's text with its forms mapped, from <see cref="MarkerForms.Map(string)"/>, if the caller already has it.</param>
+internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics, MarkerFormLog? forms = null, string? code = null)
 {
     private readonly string text = source.Text;
+    private readonly string code = code ?? MarkerForms.Map(source.Text);
     private TextSpan span;
     private List<Comment>? comments;
     private bool tagMayBeText;
@@ -49,12 +54,15 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         int start = Position;
         TokenKind kind = Position < span.End ? Read(touching) : TokenKind.EndOfLine;
         previous = kind;
+        if (kind is not (TokenKind.String or TokenKind.Tag or TokenKind.Comment or TokenKind.Bad or TokenKind.EndOfLine))
+            RecordForms(start, Position);
+
         return new(kind, new(start, Position - start));
     }
 
     private TokenKind Read(bool touching)
     {
-        char c = text[Position];
+        char c = code[Position];
         return c switch
         {
             '"' => ReadString(),
@@ -108,7 +116,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     {
         do
         {
-            if (text[Position] is '.')
+            if (code[Position] is '.')
                 Position++;
 
             SkipIdentifier();
@@ -134,7 +142,8 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
 
     private TokenKind ReadComment()
     {
-        if (Comment.IsNote(text.AsSpan(Position, span.End - Position)))
+        RecordForms(Position, Position + 2);
+        if (Comment.IsNote(code.AsSpan(Position, span.End - Position)))
             diagnostics?.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
         else
             comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
@@ -172,11 +181,16 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         return TokenKind.Number;
     }
 
-    /// <summary>Reads a quoted string. A backslash makes the punctuation after it literal.</summary>
+    /// <summary>
+    /// Reads a quoted string. A backslash makes the punctuation after it literal. A string opened with <c>"</c> closes only at
+    /// <c>"</c>, so it can hold <c>“”</c>. One opened with a form such as <c>“</c> closes at <c>"</c> or any of its forms.
+    /// </summary>
     private TokenKind ReadString()
     {
         int start = Position++;
-        while (Position < span.End && text[Position] is not '"')
+        RecordForms(start, start + 1);
+        string closers = text[start] is '"' ? text : code;
+        while (Position < span.End && closers[Position] is not '"')
         {
             if (text[Position] is '\\' && Position + 1 < span.End)
                 ReadEscape();
@@ -185,7 +199,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         }
 
         if (Position < span.End)
-            Position++;
+            RecordForms(Position, ++Position);
         else
             Report(DiagnosticCatalog.UnterminatedString, start);
 
@@ -204,6 +218,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     private TokenKind ReadTag()
     {
         int start = Position++;
+        RecordForms(start, Position);
         SkipIdentifier();
 
         if (!AtTagNameEnd())
@@ -218,6 +233,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
 
         if (Peek(0) is ':')
         {
+            RecordForms(Position, Position + 1);
             while (Position < span.End && !Whitespace.Is(text[Position]))
                 Position++;
         }
@@ -225,7 +241,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         return TokenKind.Tag;
     }
 
-    private bool AtTagNameEnd() => Position >= span.End || Whitespace.Is(text[Position]) || text[Position] is ':' or '[' or '{' || (Peek(0) is '/' && Peek(1) is '/');
+    private bool AtTagNameEnd() => Position >= span.End || Whitespace.Is(text[Position]) || code[Position] is ':' or '[' or '{' || (Peek(0) is '/' && Peek(1) is '/');
 
     private static string Suggest(string tag)
     {
@@ -248,15 +264,15 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
             Position++;
     }
 
-    private char Peek(int offset) => Position + offset < span.End ? text[Position + offset] : '\0';
+    private char Peek(int offset) => Position + offset < span.End ? code[Position + offset] : '\0';
 
     private bool AtIdentifierStart(int index, bool allowUnderscore = true) =>
         index < span.End && Identifiers.IsStart(text, index) && (allowUnderscore || text[index] is not '_');
 
-    private bool IsNameStart(int index) => AtIdentifierStart(index) || index < span.End && text[index] is '.' && AtIdentifierStart(index + 1);
+    private bool IsNameStart(int index) => AtIdentifierStart(index) || index < span.End && code[index] is '.' && AtIdentifierStart(index + 1);
 
     private bool IsNumberContinuation(int index) =>
-        index < span.End && (Identifiers.IsPart(text, index) || text[index] is '.');
+        index < span.End && (Identifiers.IsPart(text, index) || code[index] is '.');
 
     private static bool IsDigit(char c) => char.IsAsciiDigit(c);
 
@@ -268,6 +284,19 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
             or UnicodeCategory.ClosePunctuation or UnicodeCategory.InitialQuotePunctuation or UnicodeCategory.FinalQuotePunctuation
             or UnicodeCategory.OtherPunctuation or UnicodeCategory.MathSymbol or UnicodeCategory.CurrencySymbol
             or UnicodeCategory.ModifierSymbol or UnicodeCategory.OtherSymbol;
+
+    /// <summary>Records each form from <paramref name="start"/> to <paramref name="end"/> as the marker it's read as.</summary>
+    private void RecordForms(int start, int end)
+    {
+        if (forms is null || ReferenceEquals(code, text))
+            return;
+
+        for (int i = start; i < end; i++)
+        {
+            if (code[i] != text[i])
+                forms.Record(i, code[i]);
+        }
+    }
 
     private void Report(DiagnosticDescriptor descriptor, int start, params object?[] arguments) =>
         diagnostics?.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));

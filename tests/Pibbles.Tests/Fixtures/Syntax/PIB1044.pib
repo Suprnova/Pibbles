@@ -1,0 +1,49 @@
+// A marker typed through an input method, such as a full-width `＝`, is read as the marker, so the rest of the line is still checked.
+
+@actor mira
+    name：Mira
+//      ^ PIB1044
+    pose： happy、sad
+//      ^ PIB1044
+//             ^ PIB1044
+    pose ＋＝ angry
+//       ^^ PIB1044
+@channel mood： calm、tense
+//           ^ PIB1044
+//                 ^ PIB1044
+// A display name is text, so it can hold any of them.
+@actor rex
+    name: ＡＩ「助手」：＝
+
+== fixture.forms
+@set ＄met ＝ true
+//   ^ PIB1044
+//        ^ PIB1044
+@set ￥met = true
+//   ^ PIB1044
+@jump ime。case
+//       ^ PIB1044
+@pause ０。５s
+//     ^^^ PIB1044
+@if has_item（“key”）
+//          ^^ PIB1044
+//               ^^ PIB1044
+    mira: Found it.
+mira: Wait{if $met ＝＝ true}, yes{/if}.
+//                 ^^ PIB1044
+mira: [b」Bold[/b].
+//      ^ PIB1044
+-> Go @if $met ＠once
+//             ^ PIB1044
+@set ＄met ＝
+//   ^ PIB1044
+//        ^ PIB1044
+//         ^ PIB1046
+
+// Must not trigger
+
+mira: She said “hi” and left, ＝＝ then 「b」.
+mira（happy）：Hi.
+@set $quote = "he said “hi” to 「me」"
+@jump ime.case // 「メモ」：＝
+mira: Done. #box:「x」、

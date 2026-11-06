@@ -239,7 +239,7 @@ internal sealed partial class Parser
     private (InlineSyntax Point, string? OptionForm) ReadPointBody(int open)
     {
         Token first = token;
-        ReadOnlySpan<char> text = SpanOf(first.Span);
+        ReadOnlySpan<char> text = CodeSpanOf(first.Span);
         switch (first.Kind)
         {
             case TokenKind.Variable:

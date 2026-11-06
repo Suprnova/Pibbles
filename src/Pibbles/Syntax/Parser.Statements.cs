@@ -26,7 +26,7 @@ internal sealed partial class Parser
         }
 
         StartLine(line.Content);
-        string word = TextOf(token.Span);
+        string word = CodeOf(token.Span);
         int start = line.Content.Start;
         switch (word)
         {
@@ -128,7 +128,7 @@ internal sealed partial class Parser
             int clauseStart = Current.Line.Content.Start;
             StartLine(Current.Line.Content);
             TextSpan clauseKeyword = token.Span;
-            bool isElse = TextOf(clauseKeyword) is "@else";
+            bool isElse = CodeOf(clauseKeyword) is "@else";
             Advance();
 
             if (isElse)
@@ -418,7 +418,7 @@ internal sealed partial class Parser
 
     private CommandStatementSyntax ParseCommand(int start)
     {
-        var command = new NameSyntax(TextOf(token.Span)[1..]) { Span = new(token.Span.Start + 1, token.Span.Length - 1) };
+        var command = new NameSyntax(CodeOf(token.Span)[1..]) { Span = new(token.Span.Start + 1, token.Span.Length - 1) };
         Advance();
 
         List<ArgumentSyntax> arguments = ParseArguments(allowWait: true, out CommandWait wait);

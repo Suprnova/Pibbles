@@ -250,6 +250,17 @@ public static class DiagnosticCatalog
         "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
         help: "{1}");
 
+    /// <summary>PIB1044: a marker typed through an input method, such as <c>＝</c> for <c>=</c> or <c>」</c> for <c>]</c>, read as the marker.</summary>
+    /// <remarks>
+    /// Arguments: the form as written, one character or a run of them; their code points, such as <c>U+FF1D</c>; the marker it's
+    /// read as; and how to fix it, which is the line with every such form on it replaced by its marker.
+    /// </remarks>
+    public static DiagnosticDescriptor InputMethodForm { get; } = new(
+        "PIB1044",
+        DiagnosticSeverity.Error,
+        "I read `{0}` ({1}) as `{2}`, but markers are typed half-width.",
+        help: "{3}");
+
     /// <summary>PIB1045: a dotted or relative name where a single identifier is being declared.</summary>
     /// <remarks>Argument: the name as written.</remarks>
     public static DiagnosticDescriptor DottedName { get; } = new(
@@ -995,6 +1006,7 @@ public static class DiagnosticCatalog
         UnterminatedString,
         MalformedNumber,
         MalformedTagName,
+        InputMethodForm,
         DottedName,
         Missing,
         NumberTooLarge,

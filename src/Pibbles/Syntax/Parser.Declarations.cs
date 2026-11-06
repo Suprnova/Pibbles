@@ -15,7 +15,7 @@ internal sealed partial class Parser
     {
         int start = line.Content.Start;
         TextSpan keyword = token.Span;
-        string word = TextOf(keyword);
+        string word = CodeOf(keyword);
         Advance();
 
         if (word is "@actor")
@@ -114,8 +114,8 @@ internal sealed partial class Parser
         int wordEnd = SkipIdentifier(start);
         string word = source.Text[start..wordEnd];
         int next = SkipWhitespace(wordEnd);
-        bool colon = next < inlineEnd && source.Text[next] is ':';
-        bool plusEquals = next + 1 < inlineEnd && source.Text.AsSpan(next, 2) is "+=";
+        bool colon = next < inlineEnd && code[next] is ':';
+        bool plusEquals = next + 1 < inlineEnd && code.AsSpan(next, 2) is "+=";
 
         if (line.Kind is not LineKind.Text || wordEnd == start || !(colon || plusEquals || (word is "no" && next > wordEnd && SkipIdentifier(next) > next)))
         {
@@ -134,6 +134,9 @@ internal sealed partial class Parser
 
         if (word is "name" && colon)
         {
+            if (code[next] != source.Text[next])
+                forms.Record(next, ':');
+
             int valueStart = SkipWhitespace(next + 1);
             var value = new TextSpan(valueStart, PlainContentEnd(valueStart, inlineEnd) - valueStart);
             if (value.Length == 0)
