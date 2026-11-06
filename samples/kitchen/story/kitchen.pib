@@ -2,7 +2,6 @@
 // kitchen.enter when the scene opens, and one node for each thing worth a look.
 
 @prefix kitchen
-@var $.door_open = false
 
 == .enter
 @show mira left
@@ -46,6 +45,7 @@ mira: Just spoons now. #id:ds4oao
     - mira: When did anyone last clean this? #id:ytr2cv
     - rex: You two stare at everything, don't you? #id:h5aeqs
 
+@var $.door_open = false
 == .door #was:.front_door
 @if $.door_open
     @jump .leave
