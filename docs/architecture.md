@@ -126,6 +126,8 @@ A bug found this way gets a fixture or a recovery snapshot when it's fixed, so t
 
 The totality property also runs on *mutated real input*: `samples/kitchen`, the starter story, every fixture and snapshot input, and every documentation example, with random characters and lines deleted, duplicated, swapped or replaced with Pibbles punctuation (`@ -> == [ ] { } $ # \ :` and indentation). This finds crashes in near-miss input, the kind writers actually produce, much faster than purely random strings. It runs as part of the normal test suite, with a fixed budget.
 
+Random input is never nested deeply enough to overflow the stack, and a case that did would kill the test host, so the parser's [nesting limit](syntax.md#line-classifier-and-parser) has tests of its own: every shape that nests (blocks, markup, conditional text, parentheses, calls, `not`, `-` and chained operators) is built at the limit and one past it, then parsed, and the ones at the limit are compiled and played in the same process.
+
 **Coverage-guided fuzzing** (SharpFuzz with libFuzzer) is a stretch goal. Scripts are trusted content, not attacker input, so the security case for it is weak. It's worth an occasional long run only if the property and mutation tests keep turning up crashes.
 
 ### What isn't tested here

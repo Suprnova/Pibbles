@@ -6,6 +6,9 @@ namespace Pibbles.Syntax;
 
 internal sealed partial class Parser
 {
+    /// <summary>The height of the expression just parsed: 0 for a literal, and one more than its tallest operand for anything built from others.</summary>
+    private int height;
+
     /// <summary>
     /// Parses an expression, one method per precedence level, from lowest to highest: <c>or</c>; <c>and</c>; <c>not</c>;
     /// <c>== !=</c>; <c>&lt; &lt;= &gt; &gt;=</c>; <c>+ -</c>; <c>* / %</c>; unary <c>-</c>. Comparisons don't chain.
@@ -22,8 +25,13 @@ internal sealed partial class Parser
             return ParseEquality();
 
         TextSpan operatorSpan = token.Span;
+        if (!TryEnter(operatorSpan))
+            return NestedTooDeep();
+
         Advance();
         ExpressionSyntax operand = ParseNot();
+        nesting--;
+        height++;
         return new UnaryExpressionSyntax(UnaryOperator.Not, operatorSpan, operand) { Span = new(operatorSpan.Start, operand.Span.End - operatorSpan.Start) };
     }
 
@@ -60,21 +68,32 @@ internal sealed partial class Parser
 
     /// <summary>
     /// Parses operands joined by the operators of one level, left-associatively. A level that doesn't chain reports a
-    /// second operator, then keeps going, so the tree is still complete.
+    /// second operator, then keeps going, so the tree is still complete. A chain builds a tree as deep as it is long, so
+    /// it stops at the nesting limit.
     /// </summary>
     private ExpressionSyntax ParseOperators(Func<ExpressionSyntax> parseOperand, Func<BinaryOperator?> matchOperator, bool chains = true)
     {
         ExpressionSyntax left = parseOperand();
+        int leftHeight = height;
         int count = 0;
         while (matchOperator() is { } @operator)
         {
             TextSpan operatorSpan = token.Span;
             Advance();
             ExpressionSyntax right = parseOperand();
+            int combinedHeight = Math.Max(leftHeight, height) + 1;
+            if (nesting + combinedHeight > MaxNesting)
+            {
+                Fail(DiagnosticCatalog.NestingLimit, operatorSpan, MaxNesting);
+                break;
+            }
+
+            leftHeight = combinedHeight;
             left = new BinaryExpressionSyntax(left, @operator, operatorSpan, right) { Span = new(left.Span.Start, right.Span.End - left.Span.Start) };
             count++;
         }
 
+        height = leftHeight;
         if (!chains && count > 1)
             Fail(DiagnosticCatalog.ChainedComparison, left.Span, TextOf(left.Span));
 
@@ -87,8 +106,13 @@ internal sealed partial class Parser
             return ParsePrimary(argument: false);
 
         TextSpan operatorSpan = token.Span;
+        if (!TryEnter(operatorSpan))
+            return NestedTooDeep();
+
         Advance();
         ExpressionSyntax operand = ParseUnary();
+        nesting--;
+        height++;
         return new UnaryExpressionSyntax(UnaryOperator.Negate, operatorSpan, operand) { Span = new(operatorSpan.Start, operand.Span.End - operatorSpan.Start) };
     }
 
@@ -98,6 +122,7 @@ internal sealed partial class Parser
     /// </summary>
     private ExpressionSyntax ParsePrimary(bool argument)
     {
+        height = 0;
         Token current = token;
         switch (current.Kind)
         {
@@ -128,9 +153,14 @@ internal sealed partial class Parser
                 return ParseNameValue(current, argument);
 
             case TokenKind.OpenParen:
+                if (!TryEnter(current.Span))
+                    return NestedTooDeep();
+
                 Advance();
                 ExpressionSyntax inner = ParseExpression();
                 ExpectCloseParen(current.Span);
+                nesting--;
+                height++;
                 return new ParenthesizedExpressionSyntax(inner) { Span = SpanFrom(current.Span.Start) };
 
             default:
@@ -157,25 +187,33 @@ internal sealed partial class Parser
         return new NameExpressionSyntax(text) { Span = name.Span };
     }
 
-    private CallExpressionSyntax ParseCall(Token name)
+    private ExpressionSyntax ParseCall(Token name)
     {
         TextSpan open = token.Span;
+        if (!TryEnter(open))
+            return NestedTooDeep();
+
         Advance();
 
         List<ExpressionSyntax> arguments = [];
+        int tallest = 0;
         if (token.Kind is not TokenKind.CloseParen)
         {
             arguments.Add(ParseExpression());
+            tallest = height;
             while (token.Kind is TokenKind.Comma)
             {
                 Advance();
                 arguments.Add(ParseExpression());
+                tallest = Math.Max(tallest, height);
             }
         }
 
         ExpectCloseParen(open);
+        nesting--;
+        height = tallest + 1;
         var function = new NameSyntax(TextOf(name.Span)) { Span = name.Span };
-        return new(function, arguments) { Span = SpanFrom(name.Span.Start) };
+        return new CallExpressionSyntax(function, arguments) { Span = SpanFrom(name.Span.Start) };
     }
 
     /// <summary>Reads the <c>)</c> for <paramref name="open"/>. It's missing at the end of the line or of a bracket or brace, and anything else in its place is unexpected.</summary>
@@ -187,6 +225,13 @@ internal sealed partial class Parser
             Fail(DiagnosticCatalog.UnclosedParenthesis, open);
         else
             FailUnexpected(token.Span);
+    }
+
+    /// <summary>Stands in, with a zero-length error node, for an expression the nesting limit stopped before it was read. The limit has been reported.</summary>
+    private ErrorExpressionSyntax NestedTooDeep()
+    {
+        height = 0;
+        return new() { Span = new(previousEnd, 0) };
     }
 
     /// <summary>Reports a value missing after the previous token, and stands in for it with a zero-length error node.</summary>

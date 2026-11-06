@@ -660,16 +660,13 @@ Write each comparison out and join them with `and`: `@if 0 < $bravery and $brave
 
 ### PIB1062
 
-**Nesting stops at 64 levels.** Blocks, markup spans and the branches of conditional text each add a level, and a story that needs more is far past what a reader can follow. The limit also keeps every tool that reads a story, including a game loading one, from running out of stack on a file that nests without end. The message points at the first thing past the limit. Everything inside it is skipped, so it reports nothing more.
+**Nesting stops at 64 levels.** Blocks, markup spans, the branches of conditional text, brackets, a call's arguments, `not` and `-` each add a level, and so does each operator in a chain such as `1 + 1 + 1`. A story that needs more is far past what a reader can follow. The limit also keeps every tool that reads a story, including a game loading one, from running out of stack on a file that nests without end. The message points at the first thing past the limit. Everything inside it is skipped, so it reports nothing more.
 
 ```text
-@if $a
- @if $a
-  @if $a
-   …
+@set $total = ((((…65 brackets in all…1…))))
 ```
 
-Move the inner part into a node of its own and `@jump` or `@call` to it. This is separate from the style warning about [deep nesting](#pib5001), which fires at three.
+Move the inner part into a node of its own and `@jump` or `@call` to it, or split an expression across lines with `@set`. This is separate from the style warning about [deep nesting](#pib5001), which fires at three.
 
 ### PIB2001
 

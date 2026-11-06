@@ -16,7 +16,7 @@ Why hand-written, with no parser generator: the grammar is small, error recovery
 
 **Error tolerance:** a line that fails to parse becomes an error node with one diagnostic, and parsing carries on with the next line. A bad indent is reported once, and the line is attached to the closest sensible block. Unclosed inline markup is reported at its opening bracket, and the span is treated as running to the end of the line. Text after a tag means the tag was probably meant as text, so the line keeps no tags, and the analyzer never reports them as well.
 
-**Nesting limit:** the parser builds a tree at most 64 levels deep. Where a block, markup span or conditional-text branch would be the 65th level, it reports PIB1062 and skips what is inside, so the tree ends there. Every pass that recurses over the tree, from the binder to the evaluator, then recurses a bounded number of times, and no input can overflow the stack.
+**Nesting limit:** the parser builds a tree at most 64 levels deep. Where a block, markup span, conditional-text branch, bracket, call, `not` or `-` would be the 65th level, or an operator would make a chain the 65th, it reports PIB1062 and skips what is inside, so the tree ends there. Levels are counted as the parser goes, except for a chain, which builds a left-deep tree without recursing: the parser tracks each expression's height as it builds it. Every pass that recurses over the tree, from the binder to the evaluator, then recurses a bounded number of times, and no input can overflow the stack.
 
 ## Syntax checks
 
