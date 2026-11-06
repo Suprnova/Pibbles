@@ -97,7 +97,7 @@ internal sealed partial class Parser
                 }
                 else
                 {
-                    Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{modifier}`");
+                    FailUnexpected(token.Span);
                 }
             }
 
@@ -114,7 +114,7 @@ internal sealed partial class Parser
                 }
                 else
                 {
-                    Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+                    FailUnexpected(token.Span);
                 }
             }
         }
@@ -164,7 +164,7 @@ internal sealed partial class Parser
             {
                 if (!allowWait)
                 {
-                    Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+                    FailUnexpected(token.Span);
                     break;
                 }
 

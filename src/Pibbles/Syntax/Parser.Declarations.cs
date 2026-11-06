@@ -126,7 +126,7 @@ internal sealed partial class Parser
                 _ => Math.Max(wordEnd, start + 1),
             };
             var unexpected = new TextSpan(start, unexpectedEnd - start);
-            Fail(DiagnosticCatalog.Unexpected, unexpected, $"`{TextOf(unexpected)}`");
+            FailUnexpected(unexpected);
             index++;
             SkipBlock();
             return PeekContentEnd(line);
@@ -326,7 +326,7 @@ internal sealed partial class Parser
             if (AtLineEnd)
                 return MissingValue();
 
-            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+            FailUnexpected(token.Span);
             var error = new ErrorExpressionSyntax { Span = token.Span };
             Advance();
             return error;

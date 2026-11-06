@@ -92,7 +92,7 @@ internal sealed partial class Parser
                 return;
 
             case var _ when ExtensionKeywords.Contains(word):
-                Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{word}`");
+                FailUnexpected(token.Span);
                 index++;
                 SkipBlock();
                 return;
@@ -102,7 +102,7 @@ internal sealed partial class Parser
                 return;
 
             default:
-                Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{word}`");
+                FailUnexpected(token.Span);
                 index++;
                 return;
         }
@@ -471,7 +471,7 @@ internal sealed partial class Parser
 
         if (!StartsValue(token.Kind))
         {
-            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+            FailUnexpected(token.Span);
             return null;
         }
 

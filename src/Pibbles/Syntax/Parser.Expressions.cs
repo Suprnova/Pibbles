@@ -186,7 +186,7 @@ internal sealed partial class Parser
         else if (AtLineEnd || token.Kind is TokenKind.CloseBracket or TokenKind.CloseBrace)
             Fail(DiagnosticCatalog.UnclosedParenthesis, open);
         else
-            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+            FailUnexpected(token.Span);
     }
 
     /// <summary>Reports a value missing after the previous token, and stands in for it with a zero-length error node.</summary>

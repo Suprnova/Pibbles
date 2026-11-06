@@ -422,7 +422,7 @@ internal sealed partial class Parser
     {
         int close = FindCloser('}', inlinePosition);
         var stray = new TextSpan(inlinePosition, close - inlinePosition);
-        Fail(DiagnosticCatalog.Unexpected, stray, $"`{TextOf(stray)}`");
+        FailUnexpected(stray);
         inlinePosition = close;
     }
 
@@ -476,7 +476,7 @@ internal sealed partial class Parser
         if (token.Kind is TokenKind.EndOfLine || resume is null)
             Fail(DiagnosticCatalog.Unclosed, openSpan, closerText, opener, CommentHelp);
         else
-            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+            FailUnexpected(token.Span);
 
         inlinePosition = resume ?? inlineEnd;
         return inlinePosition;

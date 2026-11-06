@@ -120,7 +120,7 @@ internal sealed partial class Parser
 
             if (ExtensionKeywords.Contains(word))
             {
-                Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{word}`");
+                FailUnexpected(token.Span);
                 index++;
                 SkipBlock();
                 return;
@@ -318,7 +318,7 @@ internal sealed partial class Parser
     private void FinishLine()
     {
         if (!AtLineEnd && !lineFailed)
-            Fail(DiagnosticCatalog.Unexpected, token.Span, $"`{TextOf(token.Span)}`");
+            FailUnexpected(token.Span);
 
         index++;
     }
@@ -392,6 +392,9 @@ internal sealed partial class Parser
         lineFailed = true;
         Report(descriptor, span, arguments);
     }
+
+    /// <summary>Reports the text at <paramref name="span"/> as something the grammar doesn't allow where it appears.</summary>
+    private void FailUnexpected(TextSpan span) => Fail(DiagnosticCatalog.Unexpected, span, $"`{TextOf(span)}`");
 
     /// <summary>Reports a problem with a whole line before the line is parsed, so parsing it reports nothing more.</summary>
     private void ReportLine(SourceLine line, DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
