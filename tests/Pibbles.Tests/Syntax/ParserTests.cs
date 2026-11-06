@@ -139,6 +139,32 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: Go #team!")]
+    [InlineData("Go #team!")]
+    [InlineData("-> Go #team!")]
+    public void Parse_MalformedTagNameAfterText_OffersTheEscape(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1043", "Write `#team_`.\nIf `#team!` is text, put a backslash before the `#`."), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Theory]
+    [InlineData("-> Go @once #team!")]
+    [InlineData("mira: Hi #thought #team!")]
+    [InlineData("@call kitchen.door #team!")]
+    public void Parse_MalformedTagNameThatIsNotText_OffersOnlyTheFix(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1043", "Write `#team_`."), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Theory]
     [InlineData("-> Email me @once @home")]
     [InlineData("-> Email me @once @once")]
     [InlineData("-> Email me @if true @if true")]

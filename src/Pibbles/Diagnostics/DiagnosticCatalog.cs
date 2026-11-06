@@ -240,12 +240,15 @@ public static class DiagnosticCatalog
         help: "Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`.");
 
     /// <summary>PIB1043: a tag name holding characters other than letters, digits and <c>_</c>.</summary>
-    /// <remarks>Arguments: the tag as written, and the same tag with each such character replaced by <c>_</c>.</remarks>
+    /// <remarks>
+    /// Arguments: the tag as written; and how to fix it, which is the same tag with each such character replaced by <c>_</c>,
+    /// followed on a line of its own by <see cref="EscapeHelp"/>'s sentence where the tag may be text.
+    /// </remarks>
     public static DiagnosticDescriptor MalformedTagName { get; } = new(
         "PIB1043",
         DiagnosticSeverity.Error,
         "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
-        help: "Write `{1}`.");
+        help: "{1}");
 
     /// <summary>PIB1045: a dotted or relative name where a single identifier is being declared.</summary>
     /// <remarks>Argument: the name as written.</remarks>

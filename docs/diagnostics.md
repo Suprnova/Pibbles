@@ -508,6 +508,14 @@ Write `@pause 2s`.
 
 Write `#show_disabled`, and declare it that way with `@tag`.
 
+A `#` followed by a letter at the end of a line's text always starts a tag, so a word meant as text is reported here too:
+
+```text
+mira: Go #team!
+```
+
+Put a backslash before the `#`: `mira: Go \#team!`.
+
 ### PIB1045
 
 **Names you declare are single names:** actors, channels and their values, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.

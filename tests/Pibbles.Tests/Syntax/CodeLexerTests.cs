@@ -197,6 +197,17 @@ public class CodeLexerTests
         Assert.Equal(("#win-ning".Length, "PIB1043", "Write `#win_ning`."), (token.Span.Length, diagnostics[0].Code, diagnostics[0].Help));
     }
 
+    [Fact]
+    public void Next_MalformedTagNameThatMayBeText_OffersTheEscape()
+    {
+        var lexer = new CodeLexer(new SourceText("story.pib", "#team!"), diagnostics);
+        lexer.Start(new(0, 6), tagMayBeText: true);
+
+        lexer.Next();
+
+        Assert.Equal("Write `#team_`.\nIf `#team!` is text, put a backslash before the `#`.", Assert.Single(diagnostics).Help);
+    }
+
     [Theory]
     [InlineData("\"\\n\"", "\\n")]
     [InlineData("\"\\a\"", "\\a")]

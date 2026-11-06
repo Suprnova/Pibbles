@@ -20,6 +20,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     private readonly string text = source.Text;
     private TextSpan span;
     private List<Comment>? comments;
+    private bool tagMayBeText;
     private TokenKind? previous;
 
     /// <summary>Where the next token starts looking.</summary>
@@ -28,10 +29,12 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     /// <summary>Starts reading <paramref name="span"/>, as a new lexer would.</summary>
     /// <param name="span">The stretch to read.</param>
     /// <param name="comments">Where a comment that ends the stretch is recorded, or <see langword="null"/> to skip it.</param>
-    public void Start(TextSpan span, List<Comment>? comments = null)
+    /// <param name="tagMayBeText">Whether a malformed tag in the stretch may be text meant to show, so its report offers the escape.</param>
+    public void Start(TextSpan span, List<Comment>? comments = null, bool tagMayBeText = false)
     {
         this.span = span;
         this.comments = comments;
+        this.tagMayBeText = tagMayBeText;
         previous = null;
         Position = span.Start;
     }
@@ -209,7 +212,8 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
                 Position++;
 
             string name = text[start..Position];
-            Report(DiagnosticCatalog.MalformedTagName, start, name, Suggest(name));
+            string help = $"Write `{Suggest(name)}`.";
+            Report(DiagnosticCatalog.MalformedTagName, start, name, tagMayBeText ? $"{help}\n{DiagnosticCatalog.EscapeHelp(name)}" : help);
         }
 
         if (Peek(0) is ':')

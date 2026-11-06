@@ -442,7 +442,7 @@ internal sealed partial class Parser
                 return [];
             }
 
-            lexer.Start(new(position, inlineEnd - position));
+            lexer.Start(new(position, inlineEnd - position), tagMayBeText: tags.Count == 0);
             Token tag = NextToken();
             tags.Add(TagFrom(tag));
             inlinePosition = tag.Span.End;

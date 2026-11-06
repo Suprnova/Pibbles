@@ -5,9 +5,12 @@
 //                  ^^^^^^^^^^^^^^ PIB1043
 @call fixture.other #box.big:phone
 //                  ^^^^^^^^ PIB1043
+mira: Go #team!
+//       ^^^^^^ PIB1043
 
 // Must not trigger
 
+mira: Go \#team!
 @call fixture.other #show_disabled
 @call fixture.other #box:any-value.at/all
 @call fixture.other #box:
