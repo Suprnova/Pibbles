@@ -179,6 +179,25 @@ public class CodeLexerTests
     }
 
     [Theory]
+    [InlineData("#winning[/b]", "#winning")]
+    [InlineData("#winning{/if}", "#winning")]
+    public void Next_TagBeforeBracketOrBrace_EndsAtIt(string text, string tag)
+    {
+        Token token = Lexer(text, new(0, text.Length)).Next();
+
+        Assert.Equal((TokenKind.Tag, tag.Length), (token.Kind, token.Span.Length));
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Next_MalformedTagNameBeforeBracket_ReportsOnlyTheName()
+    {
+        Token token = Lexer("#win-ning[/b]", new(0, 13)).Next();
+
+        Assert.Equal(("#win-ning".Length, "PIB1043", "Write `#win_ning`."), (token.Span.Length, diagnostics[0].Code, diagnostics[0].Help));
+    }
+
+    [Theory]
     [InlineData("\"\\n\"", "\\n")]
     [InlineData("\"\\a\"", "\\a")]
     [InlineData("\"\\ \"", "\\ ")]

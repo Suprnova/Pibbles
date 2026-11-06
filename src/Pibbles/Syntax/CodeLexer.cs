@@ -197,7 +197,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
             Report(DiagnosticCatalog.InvalidEscape, start, text[start..Position]);
     }
 
-    /// <summary>Reads a tag. A name holding anything but letters, digits and <c>_</c> is reported, and runs to the next whitespace, <c>:</c> or comment.</summary>
+    /// <summary>Reads a tag. A name holding anything but letters, digits and <c>_</c> is reported, and runs to the next whitespace, <c>:</c>, <c>[</c>, <c>{</c> or comment.</summary>
     private TokenKind ReadTag()
     {
         int start = Position++;
@@ -221,7 +221,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         return TokenKind.Tag;
     }
 
-    private bool AtTagNameEnd() => Position >= span.End || Whitespace.Is(text[Position]) || text[Position] is ':' || (Peek(0) is '/' && Peek(1) is '/');
+    private bool AtTagNameEnd() => Position >= span.End || Whitespace.Is(text[Position]) || text[Position] is ':' or '[' or '{' || (Peek(0) is '/' && Peek(1) is '/');
 
     private static string Suggest(string tag)
     {
