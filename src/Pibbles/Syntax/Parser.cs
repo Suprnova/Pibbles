@@ -309,6 +309,29 @@ internal sealed partial class Parser
         return new("") { Span = new(previousEnd, 0) };
     }
 
+    /// <summary>Reads the <c>$variable</c> that follows <paramref name="after"/> on <paramref name="line"/>. A name without its <c>$</c> is reported and read as the variable.</summary>
+    private VariableExpressionSyntax ExpectVariable(string after, SourceLine line)
+    {
+        if (token.Kind is TokenKind.Variable)
+        {
+            var variable = new VariableExpressionSyntax(TextOf(token.Span)[1..]) { Span = token.Span };
+            Advance();
+            return variable;
+        }
+
+        if (token.Kind is TokenKind.Name)
+        {
+            TextSpan name = token.Span;
+            string corrected = $"{source.Text[line.Content.Start..name.Start]}${source.Text[name.Start..PeekContentEnd(line)]}";
+            Fail(DiagnosticCatalog.MissingDollar, name, TextOf(name), corrected);
+            Advance();
+            return new(TextOf(name)) { Span = name };
+        }
+
+        Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), "a variable", after);
+        return new("") { Span = new(previousEnd, 0) };
+    }
+
     private TagSyntax ReadTag()
     {
         TagSyntax tag = TagFrom(token);

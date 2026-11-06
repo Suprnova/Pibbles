@@ -271,6 +271,14 @@ public static class DiagnosticCatalog
         "This text has U+FFFC in it, which I use internally to mark where an icon goes.",
         help: "Remove it. To show an icon, write `{{icon name}}`.");
 
+    /// <summary>PIB1049: a name where a variable is expected, written without its <c>$</c>.</summary>
+    /// <remarks>Arguments: the name as written, and the line with a <c>$</c> before the name.</remarks>
+    public static DiagnosticDescriptor MissingDollar { get; } = new(
+        "PIB1049",
+        DiagnosticSeverity.Error,
+        "Variables start with `$`, so I need one before `{0}`.",
+        help: "Write `{1}`.");
+
     /// <summary>PIB1050: a positional argument after a named one.</summary>
     public static DiagnosticDescriptor ArgumentOrder { get; } = new(
         "PIB1050",
@@ -974,6 +982,7 @@ public static class DiagnosticCatalog
         Missing,
         NumberTooLarge,
         ObjectReplacementCharacter,
+        MissingDollar,
         ArgumentOrder,
         SpaceBeforeCall,
         InvalidLineId,

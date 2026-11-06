@@ -148,6 +148,14 @@ public class CompilationTests
         { "@var $where = left\n", null },
     };
 
+    [Fact]
+    public void Create_VariableDeclaredWithoutDollar_ReportsOnlyTheMissingDollar()
+    {
+        Compilation compilation = Compile("@var door_open = false\n== kitchen.door\n@if $door_open\n    @end\n");
+
+        Assert.Equal("PIB1049", Assert.Single(compilation.Diagnostics).Code);
+    }
+
     [Theory]
     [MemberData(nameof(UntypedVariableHelp))]
     public void Create_VariableStartingAsName_SuggestsTypeOnlyWhenThereIsOne(string text, string? help)

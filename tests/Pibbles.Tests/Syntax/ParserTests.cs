@@ -226,6 +226,34 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("@var door_open = false", "door_open", "@var $door_open = false")]
+    [InlineData("@var door_open: bool = false // note", "door_open", "@var $door_open: bool = false")]
+    [InlineData("@var .attempts = 0", ".attempts", "@var $.attempts = 0")]
+    public void Parse_VariableDeclarationWithoutDollar_ReportsItOnceAndKeepsTheDeclaration(string line, string name, string corrected)
+    {
+        var source = new SourceText("story.pib", $"{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var declaration = (VariableDeclarationSyntax)tree.Root.Declarations[0];
+        Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
+        Assert.Equal(("PIB1049", $"Write `{corrected}`.", name), (diagnostic.Code, diagnostic.Help, declaration.Variable.Name));
+        Assert.IsNotType<ErrorExpressionSyntax>(declaration.Value);
+    }
+
+    [Fact]
+    public void Parse_SetWithoutDollar_ReportsItOnceAndKeepsTheStatement()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@set door_open = true // note\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        var set = (SetStatementSyntax)tree.Root.Nodes[0].Body[0];
+        Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
+        Assert.Equal(("PIB1049", "Write `@set $door_open = true`.", "door_open"), (diagnostic.Code, diagnostic.Help, set.Variable.Name));
+    }
+
+    [Theory]
     [InlineData("mira: [b]unclosed")]
     [InlineData("mira: {$unclosed")]
     [InlineData("-> [b]unclosed")]

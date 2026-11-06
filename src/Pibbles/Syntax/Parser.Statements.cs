@@ -66,7 +66,7 @@ internal sealed partial class Parser
                 return;
 
             case "@set":
-                statements.Add(ParseSet(start));
+                statements.Add(ParseSet(start, line));
                 return;
 
             case "@pause":
@@ -386,21 +386,10 @@ internal sealed partial class Parser
         SkipDedent();
     }
 
-    private SetStatementSyntax ParseSet(int start)
+    private SetStatementSyntax ParseSet(int start, SourceLine line)
     {
         Advance();
-        VariableExpressionSyntax variable;
-        if (token.Kind is TokenKind.Variable)
-        {
-            variable = new(TextOf(token.Span)[1..]) { Span = token.Span };
-            Advance();
-        }
-        else
-        {
-            Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), "a variable", "@set");
-            variable = new("") { Span = new(previousEnd, 0) };
-        }
-
+        VariableExpressionSyntax variable = ExpectVariable("@set", line);
         AssignmentOperator? assignment = token.Kind switch
         {
             TokenKind.Equals => AssignmentOperator.Assign,

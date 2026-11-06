@@ -28,7 +28,7 @@ internal sealed partial class Parser
         {
             "@channel" => ParseChannel(),
             "@enum" => ParseEnum(),
-            "@var" => ParseVariableDeclaration(),
+            "@var" => ParseVariableDeclaration(line),
             "@command" => ParseCommandDeclaration(),
             "@markup" => ParseMarkupDeclaration(),
             "@icon" => new IconDeclarationSyntax(ParseNameList("an icon name", "@icon")) { Span = default },
@@ -184,20 +184,9 @@ internal sealed partial class Parser
         return new(name, ParseNameList("an enum member", ":")) { Span = default };
     }
 
-    private VariableDeclarationSyntax ParseVariableDeclaration()
+    private VariableDeclarationSyntax ParseVariableDeclaration(SourceLine line)
     {
-        VariableExpressionSyntax variable;
-        if (token.Kind is TokenKind.Variable)
-        {
-            variable = new(TextOf(token.Span)[1..]) { Span = token.Span };
-            Advance();
-        }
-        else
-        {
-            Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), "a variable", "@var");
-            variable = new("") { Span = new(previousEnd, 0) };
-        }
-
+        VariableExpressionSyntax variable = ExpectVariable("@var", line);
         NameSyntax? type = null;
         if (token.Kind is TokenKind.Colon)
         {

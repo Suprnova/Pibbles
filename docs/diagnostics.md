@@ -68,6 +68,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1046 | Error | I expected a node name after `@jump`. | — |
 | PIB1047 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
 | PIB1048 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
+| PIB1049 | Error | Variables start with `$`, so I need one before `door_open`. | Write `@var $door_open = false`. |
 | PIB1050 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB1051 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB1052 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
@@ -537,6 +538,16 @@ mira: Press ￼ to look.
 ```
 
 Delete the character. To show an icon, write `{icon interact}`.
+
+### PIB1049
+
+**A variable's name starts with `$` wherever it's written,** in `@var` and `@set` as much as in an expression. A name without the `$` is read as the variable the line means, so the rest of the line is still checked, and the help writes the line out with the `$` in place.
+
+```text
+@var door_open = false
+```
+
+Write `@var $door_open = false`.
 
 ### PIB1050
 
