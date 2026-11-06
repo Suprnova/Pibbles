@@ -8,6 +8,8 @@
 //   ^^^ PIB1040
 @call fixture.other #id:k7qp2x "text"
 //                             ^^^^^^ PIB1040
+-> [b]Mail @home[/b] now
+//         ^^^^^ PIB1040
 @if true
     == fixture.nested
 //  ^^ PIB1040

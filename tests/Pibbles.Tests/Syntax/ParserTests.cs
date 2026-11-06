@@ -101,6 +101,43 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: [b]I'm #winning[/b]", "#winning", "mira: [b]I'm \\#winning[/b]")]
+    [InlineData("mira: {if $a}I'm #winning{/if}", "#winning", "mira: {if $a}I'm \\#winning{/if}")]
+    [InlineData("mira: {if $a}I'm #winning {/if}", "#winning", "mira: {if $a}I'm \\#winning {/if}")]
+    public void Parse_TagInsideOpenSpanOrBranch_ReportsTextAfterTagOnly(string line, string tag, string fixedLine)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1015", $"If `{tag}` is part of what mira says, put a backslash before the `#`:\n{fixedLine}"), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Theory]
+    [InlineData("-> [b]Email @home[/b] now")]
+    [InlineData("-> {if $a}Email @home{/if} now")]
+    public void Parse_ModifierLookalikeInsideOpenSpanOrBranch_IsUnexpected(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1040", "I didn't expect `@home` here."), (diagnostic.Code, diagnostic.Message));
+    }
+
+    [Theory]
+    [InlineData("mira: [b]x #thought", "PIB1010")]
+    [InlineData("mira: {if $a}x #thought", "PIB1013")]
+    [InlineData("-> [b]x @once", "PIB1010")]
+    [InlineData("-> {if $a}x @once", "PIB1013")]
+    public void Parse_ValidTagOrModifierAfterOpenSpanOrBranch_StillReportsUnclosed(string line, string code)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Assert.Equal(code, Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+    }
+
+    [Theory]
     [InlineData("mira: Hi{w}", typeof(InputWaitSyntax))]
     [InlineData("mira: Hi{pause 0.5}", typeof(PauseSyntax))]
     public void Parse_WaitOrPausePoint_MakesItsOwnNode(string line, Type expected)

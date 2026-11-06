@@ -302,7 +302,7 @@ To show a backslash itself, write two: `"C:\\Users\\mira"`.
 mira: I'm #winning today.
 ```
 
-If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning today.` A `#` followed by anything other than a letter, as in `my #1 fan`, needs no escape.
+If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning today.` The same goes inside markup and conditional text: `mira: [b]I'm #winning[/b]` is reported at the `#`, and written `mira: [b]I'm \#winning[/b]`. A `#` followed by anything other than a letter, as in `my #1 fan`, needs no escape.
 
 ### PIB1016
 

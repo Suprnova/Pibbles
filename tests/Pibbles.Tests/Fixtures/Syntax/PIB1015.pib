@@ -7,10 +7,16 @@ mira: Hi. #thought and more
 //        ^^^^^^^^ PIB1015
 -> Go #show_disabled @once
 //    ^^^^^^^^^^^^^^ PIB1015
+mira: [b]I'm #winning[/b]
+//           ^^^^^^^^ PIB1015
+mira: {if $a}I'm #winning{/if}
+//               ^^^^^^^^ PIB1015
 
 // Must not trigger
 
 mira: I'm \#winning today. #thought
+mira: [b]I'm \#winning[/b] #thought
+mira: {if $a}I'm \#winning{/if} #thought
 mira: My #1 fan. #thought #box:phone
 -> Go  @once #show_disabled
 mira: Hi. #thought // a comment after a tag

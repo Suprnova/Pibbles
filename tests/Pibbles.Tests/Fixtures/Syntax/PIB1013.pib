@@ -9,6 +9,8 @@ mira: [wave amplitude=2
 //    ^ PIB1013
 mira: {if $a}Yes{else}No
 //    ^^^ PIB1013
+mira: {if $a}Yes #thought
+//    ^^^ PIB1013
 
 mira: Hi, {$name // }
 //        ^ PIB1013
@@ -21,5 +23,6 @@ mira: {if $a}Yes // {/if}
 
 mira: Hi, {$name}.
 mira: {if $a}Yes{else}No{/if}
+mira: {if $a}Yes{/if} #thought
 mira: A } and a ] on their own.
 mira: Hi, {$name}. // An open { in a comment.

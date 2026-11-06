@@ -37,6 +37,7 @@ internal sealed partial class Parser
 
         List<InlineSyntax> content = ParseInlineText(SkipWhitespace(textStart), inlineEnd, option: false);
         List<TagSyntax> tags = ParseTrailingTags();
+        ReportDeferredUnclosed();
 
         if (speaker is { Name: { } speakerName, Values.Count: 0 } && content.Count == 0)
             Fail(DiagnosticCatalog.EmptyLine, new(start, textStart - start), speakerName.Text, new SpeakerMention(speakerName.Text));
@@ -122,6 +123,7 @@ internal sealed partial class Parser
             tags = ParseTrailingTags();
         }
 
+        ReportDeferredUnclosed();
         CheckTags(tags, TagPlace.Option);
         index++;
 

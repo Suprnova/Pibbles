@@ -20,6 +20,7 @@ internal sealed partial class Parser
     private bool inBranch;
     private List<string> openMarkup = [];
     private (string Name, TextSpan Span, int End)? pendingClose;
+    private Action? deferredUnclosed;
 
     /// <summary>The run of text being read. Every run is flushed before reading moves into a nested span or branch, so they all share it.</summary>
     private readonly StringBuilder inlineText = new();
@@ -31,6 +32,7 @@ internal sealed partial class Parser
         inlineEnd = end;
         inOption = option;
         pendingClose = null;
+        deferredUnclosed = null;
 
         List<InlineSyntax> items = ParseInlineItems(trimEnd: true);
         while (AtInline('{'))
@@ -161,7 +163,7 @@ internal sealed partial class Parser
         int end = inlinePosition;
         if (pendingClose is not { } close)
         {
-            Fail(DiagnosticCatalog.UnclosedMarkup, new(open, tagEnd - open), name.Text, CommentHelp);
+            ReportUnclosed(DiagnosticCatalog.UnclosedMarkup, new(open, tagEnd - open), name.Text, CommentHelp);
         }
         else if (close.Name == name.Text)
         {
@@ -373,10 +375,26 @@ internal sealed partial class Parser
         }
 
         if (!closed)
-            Fail(DiagnosticCatalog.Unclosed, openSpan, "{/if}", "{if}", CommentHelp);
+            ReportUnclosed(DiagnosticCatalog.Unclosed, openSpan, "{/if}", "{if}", CommentHelp);
 
         return new(condition, content, elseIfs, @else) { Span = new(open, inlinePosition - open) };
     }
+
+    /// <summary>
+    /// Reports a span or branch left open. A tag or modifier ends the text, so one left open at a misplaced tag or modifier is
+    /// the tag's or modifier's problem: the report waits for <see cref="ReportDeferredUnclosed"/>, which the rest of the line
+    /// gets to pre-empt.
+    /// </summary>
+    private void ReportUnclosed(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
+    {
+        if (AtTagStart() || AtModifierStart())
+            deferredUnclosed ??= () => Fail(descriptor, span, arguments);
+        else
+            Fail(descriptor, span, arguments);
+    }
+
+    /// <summary>Reports the span or branch left open at a tag or modifier, unless the line's tags or modifiers had a problem of their own.</summary>
+    private void ReportDeferredUnclosed() => deferredUnclosed?.Invoke();
 
     private ExpressionSyntax ParseBranchCondition(TextSpan keyword)
     {

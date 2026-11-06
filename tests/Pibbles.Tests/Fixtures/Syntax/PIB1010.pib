@@ -7,6 +7,10 @@ mira: {if $a}[b]bold{/if}
 //           ^^^ PIB1010
 mira: [wave amplitude=2]Spooky
 //    ^^^^^^^^^^^^^^^^^^ PIB1010
+mira: [b]The key #thought
+//    ^^^ PIB1010
+-> [b]Go @once
+// ^^^ PIB1010
 
 mira: [clue]The key // [/clue]
 //    ^^^^^^ PIB1010
@@ -15,6 +19,7 @@ mira: [clue]The key // [/clue]
 
 mira: [clue]The key[/clue]
 mira: [b]Bold, then[/b] plain.
+mira: [b]Bold[/b] #thought
 mira: {if $a}[b]bold[/b]{/if}
 mira: \[clue] is escaped.
 mira: [clue]The key[/clue] // [clue] in a comment
