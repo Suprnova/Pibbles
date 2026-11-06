@@ -50,14 +50,19 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         if (file.Prefix is { } prefix)
             Line(0, $"@prefix {prefix.Name.Text}");
 
-        foreach (DeclarationSyntax declaration in file.Declarations)
-            Declaration(declaration);
-
-        foreach (NodeSyntax node in file.Nodes)
+        foreach (SyntaxNode member in file.Members)
         {
-            Line(0, $"== {node.Name.Text}{string.Concat(node.Aliases.Select(alias => $" #was:{alias.Text}"))}");
-            Statements(node.Body, 0);
+            if (member is NodeSyntax node)
+                Node(node);
+            else
+                Declaration((DeclarationSyntax)member);
         }
+    }
+
+    private void Node(NodeSyntax node)
+    {
+        Line(0, $"== {node.Name.Text}{string.Concat(node.Aliases.Select(alias => $" #was:{alias.Text}"))}");
+        Statements(node.Body, 0);
     }
 
     private void BlockChannels(IEnumerable<ChannelEditSyntax> edits)

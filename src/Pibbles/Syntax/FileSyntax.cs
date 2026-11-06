@@ -1,10 +1,16 @@
 namespace Pibbles.Syntax;
 
-/// <summary>The root of a file's syntax tree: an optional prefix, then declarations, then nodes.</summary>
+/// <summary>The root of a file's syntax tree: an optional prefix, then the file's declarations and nodes, in source order.</summary>
 /// <param name="Prefix">The file's <c>@prefix</c> line, or <see langword="null"/>.</param>
-/// <param name="Declarations">The declarations before the file's first node.</param>
-/// <param name="Nodes">The file's nodes, in order.</param>
-public sealed record FileSyntax(PrefixSyntax? Prefix, IReadOnlyList<DeclarationSyntax> Declarations, IReadOnlyList<NodeSyntax> Nodes) : SyntaxNode;
+/// <param name="Members">The file's declarations and nodes, each a <see cref="DeclarationSyntax"/> or a <see cref="NodeSyntax"/>, in source order.</param>
+public sealed record FileSyntax(PrefixSyntax? Prefix, IReadOnlyList<SyntaxNode> Members) : SyntaxNode
+{
+    /// <summary>The file's declarations, in source order.</summary>
+    public IReadOnlyList<DeclarationSyntax> Declarations { get; } = [.. Members.OfType<DeclarationSyntax>()];
+
+    /// <summary>The file's nodes, in source order.</summary>
+    public IReadOnlyList<NodeSyntax> Nodes { get; } = [.. Members.OfType<NodeSyntax>()];
+}
 
 /// <summary>A <c>@prefix</c> line, which makes names starting with a dot relative to <see cref="Name"/>.</summary>
 /// <param name="Name">The group name the file's relative node names are under.</param>

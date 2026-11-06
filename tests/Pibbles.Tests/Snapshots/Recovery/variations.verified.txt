@@ -1,5 +1,5 @@
 File 1:1-18:1
-  Declarations:
+  Members:
     ActorDeclaration 3:1-4:27 DisplayName="Mira [the brave]"
       Name: Name 3:8-3:12 Text="mira"
     EnumDeclaration 5:1-5:26
@@ -7,7 +7,6 @@ File 1:1-18:1
       Members:
         Name 5:22-5:23 Text="a"
         Name 5:25-5:26 Text="b"
-  Nodes:
     Node 6:1-17:14
       Name: Name 6:4-6:21 Text="snapshot.recovery"
       Body:

@@ -61,7 +61,7 @@ internal static class SyntaxGenerators
         Maybe(DottedName.Select(name => new PrefixSyntax(Name(name)) { Span = default })),
         Declaration().Array[0, 4],
         Node().Array[0, 3],
-        (prefix, declarations, nodes) => new FileSyntax(prefix, declarations, nodes) { Span = default });
+        (prefix, declarations, nodes) => new FileSyntax(prefix, [.. declarations, .. nodes]) { Span = default });
 
     private static NameSyntax Name(string text) => new(text) { Span = default };
 

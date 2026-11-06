@@ -17,10 +17,10 @@ internal sealed partial class Parser
     private readonly IReadOnlyList<LineToken> lines;
     private readonly List<Diagnostic> diagnostics;
     private readonly List<Comment> comments;
-    private readonly List<DeclarationSyntax> declarations = [];
-    private readonly List<NodeSyntax> nodes = [];
+    private readonly List<SyntaxNode> members = [];
     private PrefixSyntax? prefix;
     private bool sawContent;
+    private bool sawNode;
     private int index;
 
     private readonly CodeLexer lexer;
@@ -51,7 +51,7 @@ internal sealed partial class Parser
     private SyntaxTree ParseTree()
     {
         ParseTopLevel();
-        var root = new FileSyntax(prefix, declarations, nodes) { Span = new(0, source.Text.Length) };
+        var root = new FileSyntax(prefix, members) { Span = new(0, source.Text.Length) };
         return new(source, root, [.. comments.OrderBy(comment => comment.Span.Start)], diagnostics);
     }
 
@@ -68,9 +68,10 @@ internal sealed partial class Parser
             else if (Current.Line.Kind is LineKind.Header)
             {
                 sawContent = true;
-                nodes.Add(ParseNode());
+                sawNode = true;
+                members.Add(ParseNode());
             }
-            else if (nodes.Count > 0)
+            else if (sawNode)
             {
                 ContinueLastNode();
             }
@@ -91,8 +92,8 @@ internal sealed partial class Parser
         if (statements.Count == 0)
             return;
 
-        NodeSyntax node = nodes[^1];
-        nodes[^1] = node with { Body = [.. node.Body, .. statements], Span = new(node.Span.Start, statements[^1].Span.End - node.Span.Start) };
+        var node = (NodeSyntax)members[^1];
+        members[^1] = node with { Body = [.. node.Body, .. statements], Span = new(node.Span.Start, statements[^1].Span.End - node.Span.Start) };
     }
 
     private void ParseTopLevelLine(SourceLine line)
@@ -112,7 +113,7 @@ internal sealed partial class Parser
 
             if (DeclarationKeywords.Contains(word))
             {
-                declarations.Add(ParseDeclaration(line));
+                members.Add(ParseDeclaration(line));
                 return;
             }
 
