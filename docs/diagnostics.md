@@ -470,6 +470,14 @@ Remove the `:`: `@if $door_open`.
 
 Remove what's extra. If a word belongs to the next line, move it there.
 
+In an option's text, an `@` followed by a letter starts the modifiers, so an `@` that belongs to the text is reported here too:
+
+```text
+-> Email me @home
+```
+
+Put a backslash before the `@`: `-> Email me \@home`.
+
 ### PIB1041
 
 **Quoted text has to end with a `"` on the same line it starts on.** Everything after an opening `"` is part of the text until the closing one, so without it, the rest of the line becomes text too.

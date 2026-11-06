@@ -21,6 +21,10 @@ public static class DiagnosticCatalog
     /// <returns>The sentence with a trailing space, so more text can follow it, or an empty string if there is no suggestion.</returns>
     internal static string DidYouMean(string? suggestion) => suggestion is null ? "" : $"Did you mean `{suggestion}`? ";
 
+    /// <summary>The sentence a help offers when a <c>#</c> or <c>@</c> word may be text, such as <c>If `@home` is text, put a backslash before the `@`.</c>.</summary>
+    /// <param name="word">The word as written, starting with the character to escape.</param>
+    internal static string EscapeHelp(string word) => $"If `{word}` is text, put a backslash before the `{word[0]}`.";
+
     /// <summary>PIB1002: a line is indented less than the line above it, but not as far back as any block it could belong to.</summary>
     public static DiagnosticDescriptor InconsistentIndentation { get; } = new(
         "PIB1002",
@@ -213,11 +217,12 @@ public static class DiagnosticCatalog
         help: "Remove it: `{1}`.");
 
     /// <summary>PIB1040: something the grammar doesn't allow where it appears, when no more specific code applies.</summary>
-    /// <remarks>Argument: what was found, such as <c>`extra`</c> or <c>a node header</c>.</remarks>
+    /// <remarks>Arguments: what was found, such as <c>`extra`</c> or <c>a node header</c>; and how to fix it, such as <see cref="EscapeHelp"/>'s sentence, or <see langword="null"/> for no help.</remarks>
     public static DiagnosticDescriptor Unexpected { get; } = new(
         "PIB1040",
         DiagnosticSeverity.Error,
-        "I didn't expect {0} here.");
+        "I didn't expect {0} here.",
+        help: "{1}");
 
     /// <summary>PIB1041: a quoted string with no closing quote on its line.</summary>
     public static DiagnosticDescriptor UnterminatedString { get; } = new(

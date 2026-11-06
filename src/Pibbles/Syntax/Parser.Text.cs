@@ -97,7 +97,7 @@ internal sealed partial class Parser
                 }
                 else
                 {
-                    FailUnexpected(token.Span);
+                    FailUnexpected(token.Span, modifier is not ("@if" or "@once") && condition is null && !isOnce ? DiagnosticCatalog.EscapeHelp(modifier) : null);
                 }
             }
 

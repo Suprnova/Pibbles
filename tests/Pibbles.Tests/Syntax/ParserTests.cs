@@ -126,6 +126,32 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("-> Email me @home")]
+    [InlineData("-> [b]Email @home[/b] now")]
+    [InlineData("-> {if $a}Email @home{/if} now")]
+    public void Parse_UnknownModifierWhereTextWas_OffersTheEscape(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1040", "If `@home` is text, put a backslash before the `@`."), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Theory]
+    [InlineData("-> Email me @once @home")]
+    [InlineData("-> Email me @once @once")]
+    [InlineData("-> Email me @if true @if true")]
+    public void Parse_UnexpectedAfterAModifier_OffersNoHelp(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
+
+        Assert.Equal(("PIB1040", null), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Theory]
     [InlineData("mira: [b]x #thought", "PIB1010")]
     [InlineData("mira: {if $a}x #thought", "PIB1013")]
     [InlineData("-> [b]x @once", "PIB1010")]

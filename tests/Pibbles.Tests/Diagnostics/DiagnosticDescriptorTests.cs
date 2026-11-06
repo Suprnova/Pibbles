@@ -29,6 +29,18 @@ public class DiagnosticDescriptorTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Create_HelpThatFormatsToNothing_LeavesItNull(string? help)
+    {
+        var descriptor = new DiagnosticDescriptor("PIB1040", DiagnosticSeverity.Error, "I didn't expect {0} here.", "{1}");
+
+        Diagnostic diagnostic = descriptor.Create(location, "`extra`", help);
+
+        Assert.Null(diagnostic.Help);
+    }
+
+    [Theory]
     [InlineData("PIB1001", null)]
     [InlineData("PIB2001", null)]
     [InlineData("PIB3001", null)]

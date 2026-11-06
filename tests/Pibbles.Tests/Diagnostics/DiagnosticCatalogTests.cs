@@ -18,6 +18,12 @@ public partial class DiagnosticCatalogTests
     public void DidYouMean_NoSuggestion_IsEmpty() =>
         Assert.Empty(DiagnosticCatalog.DidYouMean(null));
 
+    [Theory]
+    [InlineData("@home", "If `@home` is text, put a backslash before the `@`.")]
+    [InlineData("#team!", "If `#team!` is text, put a backslash before the `#`.")]
+    public void EscapeHelp_Word_NamesTheWordAndItsFirstCharacter(string word, string expected) =>
+        Assert.Equal(expected, DiagnosticCatalog.EscapeHelp(word));
+
     [Fact]
     public void All_ListsEveryDescriptorInCatalog()
     {

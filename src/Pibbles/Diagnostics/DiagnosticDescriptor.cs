@@ -13,7 +13,7 @@ public sealed class DiagnosticDescriptor
     /// <param name="code">The code, such as <c>PIB1001</c>.</param>
     /// <param name="defaultSeverity">The severity, unless configuration overrides it.</param>
     /// <param name="message">The template for <see cref="Diagnostic.Message"/>.</param>
-    /// <param name="help">The template for <see cref="Diagnostic.Help"/>, if diagnostics with this code have one.</param>
+    /// <param name="help">The template for <see cref="Diagnostic.Help"/>, if diagnostics with this code have one. A diagnostic whose help formats to nothing has none.</param>
     internal DiagnosticDescriptor(string code, DiagnosticSeverity defaultSeverity, string message, string? help = null)
     {
         Code = code;
@@ -47,7 +47,7 @@ public sealed class DiagnosticDescriptor
     public string? Help { get; }
 
     internal Diagnostic Create(SourceLocation location, params object?[] arguments) =>
-        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Help, arguments))
+        new(Code, DefaultSeverity, location, Format(Message, arguments)!, Format(Help, arguments) is { Length: > 0 } help ? help : null)
         {
             Descriptor = this,
             Arguments = arguments,

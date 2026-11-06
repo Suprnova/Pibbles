@@ -244,7 +244,7 @@ internal sealed partial class Parser
             }
             else if (Current.Line.Kind is LineKind.Header)
             {
-                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header");
+                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header", null);
                 index++;
                 SkipBlock();
             }
@@ -299,7 +299,7 @@ internal sealed partial class Parser
         }
         else if (inner.Kind is LineKind.Header)
         {
-            Report(DiagnosticCatalog.Unexpected, new(after, 2), "a node header");
+            Report(DiagnosticCatalog.Unexpected, new(after, 2), "a node header", null);
             index++;
             SkipBlock();
         }

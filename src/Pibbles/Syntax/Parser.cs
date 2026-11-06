@@ -211,7 +211,7 @@ internal sealed partial class Parser
             }
             else if (Current.Line.Kind is LineKind.Header)
             {
-                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header");
+                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header", null);
                 index++;
                 SkipBlock();
             }
@@ -394,7 +394,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>Reports the text at <paramref name="span"/> as something the grammar doesn't allow where it appears.</summary>
-    private void FailUnexpected(TextSpan span) => Fail(DiagnosticCatalog.Unexpected, span, $"`{TextOf(span)}`");
+    /// <param name="span">The unexpected text.</param>
+    /// <param name="help">How to fix it, or <see langword="null"/> for none.</param>
+    private void FailUnexpected(TextSpan span, string? help = null) => Fail(DiagnosticCatalog.Unexpected, span, $"`{TextOf(span)}`", help);
 
     /// <summary>Reports a problem with a whole line before the line is parsed, so parsing it reports nothing more.</summary>
     private void ReportLine(SourceLine line, DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments)
