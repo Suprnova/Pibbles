@@ -1,21 +1,23 @@
 # Diagnostics
 
-The catalog of every diagnostic code. Each code has one entry here and one in `DiagnosticCatalog`, which the code registers it in. The table's message and help are what the CLI and the language server show ([how diagnostics read](syntax.md#how-diagnostics-read)). As a code is implemented, it also gains a section under [Explanations](#explanations): what it means, an example that triggers it, and how to fix it. `pibbles explain <code>` prints that section, and language-server hovers show it.
+The catalog of every diagnostic code. Each code has one entry here and one in `DiagnosticCatalog`, which the code registers it in. The message and help in a code's row are what the CLI and the language server show ([how diagnostics read](syntax.md#how-diagnostics-read)). As a code is implemented, it also gains a section under [Explanations](#explanations): what it means, an example that triggers it, and how to fix it. `pibbles explain <code>` prints that section, and language-server hovers show it.
 
 ## Ranges
 
 | Range | What's in it | Category |
 | --- | --- | --- |
-| `PIB1xxx` | Syntax ([syntax design](syntax.md)) | none |
-| `PIB2xxx` | Declarations and binding ([semantics design](semantics.md)) | none |
-| `PIB3xxx` | Flow and content checks ([semantics design](semantics.md)) | none |
+| `PIB1xxx` | Files, lines and names ([language reference](language/reference.md), from files and structure to prefixes) | none |
+| `PIB2xxx` | Statements ([language reference](language/reference.md#statements)) | none |
+| `PIB3xxx` | Expressions and inline text ([language reference](language/reference.md#expressions)) | none |
 | `PIB4xxx` | Localization ([localization design](localization.md)) | `localization` |
 | `PIB5xxx` | Style ([style rules](semantics.md#style-rules)) | `style` |
 | `PIB6xxx` | Spelling ([spell checking](tooling.md#spell-checking)) | `spelling` |
 
 A code's first digit gives its category, a group of codes that writers switch on or off together. The category decides which `pibbles_diagnostic.category-<name>.severity` setting in `.editorconfig` reaches the code, once the category has a code of its own ([configuration](tooling.md#configuration)). It decides whether a `// pibbles-ignore` comment can silence the code: style and spelling only. It also decides whether a line with an error drops the code: style only. A code starting with 1 to 3 has no category. It's one of the story's own checks, and settings reach it only by its own code. A code that changes category gets a new number.
 
-Within a range, each decade is one group of related codes, such as PIB2000–2009 for speakers and channel values, and the [table below](#codes) shows the groups. A new code takes the next free number in its group, and a full group continues in a later free decade. A code is never renumbered once it ships, and the codes the [extensions](#with-extensions) reserve stay free.
+The rest of the number follows the doc that explains the code. A code with no category sits with the construct its rule is about, in the language reference's order, whether the rule is about declaring the construct or using it, and whichever stage finds the problem: every tag code is a PIB12xx, from a tag in the wrong place to an unknown one. Each construct has a hundred. Style codes have a hundred for each group of [style rules](semantics.md#style-rules), localization codes one for translations and one for voice, and spelling codes one. The [codes](#codes) are listed by hundred, and a hundred's codes are numbered from 01.
+
+A new code takes the next free number in its construct's hundred. A new construct takes the next free hundred in its range, and a new category a free first digit, 7 to 9. The codes the [extensions](#with-extensions) reserve stay free. From 1.0 on, a code keeps its number.
 
 Severities are error, warning, info and hint. `.editorconfig` can change any of them but an error, since a story with an error can't compile ([configuration](tooling.md#configuration)).
 
@@ -34,6 +36,12 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 
 ## Codes
 
+Each hundred holds one construct's codes ([ranges](#ranges)).
+
+The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment at the end of that line or on its own line above it, or for a whole file by one on its own line above the file's first node.
+
+### PIB10xx: Files and line structure
+
 | Code | Default | Message | Help |
 | --- | --- | --- | --- |
 | PIB1001 | Error | This line indents with tabs, but the file indents with spaces, so I can't tell which block it belongs to. | Use only spaces or only tabs in a file. Most editors can convert the whole file for you. |
@@ -46,6 +54,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1008 | Error | `@var` can't go inside a node. | Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`. |
 | PIB1009 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
 | PIB1010 | Error | I can't read anything nested more than 64 levels deep. | Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line. |
+
+### PIB11xx: Tokens and escapes
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1101 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
 | PIB1102 | Warning | I show `【b】` as text, but it looks like `[b]` typed through an input method. | Write `[b]`, typing markers in your input method's direct (half-width) mode. If `【b】` is text, put a backslash before the `【`. |
 | PIB1103 | Error | I didn't expect `extra` here. | — |
@@ -54,6 +67,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1106 | Error | I read `＝` (U+FF1D) as `=`, but markers are typed half-width. | Write `@set $met = true`, typing markers in your input method's direct (half-width) mode. |
 | PIB1107 | Error | I expected a node name after `@jump`. | — |
 | PIB1108 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
+
+### PIB12xx: Tags
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1201 | Error | I read `#winning` as a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
 | PIB1202 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1203 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
@@ -62,22 +80,47 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1206 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
 | PIB1207 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
 | PIB1208 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
+
+### PIB13xx: Line IDs
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1301 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
 | PIB1302 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
 | PIB1303 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
 | PIB1304 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
+
+### PIB14xx: Names and declarations
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1401 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
 | PIB1402 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
 | PIB1403 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
 | PIB1404 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
 | PIB1405 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
 | PIB1406 | Error | I don't know a type called `postion`. | Did you mean `position`? |
+
+### PIB15xx: Nodes
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1501 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
 | PIB1502 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
 | PIB1503 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
+
+### PIB16xx: Prefixes
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB1601 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1602 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
 | PIB1603 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
+
+### PIB20xx: Text lines and speakers
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2001 | Error | This block already has a `name:`. | An actor has one display name. Keep one of the two lines. |
 | PIB2002 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
 | PIB2003 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`. |
@@ -90,20 +133,50 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2010 | Error | `none` is already a value of `pose`, so `effect` can't have it too. | A line names a value without its channel, so each value belongs to one channel. Give one of them another name. |
 | PIB2011 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
 | PIB2012 | Error | There's already an `@narration`, on line 6. | Narration has one block. Merge the two, or remove one. |
+
+### PIB21xx: Choices
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2101 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
 | PIB2102 | Info | This option has no text. | Write what the player picks after the `->`. |
+
+### PIB22xx: Conditionals
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2201 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
 | PIB2202 | Error | I didn't expect a `:` on this `@if` line. | Remove it: `@if $door_open`. |
 | PIB2203 | Error | `$attempts` is a `number`, but a condition has to be true or false. | Did you mean `$attempts > 0`? |
+
+### PIB23xx: Variables
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2301 | Error | Variables start with `$`, so I need one before `door_open`. | Write `@var $door_open = false`. |
 | PIB2302 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
 | PIB2303 | Error | `$has_key` holds a `bool`, but this is a `number`. | Use `true` or `false`. |
 | PIB2304 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
+
+### PIB24xx: Flow
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2401 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
 | PIB2402 | Warning | This condition is never true, so the lines under it never run. | Remove them, or write a condition that can change. |
 | PIB2403 | Warning | This condition is always true, so the branches after it never run. | Remove the branches after it, or write a condition that can change. |
+
+### PIB25xx: Variations
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2501 | Error | A `@cycle` block can only hold alternatives. | Start each alternative with `- `. |
 | PIB2502 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
+
+### PIB26xx: Commands and functions
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB2601 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
 | PIB2602 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
 | PIB2603 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
@@ -116,6 +189,11 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2610 | Error | `@show` already has a value for `who`. | Remove one of them. |
 | PIB2611 | Error | I don't know a function called `has_iten`. | Did you mean `has_item`? |
 | PIB2612 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
+
+### PIB30xx: Expressions
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB3001 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
 | PIB3002 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB3003 | Error | I can't use `<` with a `string` and a `string`. | `<`, `<=`, `>` and `>=` compare two numbers or two durations. |
@@ -123,20 +201,45 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB3005 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
 | PIB3006 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB3007 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
+
+### PIB31xx: Markup
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB3101 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
 | PIB3102 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
 | PIB3103 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
 | PIB3104 | Error | I don't know markup called `clu`. | Did you mean `clue`? |
+
+### PIB32xx: Points and values
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB3201 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB3202 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
 | PIB3203 | Error | I don't know an icon called `interct`. | Did you mean `interact`? |
 | PIB3204 | Error | I can't show `$has_key` in text, because it's a `bool`. | Show text that depends on it instead: `{if $has_key}…{else}…{/if}`. |
 | PIB3205 | Error | A pause has to be more than zero, but `0` isn't. | Write a pause longer than zero, like `{pause 0.5}`. |
+
+### PIB33xx: Conditional text
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB3301 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
+
+### PIB50xx: Structure and reuse
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB5001 | Hint | This line is 4 blocks deep, and more than 3 gets hard to follow. | Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`. |
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
+
+### PIB51xx: Redundancy
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB5101 | Hint | `sad` does nothing, because Mira's `pose` changes again before a line shows. | Remove `sad`. |
 | PIB5102 | Hint | `happy` does nothing, because Mira already has it. | Leave `happy` out of this line. |
 | PIB5103 | Hint | This wait does nothing, because the end of the line already waits for a click. | Remove it. |
@@ -148,16 +251,29 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB5109 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5110 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5111 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
+
+### PIB52xx: Expressions
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB5201 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5202 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
+
+### PIB53xx: Readability
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
 | PIB5301 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{page}`. |
 | PIB5302 | Hint | This option is 120 characters long, more than 80. | Shorten it to what the player picks. The lines after it can say the rest. |
 | PIB5303 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
 | PIB5304 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
 | PIB5305 | Hint | This speaker is spaced differently from the usual `mira (happy, shake):`. | Write `mira (happy, shake):`. |
-| PIB5401 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 
-The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment at the end of that line or on its own line above it, or for a whole file by one on its own line above the file's first node.
+### PIB54xx: Maintenance
+
+| Code | Default | Message | Help |
+| --- | --- | --- | --- |
+| PIB5401 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
 
 ## Explanations
 
