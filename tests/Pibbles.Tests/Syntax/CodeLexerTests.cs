@@ -57,7 +57,22 @@ public class CodeLexerTests
     [InlineData("$x(y)", "Variable $x|OpenParen (|Name y|CloseParen )")]
     [InlineData("$kitchen.x(y)", "Variable $kitchen.x|OpenParen (|Name y|CloseParen )")]
     [InlineData("(x)(y)", "OpenParen (|Name x|CloseParen )|OpenParen (|Name y|CloseParen )")]
+    [InlineData("nothing(x)", "Name nothing|CallOpen (|Name x|CloseParen )")]
+    [InlineData("android(x)", "Name android|CallOpen (|Name x|CloseParen )")]
+    [InlineData("kitchen.not(x)", "Name kitchen.not|CallOpen (|Name x|CloseParen )")]
     public void Next_OpenParen_IsCallOnlyWhenTouchingName(string text, string expected)
+    {
+        string tokens = Describe(text);
+
+        Assert.Equal(expected, tokens);
+    }
+
+    [Theory]
+    [InlineData("not($x)", "Name not|OpenParen (|Variable $x|CloseParen )")]
+    [InlineData("$a and($b)", "Variable $a|Name and|OpenParen (|Variable $b|CloseParen )")]
+    [InlineData("$a or($b)", "Variable $a|Name or|OpenParen (|Variable $b|CloseParen )")]
+    [InlineData("not（$x）", "Name not|OpenParen （|Variable $x|CloseParen ）")]
+    public void Next_OpenParenTouchingOperatorWord_IsNotCall(string text, string expected)
     {
         string tokens = Describe(text);
 

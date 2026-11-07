@@ -820,6 +820,35 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parse_ParenthesisTouchingNot_IsTheOperatorAndAParenthesizedOperand()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@if not($met)\n    mira: Hi.\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        ExpressionSyntax condition = ((IfStatementSyntax)tree.Root.Nodes[0].Body[0]).Condition;
+        Assert.Empty(tree.Diagnostics);
+        Assert.True(condition is UnaryExpressionSyntax { Operator: UnaryOperator.Not, Operand: ParenthesizedExpressionSyntax { Expression: VariableExpressionSyntax { Name: "met" } } });
+    }
+
+    [Fact]
+    public void Parse_ParenthesisTouchingAndOrOr_IsTheOperatorAndAParenthesizedOperand()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@if $a and($b) or($c)\n    mira: Hi.\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        ExpressionSyntax condition = ((IfStatementSyntax)tree.Root.Nodes[0].Body[0]).Condition;
+        Assert.Empty(tree.Diagnostics);
+        Assert.True(condition is BinaryExpressionSyntax
+        {
+            Operator: BinaryOperator.Or,
+            Left: BinaryExpressionSyntax { Operator: BinaryOperator.And, Right: ParenthesizedExpressionSyntax },
+            Right: ParenthesizedExpressionSyntax,
+        });
+    }
+
+    [Fact]
     public void Parse_MarkerTypedThroughInputMethod_NamesItAndGivesTheLineHalfWidth()
     {
         var source = new SourceText("story.pib", "== a.b\n@set ＄met ＝ true\n");

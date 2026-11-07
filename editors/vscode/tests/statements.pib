@@ -19,6 +19,11 @@
 // <----- keyword.control.pibbles
     @return
 
+@if not($door_open)
+//  ^^^ keyword.operator.logical.pibbles
+//      ^^^^^^^^^^ variable.other.pibbles
+    @end
+
 @set $bravery += 1
 // <---- keyword.control.pibbles
 //   ^^^^^^^^ variable.other.pibbles

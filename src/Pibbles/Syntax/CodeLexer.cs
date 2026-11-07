@@ -10,7 +10,7 @@ namespace Pibbles.Syntax;
 /// </summary>
 /// <remarks>
 /// Whitespace between tokens is skipped, except that a <c>(</c> touching the name before it is a
-/// <see cref="TokenKind.CallOpen"/>. Malformed strings, numbers and tags are reported and still produce one token each.
+/// <see cref="TokenKind.CallOpen"/>, unless the name is <c>and</c>, <c>or</c> or <c>not</c>. Malformed strings, numbers and tags are reported and still produce one token each.
 /// A form an input method types in a marker's place, such as <c>＝</c> or <c>」</c>, is read as its marker and recorded,
 /// except inside a string, a tag's value or a comment, which keep what's written. A parser keeps one lexer and calls
 /// <see cref="Start"/> for each stretch of code it reads.
@@ -27,6 +27,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     private List<Comment>? comments;
     private bool tagMayBeText;
     private TokenKind? previous;
+    private int previousStart;
 
     /// <summary>Where the next token starts looking.</summary>
     public int Position { get; private set; }
@@ -54,6 +55,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         int start = Position;
         TokenKind kind = Position < span.End ? Read(touching) : TokenKind.EndOfLine;
         previous = kind;
+        previousStart = start;
         if (kind is not (TokenKind.String or TokenKind.Tag or TokenKind.Comment or TokenKind.Bad or TokenKind.EndOfLine))
             RecordForms(start, Position);
 
@@ -72,12 +74,14 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
             '/' when Peek(1) is '/' => ReadComment(),
             '.' when IsDigit(Peek(1)) => ReadNumber(),
             '.' when AtIdentifierStart(Position + 1) => ReadName(),
-            '(' when touching && previous is TokenKind.Name => Punctuation(1, TokenKind.CallOpen),
+            '(' when touching && previous is TokenKind.Name && !AfterOperatorWord() => Punctuation(1, TokenKind.CallOpen),
             _ when IsDigit(c) => ReadNumber(),
             _ when AtIdentifierStart(Position) => ReadName(),
             _ => ReadPunctuation(c),
         };
     }
+
+    private bool AfterOperatorWord() => code.AsSpan(previousStart, Position - previousStart) is "and" or "or" or "not";
 
     private TokenKind ReadPunctuation(char c) => (c, Peek(1)) switch
     {

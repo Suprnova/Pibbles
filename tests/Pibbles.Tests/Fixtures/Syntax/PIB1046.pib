@@ -45,3 +45,5 @@ mira: Hi{@show mira at=}.
 @jump fixture.renamed
 @call .relative #id:k7qp2x
 @set $x = f()
+@if not($x) and($x) or($x)
+    @end

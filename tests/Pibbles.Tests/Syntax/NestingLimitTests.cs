@@ -15,6 +15,7 @@ public class NestingLimitTests
         ["parentheses"] = depth => $"@set $count = {Repeat("(", depth)}1{Repeat(")", depth)}\n",
         ["calls"] = depth => $"@set $count = {Repeat("f(", depth)}1{Repeat(")", depth)}\n",
         ["nots"] = depth => $"@if {Repeat("not ", depth)}$key\n Hi.\n",
+        ["not before parentheses"] = depth => $"@if not{Repeat("(", depth - 1)}$key{Repeat(")", depth - 1)}\n Hi.\n",
         ["negations"] = depth => $"@set $count = {Repeat("- ", depth)}1\n",
         ["sums"] = depth => $"@set $count = 1{Repeat(" + 1", depth)}\n",
         ["conjunctions"] = depth => $"@if $key{Repeat(" and $key", depth)}\n Hi.\n",

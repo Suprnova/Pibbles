@@ -324,7 +324,7 @@ mira: You found {item_name ("key")}.
 
 - **Literals:** `true`/`false`, numbers (`3`, `0.5`, `.5`, `1.`), strings (`"text"`, with [escapes](#lexical-basics) such as `\"` and `\\`), durations (`0.5s`, `300ms`, `.5s`, or a plain number meaning seconds where a `duration` is expected). Numbers have no exponents or digit separators: a number followed directly by a letter, digit, `_` or another `.` is an error. Numbers are exact decimals, from -79228162514264337593543950335 to 79228162514264337593543950335 (about 7.9 × 10^28), so `0.1 + 0.2` is exactly `0.3`. A literal outside that range is an error. A literal with more fraction digits than a number holds (about 28 in all) is rounded to fit.
 - **References:** `$variable`, `function(args)`, and [bare names](#bare-names) for enum members, actors and nodes.
-- **Operators,** from lowest to highest precedence: `or`; `and`; `not`; `== !=`; `< <= > >=`; `+ -`; `* / %`; unary `-`; then parentheses. `+` also joins strings.
+- **Operators,** from lowest to highest precedence: `or`; `and`; `not`; `== !=`; `< <= > >=`; `+ -`; `* / %`; unary `-`; then parentheses. `+` also joins strings. The space is optional between `and`, `or` or `not` and a parenthesis: `not($a)` is `not ($a)`.
 - **Comparisons don't chain.** `$a < $b < $c` and `$a == $b == $c` are errors: write `$a < $b and $b < $c`. Comparisons at different levels combine as usual, so `$a == $b < $c` means `$a == ($b < $c)`.
 - **Built-in functions:** `visits(node) -> number`.
 - **Static typing:** every expression has a type the analyzer knows. Types are never converted implicitly, except that a number can stand in for a duration ([operator types](#operator-types)).
@@ -555,7 +555,7 @@ INDENT and DEDENT come from widths alone. An INDENT where the syntax allows no b
 
 The lexer has three modes:
 
-- **Code mode** reads HEADER and AT lines after their marker, actor properties, option modifiers, and everything inside `[…]` and `{…}`. Whitespace between tokens is insignificant, except before `(`: a `(` directly after a NAME is CALL_OPEN, and any other `(` is PUNCT. The longest match wins.
+- **Code mode** reads HEADER and AT lines after their marker, actor properties, option modifiers, and everything inside `[…]` and `{…}`. Whitespace between tokens is insignificant, except before `(`: a `(` directly after a NAME is CALL_OPEN, and any other `(` is PUNCT, including one directly after `and`, `or` or `not`, which can't name a function. The longest match wins.
 - **Inline mode** reads text: a TEXT line after its speaker, option text, and the text around spans and points.
 - **Raw mode** reads an actor's `name:` value.
 
@@ -574,7 +574,7 @@ STRING          ::= '"' ([^"#x5C#xA#xD] | ESCAPE)* '"'
 TAG             ::= "#" letter (letter | digit | "_")* (":" [^#x20#x9#xA#xD]*)?
 COMMENT         ::= "//" [^#xA#xD]*            /* in every mode, outside a STRING and a TAG's value */
 AT_WORD         ::= "@" ident
-CALL_OPEN       ::= "("                          /* directly after a NAME, with no whitespace between */
+CALL_OPEN       ::= "("                          /* directly after a NAME other than "and", "or" and "not", with no whitespace between */
 PUNCT           ::= "(" | ")" | "," | ":" | "?" | "=" | "+=" | "-=" | "->"
                   | "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" | "%"
 ```
