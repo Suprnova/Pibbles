@@ -8,7 +8,7 @@ internal sealed partial class Parser
     private static readonly HashSet<string> DeclarationKeywords = ["@actor", "@channel", "@narration", "@enum", "@var", "@command", "@markup", "@icon", "@tag", "@function"];
 
     /// <summary>Keywords that grammar extensions will use. v1 gives them no meaning, and rejects them where they'd appear.</summary>
-    private static readonly HashSet<string> ExtensionKeywords = ["@term", "@resume", "@shuffle"];
+    private static readonly HashSet<string> ExtensionKeywords = ["@term", "@resume", "@shuffle", "@temp"];
 
     /// <summary>Parses the declaration on the current line, whose keyword is the current token.</summary>
     private DeclarationSyntax ParseDeclaration(SourceLine line)

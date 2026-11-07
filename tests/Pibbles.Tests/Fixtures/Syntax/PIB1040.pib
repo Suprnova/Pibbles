@@ -1,7 +1,12 @@
 // Anything left on a line that I can't read.
 
+@temp $scratch = 0
+// PIB1040
+
 == fixture.unexpected #was:fixture.old extra
 //                                     ^^^^^ PIB1040
+@temp $scratch = 0
+// PIB1040
 @jump fixture.other fixture.another
 //                  ^^^^^^^^^^^^^^^ PIB1040
 @end now
