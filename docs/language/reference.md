@@ -459,7 +459,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 
 | Group | Words |
 | --- | --- |
-| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `channel`, `narration`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle` |
+| Statement and declaration keywords (after `@`) | `prefix`, `actor`, `channel`, `narration`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle`, `temp` |
 | Brace keywords (after `{`) | `w`, `pause`, `page`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |

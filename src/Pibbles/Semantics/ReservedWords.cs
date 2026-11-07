@@ -10,7 +10,7 @@ internal static class ReservedWords
 
     private static readonly Group Statement = new("after `@`",
         ["prefix", "actor", "channel", "narration", "enum", "var", "command", "markup", "icon", "tag", "function", "if", "elif", "else", "set", "jump", "call", "return", "end", "pause", "sequence", "cycle", "once"],
-        ["term", "resume", "shuffle"]);
+        ["term", "resume", "shuffle", "temp"]);
 
     private static readonly Group Brace = new("inside `{…}`", ["w", "pause", "page", "p", "br", "speed", "icon", "if", "elif", "else"], ["auto", "sequence", "cycle", "shuffle", "once"]);
 
