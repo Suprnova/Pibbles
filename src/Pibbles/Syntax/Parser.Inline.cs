@@ -333,7 +333,7 @@ internal sealed partial class Parser
         Fail(DiagnosticCatalog.PointTakesNoValue, value, point, written, help);
     }
 
-    private TextSpan PointSpan(int open) =>new(open, FindCloser('}', open) - open);
+    private TextSpan PointSpan(int open) => new(open, FindCloser('}', open) - open);
 
     private ConditionalTextSyntax ParseConditionalText()
     {
