@@ -36,6 +36,29 @@ public class RoundTripTests
     }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
 
     [Fact]
+    public void Parse_PrintedCorpusFile_GivesBackTheTreeAndComments() => Assert.All(Corpus.CleanFiles, AssertRoundTrips);
+
+    [Fact]
+    public void Parse_PrintedMutatedFileThatParsesCleanly_GivesBackTheTreeAndComments() => PropertyCheck.Run(Mutations.MutatedFile, file =>
+    {
+        var source = new SourceText(file.Name, file.Text);
+        if (SyntaxTree.Parse(source).Diagnostics.Count == 0)
+            AssertRoundTrips(source);
+    }, iterations: 3000, print: file => $"{file.Name}, mutated:\n{file.Text}");
+
+    private static void AssertRoundTrips(SourceText source)
+    {
+        SyntaxTree tree = SyntaxTree.Parse(source);
+        string[] comments = [.. tree.Comments.Select(comment => comment.Text)];
+
+        SyntaxTree printed = SyntaxTree.Parse(new SourceText(source.Path, SyntaxPrinter.Print(tree.Root, comments)));
+
+        Assert.Empty(printed.Diagnostics);
+        Assert.Equal(SyntaxDump.WriteShape(tree.Root), SyntaxDump.WriteShape(printed.Root));
+        Assert.Equal(comments, printed.Comments.Select(comment => comment.Text));
+    }
+
+    [Fact]
     public void Generator_CoversEveryNodeKindButErrors()
     {
         var pcg = new PCG(1, 1);
