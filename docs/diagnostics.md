@@ -1735,4 +1735,5 @@ Codes that arrive with the [grammar extensions](language/design.md#grammar-exten
 | PIB4001 | Localization (Phase 5) | Error | Translation `es` drops the effect `{@sfx door_rattle}` |
 | PIB4002 | Localization (Phase 5) | Warning | Translation `es` is stale: the source text changed |
 | PIB4101 | Voice tooling (stretch) | Info/Warning | Recording for `k7qp2x` may be out of date: 'teh' → 'the' |
+| PIB5005 | Terms | Hint | This same `{if}…{/if}` is written in 2 places. |
 | PIB6001 | Spell checking (Phase 6) | Info | Unknown word `Mirra`. Did you mean `Mira`? |
