@@ -42,6 +42,7 @@ internal static class SyntaxGenerators
         (30, Gen.Char["abcdefghij klmnop ABC 0123 .,!?'\"-:;()]}[{#@\\/=<>*&%$~^|é"].Select(c => c.ToString())),
         (1, Gen.Const("😀")),
         (1, Gen.Const("é")),
+        (3, Gen.Char["＠＃「」【】［］｛｝『』・、＝＞￥"].Select(c => c.ToString())),
         (1, Gen.Const(Spaces.Ideographic)),
         (1, Gen.Const(Spaces.NoBreak)));
 

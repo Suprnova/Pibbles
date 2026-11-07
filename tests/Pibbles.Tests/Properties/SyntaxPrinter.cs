@@ -7,7 +7,8 @@ namespace Pibbles.Tests.Properties;
 /// <summary>
 /// Prints a syntax tree back to source that parses to the same tree. It writes one canonical form: four-space
 /// indentation, single spaces between tokens, and an escape before every character that could be read as markup, a
-/// point, a tag, a modifier or a speaker's colon.
+/// point, a tag, a modifier or a speaker's colon, and before every marker typed through an input method that's punctuation
+/// or a symbol, so text never looks like one.
 /// </summary>
 /// <remarks>
 /// Comments, when given, are mixed in where they're allowed: after the content of every other line, and on lines of
@@ -275,7 +276,7 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
         var escaped = new StringBuilder();
         foreach (char c in text)
         {
-            if (c is '\\' or '[' or '{' or '#' or '/' || option && c is '@' || narration && c is ':')
+            if (c is '\\' or '[' or '{' or '#' or '/' || option && c is '@' || narration && c is ':' || IsMarkerForm(c))
                 escaped.Append('\\');
 
             escaped.Append(c);
@@ -283,6 +284,8 @@ internal sealed class SyntaxPrinter(IEnumerable<string> comments)
 
         return escaped.ToString();
     }
+
+    private static bool IsMarkerForm(char c) => MarkerForms.Map(c) is not '\0' && (char.IsPunctuation(c) || char.IsSymbol(c));
 
     private static string Expression(ExpressionSyntax expression) => expression switch
     {
