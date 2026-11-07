@@ -43,45 +43,44 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1005 | Error | `///` notes aren't supported yet. | For a comment, use `//`. |
 | PIB1006 | Error | This line starts with U+3000 (an ideographic space), which doesn't indent. | Indent with spaces or tabs. A space at the start of a line doesn't show in the game, since Pibbles trims it, so delete it if you only meant to space the text. |
 | PIB1007 | Error | This file starts with a byte-order mark (U+FEFF), which isn't part of the text. | Delete this first character, or save the file as UTF-8 without a byte-order mark. A program that reads story files should decode them as UTF-8, which removes it. |
-| PIB3101 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
-| PIB3102 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
-| PIB3103 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
-| PIB3301 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
-| PIB1101 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
-| PIB1201 | Error | I read `#winning` as a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
-| PIB2101 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
-| PIB3201 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
-| PIB3202 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
-| PIB1102 | Warning | I show `【b】` as text, but it looks like `[b]` typed through an input method. | Write `[b]`, typing markers in your input method's direct (half-width) mode. If `【b】` is text, put a backslash before the `【`. |
-| PIB1601 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1008 | Error | `@var` can't go inside a node. | Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`. |
 | PIB1009 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
-| PIB1602 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
-| PIB2001 | Error | This block already has a `name:`. | An actor has one display name. Keep one of the two lines. |
-| PIB2201 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
-| PIB2501 | Error | A `@cycle` block can only hold alternatives. | Start each alternative with `- `. |
-| PIB2502 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
-| PIB2202 | Error | I didn't expect a `:` on this `@if` line. | Remove it: `@if $door_open`. |
+| PIB1010 | Error | I can't read anything nested more than 64 levels deep. | Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line. |
+| PIB1101 | Error | I don't know the escape `\n`. | A backslash only goes before punctuation. To show a backslash, write `\\`. |
+| PIB1102 | Warning | I show `【b】` as text, but it looks like `[b]` typed through an input method. | Write `[b]`, typing markers in your input method's direct (half-width) mode. If `【b】` is text, put a backslash before the `【`. |
 | PIB1103 | Error | I didn't expect `extra` here. | — |
 | PIB1104 | Error | This quoted text never ends. | Add the closing `"` on the same line. |
 | PIB1105 | Error | `1e5` isn't a number I can read. | Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`. |
-| PIB1202 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1106 | Error | I read `＝` (U+FF1D) as `=`, but markers are typed half-width. | Write `@set $met = true`, typing markers in your input method's direct (half-width) mode. |
-| PIB1401 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
 | PIB1107 | Error | I expected a node name after `@jump`. | — |
 | PIB1108 | Error | `99999999999999999999999999999` is too large of a number for me. | Numbers go up to 79228162514264337593543950335. Write a smaller one. |
-| PIB2002 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
-| PIB2301 | Error | Variables start with `$`, so I need one before `door_open`. | Write `@var $door_open = false`. |
-| PIB2601 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
-| PIB2602 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
-| PIB1301 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
+| PIB1201 | Error | I read `#winning` as a tag, but tags go at the end of the line. | If `#winning` is part of what Mira says, put a backslash before the `#`: `mira: I'm \#winning today.` |
+| PIB1202 | Error | `#show-disabled` isn't a tag name: tag names only have letters, digits and `_`. | Write `#show_disabled`. |
 | PIB1203 | Error | `#thought` can't go on a node header. | A node header only takes `#was:` tags. Put other tags on the lines inside the node. |
-| PIB2003 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`. |
-| PIB2603 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB1204 | Error | `#cam:pan_left #anim:shake` has no line to go with. | Tags go at the end of the line they're for. Move them onto it. |
-| PIB3001 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
-| PIB3002 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
-| PIB1010 | Error | I can't read anything nested more than 64 levels deep. | Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line. |
+| PIB1205 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
+| PIB1206 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
+| PIB1207 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
+| PIB1208 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
+| PIB1301 | Error | `#id:K7` isn't a line ID I can use. | Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one. |
+| PIB1302 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
+| PIB1303 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
+| PIB1304 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
+| PIB1401 | Error | I can't use `kitchen.door` as a name here, because only node names can have dots. | Use a new name, with `_` between words if it needs them. |
+| PIB1402 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
+| PIB1403 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
+| PIB1404 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
+| PIB1405 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
+| PIB1406 | Error | I don't know a type called `postion`. | Did you mean `position`? |
+| PIB1501 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
+| PIB1502 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
+| PIB1503 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
+| PIB1601 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
+| PIB1602 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
+| PIB1603 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
+| PIB2001 | Error | This block already has a `name:`. | An actor has one display name. Keep one of the two lines. |
+| PIB2002 | Error | This text has U+FFFC in it, which I use internally to mark where an icon goes. | Remove it. To show an icon, write `{icon name}`. |
+| PIB2003 | Error | `mira:` has nothing after it. | Write what Mira says after the colon, or write `mira: {w}` for a box with only their name. To set their values without a line, write `mira (value):`. |
 | PIB2004 | Error | I don't know an actor called `Note`. | If this line is narration, escape the colon: `Note\:`. |
 | PIB2005 | Error | Mira has no value called `smirk`. | Did you mean `smug`? |
 | PIB2006 | Error | `(to Rex)` isn't a list of values: each value is a single name. | For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (to Rex)\:`. |
@@ -89,6 +88,25 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2008 | Error | `shake` has no place after `(mad)`, before the colon. | A speaker takes its values in one parenthesis and nothing else before the colon. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira (mad) shake\:`. |
 | PIB2009 | Error | `happy` and `sad` are both values of Mira's `pose`, and a line sets one value of a channel. | Keep the one you mean. |
 | PIB2010 | Error | `none` is already a value of `pose`, so `effect` can't have it too. | A line names a value without its channel, so each value belongs to one channel. Give one of them another name. |
+| PIB2011 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
+| PIB2012 | Error | There's already an `@narration`, on line 6. | Narration has one block. Merge the two, or remove one. |
+| PIB2101 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
+| PIB2102 | Info | This option has no text. | Write what the player picks after the `->`. |
+| PIB2201 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
+| PIB2202 | Error | I didn't expect a `:` on this `@if` line. | Remove it: `@if $door_open`. |
+| PIB2203 | Error | `$attempts` is a `number`, but a condition has to be true or false. | Did you mean `$attempts > 0`? |
+| PIB2301 | Error | Variables start with `$`, so I need one before `door_open`. | Write `@var $door_open = false`. |
+| PIB2302 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
+| PIB2303 | Error | `$has_key` holds a `bool`, but this is a `number`. | Use `true` or `false`. |
+| PIB2304 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
+| PIB2401 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
+| PIB2402 | Warning | This condition is never true, so the lines under it never run. | Remove them, or write a condition that can change. |
+| PIB2403 | Warning | This condition is always true, so the branches after it never run. | Remove the branches after it, or write a condition that can change. |
+| PIB2501 | Error | A `@cycle` block can only hold alternatives. | Start each alternative with `- `. |
+| PIB2502 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
+| PIB2601 | Error | This argument has no name, but it comes after one that does. | Put unnamed arguments first, then named ones, then `wait` or `nowait`. |
+| PIB2602 | Error | There's a space between `has_item` and its `(`. | To call `has_item`, remove the space: `has_item(…)`. |
+| PIB2603 | Error | A negative argument has to go in brackets. | Write `(-1)`. |
 | PIB2604 | Error | I don't know a command called `@shak`. | Did you mean `@shake_screen`? |
 | PIB2605 | Error | `@show` expects a `position` for `at`, but this is a `number`. | Use one of `left`, `center`, `right` or `offscreen`. |
 | PIB2606 | Error | `@give_item` can't be used inside a line, because it isn't declared `inline`. | Put it on its own `@` line. |
@@ -96,66 +114,48 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB2608 | Error | `@show` has no parameter called `att`. | Did you mean `at`? |
 | PIB2609 | Error | `near()` needs a value for `where`. | Add it in the brackets, in order. |
 | PIB2610 | Error | `@show` already has a value for `who`. | Remove one of them. |
-| PIB3104 | Error | I don't know markup called `clu`. | Did you mean `clue`? |
-| PIB3203 | Error | I don't know an icon called `interct`. | Did you mean `interact`? |
 | PIB2611 | Error | I don't know a function called `has_iten`. | Did you mean `has_item`? |
-| PIB1501 | Error | I can't find a node called `kitchen.dor`. | Did you mean `kitchen.door`? |
-| PIB1603 | Error | `.leave` is relative, but this file has no `@prefix`. | Write the full name, or add a `@prefix` at the top of the file. |
-| PIB1502 | Error | There's already a node called `kitchen.door`, on line 12. | A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them. |
-| PIB2302 | Error | I don't know a variable called `$has_kye`. | Did you mean `$has_key`? |
-| PIB2303 | Error | `$has_key` holds a `bool`, but this is a `number`. | Use `true` or `false`. |
-| PIB2203 | Error | `$attempts` is a `number`, but a condition has to be true or false. | Did you mean `$attempts > 0`? |
+| PIB2612 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
+| PIB3001 | Error | I can't find the `)` that closes this `(`. | Add the `)` on the same line. |
+| PIB3002 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB3003 | Error | I can't use `<` with a `string` and a `string`. | `<`, `<=`, `>` and `>=` compare two numbers or two durations. |
 | PIB3004 | Error | I don't know what `has_key` means here. | Did you mean `$has_key`? |
 | PIB3005 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
 | PIB3006 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
+| PIB3007 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
+| PIB3101 | Error | I can't find the end of this `[clue]`. | Close it on the same line with `[/clue]`. |
+| PIB3102 | Error | I expected `[/i]` here, because `[i]` was opened last. | Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`. |
+| PIB3103 | Error | `[/b]` closes markup that was never opened. | If you meant the text `[/b]`, put a backslash before it: `\[/b]`. |
+| PIB3104 | Error | I don't know markup called `clu`. | Did you mean `clue`? |
+| PIB3201 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
+| PIB3202 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
+| PIB3203 | Error | I don't know an icon called `interct`. | Did you mean `interact`? |
 | PIB3204 | Error | I can't show `$has_key` in text, because it's a `bool`. | Show text that depends on it instead: `{if $has_key}…{else}…{/if}`. |
 | PIB3205 | Error | A pause has to be more than zero, but `0` isn't. | Write a pause longer than zero, like `{pause 0.5}`. |
-| PIB1205 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
-| PIB1206 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
-| PIB1503 | Warning | `kitchen.front_door` is an old name of `kitchen.door`. | Use the current name: `kitchen.door`. |
-| PIB1207 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
-| PIB1402 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
-| PIB1403 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
-| PIB1404 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
-| PIB1405 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
-| PIB1406 | Error | I don't know a type called `postion`. | Did you mean `position`? |
-| PIB2612 | Error | `duration` has no default, but it comes after a parameter that has one. | Put the parameters that have defaults last. |
-| PIB1208 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
-| PIB2304 | Error | `$where` starts as `left`, so I need its type written out. | Write the type after the variable: `@var $where: position = left`. |
-| PIB2011 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
-| PIB2012 | Error | There's already an `@narration`, on line 6. | Narration has one block. Merge the two, or remove one. |
-| PIB3007 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
-| PIB2401 | Warning | This line never runs, because of the `@jump` above it. | Remove it, or move it above the `@jump`. |
-| PIB2102 | Info | This option has no text. | Write what the player picks after the `->`. |
-| PIB1302 | Warning | This line has no `#id`. | Run `pibbles ids` to add one. |
-| PIB1303 | Error | The line ID `k7qp2x` is also used in story/cellar.pib on line 40. | Delete one of the two IDs and run `pibbles ids` to give that line a new one. |
-| PIB1304 | Error | The line ID `intro` is also the name of a node. | Delete the ID and run `pibbles ids` to give the line a new one. |
-| PIB2402 | Warning | This condition is never true, so the lines under it never run. | Remove them, or write a condition that can change. |
-| PIB2403 | Warning | This condition is always true, so the branches after it never run. | Remove the branches after it, or write a condition that can change. |
+| PIB3301 | Error | I can't find the `{/if}` that ends this `{if}`. | Close it on the same line. |
 | PIB5001 | Hint | This line is 4 blocks deep, and more than 3 gets hard to follow. | Move the inner blocks into a node of their own and `@call` it, or combine conditions with `and`. |
 | PIB5002 | Hint | This option's body is 16 lines long, more than 15, so the rest of the choice ends up far from it. | Move the body into a node of its own and `@jump` to it. |
 | PIB5003 | Hint | Mira says this same line in 3 places. | Put it in a node of its own and `@call` that node from each place. If this line should be translated or voiced differently, place `// pibbles-ignore PIB5003` above this line. |
 | PIB5004 | Hint | The color `#ff8800` is used in 2 places. | If it means something, such as a clue, give it a name: declare a markup such as `@markup clue`, ask whoever programs the game to style it, and use `[clue]` in each place. |
 | PIB5101 | Hint | `sad` does nothing, because Mira's `pose` changes again before a line shows. | Remove `sad`. |
+| PIB5102 | Hint | `happy` does nothing, because Mira already has it. | Leave `happy` out of this line. |
 | PIB5103 | Hint | This wait does nothing, because the end of the line already waits for a click. | Remove it. |
+| PIB5104 | Hint | This wait does nothing, because the `{page}` after it already waits. | Remove it. |
+| PIB5105 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{pause 0.5}`. |
 | PIB5106 | Hint | This `[b]` is empty. | Remove it. |
+| PIB5107 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
+| PIB5108 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
 | PIB5109 | Hint | Every branch of this `@if` is the same, so the condition makes no difference. | Keep one copy of the branch, without the condition. |
 | PIB5110 | Hint | This `@return` does nothing, since the end of a node returns anyway. | Remove it. |
 | PIB5111 | Info | `@prefix .kitchen` doesn't need its dot. | Remove it: `@prefix kitchen`. |
-| PIB5102 | Hint | `happy` does nothing, because Mira already has it. | Leave `happy` out of this line. |
-| PIB5104 | Hint | This wait does nothing, because the `{page}` after it already waits. | Remove it. |
-| PIB5105 | Hint | This pause comes right after another one, so the two could be one. | Write one pause: `{pause 0.5}`. |
-| PIB5107 | Hint | This `[b]` is inside another one just like it, so it changes nothing. | Remove the inner `[b]` and its `[/b]`. |
 | PIB5201 | Hint | Comparing with `true` isn't needed. | Write `$has_key`. |
 | PIB5202 | Hint | This can be shorter with `+=`. | Write `@set $attempts += 1`. |
 | PIB5301 | Hint | This line is 321 characters long, more than 300. | Split it into two lines, or into pages with `{page}`. |
+| PIB5302 | Hint | This option is 120 characters long, more than 80. | Shorten it to what the player picks. The lines after it can say the rest. |
 | PIB5303 | Hint | `HasKey` isn't written in snake_case. | Write it as `has_key`, before anything outside the story uses the name. |
 | PIB5304 | Hint | This block is indented 2 spaces, but the file's first block is indented 4 spaces. | Indent it 4 spaces. |
 | PIB5305 | Hint | This speaker is spaced differently from the usual `mira (happy, shake):`. | Write `mira (happy, shake):`. |
-| PIB5302 | Hint | This option is 120 characters long, more than 80. | Shorten it to what the player picks. The lines after it can say the rest. |
 | PIB5401 | Info | Nothing in the story uses `$old_flag`. | Remove its `@var`, or use it. |
-| PIB5108 | Hint | This `[b]` starts right where one just like it ends, so the two could be one. | Join them into one span. |
 
 The style rules, the `style` category (PIB5xxx), are described in full, with why each one exists and its quick fix, in the [semantics design](semantics.md#style-rules). A line with an error gets no style hints. A style hint is silenced for one line by a `// pibbles-ignore PIB5003` comment at the end of that line or on its own line above it, or for a whole file by one on its own line above the file's first node.
 
@@ -245,148 +245,6 @@ A space at the start of a line isn't text either. Pibbles trims it from what the
 
 The line above starts with U+FEFF, which is invisible. Pibbles reads the rest of the line as usual, so this is the only problem reported. If you're writing a program that reads story files, decode them as UTF-8, for example with `File.ReadAllText` in .NET. If you're saving the file, choose UTF-8 without a byte-order mark.
 
-### PIB3101
-
-**A markup span closes on the same line it opens on,** with `[/name]`. It also has to close inside the same conditional branch: a span opened inside `{if}…{/if}` closes before the branch ends, and one opened outside closes outside. An unclosed span is treated as running to the end of the line, or of its branch.
-
-```text
-mira: That's [clue]the master key.
-```
-
-Close it where the styling should end: `mira: That's [clue]the master key[/clue].`
-
-A comment runs to the end of its line, so a `[/clue]` written after a `//` is part of the comment and doesn't close the span. The help says so when the line has a comment.
-
-### PIB3102
-
-**Spans close innermost first,** like brackets: `[b][i]…[/i][/b]`, never `[b][i]…[/b][/i]`. The span that was opened last has to close first. The close is still read as closing both, so nothing else is reported.
-
-```text
-mira: [b][i]Both.[/b][/i]
-```
-
-Swap the closes: `mira: [b][i]Both.[/i][/b]`.
-
-### PIB3103
-
-**A `[/name]` has to close a span that's open at that point.** Spans don't cross conditional branches, so a close inside `{if}…{/if}` can't close a span opened before it.
-
-```text
-mira: That's it.[/b]
-```
-
-Remove the close, or add the `[b]` it belongs to. If the brackets are meant as text, escape the first one: `\[/b]`.
-
-### PIB3301
-
-**A `{`, a `[` or an `{if}` has to close on the same line,** with `}`, `]` or `{/if}`. The message points at the opener that's still open.
-
-```text
-rex: {if $bravery > 2}Maybe stop hitting it?
-```
-
-Add the closer where it belongs: `rex: {if $bravery > 2}Maybe stop hitting it?{/if}`.
-
-A comment runs to the end of its line, so a closer written after a `//` is part of the comment and doesn't close anything. The help says so when the line has a comment.
-
-### PIB1101
-
-**A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only punctuation and symbols can follow a backslash, in any script (`\：` is fine). A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
-
-```text
-@set $path = "C:\Users\mira"
-```
-
-To show a backslash itself, write two: `"C:\\Users\\mira"`.
-
-### PIB1201
-
-**Tags are labels for the game, and they go at the end of a line,** after its text and an option's modifiers. A `#` followed by a letter always starts a tag, so text after one is reported.
-
-```text
-mira: I'm #winning today.
-```
-
-If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning today.` The same goes inside markup and conditional text: `mira: [b]I'm #winning[/b]` is reported at the `#`, and written `mira: [b]I'm \#winning[/b]`. A `#` followed by anything other than a letter, as in `my #1 fan`, needs no escape.
-
-### PIB2101
-
-**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{pause}`, `{page}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
-
-```text
--> Knock{w} and wait
-```
-
-Move the pause into the option's body:
-
-```text
--> Knock and wait
-    {w}
-```
-
-### PIB3201
-
-**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{pause d}`, `{page}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
-
-```text
-mira: Hi, {name}.
-```
-
-Write `{$name}` for a variable, or `{name()}` for a function. If the braces are meant as text, escape the first one: `\{name}`.
-
-`{p}` is reported here too, since the page break is `{page}`. The help says so, and for `{p 0.5}`, which reads as a pause, it also offers `{pause 0.5}`.
-
-```text
-mira: First page.{p}Second page.
-```
-
-Write `{page}`.
-
-### PIB3202
-
-**Some points take no value.** `{w}` waits for the player, `{page}` breaks the page and `{br}` breaks the line, so there is nothing for a value to say. A time belongs to `{pause}`.
-
-```text
-mira: Locked.{w 0.5} Of course it's locked.
-```
-
-Write the time with `{pause}`:
-
-```text
-mira: Locked.{pause 0.5} Of course it's locked.
-```
-
-For `{page}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
-
-### PIB1102
-
-**Text can look like a marker typed through an input method.** In the mode Japanese and Chinese prose is written in, an input method types its own punctuation for a marker key, and in text that punctuation can only be read as text, so Pibbles shows it as written. Where it has the shape of a marker, it's a warning, since the writer more likely meant the marker:
-
-```text
-・・ ここは後で直す
-mira: 【b】粗体【/b】
-mira: 待って｛w｝。
-mira: こんにちは。 ＃thought
--> はい ＠if $met
-```
-
-The first line is narration, not a comment, so the player sees it. The others show their brackets, braces, `＃thought` and `＠if $met` as text, and the last option is always available. To mean the marker, type it half-width in the input method's direct mode: `//`, `[b]…[/b]`, `{w}`, `#thought`, `@if`.
-
-The shapes are narrow, so ordinary punctuation stays quiet: two of `/ ／ ・ 、` at a line's start, with a space after `・` or `、` (so `・・・` is text); `［` around a markup name; `「b」` or `【b】` with a closing `「・b」` or `【/b】` for the same name later on the line (so `【公告】` is text); `｛` or `『` around what a point holds; `＃` and a letter when only tags follow; `＠if` or `＠once` after an option's text. Full-width letters count as their ASCII ones, so `｛ｗ｝` is reported too.
-
-If it's meant as text, put a backslash before its first character, `\【b】粗体【/b】`, or turn the code off for the file in `.editorconfig` ([configuration](tooling.md#configuration)). A form that decides what a line or a token is, such as `＝＝` at a line's start or `＝` in an `@` line, is read as the marker and is an error instead ([PIB1106](#pib1106)).
-
-### PIB1601
-
-**`@prefix` sets the group name for a whole file, so it comes first, after nothing but comments.**
-
-```text
-@var $has_key = false
-@prefix kitchen
-```
-
-Move `@prefix` above everything else. A second `@prefix` in the same file is [PIB1602](#pib1602) instead.
-
 ### PIB1008
 
 **A node's lines are steps, and a declaration isn't one.** In a node, `@var $door_open = false` would read as setting the variable each time the node runs, but a variable gets its starting value once, when a game starts. Variable declarations can also sit between nodes: at column 0, below a node's last line, with nothing after them but comments, blank lines and other variable declarations up to the next `==` line or the end of the file. Every other kind of declaration is part of the contract between the story and the game, and comes before a file's first node, where the game's programmers look for it. A file can hold only declarations.
@@ -411,88 +269,43 @@ mira: Hello!
 
 Add a node header above the line, or move the line into an existing node.
 
-### PIB1602
+### PIB1010
 
-**A file has one prefix at most,** because the prefix is what every relative name in the file (`.door`) is relative to. A second `@prefix` is reported wherever it appears, and the message names the line of the first one.
-
-```text
-@prefix kitchen
-
-== .door
-mira: Locked.
-
-@prefix cellar
-```
-
-To keep nodes under two group names, split the file in two, each with its own `@prefix`. A node can also use its full name (`== cellar.stairs`) in a file whose prefix is something else.
-
-### PIB2001
-
-**An `@actor` or `@narration` block has one `name:`,** the name the player sees. A second one is reported on its own line, and the first one is used.
+**Nesting stops at 64 levels.** Blocks, markup spans, the branches of conditional text, brackets, a call's arguments, `not` and `-` each add a level, and so does each operator in a chain such as `1 + 1 + 1`. A story that needs more is far past what a reader can follow. The limit also keeps every tool that reads a story, including a game loading one, from running out of stack on a file that nests without end. The message points at the first thing past the limit. Everything inside it is skipped, so it reports nothing more.
 
 ```text
-@actor mira
-    name: Mira
-    name: Mira Okafor
+@set $total = ((((…65 brackets in all…1…))))
 ```
 
-Keep the name you want and remove the other line.
+Move the inner part into a node of its own and `@jump` or `@call` to it, or split an expression across lines with `@set`. This is separate from the style warning about [deep nesting](#pib5001), which fires at three.
 
-### PIB2201
+### PIB1101
 
-**`@elif` and `@else` continue an `@if`, so they come right after its block, at the same indentation.** Comments between them are fine. Anything else in between ends the `@if`, and so does an earlier `@else`. The statements under a stray `@elif` or `@else` are still read, as part of the block around it.
+**A backslash makes the punctuation after it literal, in text and in quoted strings.** `\#` writes a `#` instead of starting a tag, and `\"` writes a quote inside quoted text. Only punctuation and symbols can follow a backslash, in any script (`\：` is fine). A letter, digit or space after one is an error, and so is a backslash at the end of a line, so that escapes like `\n` can be given a meaning later without changing any story.
 
 ```text
-@if $door_open
-    mira: It's open!
-mira: Hm.
-@else
-    mira: Still locked.
+@set $path = "C:\Users\mira"
 ```
 
-Move the clause up to just after the `@if` block, or indent it to match the `@if` it belongs to.
+To show a backslash itself, write two: `"C:\\Users\\mira"`.
 
-### PIB2501
+### PIB1102
 
-**A `@sequence` or `@cycle` block holds only alternatives, each starting with `- `.** The block picks one alternative each time it's reached, so a line without a `- ` has no alternative to belong to. It's reported once per block, and each such line is read as an alternative of its own. `@once` is different: it holds ordinary lines.
+**Text can look like a marker typed through an input method.** In the mode Japanese and Chinese prose is written in, an input method types its own punctuation for a marker key, and in text that punctuation can only be read as text, so Pibbles shows it as written. Where it has the shape of a marker, it's a warning, since the writer more likely meant the marker:
 
 ```text
-@cycle
-    mira: Hm.
-    mira: Huh.
+・・ ここは後で直す
+mira: 【b】粗体【/b】
+mira: 待って｛w｝。
+mira: こんにちは。 ＃thought
+-> はい ＠if $met
 ```
 
-Start each alternative with `- `: `- mira: Hm.`
+The first line is narration, not a comment, so the player sees it. The others show their brackets, braces, `＃thought` and `＠if $met` as text, and the last option is always available. To mean the marker, type it half-width in the input method's direct mode: `//`, `[b]…[/b]`, `{w}`, `#thought`, `@if`.
 
-### PIB2502
+The shapes are narrow, so ordinary punctuation stays quiet: two of `/ ／ ・ 、` at a line's start, with a space after `・` or `、` (so `・・・` is text); `［` around a markup name; `「b」` or `【b】` with a closing `「・b」` or `【/b】` for the same name later on the line (so `【公告】` is text); `｛` or `『` around what a point holds; `＃` and a letter when only tags follow; `＠if` or `＠once` after an option's text. Full-width letters count as their ASCII ones, so `｛ｗ｝` is reported too.
 
-**After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@pause` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
-
-```text
-@cycle
-    - @if $has_key
-        mira: I could use the key.
-```
-
-Put the `-` on its own line, and the opener on the indented line below it:
-
-```text
-@cycle
-    -
-        @if $has_key
-            mira: I could use the key.
-```
-
-### PIB2202
-
-**A block opener has no `:`.** The keyword (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`) already says a block follows. The block under the line still belongs to it, so this is the only problem reported.
-
-```text
-@if $door_open:
-    mira: It's open!
-```
-
-Remove the `:`: `@if $door_open`.
+If it's meant as text, put a backslash before its first character, `\【b】粗体【/b】`, or turn the code off for the file in `.editorconfig` ([configuration](tooling.md#configuration)). A form that decides what a line or a token is, such as `＝＝` at a line's start or `＝` in an `@` line, is read as the marker and is an error instead ([PIB1106](#pib1106)).
 
 ### PIB1103
 
@@ -532,24 +345,6 @@ Add the closing `"` where the text should end: `@enter_room "kitchen" on_exit=ki
 
 Write `@pause 2s`.
 
-### PIB1202
-
-**A tag name holds only letters, digits and `_`, and starts with a letter.** A tag's value, after the `:`, can hold anything except spaces.
-
-```text
--> Use the key  @if $has_key #show-disabled
-```
-
-Write `#show_disabled`, and declare it that way with `@tag`. The tag is left out of the line, so it isn't also reported as an unknown tag.
-
-A `#` followed by a letter at the end of a line's text always starts a tag, so a word meant as text is reported here too:
-
-```text
-mira: Go #team!
-```
-
-Put a backslash before the `#`: `mira: Go \#team!`.
-
 ### PIB1106
 
 **Markers are typed half-width.** In the mode Japanese and Chinese prose is written in, an input method types its own form of a marker key: a full-width `＝` for `=`, `（` for `(`, `」` for `]`, `、` for `,`, `。` for `.`, `￥` for `$`, `“` for `"`. Inside `@` lines, `[…]`, `{…}`, an option's modifiers, an actor's lines and a tag's `#` and `:`, each one is read as the marker it stands for and reported once, so the rest of the line is still checked:
@@ -572,16 +367,6 @@ At the start of a line, a header, statement or option marker typed this way stil
 
 Read as text, `＝＝` would leave every line below it outside a node, and `＠if` and `ー＞` would leave their bodies under a line that opens no block, running whatever the condition. Here each is read as `==`, `@` or `->`, and reported once. In a variation's block, `ー` or `－` before a space is read as an alternative's `-`. A line that really starts with one of these characters as text escapes it, which the help offers: `\＝＝ is a sign`. `ー` is a letter, so an arrow written `ー＞` escapes its `＞`.
 
-### PIB1401
-
-**Names you declare are single names:** actors, channels and their values, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.
-
-```text
-@enum rooms.kitchen: fridge, sink
-```
-
-Use a single name: `@enum kitchen_spots: fridge, sink`.
-
 ### PIB1107
 
 **A line is missing a part it needs,** such as the node name after `@jump`, `@call`, `==`, `@prefix` or `#was:`.
@@ -602,55 +387,33 @@ Write the missing part: `@jump kitchen.leave`.
 
 Write a smaller number.
 
-### PIB2002
+### PIB1201
 
-**The character U+FFFC (the object replacement character) can't be in a line's text,** because Pibbles puts it in a line's text to stand for each icon, so that a game can find where every icon goes. If a line could contain one of its own, the game couldn't tell the two apart. The character is invisible in most editors, so it usually arrives from a copy and paste.
-
-```text
-mira: Press ￼ to look.
-```
-
-Delete the character. To show an icon, write `{icon interact}`.
-
-### PIB2301
-
-**A variable's name starts with `$` wherever it's written,** in `@var` and `@set` as much as in an expression. A name without the `$` is read as the variable the line means, so the rest of the line is still checked, and the help writes the line out with the `$` in place.
+**Tags are labels for the game, and they go at the end of a line,** after its text and an option's modifiers. A `#` followed by a letter always starts a tag, so text after one is reported.
 
 ```text
-@var door_open = false
+mira: I'm #winning today.
 ```
 
-Write `@var $door_open = false`.
+If the `#` is part of the text, put a backslash before it: `mira: I'm \#winning today.` The same goes inside markup and conditional text: `mira: [b]I'm #winning[/b]` is reported at the `#`, and written `mira: [b]I'm \#winning[/b]`. A `#` followed by anything other than a letter, as in `my #1 fan`, needs no escape.
 
-### PIB2601
+### PIB1202
 
-**A command's unnamed arguments come first, in order, then its named ones (`name=value`), then `wait` or `nowait`.** Named arguments can go in any order among themselves.
+**A tag name holds only letters, digits and `_`, and starts with a letter.** A tag's value, after the `:`, can hold anything except spaces.
 
 ```text
-@show at=left mira
+-> Use the key  @if $has_key #show-disabled
 ```
 
-Write `@show mira at=left`.
+Write `#show_disabled`, and declare it that way with `@tag`. The tag is left out of the line, so it isn't also reported as an unknown tag.
 
-### PIB2602
-
-**A call's `(` touches its name:** `has_item("key")`. With a space, I read the name and the brackets as two separate things. Where only a call makes sense, as in a condition or an `@set`, the space is reported. In a command's arguments, a space really does separate two arguments: `@give item ("key")` passes `item` and `"key"`.
+A `#` followed by a letter at the end of a line's text always starts a tag, so a word meant as text is reported here too:
 
 ```text
-@if has_item ("key")
+mira: Go #team!
 ```
 
-Remove the space: `@if has_item("key")`.
-
-### PIB1301
-
-**A line ID is a lowercase letter, then lowercase letters, digits and `_`.** IDs keep saves and translations attached to their lines, and they're used as file names for recorded voice lines, so they stay lowercase to work on every file system. You rarely type them: `pibbles ids` adds them.
-
-```text
-mira: Locked. #id:K7qp2x
-```
-
-Run `pibbles ids` to replace it with a new one, or fix it by hand. If a recording or a `#voice:` tag names the old ID, change it to the new one.
+Put a backslash before the `#`: `mira: Go \#team!`.
 
 ### PIB1203
 
@@ -661,26 +424,6 @@ Run `pibbles ids` to replace it with a new one, or fix it by hand. If a recordin
 ```
 
 Put the tag on the line inside the node that it belongs to.
-
-### PIB2003
-
-**A speaker's name and colon need something after them:** text to say, or values to set. A bare `mira:` is reported, since it's most likely unfinished.
-
-```text
-mira:
-```
-
-Write what Mira says, or `mira (happy):` to set her pose without a line. For a message box that shows only her name, write `mira: {w}`, which waits for the player and shows no text.
-
-### PIB2603
-
-**A command's arguments are separated by spaces, so an operator inside one needs brackets, and so does a minus sign.** Without them, `@shake_screen -1` could also be read as two things.
-
-```text
-@shake_screen -1
-```
-
-Write `@shake_screen (-1)`. A negative value elsewhere, as in `@set $x = -1`, needs no brackets.
 
 ### PIB1204
 
@@ -693,35 +436,281 @@ mira: I AM YELLING NOW!!!
 
 Move the tags onto the end of the line they're for: `mira: I AM YELLING NOW!!! #cam:pan_left #anim:shake`. To send tags with a change of values and no line, put them after the parenthesis: `mira (mad): #anim:shake`.
 
-### PIB3001
+### PIB1205
 
-**Every `(` needs a `)` on the same line.** The message points at the `(` that's still open.
-
-```text
-@if has_item("key"
-```
-
-Add the `)` where the brackets should close: `@if has_item("key")`.
-
-### PIB3002
-
-**Comparisons don't chain.** In some languages `$a < $b < $c` means "`$b` is between `$a` and `$c`", and in others it quietly compares `true` or `false` with `$c`. Pibbles asks you to say which you mean.
+**A tag is reserved (`#id`, `#was`) or declared with `@tag`,** so the game knows to read it. A `#` followed by a letter always starts a tag, so a `#` that's part of the text is escaped. The help suggests the closest tag.
 
 ```text
-@if 0 < $bravery < 3
+@tag thought
+
+Hm. #thougth
 ```
 
-Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
+Fix the spelling, `#thought`, or declare the tag. If the `#` is part of the text, write `\#`.
 
-### PIB1010
+### PIB1206
 
-**Nesting stops at 64 levels.** Blocks, markup spans, the branches of conditional text, brackets, a call's arguments, `not` and `-` each add a level, and so does each operator in a chain such as `1 + 1 + 1`. A story that needs more is far past what a reader can follow. The limit also keeps every tool that reads a story, including a game loading one, from running out of stack on a file that nests without end. The message points at the first thing past the limit. Everything inside it is skipped, so it reports nothing more.
+**A tag declared on its own (`@tag thought`) is a flag, which takes no value. A tag declared with a type (`@tag box: string`) needs one,** after a colon. A value may be empty (`#box:`) only if the type ends in `?`.
 
 ```text
-@set $total = ((((…65 brackets in all…1…))))
+@tag thought, box: string
+
+Hm. #thought:deep
+Hi. #box
 ```
 
-Move the inner part into a node of its own and `@jump` or `@call` to it, or split an expression across lines with `@set`. This is separate from the style warning about [deep nesting](#pib5001), which fires at three.
+Write `#thought` on its own, and give `#box` a value: `#box:phone`.
+
+### PIB1207
+
+**A tag that takes an enum takes one of its members,** so the game only ever receives values it knows.
+
+```text
+@enum box_style: phone, letter
+@tag box: box_style
+
+Hi. #box:fone
+```
+
+Use one of the members, `#box:phone`, or add the value to the enum.
+
+### PIB1208
+
+**A tag's value reaches the game as text,** so a tag that takes a value is either `string`, which accepts any value, or an enum, which accepts only its members. A `?` after the type also allows an empty value.
+
+```text
+@tag count: number
+```
+
+Use `@tag count: string`, or declare an enum with the values the tag can take and use that.
+
+### PIB1301
+
+**A line ID is a lowercase letter, then lowercase letters, digits and `_`.** IDs keep saves and translations attached to their lines, and they're used as file names for recorded voice lines, so they stay lowercase to work on every file system. You rarely type them: `pibbles ids` adds them.
+
+```text
+mira: Locked. #id:K7qp2x
+```
+
+Run `pibbles ids` to replace it with a new one, or fix it by hand. If a recording or a `#voice:` tag names the old ID, change it to the new one.
+
+### PIB1302
+
+**Every line a save can stop on has an ID:** text lines that show text, options, `@call` lines and variation blocks. IDs keep saves, translations and recordings attached to their lines through every edit, and `pibbles ids` writes them, so this is a warning: the story still plays, and CI's `--warnaserror` keeps lines without one out of a release. A line that has a mistake Pibbles can't read past isn't checked, since its ID may be there.
+
+```text
+mira: Locked.
+```
+
+Run `pibbles ids`, which gives the line an ID at its end: `mira: Locked. #id:k7qp2x`.
+
+### PIB1303
+
+**Each line ID is used once in the whole story,** since saves and translations find a line by its ID. Copying a line copies its ID, so this usually means a pasted line. The later one is reported, with where the first one is.
+
+```text
+mira: Locked. #id:k7qp2x
+mira: Still locked. #id:k7qp2x
+```
+
+Delete the ID from the copy and run `pibbles ids` to give it a new one. Keep the ID on the line that was there first, so saves and translations stay with it.
+
+### PIB1304
+
+**A line ID is never the same as a node's name or one of its old names,** so a name always means one thing. Generated IDs never clash; this comes from an ID written by hand.
+
+```text
+== intro
+mira: Hi. #id:intro
+```
+
+Delete the ID and run `pibbles ids` to give the line a new one, or write a different ID by hand.
+
+### PIB1401
+
+**Names you declare are single names:** actors, channels and their values, enums and their members, variables' types, commands, markup, icons, tags, functions and parameters. Only node names have dots, because the dots group nodes, and a leading dot makes a node name relative to the file's prefix.
+
+```text
+@enum rooms.kitchen: fridge, sink
+```
+
+Use a single name: `@enum kitchen_spots: fridge, sink`.
+
+### PIB1402
+
+**Each kind of name has one namespace, so each name is declared once per kind.** Two kinds can share a name, such as `@enum sfx` and `@command sfx`, because they're never used in the same place. The second declaration is reported, with where the first one is, and the first one is the one the story uses.
+
+```text
+@enum room: kitchen, cellar
+@enum room: attic
+```
+
+Merge the two into one declaration (`@enum room: kitchen, cellar, attic`), or give one of them another name.
+
+**Two `@var`s are two variables, so the fix for a variable is another name, never removing one.** Removing the second `@var` compiles, but then two places share one variable, and a value one of them sets carries into the other's scenes.
+
+```text
+@prefix kitchen
+
+@var $attempts = 0
+@var $attempts = 0
+```
+
+In a file with a `@prefix`, write the second as `$.attempts`, which is `$kitchen.attempts`. Otherwise, give it a name that says whose it is. If both places are meant to share the variable, declare it once and use it in both.
+
+### PIB1403
+
+**The values of one channel list, the channels in one actor's block, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported. That includes a value that `+=` adds to a channel that already has it.
+
+```text
+@channel pose
+@actor mira
+    name: Mira
+    pose: happy, sad, happy
+```
+
+Remove the second `happy`. If it was meant to be another value, give it that name.
+
+### PIB1404
+
+**A name can't be a word Pibbles already uses where that name appears,** since the story couldn't tell the two apart. A command is written after `@`, so it can't be `if`; an actor can stand in a condition, so it can't be `true`. Each kind of name only avoids the words used in its own places, so `if` is fine as an icon or a pose. The [reserved words](language/reference.md#reserved-words) list them all, including a few kept for planned features.
+
+```text
+@command if()
+```
+
+Choose another name, such as `@command check_door()`.
+
+### PIB1405
+
+**The names you declare use only English letters (a to z, in either case), digits and `_`.** The game's code, file names and save files all handle those the same way everywhere. Display names and text are different: they can hold any character.
+
+```text
+@actor zoë
+    name: Zoë
+```
+
+Replace the letter with one from a to z, as in `@actor zoe`, and keep `name: Zoë` for what the player sees.
+
+### PIB1406
+
+**A type is one of `bool`, `number`, `string`, `duration`, `node` and `actor`, or an enum declared with `@enum`.** Types go after a `:` in variables, parameters and tags, and after `->` in functions. The help suggests the closest type, if one is close.
+
+```text
+@enum position: left, right
+@command show(at: postion)
+```
+
+Fix the spelling, `@command show(at: position)`, or declare the enum the type names.
+
+### PIB1501
+
+**A node name in a `@jump`, a `@call`, `visits()` or a `node` argument names a node in the story,** in full or relative to the file's `@prefix`.
+
+```text
+@prefix kitchen
+
+@if visits(.dor) > 0
+```
+
+Fix the spelling: `visits(.door)`. The help suggests the closest node, written relative if the name was.
+
+### PIB1502
+
+**Every node name is unique across the story, and so is every old name a node keeps in `#was:`.** The game starts nodes by name, and saves remember them, so one name can only ever mean one node. The second use is reported, with where the first one is.
+
+```text
+== kitchen.door
+mira: Locked.
+
+== kitchen.fridge #was:kitchen.door
+mira: It hums.
+```
+
+`kitchen.door` names the first node, so it can't also be an old name of the second. Rename one of them. If a node was renamed and another node now has its old name, the old name has to go: keep `#was:` for names no node uses any more.
+
+### PIB1503
+
+**The story always uses a node's current name.** Old names in `#was:` are for what's outside the story, such as saves and the game's code, so `@jump`, `@call`, `visits()` and `node` arguments use the current one, and old names never pile up in the script. An old name still reaches its node, so the story runs while a rename is half done, and `--warnaserror` keeps old names out of a release.
+
+```text
+@prefix kitchen
+
+== .door #was:.front_door
+
+@if visits(.front_door) > 0
+```
+
+Use the current name: `visits(.door)`.
+
+### PIB1601
+
+**`@prefix` sets the group name for a whole file, so it comes first, after nothing but comments.**
+
+```text
+@var $has_key = false
+@prefix kitchen
+```
+
+Move `@prefix` above everything else. A second `@prefix` in the same file is [PIB1602](#pib1602) instead.
+
+### PIB1602
+
+**A file has one prefix at most,** because the prefix is what every relative name in the file (`.door`) is relative to. A second `@prefix` is reported wherever it appears, and the message names the line of the first one.
+
+```text
+@prefix kitchen
+
+== .door
+mira: Locked.
+
+@prefix cellar
+```
+
+To keep nodes under two group names, split the file in two, each with its own `@prefix`. A node can also use its full name (`== cellar.stairs`) in a file whose prefix is something else.
+
+### PIB1603
+
+**A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave` and `$.attempts` means `$kitchen.attempts`. In a file with no prefix, there's nothing for it to be relative to.
+
+```text
+== .leave
+mira: Onward!
+```
+
+Write the full name, `== kitchen.leave`, or add `@prefix kitchen` at the top of the file, above everything but comments.
+
+### PIB2001
+
+**An `@actor` or `@narration` block has one `name:`,** the name the player sees. A second one is reported on its own line, and the first one is used.
+
+```text
+@actor mira
+    name: Mira
+    name: Mira Okafor
+```
+
+Keep the name you want and remove the other line.
+
+### PIB2002
+
+**The character U+FFFC (the object replacement character) can't be in a line's text,** because Pibbles puts it in a line's text to stand for each icon, so that a game can find where every icon goes. If a line could contain one of its own, the game couldn't tell the two apart. The character is invisible in most editors, so it usually arrives from a copy and paste.
+
+```text
+mira: Press ￼ to look.
+```
+
+Delete the character. To show an icon, write `{icon interact}`.
+
+### PIB2003
+
+**A speaker's name and colon need something after them:** text to say, or values to set. A bare `mira:` is reported, since it's most likely unfinished.
+
+```text
+mira:
+```
+
+Write what Mira says, or `mira (happy):` to set her pose without a line. For a message box that shows only her name, write `mira: {w}`, which waits for the player and shows no text.
 
 ### PIB2004
 
@@ -804,6 +793,242 @@ Keep the one you mean: `mira (happy): …`. Values of different channels go toge
 ```
 
 Give one of them another name, such as `no_effect`, or drop the value from the speaker that doesn't need it.
+
+### PIB2011
+
+**An actor's block can only change channels the story declares with `@channel`,** so a typo never makes a channel of its own. The help suggests the closest declared channel.
+
+```text
+@channel pose
+@actor mira
+    name: Mira
+    pos: happy
+```
+
+Write the channel's name, `pose: happy`, or declare the channel with `@channel pos`.
+
+### PIB2012
+
+**Narration is declared once.** `@narration` and its block say what narration has: the channels its lines can set, and the name shown with them. A second block is reported, since two blocks could say different things.
+
+```text
+@narration
+    no pose
+@narration
+    name: Narrator
+```
+
+Merge the two into one block:
+
+```text
+@narration
+    name: Narrator
+    no pose
+```
+
+### PIB2101
+
+**An option's text is shown in a menu, so it can't pause, change speed or run commands.** `{w}`, `{pause}`, `{page}`, `{speed}` and `{@command}` belong in the lines under the option, which run after it's picked. Markup, `{$variables}`, icons, `{br}` and `{if}` are all fine in option text.
+
+```text
+-> Knock{w} and wait
+```
+
+Move the pause into the option's body:
+
+```text
+-> Knock and wait
+    {w}
+```
+
+### PIB2102
+
+**An option with no text shows up as an empty choice,** which is usually a forgotten line. It's information, not an error: the story runs, and the game decides what an empty option looks like, so a project that uses empty options on purpose can turn this off.
+
+```text
+->
+    mira: Hm.
+```
+
+Write what the player picks after the `->`: `-> Think about it`.
+
+### PIB2201
+
+**`@elif` and `@else` continue an `@if`, so they come right after its block, at the same indentation.** Comments between them are fine. Anything else in between ends the `@if`, and so does an earlier `@else`. The statements under a stray `@elif` or `@else` are still read, as part of the block around it.
+
+```text
+@if $door_open
+    mira: It's open!
+mira: Hm.
+@else
+    mira: Still locked.
+```
+
+Move the clause up to just after the `@if` block, or indent it to match the `@if` it belongs to.
+
+### PIB2202
+
+**A block opener has no `:`.** The keyword (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once` or `@actor`) already says a block follows. The block under the line still belongs to it, so this is the only problem reported.
+
+```text
+@if $door_open:
+    mira: It's open!
+```
+
+Remove the `:`: `@if $door_open`.
+
+### PIB2203
+
+**A condition is `true` or `false`.** There's no "truthy" value: `0`, empty text and every other value are neither, so the story says which question it's asking.
+
+```text
+@var $attempts = 0
+
+@if $attempts
+```
+
+Write the comparison: `@if $attempts > 0`.
+
+### PIB2301
+
+**A variable's name starts with `$` wherever it's written,** in `@var` and `@set` as much as in an expression. A name without the `$` is read as the variable the line means, so the rest of the line is still checked, and the help writes the line out with the `$` in place.
+
+```text
+@var door_open = false
+```
+
+Write `@var $door_open = false`.
+
+### PIB2302
+
+**A variable is declared with `@var` before the story uses it.** Variables hold what the story decides, and saves keep them, so every one is declared once, with its starting value.
+
+```text
+@var $has_key = false
+
+@if $has_kye
+```
+
+Fix the spelling, or declare the variable.
+
+### PIB2303
+
+**A value has the type of what it's for:** a variable keeps the type it's declared with, a parameter's default has the parameter's type, and `@pause` takes a duration. A number works where a duration is expected, as seconds.
+
+```text
+@var $has_key = false
+
+@set $has_key = 3
+```
+
+Use a value of the right type: `@set $has_key = true`. `+=` and `-=` keep the variable's type too, so `@set $count += 1s` is reported when `$count` is a number.
+
+### PIB2304
+
+**A variable that starts as a name has its type written out,** as in `@var $where: position = left`. A name like `left` could be a member of any enum, an actor or a node, and if the type came from the name, declaring a new name somewhere else could quietly change what the variable holds. When the name belongs to exactly one type, the help writes the declaration out with it.
+
+```text
+@enum position: left, right
+@var $where = left
+```
+
+Write the type after the variable: `@var $where: position = left`.
+
+### PIB2401
+
+**A statement that always leaves its block, `@jump`, `@end` or `@return`, means nothing after it in that block runs.** An `@if` whose every branch leaves, `@else` included, counts too. Conditions are never worked out, so the check only goes by which statements are there: a choice or a variation never counts, since a choice is skipped when no option is available. Only the first line that never runs in a block is reported.
+
+```text
+@jump kitchen.leave
+mira: Wait!
+```
+
+Remove the line, or move it above the `@jump`. If it should only run sometimes, put the `@jump` in an `@if`.
+
+### PIB2402
+
+**A condition that is never true means the lines under it never run.** It's reported for an `@if` or `@elif` whose condition is only constants: `false`, `not true`, `1 > 2`, `false and $x`. A condition that reads a variable or calls a function can change, so it's not reported, unless `and` settles it: `false and $x` and `$x and false` are never true, whatever `$x` is.
+
+```text
+@if false
+    mira: This never runs.
+```
+
+Remove the lines, or write a condition that can change.
+
+### PIB2403
+
+**A condition that is always true means the branches after it never run.** It's reported for an `@if` or `@elif` whose condition is only constants, such as `true`, `1 == 1` or `$x or true`, when an `@elif` or `@else` follows. An `@if true` with nothing after it isn't reported, since no line is left out.
+
+```text
+@if true
+    mira: This always runs.
+@else
+    mira: This never runs.
+```
+
+Remove the branches after it, or write a condition that can change.
+
+### PIB2501
+
+**A `@sequence` or `@cycle` block holds only alternatives, each starting with `- `.** The block picks one alternative each time it's reached, so a line without a `- ` has no alternative to belong to. It's reported once per block, and each such line is read as an alternative of its own. `@once` is different: it holds ordinary lines.
+
+```text
+@cycle
+    mira: Hm.
+    mira: Huh.
+```
+
+Start each alternative with `- `: `- mira: Hm.`
+
+### PIB2502
+
+**After `- ` comes a single line: dialogue, narration, `@set`, a jump, `@pause` or a command.** A line that opens a block of its own, such as `@if`, a variation or an option, can't follow `- `, because its block and the alternative's continuation would be the same lines. The opener is still read with its block, so nothing else is reported.
+
+```text
+@cycle
+    - @if $has_key
+        mira: I could use the key.
+```
+
+Put the `-` on its own line, and the opener on the indented line below it:
+
+```text
+@cycle
+    -
+        @if $has_key
+            mira: I could use the key.
+```
+
+### PIB2601
+
+**A command's unnamed arguments come first, in order, then its named ones (`name=value`), then `wait` or `nowait`.** Named arguments can go in any order among themselves.
+
+```text
+@show at=left mira
+```
+
+Write `@show mira at=left`.
+
+### PIB2602
+
+**A call's `(` touches its name:** `has_item("key")`. With a space, I read the name and the brackets as two separate things. Where only a call makes sense, as in a condition or an `@set`, the space is reported. In a command's arguments, a space really does separate two arguments: `@give item ("key")` passes `item` and `"key"`.
+
+```text
+@if has_item ("key")
+```
+
+Remove the space: `@if has_item("key")`.
+
+### PIB2603
+
+**A command's arguments are separated by spaces, so an operator inside one needs brackets, and so does a minus sign.** Without them, `@shake_screen -1` could also be read as two things.
+
+```text
+@shake_screen -1
+```
+
+Write `@shake_screen (-1)`. A negative value elsewhere, as in `@set $x = -1`, needs no brackets.
 
 ### PIB2604
 
@@ -889,30 +1114,6 @@ Add the missing arguments in order: `near("mira", "door")`. For a command or mar
 
 Remove one of them: `@show rex`.
 
-### PIB3104
-
-**Markup is built in (`b`, `i`, `u`, `s` and `color`) or declared with `@markup`,** since the game styles every span the story uses. The help suggests the closest markup. Speed isn't built-in markup: unless the host declares its own `@markup speed`, the old `[speed 0.5]…[/speed]` is reported with the help "Did you mean `{speed}`?"
-
-```text
-@markup clue
-
-That's [clu]the key[/clu].
-```
-
-Fix the spelling, `[clue]…[/clue]`, or declare the markup.
-
-### PIB3203
-
-**An icon is declared with `@icon`,** since the game draws every icon the story uses. The help suggests the closest icon.
-
-```text
-@icon interact
-
-Press {icon interct}.
-```
-
-Fix the spelling, `{icon interact}`, or declare the icon.
-
 ### PIB2611
 
 **A function is declared with `@function` before the story calls it,** since the game has to provide every function the story uses. `visits()` is the one function built into Pibbles.
@@ -925,78 +1126,35 @@ Fix the spelling, `{icon interact}`, or declare the icon.
 
 Fix the spelling, or declare the function, so the game knows to provide it.
 
-### PIB1501
+### PIB2612
 
-**A node name in a `@jump`, a `@call`, `visits()` or a `node` argument names a node in the story,** in full or relative to the file's `@prefix`.
-
-```text
-@prefix kitchen
-
-@if visits(.dor) > 0
-```
-
-Fix the spelling: `visits(.door)`. The help suggests the closest node, written relative if the name was.
-
-### PIB1603
-
-**A name starting with a dot is relative to the file's `@prefix`,** so in a file with `@prefix kitchen`, `.leave` means `kitchen.leave` and `$.attempts` means `$kitchen.attempts`. In a file with no prefix, there's nothing for it to be relative to.
+**Parameters with a default come after the ones without,** so the arguments without names always fill the required parameters, in order.
 
 ```text
-== .leave
-mira: Onward!
+@command shake(strength: number = 1, duration: duration)
 ```
 
-Write the full name, `== kitchen.leave`, or add `@prefix kitchen` at the top of the file, above everything but comments.
+Move the parameters that have defaults to the end: `@command shake(duration: duration, strength: number = 1)`.
 
-### PIB1502
+### PIB3001
 
-**Every node name is unique across the story, and so is every old name a node keeps in `#was:`.** The game starts nodes by name, and saves remember them, so one name can only ever mean one node. The second use is reported, with where the first one is.
+**Every `(` needs a `)` on the same line.** The message points at the `(` that's still open.
 
 ```text
-== kitchen.door
-mira: Locked.
-
-== kitchen.fridge #was:kitchen.door
-mira: It hums.
+@if has_item("key"
 ```
 
-`kitchen.door` names the first node, so it can't also be an old name of the second. Rename one of them. If a node was renamed and another node now has its old name, the old name has to go: keep `#was:` for names no node uses any more.
+Add the `)` where the brackets should close: `@if has_item("key")`.
 
-### PIB2302
+### PIB3002
 
-**A variable is declared with `@var` before the story uses it.** Variables hold what the story decides, and saves keep them, so every one is declared once, with its starting value.
+**Comparisons don't chain.** In some languages `$a < $b < $c` means "`$b` is between `$a` and `$c`", and in others it quietly compares `true` or `false` with `$c`. Pibbles asks you to say which you mean.
 
 ```text
-@var $has_key = false
-
-@if $has_kye
+@if 0 < $bravery < 3
 ```
 
-Fix the spelling, or declare the variable.
-
-### PIB2303
-
-**A value has the type of what it's for:** a variable keeps the type it's declared with, a parameter's default has the parameter's type, and `@pause` takes a duration. A number works where a duration is expected, as seconds.
-
-```text
-@var $has_key = false
-
-@set $has_key = 3
-```
-
-Use a value of the right type: `@set $has_key = true`. `+=` and `-=` keep the variable's type too, so `@set $count += 1s` is reported when `$count` is a number.
-
-### PIB2203
-
-**A condition is `true` or `false`.** There's no "truthy" value: `0`, empty text and every other value are neither, so the story says which question it's asking.
-
-```text
-@var $attempts = 0
-
-@if $attempts
-```
-
-Write the comparison: `@if $attempts > 0`.
+Write each comparison out and join them with `and`: `@if 0 < $bravery and $bravery < 3`. If you really mean to compare the result of one comparison, put it in brackets: `@if ($a < $b) == $c`.
 
 ### PIB3003
 
@@ -1044,6 +1202,109 @@ Fix the spelling, `left`, or add the member to the enum.
 
 Compare a variable, a function or another value with the name: `@if $where == left`.
 
+### PIB3007
+
+**Dividing by zero has no answer, so a story that does it gets 0 and a warning when it runs.** `/` and `%` both divide. This is reported when the right side is a constant that comes to zero: `0`, `0s`, or `(1 - 1)`. A divisor that depends on a variable or a function isn't checked here; if it's zero when the story runs, the result is 0 and the game receives a warning.
+
+```text
+@var $total = 10
+
+== shop.till
+@set $total = $total / 0
+```
+
+Divide by something that isn't zero. If you meant to guard against a zero that can happen, check it first: `@if $count > 0`.
+
+### PIB3101
+
+**A markup span closes on the same line it opens on,** with `[/name]`. It also has to close inside the same conditional branch: a span opened inside `{if}…{/if}` closes before the branch ends, and one opened outside closes outside. An unclosed span is treated as running to the end of the line, or of its branch.
+
+```text
+mira: That's [clue]the master key.
+```
+
+Close it where the styling should end: `mira: That's [clue]the master key[/clue].`
+
+A comment runs to the end of its line, so a `[/clue]` written after a `//` is part of the comment and doesn't close the span. The help says so when the line has a comment.
+
+### PIB3102
+
+**Spans close innermost first,** like brackets: `[b][i]…[/i][/b]`, never `[b][i]…[/b][/i]`. The span that was opened last has to close first. The close is still read as closing both, so nothing else is reported.
+
+```text
+mira: [b][i]Both.[/b][/i]
+```
+
+Swap the closes: `mira: [b][i]Both.[/i][/b]`.
+
+### PIB3103
+
+**A `[/name]` has to close a span that's open at that point.** Spans don't cross conditional branches, so a close inside `{if}…{/if}` can't close a span opened before it.
+
+```text
+mira: That's it.[/b]
+```
+
+Remove the close, or add the `[b]` it belongs to. If the brackets are meant as text, escape the first one: `\[/b]`.
+
+### PIB3104
+
+**Markup is built in (`b`, `i`, `u`, `s` and `color`) or declared with `@markup`,** since the game styles every span the story uses. The help suggests the closest markup. Speed isn't built-in markup: unless the host declares its own `@markup speed`, the old `[speed 0.5]…[/speed]` is reported with the help "Did you mean `{speed}`?"
+
+```text
+@markup clue
+
+That's [clu]the key[/clu].
+```
+
+Fix the spelling, `[clue]…[/clue]`, or declare the markup.
+
+### PIB3201
+
+**Curly braces hold a point:** `{$variable}`, `{function()}`, `{@command}`, or one of `{w}`, `{pause d}`, `{page}`, `{br}`, `{speed}`, `{icon name}` and `{if}`. Anything else is reported, including a bare name, which may get a meaning in a later version.
+
+```text
+mira: Hi, {name}.
+```
+
+Write `{$name}` for a variable, or `{name()}` for a function. If the braces are meant as text, escape the first one: `\{name}`.
+
+`{p}` is reported here too, since the page break is `{page}`. The help says so, and for `{p 0.5}`, which reads as a pause, it also offers `{pause 0.5}`.
+
+```text
+mira: First page.{p}Second page.
+```
+
+Write `{page}`.
+
+### PIB3202
+
+**Some points take no value.** `{w}` waits for the player, `{page}` breaks the page and `{br}` breaks the line, so there is nothing for a value to say. A time belongs to `{pause}`.
+
+```text
+mira: Locked.{w 0.5} Of course it's locked.
+```
+
+Write the time with `{pause}`:
+
+```text
+mira: Locked.{pause 0.5} Of course it's locked.
+```
+
+For `{page}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
+
+### PIB3203
+
+**An icon is declared with `@icon`,** since the game draws every icon the story uses. The help suggests the closest icon.
+
+```text
+@icon interact
+
+Press {icon interct}.
+```
+
+Fix the spelling, `{icon interact}`, or declare the icon.
+
 ### PIB3204
 
 **Text shows text, numbers and actors' names.** A number is formatted for the player's language, and an actor shows their display name. Other values, such as `true` and `false`, enum members, nodes and durations, aren't words a player should see, so text that depends on them chooses its words with `{if}`.
@@ -1066,278 +1327,17 @@ mira: Wait.{pause 0} What?
 
 Write a pause longer than zero, like `{pause 0.5}`, or remove it. For a speed, write one above zero, like `{speed 0.5}`, or `{speed}` to return to the player's setting.
 
-### PIB1205
+### PIB3301
 
-**A tag is reserved (`#id`, `#was`) or declared with `@tag`,** so the game knows to read it. A `#` followed by a letter always starts a tag, so a `#` that's part of the text is escaped. The help suggests the closest tag.
-
-```text
-@tag thought
-
-Hm. #thougth
-```
-
-Fix the spelling, `#thought`, or declare the tag. If the `#` is part of the text, write `\#`.
-
-### PIB1206
-
-**A tag declared on its own (`@tag thought`) is a flag, which takes no value. A tag declared with a type (`@tag box: string`) needs one,** after a colon. A value may be empty (`#box:`) only if the type ends in `?`.
+**A `{`, a `[` or an `{if}` has to close on the same line,** with `}`, `]` or `{/if}`. The message points at the opener that's still open.
 
 ```text
-@tag thought, box: string
-
-Hm. #thought:deep
-Hi. #box
+rex: {if $bravery > 2}Maybe stop hitting it?
 ```
 
-Write `#thought` on its own, and give `#box` a value: `#box:phone`.
+Add the closer where it belongs: `rex: {if $bravery > 2}Maybe stop hitting it?{/if}`.
 
-### PIB1503
-
-**The story always uses a node's current name.** Old names in `#was:` are for what's outside the story, such as saves and the game's code, so `@jump`, `@call`, `visits()` and `node` arguments use the current one, and old names never pile up in the script. An old name still reaches its node, so the story runs while a rename is half done, and `--warnaserror` keeps old names out of a release.
-
-```text
-@prefix kitchen
-
-== .door #was:.front_door
-
-@if visits(.front_door) > 0
-```
-
-Use the current name: `visits(.door)`.
-
-### PIB1207
-
-**A tag that takes an enum takes one of its members,** so the game only ever receives values it knows.
-
-```text
-@enum box_style: phone, letter
-@tag box: box_style
-
-Hi. #box:fone
-```
-
-Use one of the members, `#box:phone`, or add the value to the enum.
-
-### PIB1402
-
-**Each kind of name has one namespace, so each name is declared once per kind.** Two kinds can share a name, such as `@enum sfx` and `@command sfx`, because they're never used in the same place. The second declaration is reported, with where the first one is, and the first one is the one the story uses.
-
-```text
-@enum room: kitchen, cellar
-@enum room: attic
-```
-
-Merge the two into one declaration (`@enum room: kitchen, cellar, attic`), or give one of them another name.
-
-**Two `@var`s are two variables, so the fix for a variable is another name, never removing one.** Removing the second `@var` compiles, but then two places share one variable, and a value one of them sets carries into the other's scenes.
-
-```text
-@prefix kitchen
-
-@var $attempts = 0
-@var $attempts = 0
-```
-
-In a file with a `@prefix`, write the second as `$.attempts`, which is `$kitchen.attempts`. Otherwise, give it a name that says whose it is. If both places are meant to share the variable, declare it once and use it in both.
-
-### PIB1403
-
-**The values of one channel list, the channels in one actor's block, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported. That includes a value that `+=` adds to a channel that already has it.
-
-```text
-@channel pose
-@actor mira
-    name: Mira
-    pose: happy, sad, happy
-```
-
-Remove the second `happy`. If it was meant to be another value, give it that name.
-
-### PIB1404
-
-**A name can't be a word Pibbles already uses where that name appears,** since the story couldn't tell the two apart. A command is written after `@`, so it can't be `if`; an actor can stand in a condition, so it can't be `true`. Each kind of name only avoids the words used in its own places, so `if` is fine as an icon or a pose. The [reserved words](language/reference.md#reserved-words) list them all, including a few kept for planned features.
-
-```text
-@command if()
-```
-
-Choose another name, such as `@command check_door()`.
-
-### PIB1405
-
-**The names you declare use only English letters (a to z, in either case), digits and `_`.** The game's code, file names and save files all handle those the same way everywhere. Display names and text are different: they can hold any character.
-
-```text
-@actor zoë
-    name: Zoë
-```
-
-Replace the letter with one from a to z, as in `@actor zoe`, and keep `name: Zoë` for what the player sees.
-
-### PIB1406
-
-**A type is one of `bool`, `number`, `string`, `duration`, `node` and `actor`, or an enum declared with `@enum`.** Types go after a `:` in variables, parameters and tags, and after `->` in functions. The help suggests the closest type, if one is close.
-
-```text
-@enum position: left, right
-@command show(at: postion)
-```
-
-Fix the spelling, `@command show(at: position)`, or declare the enum the type names.
-
-### PIB2612
-
-**Parameters with a default come after the ones without,** so the arguments without names always fill the required parameters, in order.
-
-```text
-@command shake(strength: number = 1, duration: duration)
-```
-
-Move the parameters that have defaults to the end: `@command shake(duration: duration, strength: number = 1)`.
-
-### PIB1208
-
-**A tag's value reaches the game as text,** so a tag that takes a value is either `string`, which accepts any value, or an enum, which accepts only its members. A `?` after the type also allows an empty value.
-
-```text
-@tag count: number
-```
-
-Use `@tag count: string`, or declare an enum with the values the tag can take and use that.
-
-### PIB2304
-
-**A variable that starts as a name has its type written out,** as in `@var $where: position = left`. A name like `left` could be a member of any enum, an actor or a node, and if the type came from the name, declaring a new name somewhere else could quietly change what the variable holds. When the name belongs to exactly one type, the help writes the declaration out with it.
-
-```text
-@enum position: left, right
-@var $where = left
-```
-
-Write the type after the variable: `@var $where: position = left`.
-
-### PIB2011
-
-**An actor's block can only change channels the story declares with `@channel`,** so a typo never makes a channel of its own. The help suggests the closest declared channel.
-
-```text
-@channel pose
-@actor mira
-    name: Mira
-    pos: happy
-```
-
-Write the channel's name, `pose: happy`, or declare the channel with `@channel pos`.
-
-### PIB2012
-
-**Narration is declared once.** `@narration` and its block say what narration has: the channels its lines can set, and the name shown with them. A second block is reported, since two blocks could say different things.
-
-```text
-@narration
-    no pose
-@narration
-    name: Narrator
-```
-
-Merge the two into one block:
-
-```text
-@narration
-    name: Narrator
-    no pose
-```
-
-### PIB3007
-
-**Dividing by zero has no answer, so a story that does it gets 0 and a warning when it runs.** `/` and `%` both divide. This is reported when the right side is a constant that comes to zero: `0`, `0s`, or `(1 - 1)`. A divisor that depends on a variable or a function isn't checked here; if it's zero when the story runs, the result is 0 and the game receives a warning.
-
-```text
-@var $total = 10
-
-== shop.till
-@set $total = $total / 0
-```
-
-Divide by something that isn't zero. If you meant to guard against a zero that can happen, check it first: `@if $count > 0`.
-
-### PIB2401
-
-**A statement that always leaves its block, `@jump`, `@end` or `@return`, means nothing after it in that block runs.** An `@if` whose every branch leaves, `@else` included, counts too. Conditions are never worked out, so the check only goes by which statements are there: a choice or a variation never counts, since a choice is skipped when no option is available. Only the first line that never runs in a block is reported.
-
-```text
-@jump kitchen.leave
-mira: Wait!
-```
-
-Remove the line, or move it above the `@jump`. If it should only run sometimes, put the `@jump` in an `@if`.
-
-### PIB2102
-
-**An option with no text shows up as an empty choice,** which is usually a forgotten line. It's information, not an error: the story runs, and the game decides what an empty option looks like, so a project that uses empty options on purpose can turn this off.
-
-```text
-->
-    mira: Hm.
-```
-
-Write what the player picks after the `->`: `-> Think about it`.
-
-### PIB1302
-
-**Every line a save can stop on has an ID:** text lines that show text, options, `@call` lines and variation blocks. IDs keep saves, translations and recordings attached to their lines through every edit, and `pibbles ids` writes them, so this is a warning: the story still plays, and CI's `--warnaserror` keeps lines without one out of a release. A line that has a mistake Pibbles can't read past isn't checked, since its ID may be there.
-
-```text
-mira: Locked.
-```
-
-Run `pibbles ids`, which gives the line an ID at its end: `mira: Locked. #id:k7qp2x`.
-
-### PIB1303
-
-**Each line ID is used once in the whole story,** since saves and translations find a line by its ID. Copying a line copies its ID, so this usually means a pasted line. The later one is reported, with where the first one is.
-
-```text
-mira: Locked. #id:k7qp2x
-mira: Still locked. #id:k7qp2x
-```
-
-Delete the ID from the copy and run `pibbles ids` to give it a new one. Keep the ID on the line that was there first, so saves and translations stay with it.
-
-### PIB1304
-
-**A line ID is never the same as a node's name or one of its old names,** so a name always means one thing. Generated IDs never clash; this comes from an ID written by hand.
-
-```text
-== intro
-mira: Hi. #id:intro
-```
-
-Delete the ID and run `pibbles ids` to give the line a new one, or write a different ID by hand.
-
-### PIB2402
-
-**A condition that is never true means the lines under it never run.** It's reported for an `@if` or `@elif` whose condition is only constants: `false`, `not true`, `1 > 2`, `false and $x`. A condition that reads a variable or calls a function can change, so it's not reported, unless `and` settles it: `false and $x` and `$x and false` are never true, whatever `$x` is.
-
-```text
-@if false
-    mira: This never runs.
-```
-
-Remove the lines, or write a condition that can change.
-
-### PIB2403
-
-**A condition that is always true means the branches after it never run.** It's reported for an `@if` or `@elif` whose condition is only constants, such as `true`, `1 == 1` or `$x or true`, when an `@elif` or `@else` follows. An `@if true` with nothing after it isn't reported, since no line is left out.
-
-```text
-@if true
-    mira: This always runs.
-@else
-    mira: This never runs.
-```
-
-Remove the branches after it, or write a condition that can change.
+A comment runs to the end of its line, so a closer written after a `//` is part of the comment and doesn't close anything. The help says so when the line has a comment.
 
 ### PIB5001
 
@@ -1404,6 +1404,17 @@ mira (happy): The silent change above is never seen.
 
 Remove the value nobody sees.
 
+### PIB5102
+
+**Setting a value the actor already has in that channel does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change a value, so after one nothing is known.
+
+```text
+mira (happy): This line sets the pose.
+mira (happy): The pose on this line changes nothing.
+```
+
+Leave the value out: `mira: …`.
+
 ### PIB5103
 
 **A wait at the very end of a line does nothing,** since the line already waits for a click. A timed pause at the end of a line is fine, since it still delays auto mode.
@@ -1414,6 +1425,26 @@ This line waits for a click that happens anyway.{w}
 
 Remove the `{w}`.
 
+### PIB5104
+
+**A wait just before `{page}` does nothing,** since the page break already waits.
+
+```text
+This line waits twice here.{w}{page}New page.
+```
+
+Remove the `{w}`.
+
+### PIB5105
+
+**Two timed pauses side by side could be one.**
+
+```text
+This line pauses{pause 0.2}{pause 0.3} in two steps.
+```
+
+Write one pause: `{pause 0.5}`. When the durations aren't plain numbers, the message is all it says.
+
 ### PIB5106
 
 **An empty span does nothing,** since there is no text for it to style.
@@ -1423,6 +1454,26 @@ This line has an empty span: [b][/b]
 ```
 
 Remove the span.
+
+### PIB5107
+
+**A span inside another one just like it changes nothing.** Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't reported.
+
+```text
+This line is [b]bold and [b]still just bold[/b][/b].
+```
+
+Remove the inner span and its closing tag.
+
+### PIB5108
+
+**Two like spans side by side could be one.** Spans are alike when they have the same name and the same arguments.
+
+```text
+This line is [b]split into[/b][b] two spans[/b].
+```
+
+Join them into one span: `[b]one span[/b]`.
 
 ### PIB5109
 
@@ -1459,47 +1510,6 @@ Remove the `@return`.
 
 Remove the dot: `@prefix kitchen`.
 
-### PIB5102
-
-**Setting a value the actor already has in that channel does nothing.** It's only reported when that's certain, with nothing but lines, `@set` and `@pause` between the two. A command, a call or a choice might change a value, so after one nothing is known.
-
-```text
-mira (happy): This line sets the pose.
-mira (happy): The pose on this line changes nothing.
-```
-
-Leave the value out: `mira: …`.
-
-### PIB5104
-
-**A wait just before `{page}` does nothing,** since the page break already waits.
-
-```text
-This line waits twice here.{w}{page}New page.
-```
-
-Remove the `{w}`.
-
-### PIB5105
-
-**Two timed pauses side by side could be one.**
-
-```text
-This line pauses{pause 0.2}{pause 0.3} in two steps.
-```
-
-Write one pause: `{pause 0.5}`. When the durations aren't plain numbers, the message is all it says.
-
-### PIB5107
-
-**A span inside another one just like it changes nothing.** Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't reported.
-
-```text
-This line is [b]bold and [b]still just bold[/b][/b].
-```
-
-Remove the inner span and its closing tag.
-
 ### PIB5201
 
 **A condition is already true or false,** so comparing it with `true` or `false` only makes it longer.
@@ -1530,6 +1540,16 @@ mira: This line keeps going and going, well past the point where it fits comfort
 ```
 
 Split it into two lines, or into pages with `{page}`, which keeps one message and one voice clip.
+
+### PIB5302
+
+**An option too long to read in one go** crowds the choice. Markup and pacing don't count, and a value shown with `{…}` counts nothing, since its length isn't known. `pibbles_max_option_length` (80) in `.editorconfig` sets the limit.
+
+```text
+-> This option is written as a full sentence that explains everything that will happen if it's picked
+```
+
+Shorten it to what the player picks, and let the lines after it say the rest.
 
 ### PIB5303
 
@@ -1570,16 +1590,6 @@ Write `mira (happy):`, `mira (happy, shake):` and `mira:`.
 
 A speaker with a full-width colon keeps its punctuation's width, with no spaces: `mira（happy、shake）：`. The colon decides, so `mira（happy）:` is tidied to `mira (happy):`.
 
-### PIB5302
-
-**An option too long to read in one go** crowds the choice. Markup and pacing don't count, and a value shown with `{…}` counts nothing, since its length isn't known. `pibbles_max_option_length` (80) in `.editorconfig` sets the limit.
-
-```text
--> This option is written as a full sentence that explains everything that will happen if it's picked
-```
-
-Shorten it to what the player picks, and let the lines after it say the rest.
-
 ### PIB5401
 
 **A variable nothing in the story uses is dead weight.** Setting it counts as using it, since the game's code may read it. The game's vocabulary, such as commands, markup and actors, isn't checked: some of a toolbox going unused is normal.
@@ -1590,25 +1600,12 @@ Shorten it to what the player picks, and let the lines after it say the rest.
 
 Remove the `@var`, or use the variable.
 
-### PIB5108
-
-**Two like spans side by side could be one.** Spans are alike when they have the same name and the same arguments.
-
-```text
-This line is [b]split into[/b][b] two spans[/b].
-```
-
-Join them into one span: `[b]one span[/b]`.
-
 ## With extensions
 
 Codes that arrive with the [grammar extensions](language/design.md#grammar-extensions) and later tiers ([roadmap](roadmap.md#feature-tiers)).
 
 | Code | Arrives with | Default | Example message |
 | --- | --- | --- | --- |
-| PIB3401 | Terms | Error | Term `they` refers to itself through `them` |
-| PIB2013 | Personas | Error | Actor `rex` declares persona `stranger` twice |
-| PIB3008 | `random()` | Error | `random()` can't be used in inline text, because it would roll again when a save loads. Roll it into a variable with `@set` first. (The same code covers terms, option conditions and persona conditions.) |
 | PIB1701 | Release manifests | Error | Saves from 1.0 at `k7qp2x` have nowhere to go. Add `#was:k7qp2x` to a line, or a migration. |
 | PIB1702 | Release manifests | Warning | Saves from 1.0 at `h8ya3k` resume after the new `@set $has_key` above it. Add a migration for 1.0 if they need it. |
 | PIB1703 | Migrations | Error | `migrate.a` and `migrate.b` both claim `k7qp2x` with equally specific claims |
@@ -1616,6 +1613,9 @@ Codes that arrive with the [grammar extensions](language/design.md#grammar-exten
 | PIB1705 | Release manifests | Warning | Saves from 1.0 at `k7qp2x` resume in `cellar.stairs`, which `kitchen.door` no longer leads to |
 | PIB1706 | Release manifests | Warning | Variable `$HasKey` shipped in 1.0 no longer exists. If it was renamed, add `#was:$HasKey` to its `@var`. |
 | PIB1801 | Drafts | Warning | `kitchen.door` jumps to the draft node `kitchen.new_scene`, which release builds leave out |
+| PIB2013 | Personas | Error | Actor `rex` declares persona `stranger` twice |
+| PIB3008 | `random()` | Error | `random()` can't be used in inline text, because it would roll again when a save loads. Roll it into a variable with `@set` first. (The same code covers terms, option conditions and persona conditions.) |
+| PIB3401 | Terms | Error | Term `they` refers to itself through `them` |
 | PIB4001 | Localization (Phase 5) | Error | Translation `es` drops the effect `{@sfx door_rattle}` |
 | PIB4002 | Localization (Phase 5) | Warning | Translation `es` is stale: the source text changed |
 | PIB4101 | Voice tooling (stretch) | Info/Warning | Recording for `k7qp2x` may be out of date: 'teh' → 'the' |
