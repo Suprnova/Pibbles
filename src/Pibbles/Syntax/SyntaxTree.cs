@@ -22,7 +22,7 @@ public sealed class SyntaxTree
     /// <summary>The root of the tree.</summary>
     public FileSyntax Root { get; }
 
-    /// <summary>The file's comments, in order: comment lines, and comments after the content of <c>@</c> lines and node headers.</summary>
+    /// <summary>The file's comments, in order: comment lines, and comments after the content of any other line.</summary>
     /// <remarks>Comments aren't part of <see cref="Root"/>, since they never change what the file means.</remarks>
     public IReadOnlyList<Comment> Comments { get; }
 
