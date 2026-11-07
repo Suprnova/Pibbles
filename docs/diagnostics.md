@@ -57,6 +57,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1021 | Error | `@var` can't go inside a node. | Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
 | PIB1023 | Error | This file already has a `@prefix`, on line 3. | A file has one prefix at most. To put nodes under two prefixes, split the file in two. |
+| PIB1024 | Error | This block already has a `name:`. | An actor has one display name. Keep one of the two lines. |
 | PIB1030 | Error | This `@else` has no `@if` to belong to. | Put it right after the `@if` block, at the same indentation as the `@if`. |
 | PIB1031 | Error | A `@cycle` block can only hold alternatives. | Start each alternative with `- `. |
 | PIB1032 | Error | `@if` can't start an alternative. | Put `-` on its own line, and the `@if` on the line below it, indented. |
@@ -424,6 +425,18 @@ mira: Locked.
 ```
 
 To keep nodes under two group names, split the file in two, each with its own `@prefix`. A node can also use its full name (`== cellar.stairs`) in a file whose prefix is something else.
+
+### PIB1024
+
+**An `@actor` or `@narration` block has one `name:`,** the name the player sees. A second one is reported on its own line, and the first one is used.
+
+```text
+@actor mira
+    name: Mira
+    name: Mira Okafor
+```
+
+Keep the name you want and remove the other line.
 
 ### PIB1030
 

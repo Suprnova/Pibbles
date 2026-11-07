@@ -110,12 +110,12 @@ public partial class LineIndependenceTests
         }
     }
 
-    /// <summary>The line of an actor's <c>name:</c> property, which is the last one in its block when there are several.</summary>
+    /// <summary>The line of an actor's <c>name:</c> property, which is the only one in its block.</summary>
     private static int DisplayNameLine(SourceText source, ActorDeclarationSyntax actor)
     {
         int first = source.GetLinePosition(actor.Span.Start).Line;
         int last = source.GetLinePosition(actor.Span.End).Line;
-        return Enumerable.Range(first, last - first + 1).Last(line => NameProperty().IsMatch(LineText(source, line)));
+        return Enumerable.Range(first, last - first + 1).First(line => NameProperty().IsMatch(LineText(source, line)));
     }
 
     [GeneratedRegex(@"^\s*name\s*:")]

@@ -636,6 +636,24 @@ public class ParserTests
         Assert.Equal("PIB1040", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
 
+    [Theory]
+    [InlineData("@actor mira\n    name: Mira\n    name: Mira Okafor\n")]
+    [InlineData("@narration\n    name: Mira\n    pose: idle\n    name: Mira Okafor\n")]
+    public void Parse_RepeatedDisplayName_IsReportedOnceAndTheFirstIsKept(string text)
+    {
+        var source = new SourceText("story.pib", text);
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        string? displayName = tree.Root.Declarations[0] switch
+        {
+            ActorDeclarationSyntax actor => actor.DisplayName,
+            NarrationDeclarationSyntax narration => narration.DisplayName,
+            _ => null,
+        };
+        Assert.Equal(("PIB1024", "Mira"), (Assert.Single(tree.Diagnostics).Code, displayName));
+    }
+
     [Fact]
     public void Parse_ChannelDeclarations_HaveValuesOrNone()
     {

@@ -137,12 +137,15 @@ internal sealed partial class Parser
             if (code[next] != source.Text[next])
                 forms.Record(next, ':');
 
+            if (displayName is not null)
+                Fail(DiagnosticCatalog.RepeatedDisplayName, new(start, wordEnd - start));
+
             int valueStart = SkipWhitespace(next + 1);
             var value = new TextSpan(valueStart, PlainContentEnd(valueStart, inlineEnd) - valueStart);
             if (value.Length == 0)
                 Fail(DiagnosticCatalog.Missing, new(next + 1, 0), "a display name", "name:");
 
-            displayName = TextOf(value);
+            displayName ??= TextOf(value);
             index++;
             return value.End;
         }

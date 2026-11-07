@@ -196,6 +196,13 @@ public static class DiagnosticCatalog
         "This file already has a `@prefix`, on line {0}.",
         help: "A file has one prefix at most. To put nodes under two prefixes, split the file in two.");
 
+    /// <summary>PIB1024: a second <c>name:</c> line in an <c>@actor</c> or <c>@narration</c> block.</summary>
+    public static DiagnosticDescriptor RepeatedDisplayName { get; } = new(
+        "PIB1024",
+        DiagnosticSeverity.Error,
+        "This block already has a `name:`.",
+        help: "An actor has one display name. Keep one of the two lines.");
+
     /// <summary>PIB1030: an <c>@elif</c> or <c>@else</c> with no <c>@if</c> directly above it.</summary>
     /// <remarks>Argument: the keyword, <c>@elif</c> or <c>@else</c>.</remarks>
     public static DiagnosticDescriptor StrayClause { get; } = new(
@@ -1012,6 +1019,7 @@ public static class DiagnosticCatalog
         DeclarationInNode,
         OutsideNode,
         DuplicatePrefix,
+        RepeatedDisplayName,
         StrayClause,
         NotAlternative,
         OpenerInAlternative,

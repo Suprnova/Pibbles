@@ -1,0 +1,20 @@
+// An actor or narration block has one name:.
+
+@actor mira
+    name: Mira
+    name: Mira Okafor
+//  ^^^^ PIB1024
+@narration
+    name: Narrator
+    name:
+//  ^^^^ PIB1024
+
+// Must not trigger
+
+@actor rex
+    name: Rex
+    pose: plain
+@narration
+    name: Narrator
+@actor sam
+    name: Sam
