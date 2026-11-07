@@ -234,9 +234,7 @@ internal sealed partial class Parser
             }
             else if (Current.Line.Kind is LineKind.Header)
             {
-                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header", null);
-                index++;
-                SkipBlock();
+                SkipNestedHeader(Current.Line.Content.Start);
             }
             else
             {
@@ -329,6 +327,26 @@ internal sealed partial class Parser
     {
         if (Current.Kind is LineTokenKind.Dedent)
             index++;
+    }
+
+    /// <summary>Reports a node header inside a block, and skips it with the block under it.</summary>
+    private void SkipNestedHeader(int at)
+    {
+        Report(DiagnosticCatalog.Unexpected, new(at, 2), "a node header", null);
+        index++;
+        SkipBlock();
+    }
+
+    /// <summary>Parses the indented block under the current line, or returns <see langword="null"/> when there is none.</summary>
+    private List<StatementSyntax>? ParseIndentedStatements()
+    {
+        if (Current.Kind is not LineTokenKind.Indent)
+            return null;
+
+        index++;
+        List<StatementSyntax> block = ParseStatements(nodeLevel: false);
+        SkipDedent();
+        return block;
     }
 
     private void SkipBlock()

@@ -244,9 +244,7 @@ internal sealed partial class Parser
             }
             else if (Current.Line.Kind is LineKind.Header)
             {
-                Report(DiagnosticCatalog.Unexpected, new(Current.Line.Content.Start, 2), "a node header", null);
-                index++;
-                SkipBlock();
+                SkipNestedHeader(Current.Line.Content.Start);
             }
             else
             {
@@ -288,22 +286,14 @@ internal sealed partial class Parser
                 ReportLine(line, DiagnosticCatalog.UnsupportedNote, new(after, 3));
 
             index++;
-            if (Current.Kind is LineTokenKind.Indent)
-            {
-                index++;
-                body = ParseStatements(nodeLevel: false);
-                SkipDedent();
-            }
+            if (ParseIndentedStatements() is { } block)
+                body = block;
             else
-            {
                 Report(DiagnosticCatalog.MissingBlock, new(start, 1), "-");
-            }
         }
         else if (inner.Kind is LineKind.Header)
         {
-            Report(DiagnosticCatalog.Unexpected, new(after, 2), "a node header", null);
-            index++;
-            SkipBlock();
+            SkipNestedHeader(after);
         }
         else
         {
@@ -312,12 +302,8 @@ internal sealed partial class Parser
                 ReportLine(line, DiagnosticCatalog.OpenerInAlternative, new(after, opener.Length), opener);
 
             ParseStatement(body, inner);
-            if (Current.Kind is LineTokenKind.Indent)
-            {
-                index++;
-                body.AddRange(ParseStatements(nodeLevel: false));
-                SkipDedent();
-            }
+            if (ParseIndentedStatements() is { } more)
+                body.AddRange(more);
         }
 
         int end = body.Count > 0 ? body[^1].Span.End : start + 1;
@@ -382,12 +368,8 @@ internal sealed partial class Parser
     {
         Fail(DiagnosticCatalog.StrayClause, token.Span, TextOf(token.Span));
         index++;
-        if (Current.Kind is not LineTokenKind.Indent)
-            return;
-
-        index++;
-        statements.AddRange(ParseStatements(nodeLevel: false));
-        SkipDedent();
+        if (ParseIndentedStatements() is { } block)
+            statements.AddRange(block);
     }
 
     private SetStatementSyntax ParseSet(int start, SourceLine line)

@@ -125,13 +125,7 @@ internal sealed partial class Parser
         CheckTags(tags, TagPlace.Option);
         index++;
 
-        List<StatementSyntax> body = [];
-        if (Current.Kind is LineTokenKind.Indent)
-        {
-            index++;
-            body = ParseStatements(nodeLevel: false);
-            SkipDedent();
-        }
+        List<StatementSyntax> body = ParseIndentedStatements() ?? [];
 
         int end = body.Count > 0 ? body[^1].Span.End : lineEnd;
         return new(text, condition, isOnce, tags, body) { Span = new(start, end - start) };
