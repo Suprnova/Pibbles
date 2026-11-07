@@ -1,7 +1,5 @@
 // Broken variations and declarations still leave a complete tree.
 
-@actor mira:
-    name: Mira [the brave]
 @enum rooms.kitchen: a, b
 == snapshot.recovery
 @cycle
