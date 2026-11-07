@@ -56,7 +56,7 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", "== fixture.start\n@cycle\n    - @if٣ $a\n");
 
-        var tree = SyntaxTree.Parse(source);
+        SyntaxTree tree = SyntaxTree.Parse(source);
 
         Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
         Assert.Equal(("PIB1032", "`@if` can't start an alternative."), (diagnostic.Code, diagnostic.Message));
