@@ -323,6 +323,12 @@ internal sealed partial class Parser
         index++;
     }
 
+    private TextSpan IndentationOf(SourceLine line)
+    {
+        int start = source.GetLineSpan(line.Number).Start;
+        return new(start, line.Content.Start - start);
+    }
+
     private void SkipDedent()
     {
         if (Current.Kind is LineTokenKind.Dedent)

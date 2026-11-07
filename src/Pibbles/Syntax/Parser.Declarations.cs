@@ -170,6 +170,8 @@ internal sealed partial class Parser
         return end;
     }
 
+    private int SkipIdentifier(int start) => Identifiers.Skip(source.Text, start, inlineEnd);
+
     private ChannelDeclarationSyntax ParseChannel()
     {
         NameSyntax name = ExpectDeclaredName("a channel name", "@channel");
@@ -374,11 +376,5 @@ internal sealed partial class Parser
             Advance();
         else
             Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), $"`{text}`", TextOf(previousSpan));
-    }
-
-    private TextSpan IndentationOf(SourceLine line)
-    {
-        int start = source.GetLineSpan(line.Number).Start;
-        return new(start, line.Content.Start - start);
     }
 }

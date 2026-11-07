@@ -411,6 +411,43 @@ internal sealed partial class Parser
         return new(command, arguments, wait) { Span = new(start, end - start) };
     }
 
+    /// <summary>
+    /// Reads arguments up to the end of the line or a closing <c>]</c> or <c>}</c>: positional ones, then named ones,
+    /// then, where <paramref name="allowWait"/>, <c>wait</c> or <c>nowait</c>.
+    /// </summary>
+    private List<ArgumentSyntax> ParseArguments(bool allowWait, out CommandWait wait)
+    {
+        List<ArgumentSyntax> arguments = [];
+        wait = CommandWait.Default;
+        while (!AtArgumentsEnd && !lineFailed)
+        {
+            if (token.Kind is TokenKind.Name && CodeSpanOf(token.Span) is "wait" or "nowait")
+            {
+                if (!allowWait)
+                {
+                    FailUnexpected(token.Span);
+                    break;
+                }
+
+                wait = CodeSpanOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
+                Advance();
+                break;
+            }
+
+            if (ParseArgument() is not { } argument)
+                break;
+
+            if (argument.Name is null && arguments.Any(previous => previous.Name is not null))
+                Fail(DiagnosticCatalog.ArgumentOrder, argument.Span);
+
+            arguments.Add(argument);
+        }
+
+        return arguments;
+    }
+
+    private bool AtArgumentsEnd => AtLineEnd || token.Kind is TokenKind.CloseBracket or TokenKind.CloseBrace;
+
     /// <summary>Reads one argument: <c>name=value</c>, or a value on its own. Returns <see langword="null"/> after reporting a token that starts neither.</summary>
     private ArgumentSyntax? ParseArgument()
     {

@@ -54,8 +54,6 @@ internal sealed partial class Parser
         return new(speaker, content, tags) { Span = new(start, inlineEnd - start) };
     }
 
-    private int SkipIdentifier(int start) => Identifiers.Skip(source.Text, start, inlineEnd);
-
     private ChoiceSyntax ParseChoice(SourceLine first)
     {
         List<OptionSyntax> options = [ParseOption(first)];
@@ -138,44 +136,4 @@ internal sealed partial class Parser
         string after = Whitespace.TrimEnd(source.Text.AsSpan(tag.Span.Start, inlineEnd - tag.Span.Start)).ToString();
         Fail(DiagnosticCatalog.TextAfterTag, tag.Span, TextOf(tag.Span), textOwner, $"{before}\\{after}");
     }
-
-    private int TrimmedEnd(SourceLine line) =>
-        line.Content.Start + Whitespace.TrimEnd(source.Text.AsSpan(line.Content.Start, line.Content.Length)).Length;
-
-    /// <summary>
-    /// Reads arguments up to the end of the line or a closing <c>]</c> or <c>}</c>: positional ones, then named ones,
-    /// then, where <paramref name="allowWait"/>, <c>wait</c> or <c>nowait</c>.
-    /// </summary>
-    private List<ArgumentSyntax> ParseArguments(bool allowWait, out CommandWait wait)
-    {
-        List<ArgumentSyntax> arguments = [];
-        wait = CommandWait.Default;
-        while (!AtArgumentsEnd && !lineFailed)
-        {
-            if (token.Kind is TokenKind.Name && CodeSpanOf(token.Span) is "wait" or "nowait")
-            {
-                if (!allowWait)
-                {
-                    FailUnexpected(token.Span);
-                    break;
-                }
-
-                wait = CodeSpanOf(token.Span) is "wait" ? CommandWait.Wait : CommandWait.NoWait;
-                Advance();
-                break;
-            }
-
-            if (ParseArgument() is not { } argument)
-                break;
-
-            if (argument.Name is null && arguments.Any(previous => previous.Name is not null))
-                Fail(DiagnosticCatalog.ArgumentOrder, argument.Span);
-
-            arguments.Add(argument);
-        }
-
-        return arguments;
-    }
-
-    private bool AtArgumentsEnd => AtLineEnd || token.Kind is TokenKind.CloseBracket or TokenKind.CloseBrace;
 }

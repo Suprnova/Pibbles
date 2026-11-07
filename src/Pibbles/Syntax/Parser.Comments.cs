@@ -13,6 +13,9 @@ internal sealed partial class Parser
     /// <summary>What a message about an unclosed bracket, brace or span adds when a comment may have taken the closer.</summary>
     private string CommentHelp => lineHasComment ? DiagnosticCatalog.CommentSwallowedCloserHelp : "";
 
+    private int TrimmedEnd(SourceLine line) =>
+        line.Content.Start + Whitespace.TrimEnd(source.Text.AsSpan(line.Content.Start, line.Content.Length)).Length;
+
     /// <summary>
     /// The end of <paramref name="line"/>'s content: before its trailing comment, if it has one, and without trailing
     /// whitespace. A trailing comment is recorded.
