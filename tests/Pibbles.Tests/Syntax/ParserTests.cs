@@ -165,6 +165,32 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: Go #team! #thought")]
+    [InlineData("-> Go #team! #thought")]
+    [InlineData("-> Go @once #team! #thought")]
+    [InlineData("@call kitchen.door #team! #thought")]
+    [InlineData("@sequence #team! #thought\n    - a")]
+    public void Parse_MalformedTagName_IsLeftOutOfTheTree(string line)
+    {
+        var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal("PIB1043", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal(["thought"], TagsOf(tree.Root.Nodes[0].Body[0]).Select(tag => tag.Name));
+    }
+
+    [Fact]
+    public void Parse_SecondMalformedTagName_OffersOnlyTheFix()
+    {
+        var source = new SourceText("story.pib", "== kitchen.door\nmira: Go #a! #team!\n");
+
+        IEnumerable<string?> helps = SyntaxTree.Parse(source).Diagnostics.Select(diagnostic => diagnostic.Help);
+
+        Assert.Equal(["Write `#a_`.\nIf `#a!` is text, put a backslash before the `#`.", "Write `#team_`."], helps);
+    }
+
+    [Theory]
     [InlineData("-> Email me @once @home")]
     [InlineData("-> Email me @once @once")]
     [InlineData("-> Email me @if true @if true")]
@@ -887,4 +913,13 @@ public class ParserTests
 
         Assert.Equal(("PIB1021", $"`{declaration.Split(' ')[0]}` can't go inside a node.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
     }
+
+    private static IReadOnlyList<TagSyntax> TagsOf(StatementSyntax statement) => statement switch
+    {
+        TextLineSyntax line => line.Tags,
+        ChoiceSyntax choice => choice.Options[0].Tags,
+        CallStatementSyntax call => call.Tags,
+        VariationStatementSyntax variation => variation.Tags,
+        _ => throw new ArgumentException($"{statement.GetType().Name} has no tags.", nameof(statement)),
+    };
 }

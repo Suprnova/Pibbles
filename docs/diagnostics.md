@@ -527,7 +527,7 @@ Write `@pause 2s`.
 -> Use the key  @if $has_key #show-disabled
 ```
 
-Write `#show_disabled`, and declare it that way with `@tag`.
+Write `#show_disabled`, and declare it that way with `@tag`. The tag is left out of the line, so it isn't also reported as an unknown tag.
 
 A `#` followed by a letter at the end of a line's text always starts a tag, so a word meant as text is reported here too:
 

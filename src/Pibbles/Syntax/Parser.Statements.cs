@@ -39,10 +39,7 @@ internal sealed partial class Parser
             case "@call":
                 Advance();
                 NameSyntax target = ExpectName("a node name", "@call");
-                List<TagSyntax> tags = [];
-                while (token.Kind is TokenKind.Tag)
-                    tags.Add(ReadTag());
-
+                List<TagSyntax> tags = ReadTags();
                 CheckTags(tags, TagPlace.Call);
                 statements.Add(FinishStatement(new CallStatementSyntax(target, tags) { Span = SpanFrom(start) }));
                 return;
@@ -200,10 +197,7 @@ internal sealed partial class Parser
         Advance();
         RejectColon(word, start);
 
-        List<TagSyntax> tags = [];
-        while (token.Kind is TokenKind.Tag)
-            tags.Add(ReadTag());
-
+        List<TagSyntax> tags = ReadTags();
         CheckTags(tags, TagPlace.Variation);
         int lineEnd = previousEnd;
         FinishLine();

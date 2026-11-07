@@ -455,18 +455,24 @@ internal sealed partial class Parser
     private List<TagSyntax> ParseTrailingTags()
     {
         List<TagSyntax> tags = [];
+        bool first = true;
         for (int position = SkipWhitespace(inlinePosition); position < inlineEnd; position = SkipWhitespace(inlinePosition))
         {
             inlinePosition = position;
             if (!AtTagStart())
             {
-                ReportTextAfterTag(tags[0]);
+                if (tags.Count > 0)
+                    ReportTextAfterTag(tags[0]);
+
                 return [];
             }
 
-            lexer.Start(new(position, inlineEnd - position), tagMayBeText: tags.Count == 0);
+            lexer.Start(new(position, inlineEnd - position), tagMayBeText: first);
+            first = false;
             Token tag = NextToken();
-            tags.Add(TagFrom(tag));
+            if (!malformedTag)
+                tags.Add(TagFrom(tag));
+
             inlinePosition = tag.Span.End;
         }
 

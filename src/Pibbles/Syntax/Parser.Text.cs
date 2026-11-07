@@ -102,10 +102,7 @@ internal sealed partial class Parser
                 }
             }
 
-            tags = [];
-            while (token.Kind is TokenKind.Tag)
-                tags.Add(ReadTag());
-
+            tags = ReadTags();
             if (token.Kind is not TokenKind.EndOfLine)
             {
                 if (tags.Count > 0)

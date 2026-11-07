@@ -40,6 +40,9 @@ internal sealed partial class Parser
     private int previousEnd;
     private TextSpan previousSpan;
     private bool lineFailed;
+
+    /// <summary>Whether the token last read is a tag the lexer reported as malformed.</summary>
+    private bool malformedTag;
     private TextSpan? reportedLine;
 
     private Parser(SourceText source)
@@ -182,9 +185,8 @@ internal sealed partial class Parser
 
         NameSyntax name = ExpectName("a node name", "==");
         List<NameSyntax> aliases = [];
-        while (token.Kind is TokenKind.Tag)
+        foreach (TagSyntax tag in ReadTags())
         {
-            TagSyntax tag = ReadTag();
             if (tag.Name is not "was")
                 Fail(DiagnosticCatalog.TagNotAllowed, tag.Span, TextOf(tag.Span), "a node header", "A node header only takes `#was:` tags. Put other tags on the lines inside the node.");
             else if (ParseAlias(tag) is { } alias)
@@ -372,7 +374,9 @@ internal sealed partial class Parser
     {
         int count = diagnostics.Count;
         Token next = lexer.Next();
-        if (diagnostics.Count > count)
+        bool reported = diagnostics.Count > count;
+        malformedTag = reported && next.Kind is TokenKind.Tag;
+        if (reported)
             MuteLineOf(diagnostics[^1].Location.Span.Start);
 
         return next;
@@ -428,11 +432,19 @@ internal sealed partial class Parser
         return new("") { Span = new(previousEnd, 0) };
     }
 
-    private TagSyntax ReadTag()
+    /// <summary>Reads the tags at the current token. A tag the lexer reported as malformed is left out, so the line keeps no tag that the analyzer would report again.</summary>
+    private List<TagSyntax> ReadTags()
     {
-        TagSyntax tag = TagFrom(token);
-        Advance();
-        return tag;
+        List<TagSyntax> tags = [];
+        while (token.Kind is TokenKind.Tag)
+        {
+            if (!malformedTag)
+                tags.Add(TagFrom(token));
+
+            Advance();
+        }
+
+        return tags;
     }
 
     private TagSyntax TagFrom(Token tag)

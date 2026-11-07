@@ -11,3 +11,7 @@ Hm. #thougth
 // Must not trigger
 
 Hm. #thought
+Hm. #the-ought
+//  ^^^^^^^^^^ PIB1043
+-> Wait @once #hid-den
+//            ^^^^^^^^ PIB1043
