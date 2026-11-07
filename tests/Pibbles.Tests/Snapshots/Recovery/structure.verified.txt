@@ -1,18 +1,22 @@
-File 1:1-8:1
+File 1:1-9:1
   Members:
     VariableDeclaration 4:1-4:14
-      Variable: VariableExpression 4:6-4:11 Name="typo"
-      Value: ErrorExpression 4:12-4:14
-    Node 5:5-6:42
-      Name: Name 5:8-5:25 Text="snapshot.indented"
+      Variable: VariableExpression 4:6-4:10 Name="typo"
+      Value: NumberLiteral 4:13-4:14 Value=1
+    VariableDeclaration 5:1-5:14
+      Variable: VariableExpression 5:6-5:11 Name="typo"
+      Value: ErrorExpression 5:12-5:14
+    Node 6:5-7:42
+      Name: Name 6:8-6:25 Text="snapshot.indented"
       Body:
-        TextLine 6:1-6:42
+        TextLine 7:1-7:42
           Content:
-            TextRun 6:1-6:42 Text="Narration that still belongs to the node."
+            TextRun 7:1-7:42 Text="Narration that still belongs to the node."
 Comments:
   1:1-1:115 "A broken declaration keeps its value inside its span, and the lines after an indented first header still belong"
   2:1-2:17 "to that node."
 Diagnostics:
-  PIB1046 4:11 I expected `=` after `$typo`.
-  PIB1003 5:1 This line is indented, but the line above it doesn't open a block.
-  PIB1021 7:1 `@command` can't go inside a node.
+  PIB1049 4:6 Variables start with `$`, so I need one before `typo`.
+  PIB1046 5:11 I expected `=` after `$typo`.
+  PIB1003 6:1 This line is indented, but the line above it doesn't open a block.
+  PIB1021 8:1 `@command` can't go inside a node.

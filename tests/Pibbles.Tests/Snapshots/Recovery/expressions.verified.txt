@@ -1,6 +1,6 @@
-File 1:1-11:1
+File 1:1-13:1
   Members:
-    Node 3:1-10:14
+    Node 3:1-12:13
       Name: Name 3:4-3:21 Text="snapshot.recovery"
       Body:
         SetStatement 4:1-4:14 Operator=Assign OperatorSpan=4:9-4:10
@@ -32,6 +32,16 @@ File 1:1-11:1
         SetStatement 10:1-10:14 Operator=Assign OperatorSpan=10:9-10:10
           Variable: VariableExpression 10:6-10:8 Name="z"
           Value: ErrorExpression 10:11-10:14
+        SetStatement 11:1-11:14 Operator=Assign OperatorSpan=11:9-11:10
+          Variable: VariableExpression 11:6-11:8 Name="w"
+          Value: CallExpression 11:11-11:14
+            Function: Name 11:11-11:12 Text="f"
+            Arguments:
+              NumberLiteral 11:13-11:14 Value=1
+        SetStatement 12:1-12:13 Operator=Assign OperatorSpan=12:9-12:10
+          Variable: VariableExpression 12:6-12:8 Name="v"
+          Value: ParenthesizedExpression 12:11-12:13
+            Expression: NumberLiteral 12:12-12:13 Value=1
 Comments:
   1:1-1:51 "Broken expressions still leave a complete tree."
 Diagnostics:
@@ -40,3 +50,5 @@ Diagnostics:
   PIB1060 7:11 I can't find the `)` that closes this `(`.
   PIB1061 8:5 I can't compare three things at once: `$a < $b < $c`.
   PIB1042 10:11 `1e5` isn't a number I can read.
+  PIB1040 11:15 I didn't expect `2` here.
+  PIB1040 12:14 I didn't expect `2` here.

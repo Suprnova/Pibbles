@@ -1,6 +1,7 @@
 // A broken declaration keeps its value inside its span, and the lines after an indented first header still belong
 // to that node.
 
+@var typo = 1
 @var $typo == false
     == snapshot.indented
 Narration that still belongs to the node.

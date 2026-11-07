@@ -12,3 +12,7 @@ mira: {if $a}never closed
 mira:
 mira: A pause{pause} with no time.
 mira: A wait{w 0.5} with a time.
+mira: {if $a}x{else}y{else}z{/if}
+mira: {if $a}x{else}y{elif $b}z{/if}
+mira: [b]x{else}y[/b]
+mira: [b]x{/if}y[/b]

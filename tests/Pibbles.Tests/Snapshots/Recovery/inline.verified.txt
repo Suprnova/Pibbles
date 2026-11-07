@@ -1,6 +1,6 @@
-File 1:1-15:1
+File 1:1-19:1
   Members:
-    Node 3:1-14:33
+    Node 3:1-18:21
       Name: Name 3:4-3:19 Text="snapshot.inline"
       Body:
         TextLine 4:1-4:26
@@ -79,6 +79,48 @@ File 1:1-15:1
             TextRun 14:7-14:13 Text="A wait"
             InputWait 14:13-14:20
             TextRun 14:20-14:33 Text=" with a time."
+        TextLine 15:1-15:34
+          Speaker: Speaker 15:1-15:5
+            Name: Name 15:1-15:5 Text="mira"
+          Content:
+            ConditionalText 15:7-15:34
+              Condition: VariableExpression 15:11-15:13 Name="a"
+              Content:
+                TextRun 15:14-15:15 Text="x"
+              Else: ElseText 15:15-15:29
+                Content:
+                  TextRun 15:21-15:22 Text="y"
+                  TextRun 15:28-15:29 Text="z"
+        TextLine 16:1-16:37
+          Speaker: Speaker 16:1-16:5
+            Name: Name 16:1-16:5 Text="mira"
+          Content:
+            ConditionalText 16:7-16:37
+              Condition: VariableExpression 16:11-16:13 Name="a"
+              Content:
+                TextRun 16:14-16:15 Text="x"
+              Else: ElseText 16:15-16:32
+                Content:
+                  TextRun 16:21-16:22 Text="y"
+                  TextRun 16:31-16:32 Text="z"
+        TextLine 17:1-17:22
+          Speaker: Speaker 17:1-17:5
+            Name: Name 17:1-17:5 Text="mira"
+          Content:
+            Markup 17:7-17:22
+              Name: Name 17:8-17:9 Text="b"
+              Content:
+                TextRun 17:10-17:11 Text="x"
+                TextRun 17:17-17:18 Text="y"
+        TextLine 18:1-18:21
+          Speaker: Speaker 18:1-18:5
+            Name: Name 18:1-18:5 Text="mira"
+          Content:
+            Markup 18:7-18:21
+              Name: Name 18:8-18:9 Text="b"
+              Content:
+                TextRun 18:10-18:11 Text="x"
+                TextRun 18:16-18:17 Text="y"
 Comments:
   1:1-1:52 "Broken inline text still leaves a complete tree."
 Diagnostics:
@@ -93,3 +135,7 @@ Diagnostics:
   PIB1054 12:1 `mira:` has nothing after it.
   PIB1046 13:20 I expected a value after `pause`.
   PIB1018 14:16 `{w}` takes no value, so I can't use `0.5` after it.
+  PIB1040 15:22 I didn't expect `{else}` here.
+  PIB1040 16:22 I didn't expect `{elif $b}` here.
+  PIB1040 17:11 I didn't expect `{else}` here.
+  PIB1040 18:11 I didn't expect `{/if}` here.

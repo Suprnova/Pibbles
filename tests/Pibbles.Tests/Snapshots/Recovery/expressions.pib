@@ -8,3 +8,5 @@
 @if $a < $b < $c
     @end
 @set $z = 1e5
+@set $w = f(1 2)
+@set $v = (1 2)

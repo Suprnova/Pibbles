@@ -13,3 +13,13 @@
 @var $late = 1
 mira (sad): #id:k7qp2x
 -> Go #id:BAD
+-> a @once @once
+-> a @if $x @if $y
+-> a @home
+-> a @once #team!
+Go #team!
+@set ＄met ＝
+@cycle
+    // A comment line in a variation.
+    mira: A line, not an alternative. // A trailing comment.
+    - mira: An alternative.
