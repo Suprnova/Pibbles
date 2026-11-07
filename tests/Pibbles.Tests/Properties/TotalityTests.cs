@@ -1,5 +1,6 @@
 using CsCheck;
 using Pibbles.Compiler;
+using Pibbles.Configuration;
 using Pibbles.Semantics;
 using Pibbles.Syntax;
 using Pibbles.Tests.Syntax;
@@ -8,7 +9,8 @@ namespace Pibbles.Tests.Properties;
 
 /// <summary>
 /// Totality: any input compiles without throwing, into a tree whose spans lie inside the file, with each node's children
-/// inside it and in order. The input is random lines, or a real file with random mutations.
+/// inside it and in order, and every position answers a semantic lookup. The input is random lines, a real file with random
+/// mutations, two files crossed over, or a whole story of several files, under default or the strictest settings.
 /// </summary>
 public class TotalityTests
 {
@@ -22,6 +24,11 @@ public class TotalityTests
         "＠", "＃", "＄", "＄x", "＝", "＝＝", "＞", "ー", "ー＞", "「", "」", "【", "】", "［", "］", "｛", "｝", "『", "』", "・", "、", "￥", "：", "（", "）", "！＝",
         "\\", "//", "\r", "\n", " ", "  ", "\t",
     ];
+
+    /// <summary>Settings that put every style threshold at 1, so every rule that counts something has its limit crossed.</summary>
+    private static readonly FileSettings StrictSettings = FileSettings.From(
+        new[] { "pibbles_max_nesting", "pibbles_max_option_body", "pibbles_min_repeated_lines", "pibbles_min_repeated_colors", "pibbles_max_message_length", "pibbles_max_option_length" }
+            .Select(name => KeyValuePair.Create(name, "1")));
 
     private static readonly Gen<string> Chunk = Gen.Frequency((4, Gen.OneOfConst(Words)), (1, Gen.String[Gen.Char[Alphabet], 1, 4]));
 
@@ -46,6 +53,19 @@ public class TotalityTests
         PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     [Fact]
+    public void Compile_MutatedFileWithEveryThresholdAtOne_IsTotal() =>
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal([new SourceText("input.pib", file.Text)], Strict(["input.pib"])), iterations: 1000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+
+    [Fact]
+    public void Compile_CrossedFiles_IsTotal() =>
+        PropertyCheck.Run(Mutations.CrossedFile, file => AssertTotal(file.Text), iterations: 1000, print: file => $"{file.Name}:\n{Visible(file.Text)}");
+
+    [Fact]
+    public void Compile_MutatedStory_IsTotal() =>
+        PropertyCheck.Run(Gen.Select(Mutations.MutatedStory, Gen.Bool), input => AssertTotal(input.Item1, input.Item2 ? Strict(input.Item1.Select(file => file.Path)) : null),
+            iterations: 1000, print: input => string.Join("\n", input.Item1.Select(file => $"{file.Path}{(input.Item2 ? " (strict)" : "")}:\n{Visible(file.Text)}")));
+
+    [Fact]
     public void Compile_CorpusFileWithoutErrors_LowersWithoutThrowing() =>
         Assert.All(Corpus.Files, file => AssertLowers(file.Text));
 
@@ -61,16 +81,37 @@ public class TotalityTests
         Assert.Equal(result.Story is null, result.HasErrors);
     }
 
-    private static void AssertTotal(string text)
+    private static void AssertTotal(string text) => AssertTotal([new SourceText("input.pib", text)]);
+
+    private static void AssertTotal(SourceText[] sources, CompilationOptions? options = null)
     {
-        var source = new SourceText("input.pib", text);
+        var compilation = Compilation.Create(sources, options);
 
-        var compilation = Compilation.Create([source]);
-        SyntaxTree tree = Assert.Single(compilation.SyntaxTrees);
+        Assert.Equal(sources.Length, compilation.SyntaxTrees.Count);
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        {
+            AssertNested(tree.Root, new TextSpan(0, tree.Source.Text.Length));
+            AssertLookups(compilation, tree.Source);
+        }
 
-        AssertNested(tree.Root, new TextSpan(0, text.Length));
-        Assert.All(compilation.Diagnostics, diagnostic => Assert.True(Contains(tree.Root.Span, diagnostic.Location.Span), $"{diagnostic.Code} at {diagnostic.Location.Span} lies outside the file."));
+        Assert.All(compilation.Diagnostics, diagnostic =>
+        {
+            SyntaxTree tree = compilation.SyntaxTrees.First(tree => tree.Source.Path == diagnostic.Location.Path);
+            Assert.True(Contains(tree.Root.Span, diagnostic.Location.Span), $"{diagnostic.Code} at {diagnostic.Location.Span} lies outside {diagnostic.Location.Path}.");
+        });
     }
+
+    /// <summary>Asks the model for the symbol at every position of a file, and for every place each one is used.</summary>
+    private static void AssertLookups(Compilation compilation, SourceText source)
+    {
+        for (int position = 0; position <= source.Text.Length; position++)
+        {
+            if (compilation.Model.GetSymbolAt(source.Path, position) is { } symbol)
+                Assert.NotNull(compilation.Model.FindReferences(symbol));
+        }
+    }
+
+    private static CompilationOptions Strict(IEnumerable<string> paths) => new(paths.Distinct().ToDictionary(path => path, _ => StrictSettings));
 
     /// <summary>Checks that <paramref name="node"/> lies inside <paramref name="parent"/>, and that its children lie inside it, in order, without overlapping.</summary>
     private static void AssertNested(SyntaxNode node, TextSpan parent)
