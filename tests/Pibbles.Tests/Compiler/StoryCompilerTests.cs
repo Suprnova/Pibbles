@@ -17,6 +17,7 @@ public class StoryCompilerTests
         SourceText[] sources =
         [
             .. Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Path, "samples", "kitchen"), "*.pib", SearchOption.AllDirectories)
+                .Order(StringComparer.Ordinal)
                 .Select(path => new SourceText(Path.GetRelativePath(RepositoryRoot.Path, path), File.ReadAllText(path))),
         ];
 

@@ -210,7 +210,7 @@ public class TranscriptTests
     private static SourceText[] SourcesOf(string transcriptPath)
     {
         string[] paths = Path.GetFullPath(transcriptPath).StartsWith(KitchenFolder, StringComparison.OrdinalIgnoreCase)
-            ? [.. Directory.EnumerateFiles(Path.Combine(KitchenFolder, "story"), "*.pib", SearchOption.AllDirectories)]
+            ? [.. Directory.EnumerateFiles(Path.Combine(KitchenFolder, "story"), "*.pib", SearchOption.AllDirectories).Order(StringComparer.Ordinal)]
             : [Path.Combine(Path.GetDirectoryName(transcriptPath)!, Path.GetFileName(transcriptPath).Split('.')[0] + ".pib")];
         return [.. paths.Select(path => new SourceText(Path.GetRelativePath(RepositoryRoot.Path, path).Replace('\\', '/'), File.ReadAllText(path)))];
     }
