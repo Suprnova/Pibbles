@@ -460,7 +460,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Group | Words |
 | --- | --- |
 | Statement and declaration keywords (after `@`) | `prefix`, `actor`, `channel`, `narration`, `enum`, `var`, `command`, `markup`, `icon`, `tag`, `function`, `if`, `elif`, `else`, `set`, `jump`, `call`, `return`, `end`, `pause`, `sequence`, `cycle`, `once`; *(ext)* `term`, `resume`, `shuffle`, `temp` |
-| Brace keywords (after `{`) | `w`, `pause`, `page`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once` |
+| Brace keywords (after `{`) | `w`, `pause`, `page`, `p`, `br`, `speed`, `icon`, `if`, `elif`, `else`; *(ext)* `auto`, `sequence`, `cycle`, `shuffle`, `once`, `plural` |
 | Value words | `true`, `false`, `and`, `or`, `not` |
 | Argument words | `wait`, `nowait`; *(ext)* `speaker` |
 | Built-in functions | `visits`; *(ext)* `random` |
@@ -797,5 +797,5 @@ The [grammar extensions](design.md#grammar-extensions), and the notes and `requi
 - v1 [reserves](#reserved-words) every word, tag and line marker the extensions use, in the positions the extensions will use them, so no valid v1 story can already mean something by them.
 - v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (value)}` free for the [mid-line value extension](design.md#values-set-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
-- **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) isn't reserved. Its keyword and case markers (`plural`, `zero`, `one`, `two`, `few`, `many`, `other`) are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their syntax is chosen to avoid names stories already use, or the change is announced as breaking.
+- **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) reserves its keyword, `plural`, but not its case markers (`zero`, `one`, `two`, `few`, `many`, `other`). Those are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their case markers are chosen to avoid names stories already use, or the change is announced as breaking.
 - `[`, `{` and `\` in a display name are errors, so display names can later hold markup.
