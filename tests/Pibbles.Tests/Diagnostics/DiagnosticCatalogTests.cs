@@ -76,6 +76,39 @@ public partial class DiagnosticCatalogTests
     }
 
     [Fact]
+    public void DocumentedTable_EveryCodeIsUnderItsHundred()
+    {
+        string? hundred = null;
+        List<string> misplaced = [];
+
+        foreach (string line in Section("Codes"))
+        {
+            if (HundredHeading().Match(line) is { Success: true } heading)
+                hundred = heading.Groups["hundred"].Value;
+            else if (TableRow().Match(line) is { Success: true } row && (hundred is null || !row.Groups["code"].Value.StartsWith($"PIB{hundred}", StringComparison.Ordinal)))
+                misplaced.Add(row.Groups["code"].Value);
+        }
+
+        Assert.Empty(misplaced);
+    }
+
+    [Fact]
+    public void Documentation_EveryNamedCodeIsRegisteredOrReserved()
+    {
+        HashSet<string> known = [
+            .. DiagnosticCatalog.All.Select(descriptor => descriptor.Code),
+            .. Section("With extensions").Select(line => CodeCell().Match(line)).Where(match => match.Success).Select(match => match.Groups["code"].Value)];
+
+        string[] unknown = [.. Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Path, "docs"), "*.md", SearchOption.AllDirectories)
+            .SelectMany(path => NamedCode().Matches(File.ReadAllText(path)).Select(match => (Path.GetFileName(path), Code: match.Value.ToUpperInvariant())))
+            .Where(named => !known.Contains(named.Code))
+            .Distinct()
+            .Select(named => $"{named.Item1}: {named.Code}")];
+
+        Assert.Empty(unknown);
+    }
+
+    [Fact]
     public void All_EveryCodeHasDocumentedExplanation()
     {
         string[] explained = [.. Section("Explanations").Select(line => ExplanationHeading().Match(line)).Where(match => match.Success).Select(match => match.Groups["code"].Value)];
@@ -110,4 +143,13 @@ public partial class DiagnosticCatalogTests
 
     [GeneratedRegex(@"^### (?<code>PIB\d{4})\b")]
     private static partial Regex ExplanationHeading();
+
+    [GeneratedRegex(@"^### PIB(?<hundred>\d{2})xx: \S")]
+    private static partial Regex HundredHeading();
+
+    [GeneratedRegex(@"^\| (?<code>PIB\d{4}) \|")]
+    private static partial Regex CodeCell();
+
+    [GeneratedRegex(@"(?<![A-Za-z0-9])PIB\d{4}(?!\d)", RegexOptions.IgnoreCase)]
+    private static partial Regex NamedCode();
 }
