@@ -1,4 +1,4 @@
-// Only a line ending in `:`, an option or an alternative can have indented lines under it.
+// Only a block opener, an option or an alternative can have indented lines under it.
 
 == fixture.indent
     Indented under a node header.
