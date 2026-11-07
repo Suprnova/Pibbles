@@ -269,6 +269,32 @@ This line shows a web address: https:\//example.com
 -> Email me \@home
 ```
 
+## Typing markers with an input method
+
+The characters that mean something to Pibbles, such as `@`, `->`, `#`, `[ ]`, `{ }`, `//`, `==` and `$`, are typed half-width. While you write Japanese or Chinese prose, your input method types its own punctuation for those keys instead: `＠` for `@`, `ー＞` for `->`, `「」` or `【】` for `[ ]`, `・` for `/`. Switch to direct input for the marker, then back to write:
+
+- **Japanese** (Microsoft IME, Google Japanese Input, macOS): the 半角/全角 key, or 英数 on a Mac. In Microsoft IME, Shift+Space types a half-width space. On a Mac with a JIS keyboard, set "¥ key generates" to `\` in the input method's settings, so the ¥ key types a backslash.
+- **Chinese** (Microsoft Pinyin, Sogou, Rime, macOS): Shift switches to English mode. In Microsoft Pinyin, Ctrl+. switches only the punctuation, and macOS has a "Use halfwidth punctuation" setting.
+- **Vietnamese** (Unikey): Telex turns `[` and `]` into `ư` and `ơ`. Unikey's Telex giản lược leaves them alone, or Ctrl+Shift switches Vietnamese off for a moment.
+- **Korean** punctuation is already half-width. Only English words need the 한/영 key.
+
+A speaker's colon, parentheses and commas are the exception: type them either way ([Dialogue and narration](#dialogue-and-narration)).
+
+When a marker slips through, Pibbles tells you. One that decides what a line is, or one inside an `@` line, `[…]` or `{…}`, is read as the marker you meant and reported as an error, so the rest of the line is still checked:
+
+```pib-error PIB1044
+＠if $has_key
+    mira: You found it.
+```
+
+Text that only looks like a marker stays text, with a warning, since you may have meant the punctuation:
+
+```pib-error PIB1019 PIB1019
+mira: Look under the 【clue】mat【/clue】.
+```
+
+If you did mean it, put a backslash before its first character: `\【clue】mat【/clue】`.
+
 ## Comments
 
 A `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, or end any other line. The player never sees it:
