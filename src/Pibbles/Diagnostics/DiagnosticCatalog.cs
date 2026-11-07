@@ -70,109 +70,6 @@ public static class DiagnosticCatalog
         "This file starts with a byte-order mark (U+FEFF), which isn't part of the text.",
         help: "Delete this first character, or save the file as UTF-8 without a byte-order mark. A program that reads story files should decode them as UTF-8, which removes it.");
 
-    /// <summary>What PIB3101 and PIB3301's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
-    public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
-
-    /// <summary>PIB3101: a markup span with no close on its line, or none before a conditional-text boundary.</summary>
-    /// <remarks>Arguments: the markup's name, and <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.</remarks>
-    public static DiagnosticDescriptor UnclosedMarkup { get; } = new(
-        "PIB3101",
-        DiagnosticSeverity.Error,
-        "I can't find the end of this `[{0}]`.",
-        help: "Close it on the same line with `[/{0}]`.{1}");
-
-    /// <summary>PIB3102: a markup close for an outer span while an inner one is still open.</summary>
-    /// <remarks>Argument: the name of the innermost open span.</remarks>
-    public static DiagnosticDescriptor MarkupOutOfOrder { get; } = new(
-        "PIB3102",
-        DiagnosticSeverity.Error,
-        "I expected `[/{0}]` here, because `[{0}]` was opened last.",
-        help: "Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`.");
-
-    /// <summary>PIB3103: a markup close with no matching open span.</summary>
-    /// <remarks>Argument: the markup's name.</remarks>
-    public static DiagnosticDescriptor UnopenedMarkup { get; } = new(
-        "PIB3103",
-        DiagnosticSeverity.Error,
-        "`[/{0}]` closes markup that was never opened.",
-        help: "If you meant the text `[/{0}]`, put a backslash before it: `\\[/{0}]`.");
-
-    /// <summary>PIB3301: a bracket, brace or <c>{if}</c> that isn't closed on its line.</summary>
-    /// <remarks>
-    /// Arguments: the missing closer, such as <c>}</c> or <c>{/if}</c>; the opener it should close; and
-    /// <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.
-    /// </remarks>
-    public static DiagnosticDescriptor Unclosed { get; } = new(
-        "PIB3301",
-        DiagnosticSeverity.Error,
-        "I can't find the `{0}` that ends this `{1}`.",
-        help: "Close it on the same line.{2}");
-
-    /// <summary>PIB1101: a backslash followed by something other than ASCII punctuation.</summary>
-    /// <remarks>Argument: the backslash and the character after it.</remarks>
-    public static DiagnosticDescriptor InvalidEscape { get; } = new(
-        "PIB1101",
-        DiagnosticSeverity.Error,
-        "I don't know the escape `{0}`.",
-        help: @"A backslash only goes before punctuation. To show a backslash, write `\\`.");
-
-    /// <summary>PIB1201: text after a tag, which ends the line's text.</summary>
-    /// <remarks>
-    /// Arguments: the tag the text comes after; whose text it is, such as <c>the text</c>, or a <see cref="SpeakerMention"/>
-    /// that reads <c>what Mira says</c>; and
-    /// the line with the tag escaped, which the help shows on a line of its own.
-    /// </remarks>
-    public static DiagnosticDescriptor TextAfterTag { get; } = new(
-        "PIB1201",
-        DiagnosticSeverity.Error,
-        "I read `{0}` as a tag, but tags go at the end of the line.",
-        "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
-
-    /// <summary>PIB2101: a command, <c>{w}</c>, <c>{page}</c> or <c>{speed}</c> in an option's text.</summary>
-    /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
-    public static DiagnosticDescriptor NotInOption { get; } = new(
-        "PIB2101",
-        DiagnosticSeverity.Error,
-        "An option's text can't contain `{0}`.",
-        help: "Pauses, speed changes and commands go in the indented lines under the option.");
-
-    /// <summary>The help for PIB3201 when the point isn't an old spelling of one.</summary>
-    public const string UnknownPointHelp = "To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`.";
-
-    /// <summary>PIB3201: a point that isn't a variable, call, command or brace keyword, or is the old spelling <c>{p}</c> of <c>{page}</c>.</summary>
-    /// <remarks>Arguments: the point as written, and how to fix it, which is <see cref="UnknownPointHelp"/> unless the point has a known replacement.</remarks>
-    public static DiagnosticDescriptor UnknownPoint { get; } = new(
-        "PIB3201",
-        DiagnosticSeverity.Error,
-        "I don't know what `{0}` means.",
-        help: "{1}");
-
-    /// <summary>PIB3202: a value after a point that takes none, such as <c>{w 0.5}</c>.</summary>
-    /// <remarks>Arguments: the point's keyword, such as <c>w</c>; the value as written; and how to fix it.</remarks>
-    public static DiagnosticDescriptor PointTakesNoValue { get; } = new(
-        "PIB3202",
-        DiagnosticSeverity.Error,
-        "`{{{0}}}` takes no value, so I can't use `{1}` after it.",
-        help: "{2}");
-
-    /// <summary>
-    /// PIB1102: text that looks like a marker typed through an input method, such as <c>【b】…【/b】</c> for markup or
-    /// <c>・・</c> at a line's start for a comment. It stays text.
-    /// </summary>
-    /// <remarks>Arguments: the text as written; the marker it looks like, half-width; and how to fix it, which also offers the escape.</remarks>
-    public static DiagnosticDescriptor MarkerLookalike { get; } = new(
-        "PIB1102",
-        DiagnosticSeverity.Warning,
-        "I show `{0}` as text, but it looks like `{1}` typed through an input method.",
-        help: "{2}");
-
-    /// <summary>PIB1601: a file's only <c>@prefix</c> line, after something other than comments.</summary>
-    public static DiagnosticDescriptor MisplacedPrefix { get; } = new(
-        "PIB1601",
-        DiagnosticSeverity.Error,
-        "`@prefix` has to come first in the file.",
-        help: "Move it to the top. Only comments can go above it.");
-
     /// <summary>PIB1008: a declaration inside a node, which for a kind other than <c>@var</c> is any declaration after the file's first node.</summary>
     /// <remarks>Arguments: the declaration's keyword, and where it can go instead.</remarks>
     public static DiagnosticDescriptor DeclarationInNode { get; } = new(
@@ -188,52 +85,32 @@ public static class DiagnosticCatalog
         "This line isn't inside a node.",
         help: "Add a node header above it: `== name`.");
 
-    /// <summary>PIB1602: a second <c>@prefix</c> line in a file.</summary>
-    /// <remarks>Argument: the 1-based line of the file's first <c>@prefix</c>.</remarks>
-    public static DiagnosticDescriptor DuplicatePrefix { get; } = new(
-        "PIB1602",
+    /// <summary>PIB1010: blocks, spans, branches, brackets or chained operators nested past the limit the parser reads.</summary>
+    /// <remarks>Argument: the limit.</remarks>
+    public static DiagnosticDescriptor NestingLimit { get; } = new(
+        "PIB1010",
         DiagnosticSeverity.Error,
-        "This file already has a `@prefix`, on line {0}.",
-        help: "A file has one prefix at most. To put nodes under two prefixes, split the file in two.");
+        "I can't read anything nested more than {0} levels deep.",
+        help: "Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line.");
 
-    /// <summary>PIB2001: a second <c>name:</c> line in an <c>@actor</c> or <c>@narration</c> block.</summary>
-    public static DiagnosticDescriptor RepeatedDisplayName { get; } = new(
-        "PIB2001",
+    /// <summary>PIB1101: a backslash followed by something other than ASCII punctuation.</summary>
+    /// <remarks>Argument: the backslash and the character after it.</remarks>
+    public static DiagnosticDescriptor InvalidEscape { get; } = new(
+        "PIB1101",
         DiagnosticSeverity.Error,
-        "This block already has a `name:`.",
-        help: "An actor has one display name. Keep one of the two lines.");
+        "I don't know the escape `{0}`.",
+        help: @"A backslash only goes before punctuation. To show a backslash, write `\\`.");
 
-    /// <summary>PIB2201: an <c>@elif</c> or <c>@else</c> with no <c>@if</c> directly above it.</summary>
-    /// <remarks>Argument: the keyword, <c>@elif</c> or <c>@else</c>.</remarks>
-    public static DiagnosticDescriptor StrayClause { get; } = new(
-        "PIB2201",
-        DiagnosticSeverity.Error,
-        "This `{0}` has no `@if` to belong to.",
-        help: "Put it right after the `@if` block, at the same indentation as the `@if`.");
-
-    /// <summary>PIB2501: a line in a variation block that isn't an alternative.</summary>
-    /// <remarks>Argument: the variation's keyword, such as <c>@cycle</c>.</remarks>
-    public static DiagnosticDescriptor NotAlternative { get; } = new(
-        "PIB2501",
-        DiagnosticSeverity.Error,
-        "A `{0}` block can only hold alternatives.",
-        help: "Start each alternative with `- `.");
-
-    /// <summary>PIB2502: a block opener right after an alternative's <c>- </c>.</summary>
-    /// <remarks>Argument: the opener, such as <c>@if</c> or <c>-></c>.</remarks>
-    public static DiagnosticDescriptor OpenerInAlternative { get; } = new(
-        "PIB2502",
-        DiagnosticSeverity.Error,
-        "`{0}` can't start an alternative.",
-        help: "Put `-` on its own line, and the `{0}` on the line below it, indented.");
-
-    /// <summary>PIB2202: a block opener with a <c>:</c> after it.</summary>
-    /// <remarks>Arguments: the keyword, and the line up to the <c>:</c>.</remarks>
-    public static DiagnosticDescriptor OpenerColon { get; } = new(
-        "PIB2202",
-        DiagnosticSeverity.Error,
-        "I didn't expect a `:` on this `{0}` line.",
-        help: "Remove it: `{1}`.");
+    /// <summary>
+    /// PIB1102: text that looks like a marker typed through an input method, such as <c>【b】…【/b】</c> for markup or
+    /// <c>・・</c> at a line's start for a comment. It stays text.
+    /// </summary>
+    /// <remarks>Arguments: the text as written; the marker it looks like, half-width; and how to fix it, which also offers the escape.</remarks>
+    public static DiagnosticDescriptor MarkerLookalike { get; } = new(
+        "PIB1102",
+        DiagnosticSeverity.Warning,
+        "I show `{0}` as text, but it looks like `{1}` typed through an input method.",
+        help: "{2}");
 
     /// <summary>PIB1103: something the grammar doesn't allow where it appears, when no more specific code applies.</summary>
     /// <remarks>Arguments: what was found, such as <c>`extra`</c> or <c>a node header</c>; and how to fix it, such as <see cref="EscapeHelp"/>'s sentence, or <see langword="null"/> for no help.</remarks>
@@ -258,17 +135,6 @@ public static class DiagnosticCatalog
         "`{0}` isn't a number I can read.",
         help: "Write numbers with digits and at most one `.`, like `3`, `0.5` or `.5`. A duration ends in `s` or `ms`, like `0.5s`.");
 
-    /// <summary>PIB1202: a tag name holding characters other than letters, digits and <c>_</c>.</summary>
-    /// <remarks>
-    /// Arguments: the tag as written; and how to fix it, which is the same tag with each such character replaced by <c>_</c>,
-    /// followed on a line of its own by <see cref="EscapeHelp"/>'s sentence where the tag may be text.
-    /// </remarks>
-    public static DiagnosticDescriptor MalformedTagName { get; } = new(
-        "PIB1202",
-        DiagnosticSeverity.Error,
-        "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
-        help: "{1}");
-
     /// <summary>PIB1106: a marker typed through an input method, such as <c>＝</c> for <c>=</c> or <c>」</c> for <c>]</c>, read as the marker.</summary>
     /// <remarks>
     /// Arguments: the form as written, one character or a run of them; their code points, such as <c>U+FF1D</c>; the marker it's
@@ -280,14 +146,6 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "I read `{0}` ({1}) as `{2}`, but markers are typed half-width.",
         help: "{3}");
-
-    /// <summary>PIB1401: a dotted or relative name where a single identifier is being declared.</summary>
-    /// <remarks>Argument: the name as written.</remarks>
-    public static DiagnosticDescriptor DottedName { get; } = new(
-        "PIB1401",
-        DiagnosticSeverity.Error,
-        "I can't use `{0}` as a name here, because only node names can have dots.",
-        help: "Use a new name, with `_` between words if it needs them.");
 
     /// <summary>PIB1107: a required part of a line is missing.</summary>
     /// <remarks>Arguments: what's missing, such as <c>a node name</c>, and the text it should follow.</remarks>
@@ -304,43 +162,28 @@ public static class DiagnosticCatalog
         "`{0}` is too large of a number for me.",
         help: "Numbers go up to 79228162514264337593543950335. Write a smaller one.");
 
-    /// <summary>PIB2002: the character U+FFFC in text, which Pibbles uses to stand for an icon.</summary>
-    public static DiagnosticDescriptor ObjectReplacementCharacter { get; } = new(
-        "PIB2002",
+    /// <summary>PIB1201: text after a tag, which ends the line's text.</summary>
+    /// <remarks>
+    /// Arguments: the tag the text comes after; whose text it is, such as <c>the text</c>, or a <see cref="SpeakerMention"/>
+    /// that reads <c>what Mira says</c>; and
+    /// the line with the tag escaped, which the help shows on a line of its own.
+    /// </remarks>
+    public static DiagnosticDescriptor TextAfterTag { get; } = new(
+        "PIB1201",
         DiagnosticSeverity.Error,
-        "This text has U+FFFC in it, which I use internally to mark where an icon goes.",
-        help: "Remove it. To show an icon, write `{{icon name}}`.");
+        "I read `{0}` as a tag, but tags go at the end of the line.",
+        "If `{0}` is part of {1}, put a backslash before the `#`:\n{2}");
 
-    /// <summary>PIB2301: a name where a variable is expected, written without its <c>$</c>.</summary>
-    /// <remarks>Arguments: the name as written, and the line with a <c>$</c> before the name.</remarks>
-    public static DiagnosticDescriptor MissingDollar { get; } = new(
-        "PIB2301",
+    /// <summary>PIB1202: a tag name holding characters other than letters, digits and <c>_</c>.</summary>
+    /// <remarks>
+    /// Arguments: the tag as written; and how to fix it, which is the same tag with each such character replaced by <c>_</c>,
+    /// followed on a line of its own by <see cref="EscapeHelp"/>'s sentence where the tag may be text.
+    /// </remarks>
+    public static DiagnosticDescriptor MalformedTagName { get; } = new(
+        "PIB1202",
         DiagnosticSeverity.Error,
-        "Variables start with `$`, so I need one before `{0}`.",
-        help: "Write `{1}`.");
-
-    /// <summary>PIB2601: a positional argument after a named one.</summary>
-    public static DiagnosticDescriptor ArgumentOrder { get; } = new(
-        "PIB2601",
-        DiagnosticSeverity.Error,
-        "This argument has no name, but it comes after one that does.",
-        help: "Put unnamed arguments first, then named ones, then `wait` or `nowait`.");
-
-    /// <summary>PIB2602: a space between a function's name and its <c>(</c>, where only a call can follow the name.</summary>
-    /// <remarks>Argument: the function's name.</remarks>
-    public static DiagnosticDescriptor SpaceBeforeCall { get; } = new(
-        "PIB2602",
-        DiagnosticSeverity.Error,
-        "There's a space between `{0}` and its `(`.",
-        help: "To call `{0}`, remove the space: `{0}(…)`.");
-
-    /// <summary>PIB1301: an <c>#id</c> whose value isn't a line ID.</summary>
-    /// <remarks>Argument: the tag as written.</remarks>
-    public static DiagnosticDescriptor InvalidLineId { get; } = new(
-        "PIB1301",
-        DiagnosticSeverity.Error,
-        "`{0}` isn't a line ID I can use.",
-        help: "Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one.");
+        "`{0}` isn't a tag name: tag names only have letters, digits and `_`.",
+        help: "{1}");
 
     /// <summary>PIB1203: a tag on a line that doesn't take it.</summary>
     /// <remarks>Arguments: the tag, the kind of line it's on, and what that line takes instead.</remarks>
@@ -350,22 +193,6 @@ public static class DiagnosticCatalog
         "`{0}` can't go on {1}.",
         help: "{2}");
 
-    /// <summary>PIB2003: a speaker with neither values nor text.</summary>
-    /// <remarks>Arguments: the speaker's name as written, and a <see cref="SpeakerMention"/> of it for the help's prose.</remarks>
-    public static DiagnosticDescriptor EmptyLine { get; } = new(
-        "PIB2003",
-        DiagnosticSeverity.Error,
-        "`{0}:` has nothing after it.",
-        help: "Write what {1} says after the colon, or write `{0}: {{w}}` for a box with only their name. To set their values without a line, write `{0} (value):`.");
-
-    /// <summary>PIB2603: a negative number as a command argument, without parentheses.</summary>
-    /// <remarks>Argument: the negative value as written, such as <c>-1</c>.</remarks>
-    public static DiagnosticDescriptor NegativeArgument { get; } = new(
-        "PIB2603",
-        DiagnosticSeverity.Error,
-        "A negative argument has to go in brackets.",
-        help: "Write `({0})`.");
-
     /// <summary>PIB1204: a text line of only tags, with no speaker and no text for them to go with.</summary>
     /// <remarks>Argument: the tags as written.</remarks>
     public static DiagnosticDescriptor TagsOnlyLine { get; } = new(
@@ -374,28 +201,188 @@ public static class DiagnosticCatalog
         "`{0}` has no line to go with.",
         help: "Tags go at the end of the line they're for. Move them onto it.");
 
-    /// <summary>PIB3001: a <c>(</c> with no <c>)</c> on its line.</summary>
-    public static DiagnosticDescriptor UnclosedParenthesis { get; } = new(
-        "PIB3001",
+    /// <summary>PIB1205: a tag that's neither reserved nor declared.</summary>
+    /// <remarks>Arguments: the tag's name, and <see cref="DidYouMean"/>'s sentence for the closest tag, or nothing.</remarks>
+    public static DiagnosticDescriptor UnknownTag { get; } = new(
+        "PIB1205",
         DiagnosticSeverity.Error,
-        "I can't find the `)` that closes this `(`.",
-        help: "Add the `)` on the same line.");
+        "I don't know a tag called `#{0}`.",
+        help: "{1}If this is text, escape it: `\\#{0}`.");
 
-    /// <summary>PIB3002: two comparisons in a row, such as <c>$a &lt; $b &lt; $c</c>.</summary>
-    /// <remarks>Argument: the whole chain as written.</remarks>
-    public static DiagnosticDescriptor ChainedComparison { get; } = new(
-        "PIB3002",
+    /// <summary>PIB1206: a value on a tag that takes none, or none on a tag that needs one.</summary>
+    /// <remarks>Arguments: the tag's name; <c>doesn't take a value</c> or <c>needs a value</c>; and the tag written the right way.</remarks>
+    public static DiagnosticDescriptor TagValuePresence { get; } = new(
+        "PIB1206",
         DiagnosticSeverity.Error,
-        "I can't compare three things at once: `{0}`.",
-        help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
+        "`#{0}` {1}.",
+        help: "{2}");
 
-    /// <summary>PIB1010: blocks, spans, branches, brackets or chained operators nested past the limit the parser reads.</summary>
-    /// <remarks>Argument: the limit.</remarks>
-    public static DiagnosticDescriptor NestingLimit { get; } = new(
-        "PIB1010",
+    /// <summary>PIB1207: a tag's value that isn't a member of the enum the tag takes.</summary>
+    /// <remarks>Arguments: the value; the enum with its article; the tag's name; and a suggestion or the enum's members, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor TagValueNotMember { get; } = new(
+        "PIB1207",
         DiagnosticSeverity.Error,
-        "I can't read anything nested more than {0} levels deep.",
-        help: "Move part of it elsewhere: a block into a node of its own, or part of an expression into a variable set on an earlier line.");
+        "`{0}` isn't {1}, which `#{2}` takes.",
+        help: "{3}");
+
+    /// <summary>PIB1208: a tag whose value type is neither <c>string</c> nor an enum.</summary>
+    /// <remarks>Argument: the type.</remarks>
+    public static DiagnosticDescriptor TagValueType { get; } = new(
+        "PIB1208",
+        DiagnosticSeverity.Error,
+        "A tag's value is text, so it can't be `{0}`.",
+        help: "Use `string`, or an enum to allow only certain values.");
+
+    /// <summary>PIB1301: an <c>#id</c> whose value isn't a line ID.</summary>
+    /// <remarks>Argument: the tag as written.</remarks>
+    public static DiagnosticDescriptor InvalidLineId { get; } = new(
+        "PIB1301",
+        DiagnosticSeverity.Error,
+        "`{0}` isn't a line ID I can use.",
+        help: "Line IDs are lowercase letters, digits and `_`, starting with a letter. `pibbles ids` replaces it with a new one.");
+
+    /// <summary>PIB1302: a line that needs a line ID and has none.</summary>
+    public static DiagnosticDescriptor MissingLineId { get; } = new(
+        "PIB1302",
+        DiagnosticSeverity.Warning,
+        "This line has no `#id`.",
+        help: "Run `pibbles ids` to add one.");
+
+    /// <summary>PIB1303: a line ID that another line already uses.</summary>
+    /// <remarks>Arguments: the ID, and where it's already used, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor DuplicateLineId { get; } = new(
+        "PIB1303",
+        DiagnosticSeverity.Error,
+        "The line ID `{0}` is also used {1}.",
+        help: "Delete one of the two IDs and run `pibbles ids` to give that line a new one.");
+
+    /// <summary>PIB1304: a line ID that's also a node's name or old name.</summary>
+    /// <remarks>Arguments: the ID, and what it also is, such as <c>the name of a node</c>.</remarks>
+    public static DiagnosticDescriptor LineIdIsNodeName { get; } = new(
+        "PIB1304",
+        DiagnosticSeverity.Error,
+        "The line ID `{0}` is also {1}.",
+        help: "Delete the ID and run `pibbles ids` to give the line a new one.");
+
+    /// <summary>PIB1401: a dotted or relative name where a single identifier is being declared.</summary>
+    /// <remarks>Argument: the name as written.</remarks>
+    public static DiagnosticDescriptor DottedName { get; } = new(
+        "PIB1401",
+        DiagnosticSeverity.Error,
+        "I can't use `{0}` as a name here, because only node names can have dots.",
+        help: "Use a new name, with `_` between words if it needs them.");
+
+    /// <summary>PIB1402: a declared name that another declaration of the same kind already uses.</summary>
+    /// <remarks>
+    /// Arguments: the kind with its article, such as <c>an enum</c>; the name; where the first one is, such as <c>on line 3</c>;
+    /// and the help, which for a variable says that the two are different variables instead of offering to remove one.
+    /// </remarks>
+    public static DiagnosticDescriptor DuplicateDeclaration { get; } = new(
+        "PIB1402",
+        DiagnosticSeverity.Error,
+        "There's already {0} called `{1}`, {2}.",
+        help: "{3}");
+
+    /// <summary>PIB1403: a channel value, enum member, parameter or channel listed twice in one declaration.</summary>
+    /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's `pose` values</c>.</remarks>
+    public static DiagnosticDescriptor RepeatedName { get; } = new(
+        "PIB1403",
+        DiagnosticSeverity.Error,
+        "`{0}` is already one of {1}.",
+        help: "Remove the second `{0}`, or give it another name.");
+
+    /// <summary>PIB1404: a declared name that's a reserved word for its kind.</summary>
+    /// <remarks>Arguments: the name; the kind with its article, such as <c>a command</c>; and where Pibbles uses the word, such as <c>after `@`</c>.</remarks>
+    public static DiagnosticDescriptor ReservedName { get; } = new(
+        "PIB1404",
+        DiagnosticSeverity.Error,
+        "`{0}` can't name {1}, because I use that word {2}.",
+        help: "Choose another name.");
+
+    /// <summary>PIB1405: a declared name with a character outside ASCII.</summary>
+    /// <remarks>Arguments: the name, and its first character outside ASCII.</remarks>
+    public static DiagnosticDescriptor NonAsciiName { get; } = new(
+        "PIB1405",
+        DiagnosticSeverity.Error,
+        "`{0}` has `{1}` in it, but a name can only use English letters, digits and `_`.",
+        help: "Replace `{1}` with a letter from a to z.");
+
+    /// <summary>PIB1406: a type that's neither built in nor a declared enum.</summary>
+    /// <remarks>Arguments: the type as written, and the closest type, which the help suggests. The help is left out when nothing is close.</remarks>
+    public static DiagnosticDescriptor UnknownType { get; } = new(
+        "PIB1406",
+        DiagnosticSeverity.Error,
+        "I don't know a type called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB1501: a node name that names no node.</summary>
+    /// <remarks>Arguments: the name as written, and the closest node, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownNode { get; } = new(
+        "PIB1501",
+        DiagnosticSeverity.Error,
+        "I can't find a node called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB1502: a node name or <c>#was:</c> name that another node, or the same one, already uses.</summary>
+    /// <remarks>Arguments: the full name, and where it's already used, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor DuplicateNode { get; } = new(
+        "PIB1502",
+        DiagnosticSeverity.Error,
+        "There's already a node called `{0}`, {1}.",
+        help: "A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them.");
+
+    /// <summary>PIB1503: a reference to a node by one of its old names.</summary>
+    /// <remarks>Arguments: the old name, and the current name, both as the story would write them.</remarks>
+    public static DiagnosticDescriptor OldNodeName { get; } = new(
+        "PIB1503",
+        DiagnosticSeverity.Warning,
+        "`{0}` is an old name of `{1}`.",
+        help: "Use the current name: `{1}`.");
+
+    /// <summary>PIB1601: a file's only <c>@prefix</c> line, after something other than comments.</summary>
+    public static DiagnosticDescriptor MisplacedPrefix { get; } = new(
+        "PIB1601",
+        DiagnosticSeverity.Error,
+        "`@prefix` has to come first in the file.",
+        help: "Move it to the top. Only comments can go above it.");
+
+    /// <summary>PIB1602: a second <c>@prefix</c> line in a file.</summary>
+    /// <remarks>Argument: the 1-based line of the file's first <c>@prefix</c>.</remarks>
+    public static DiagnosticDescriptor DuplicatePrefix { get; } = new(
+        "PIB1602",
+        DiagnosticSeverity.Error,
+        "This file already has a `@prefix`, on line {0}.",
+        help: "A file has one prefix at most. To put nodes under two prefixes, split the file in two.");
+
+    /// <summary>PIB1603: a relative node or variable name in a file with no <c>@prefix</c>.</summary>
+    /// <remarks>Argument: the name as written, such as <c>.leave</c> or <c>$.attempts</c>.</remarks>
+    public static DiagnosticDescriptor RelativeWithoutPrefix { get; } = new(
+        "PIB1603",
+        DiagnosticSeverity.Error,
+        "`{0}` is relative, but this file has no `@prefix`.",
+        help: "Write the full name, or add a `@prefix` at the top of the file.");
+
+    /// <summary>PIB2001: a second <c>name:</c> line in an <c>@actor</c> or <c>@narration</c> block.</summary>
+    public static DiagnosticDescriptor RepeatedDisplayName { get; } = new(
+        "PIB2001",
+        DiagnosticSeverity.Error,
+        "This block already has a `name:`.",
+        help: "An actor has one display name. Keep one of the two lines.");
+
+    /// <summary>PIB2002: the character U+FFFC in text, which Pibbles uses to stand for an icon.</summary>
+    public static DiagnosticDescriptor ObjectReplacementCharacter { get; } = new(
+        "PIB2002",
+        DiagnosticSeverity.Error,
+        "This text has U+FFFC in it, which I use internally to mark where an icon goes.",
+        help: "Remove it. To show an icon, write `{{icon name}}`.");
+
+    /// <summary>PIB2003: a speaker with neither values nor text.</summary>
+    /// <remarks>Arguments: the speaker's name as written, and a <see cref="SpeakerMention"/> of it for the help's prose.</remarks>
+    public static DiagnosticDescriptor EmptyLine { get; } = new(
+        "PIB2003",
+        DiagnosticSeverity.Error,
+        "`{0}:` has nothing after it.",
+        help: "Write what {1} says after the colon, or write `{0}: {{w}}` for a box with only their name. To set their values without a line, write `{0} (value):`.");
 
     /// <summary>PIB2004: a speaker that isn't a declared actor.</summary>
     /// <remarks>
@@ -455,6 +442,160 @@ public static class DiagnosticCatalog
         DiagnosticSeverity.Error,
         "`{0}` is already a value of {1}, so `{2}` can't have it too.",
         help: "A line names a value without its channel, so each value belongs to one channel. Give one of them another name.");
+
+    /// <summary>PIB2011: a channel an actor's block names that isn't declared.</summary>
+    /// <remarks>Arguments: the channel as written, and the closest declared channel, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownChannel { get; } = new(
+        "PIB2011",
+        DiagnosticSeverity.Error,
+        "I don't know a channel called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2012: a second <c>@narration</c> in the story.</summary>
+    /// <remarks>Argument: where the first one is, such as <c>on line 3</c>.</remarks>
+    public static DiagnosticDescriptor SecondNarration { get; } = new(
+        "PIB2012",
+        DiagnosticSeverity.Error,
+        "There's already an `@narration`, {0}.",
+        help: "Narration has one block. Merge the two, or remove one.");
+
+    /// <summary>PIB2101: a command, <c>{w}</c>, <c>{page}</c> or <c>{speed}</c> in an option's text.</summary>
+    /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
+    public static DiagnosticDescriptor NotInOption { get; } = new(
+        "PIB2101",
+        DiagnosticSeverity.Error,
+        "An option's text can't contain `{0}`.",
+        help: "Pauses, speed changes and commands go in the indented lines under the option.");
+
+    /// <summary>PIB2102: an option with no text.</summary>
+    public static DiagnosticDescriptor EmptyOption { get; } = new(
+        "PIB2102",
+        DiagnosticSeverity.Info,
+        "This option has no text.",
+        help: "Write what the player picks after the `->`.");
+
+    /// <summary>PIB2201: an <c>@elif</c> or <c>@else</c> with no <c>@if</c> directly above it.</summary>
+    /// <remarks>Argument: the keyword, <c>@elif</c> or <c>@else</c>.</remarks>
+    public static DiagnosticDescriptor StrayClause { get; } = new(
+        "PIB2201",
+        DiagnosticSeverity.Error,
+        "This `{0}` has no `@if` to belong to.",
+        help: "Put it right after the `@if` block, at the same indentation as the `@if`.");
+
+    /// <summary>PIB2202: a block opener with a <c>:</c> after it.</summary>
+    /// <remarks>Arguments: the keyword, and the line up to the <c>:</c>.</remarks>
+    public static DiagnosticDescriptor OpenerColon { get; } = new(
+        "PIB2202",
+        DiagnosticSeverity.Error,
+        "I didn't expect a `:` on this `{0}` line.",
+        help: "Remove it: `{1}`.");
+
+    /// <summary>PIB2203: a condition that isn't a <c>bool</c>.</summary>
+    /// <remarks>Arguments: the condition as written; its type with its article; and a condition that's probably meant, such as <c>$attempts &gt; 0</c>, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor NotCondition { get; } = new(
+        "PIB2203",
+        DiagnosticSeverity.Error,
+        "`{0}` is {1}, but a condition has to be true or false.",
+        help: "Did you mean `{2}`?");
+
+    /// <summary>PIB2301: a name where a variable is expected, written without its <c>$</c>.</summary>
+    /// <remarks>Arguments: the name as written, and the line with a <c>$</c> before the name.</remarks>
+    public static DiagnosticDescriptor MissingDollar { get; } = new(
+        "PIB2301",
+        DiagnosticSeverity.Error,
+        "Variables start with `$`, so I need one before `{0}`.",
+        help: "Write `{1}`.");
+
+    /// <summary>PIB2302: a variable that isn't declared.</summary>
+    /// <remarks>Arguments: the variable, with its <c>$</c>, and the closest variable, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownVariable { get; } = new(
+        "PIB2302",
+        DiagnosticSeverity.Error,
+        "I don't know a variable called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>PIB2303: a value whose type isn't the type where it's used: a variable's value, a default, or <c>@pause</c>'s time.</summary>
+    /// <remarks>
+    /// Arguments: what the value is for, such as <c>`$has_key` holds a `bool`</c>; the value's type with its article; and
+    /// what values to use instead, or <see langword="null"/> to leave out the help.
+    /// </remarks>
+    public static DiagnosticDescriptor ValueType { get; } = new(
+        "PIB2303",
+        DiagnosticSeverity.Error,
+        "{0}, but this is {1}.",
+        help: "{2}");
+
+    /// <summary>PIB2304: a variable whose initial value is a name, with no type written.</summary>
+    /// <remarks>
+    /// Arguments: the variable, with its <c>$</c>; the initial value; and the declaration with its type written out. The
+    /// help is left out when the value names no enum member, actor or node, or more than one kind of them.
+    /// </remarks>
+    public static DiagnosticDescriptor UntypedVariable { get; } = new(
+        "PIB2304",
+        DiagnosticSeverity.Error,
+        "`{0}` starts as `{1}`, so I need its type written out.",
+        help: "Write the type after the variable: `{2}`.");
+
+    /// <summary>PIB2401: a statement after one that always leaves its block.</summary>
+    /// <remarks>Arguments: why it never runs, such as <c>of the `@jump` above it</c>, and the statement that leaves, such as <c>@jump</c>.</remarks>
+    public static DiagnosticDescriptor NeverRuns { get; } = new(
+        "PIB2401",
+        DiagnosticSeverity.Warning,
+        "This line never runs, because {0}.",
+        help: "Remove it, or move it above the `{1}`.");
+
+    /// <summary>PIB2402: an <c>@if</c> or <c>@elif</c> condition that is always false.</summary>
+    public static DiagnosticDescriptor ConditionNeverTrue { get; } = new(
+        "PIB2402",
+        DiagnosticSeverity.Warning,
+        "This condition is never true, so the lines under it never run.",
+        help: "Remove them, or write a condition that can change.");
+
+    /// <summary>PIB2403: an <c>@if</c> or <c>@elif</c> condition that is always true, with branches after it.</summary>
+    public static DiagnosticDescriptor ConditionAlwaysTrue { get; } = new(
+        "PIB2403",
+        DiagnosticSeverity.Warning,
+        "This condition is always true, so the branches after it never run.",
+        help: "Remove the branches after it, or write a condition that can change.");
+
+    /// <summary>PIB2501: a line in a variation block that isn't an alternative.</summary>
+    /// <remarks>Argument: the variation's keyword, such as <c>@cycle</c>.</remarks>
+    public static DiagnosticDescriptor NotAlternative { get; } = new(
+        "PIB2501",
+        DiagnosticSeverity.Error,
+        "A `{0}` block can only hold alternatives.",
+        help: "Start each alternative with `- `.");
+
+    /// <summary>PIB2502: a block opener right after an alternative's <c>- </c>.</summary>
+    /// <remarks>Argument: the opener, such as <c>@if</c> or <c>-></c>.</remarks>
+    public static DiagnosticDescriptor OpenerInAlternative { get; } = new(
+        "PIB2502",
+        DiagnosticSeverity.Error,
+        "`{0}` can't start an alternative.",
+        help: "Put `-` on its own line, and the `{0}` on the line below it, indented.");
+
+    /// <summary>PIB2601: a positional argument after a named one.</summary>
+    public static DiagnosticDescriptor ArgumentOrder { get; } = new(
+        "PIB2601",
+        DiagnosticSeverity.Error,
+        "This argument has no name, but it comes after one that does.",
+        help: "Put unnamed arguments first, then named ones, then `wait` or `nowait`.");
+
+    /// <summary>PIB2602: a space between a function's name and its <c>(</c>, where only a call can follow the name.</summary>
+    /// <remarks>Argument: the function's name.</remarks>
+    public static DiagnosticDescriptor SpaceBeforeCall { get; } = new(
+        "PIB2602",
+        DiagnosticSeverity.Error,
+        "There's a space between `{0}` and its `(`.",
+        help: "To call `{0}`, remove the space: `{0}(…)`.");
+
+    /// <summary>PIB2603: a negative number as a command argument, without parentheses.</summary>
+    /// <remarks>Argument: the negative value as written, such as <c>-1</c>.</remarks>
+    public static DiagnosticDescriptor NegativeArgument { get; } = new(
+        "PIB2603",
+        DiagnosticSeverity.Error,
+        "A negative argument has to go in brackets.",
+        help: "Write `({0})`.");
 
     /// <summary>PIB2604: a command that isn't declared.</summary>
     /// <remarks>Arguments: the command's name, without its <c>@</c>, and the closest command, or <see langword="null"/> to leave out the help.</remarks>
@@ -516,22 +657,6 @@ public static class DiagnosticCatalog
         "`{0}` already has a value for `{1}`.",
         help: "Remove one of them.");
 
-    /// <summary>PIB3104: markup that isn't declared or built in.</summary>
-    /// <remarks>Arguments: the markup's name, and what it was probably meant to be, such as <c>clue</c> or <c>{speed}</c>, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownMarkup { get; } = new(
-        "PIB3104",
-        DiagnosticSeverity.Error,
-        "I don't know markup called `{0}`.",
-        help: "Did you mean `{1}`?");
-
-    /// <summary>PIB3203: an icon that isn't declared.</summary>
-    /// <remarks>Arguments: the icon's name, and the closest icon, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownIcon { get; } = new(
-        "PIB3203",
-        DiagnosticSeverity.Error,
-        "I don't know an icon called `{0}`.",
-        help: "Did you mean `{1}`?");
-
     /// <summary>PIB2611: a call to a function that isn't declared.</summary>
     /// <remarks>Arguments: the function's name, and the closest function, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownFunction { get; } = new(
@@ -540,56 +665,28 @@ public static class DiagnosticCatalog
         "I don't know a function called `{0}`.",
         help: "Did you mean `{1}`?");
 
-    /// <summary>PIB1501: a node name that names no node.</summary>
-    /// <remarks>Arguments: the name as written, and the closest node, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownNode { get; } = new(
-        "PIB1501",
+    /// <summary>PIB2612: a parameter with no default after one that has a default.</summary>
+    /// <remarks>Argument: the parameter's name.</remarks>
+    public static DiagnosticDescriptor RequiredAfterOptional { get; } = new(
+        "PIB2612",
         DiagnosticSeverity.Error,
-        "I can't find a node called `{0}`.",
-        help: "Did you mean `{1}`?");
+        "`{0}` has no default, but it comes after a parameter that has one.",
+        help: "Put the parameters that have defaults last.");
 
-    /// <summary>PIB1603: a relative node or variable name in a file with no <c>@prefix</c>.</summary>
-    /// <remarks>Argument: the name as written, such as <c>.leave</c> or <c>$.attempts</c>.</remarks>
-    public static DiagnosticDescriptor RelativeWithoutPrefix { get; } = new(
-        "PIB1603",
+    /// <summary>PIB3001: a <c>(</c> with no <c>)</c> on its line.</summary>
+    public static DiagnosticDescriptor UnclosedParenthesis { get; } = new(
+        "PIB3001",
         DiagnosticSeverity.Error,
-        "`{0}` is relative, but this file has no `@prefix`.",
-        help: "Write the full name, or add a `@prefix` at the top of the file.");
+        "I can't find the `)` that closes this `(`.",
+        help: "Add the `)` on the same line.");
 
-    /// <summary>PIB1502: a node name or <c>#was:</c> name that another node, or the same one, already uses.</summary>
-    /// <remarks>Arguments: the full name, and where it's already used, such as <c>on line 3</c>.</remarks>
-    public static DiagnosticDescriptor DuplicateNode { get; } = new(
-        "PIB1502",
+    /// <summary>PIB3002: two comparisons in a row, such as <c>$a &lt; $b &lt; $c</c>.</summary>
+    /// <remarks>Argument: the whole chain as written.</remarks>
+    public static DiagnosticDescriptor ChainedComparison { get; } = new(
+        "PIB3002",
         DiagnosticSeverity.Error,
-        "There's already a node called `{0}`, {1}.",
-        help: "A node's name, and each old name in its `#was:`, can only be used once in a story. Rename one of them.");
-
-    /// <summary>PIB2302: a variable that isn't declared.</summary>
-    /// <remarks>Arguments: the variable, with its <c>$</c>, and the closest variable, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownVariable { get; } = new(
-        "PIB2302",
-        DiagnosticSeverity.Error,
-        "I don't know a variable called `{0}`.",
-        help: "Did you mean `{1}`?");
-
-    /// <summary>PIB2303: a value whose type isn't the type where it's used: a variable's value, a default, or <c>@pause</c>'s time.</summary>
-    /// <remarks>
-    /// Arguments: what the value is for, such as <c>`$has_key` holds a `bool`</c>; the value's type with its article; and
-    /// what values to use instead, or <see langword="null"/> to leave out the help.
-    /// </remarks>
-    public static DiagnosticDescriptor ValueType { get; } = new(
-        "PIB2303",
-        DiagnosticSeverity.Error,
-        "{0}, but this is {1}.",
-        help: "{2}");
-
-    /// <summary>PIB2203: a condition that isn't a <c>bool</c>.</summary>
-    /// <remarks>Arguments: the condition as written; its type with its article; and a condition that's probably meant, such as <c>$attempts &gt; 0</c>, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor NotCondition { get; } = new(
-        "PIB2203",
-        DiagnosticSeverity.Error,
-        "`{0}` is {1}, but a condition has to be true or false.",
-        help: "Did you mean `{2}`?");
+        "I can't compare three things at once: `{0}`.",
+        help: "Compare two at a time, joined with `and`: `$a < $b and $b < $c`.");
 
     /// <summary>PIB3003: an operator used on types it doesn't work on.</summary>
     /// <remarks>Arguments: the operator; the operands' types, such as <c>a `string` and a `number`</c>; and what the operator works on.</remarks>
@@ -623,6 +720,76 @@ public static class DiagnosticCatalog
         "I can't compare two names: `{0}`.",
         help: "Compare a variable with a name instead, like `$where == left`.");
 
+    /// <summary>PIB3007: a <c>/</c> or <c>%</c> whose right side is a constant zero.</summary>
+    /// <remarks>Argument: the operation as written, such as <c>$x / 0</c>.</remarks>
+    public static DiagnosticDescriptor DivisionByZero { get; } = new(
+        "PIB3007",
+        DiagnosticSeverity.Warning,
+        "`{0}` divides by zero, so it gives 0.",
+        help: "Divide by something that isn't zero.");
+
+    /// <summary>What PIB3101 and PIB3301's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
+    public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
+
+    /// <summary>PIB3101: a markup span with no close on its line, or none before a conditional-text boundary.</summary>
+    /// <remarks>Arguments: the markup's name, and <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.</remarks>
+    public static DiagnosticDescriptor UnclosedMarkup { get; } = new(
+        "PIB3101",
+        DiagnosticSeverity.Error,
+        "I can't find the end of this `[{0}]`.",
+        help: "Close it on the same line with `[/{0}]`.{1}");
+
+    /// <summary>PIB3102: a markup close for an outer span while an inner one is still open.</summary>
+    /// <remarks>Argument: the name of the innermost open span.</remarks>
+    public static DiagnosticDescriptor MarkupOutOfOrder { get; } = new(
+        "PIB3102",
+        DiagnosticSeverity.Error,
+        "I expected `[/{0}]` here, because `[{0}]` was opened last.",
+        help: "Close markup in the reverse order you opened it: `[b][i]…[/i][/b]`.");
+
+    /// <summary>PIB3103: a markup close with no matching open span.</summary>
+    /// <remarks>Argument: the markup's name.</remarks>
+    public static DiagnosticDescriptor UnopenedMarkup { get; } = new(
+        "PIB3103",
+        DiagnosticSeverity.Error,
+        "`[/{0}]` closes markup that was never opened.",
+        help: "If you meant the text `[/{0}]`, put a backslash before it: `\\[/{0}]`.");
+
+    /// <summary>PIB3104: markup that isn't declared or built in.</summary>
+    /// <remarks>Arguments: the markup's name, and what it was probably meant to be, such as <c>clue</c> or <c>{speed}</c>, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownMarkup { get; } = new(
+        "PIB3104",
+        DiagnosticSeverity.Error,
+        "I don't know markup called `{0}`.",
+        help: "Did you mean `{1}`?");
+
+    /// <summary>The help for PIB3201 when the point isn't an old spelling of one.</summary>
+    public const string UnknownPointHelp = "To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`.";
+
+    /// <summary>PIB3201: a point that isn't a variable, call, command or brace keyword, or is the old spelling <c>{p}</c> of <c>{page}</c>.</summary>
+    /// <remarks>Arguments: the point as written, and how to fix it, which is <see cref="UnknownPointHelp"/> unless the point has a known replacement.</remarks>
+    public static DiagnosticDescriptor UnknownPoint { get; } = new(
+        "PIB3201",
+        DiagnosticSeverity.Error,
+        "I don't know what `{0}` means.",
+        help: "{1}");
+
+    /// <summary>PIB3202: a value after a point that takes none, such as <c>{w 0.5}</c>.</summary>
+    /// <remarks>Arguments: the point's keyword, such as <c>w</c>; the value as written; and how to fix it.</remarks>
+    public static DiagnosticDescriptor PointTakesNoValue { get; } = new(
+        "PIB3202",
+        DiagnosticSeverity.Error,
+        "`{{{0}}}` takes no value, so I can't use `{1}` after it.",
+        help: "{2}");
+
+    /// <summary>PIB3203: an icon that isn't declared.</summary>
+    /// <remarks>Arguments: the icon's name, and the closest icon, or <see langword="null"/> to leave out the help.</remarks>
+    public static DiagnosticDescriptor UnknownIcon { get; } = new(
+        "PIB3203",
+        DiagnosticSeverity.Error,
+        "I don't know an icon called `{0}`.",
+        help: "Did you mean `{1}`?");
+
     /// <summary>PIB3204: a value shown in text whose type isn't text, a number or an actor.</summary>
     /// <remarks>Arguments: the value as written; its type with its article; and how to show text that depends on it.</remarks>
     public static DiagnosticDescriptor NotShowable { get; } = new(
@@ -639,183 +806,16 @@ public static class DiagnosticCatalog
         "{0} has to be more than zero, but `{1}` isn't.",
         help: "{2}");
 
-    /// <summary>PIB1205: a tag that's neither reserved nor declared.</summary>
-    /// <remarks>Arguments: the tag's name, and <see cref="DidYouMean"/>'s sentence for the closest tag, or nothing.</remarks>
-    public static DiagnosticDescriptor UnknownTag { get; } = new(
-        "PIB1205",
-        DiagnosticSeverity.Error,
-        "I don't know a tag called `#{0}`.",
-        help: "{1}If this is text, escape it: `\\#{0}`.");
-
-    /// <summary>PIB1206: a value on a tag that takes none, or none on a tag that needs one.</summary>
-    /// <remarks>Arguments: the tag's name; <c>doesn't take a value</c> or <c>needs a value</c>; and the tag written the right way.</remarks>
-    public static DiagnosticDescriptor TagValuePresence { get; } = new(
-        "PIB1206",
-        DiagnosticSeverity.Error,
-        "`#{0}` {1}.",
-        help: "{2}");
-
-    /// <summary>PIB1503: a reference to a node by one of its old names.</summary>
-    /// <remarks>Arguments: the old name, and the current name, both as the story would write them.</remarks>
-    public static DiagnosticDescriptor OldNodeName { get; } = new(
-        "PIB1503",
-        DiagnosticSeverity.Warning,
-        "`{0}` is an old name of `{1}`.",
-        help: "Use the current name: `{1}`.");
-
-    /// <summary>PIB1207: a tag's value that isn't a member of the enum the tag takes.</summary>
-    /// <remarks>Arguments: the value; the enum with its article; the tag's name; and a suggestion or the enum's members, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor TagValueNotMember { get; } = new(
-        "PIB1207",
-        DiagnosticSeverity.Error,
-        "`{0}` isn't {1}, which `#{2}` takes.",
-        help: "{3}");
-
-    /// <summary>PIB1402: a declared name that another declaration of the same kind already uses.</summary>
+    /// <summary>PIB3301: a bracket, brace or <c>{if}</c> that isn't closed on its line.</summary>
     /// <remarks>
-    /// Arguments: the kind with its article, such as <c>an enum</c>; the name; where the first one is, such as <c>on line 3</c>;
-    /// and the help, which for a variable says that the two are different variables instead of offering to remove one.
+    /// Arguments: the missing closer, such as <c>}</c> or <c>{/if}</c>; the opener it should close; and
+    /// <see cref="CommentSwallowedCloserHelp"/> if the line has a trailing comment, or an empty string.
     /// </remarks>
-    public static DiagnosticDescriptor DuplicateDeclaration { get; } = new(
-        "PIB1402",
+    public static DiagnosticDescriptor Unclosed { get; } = new(
+        "PIB3301",
         DiagnosticSeverity.Error,
-        "There's already {0} called `{1}`, {2}.",
-        help: "{3}");
-
-    /// <summary>PIB1403: a channel value, enum member, parameter or channel listed twice in one declaration.</summary>
-    /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's `pose` values</c>.</remarks>
-    public static DiagnosticDescriptor RepeatedName { get; } = new(
-        "PIB1403",
-        DiagnosticSeverity.Error,
-        "`{0}` is already one of {1}.",
-        help: "Remove the second `{0}`, or give it another name.");
-
-    /// <summary>PIB1404: a declared name that's a reserved word for its kind.</summary>
-    /// <remarks>Arguments: the name; the kind with its article, such as <c>a command</c>; and where Pibbles uses the word, such as <c>after `@`</c>.</remarks>
-    public static DiagnosticDescriptor ReservedName { get; } = new(
-        "PIB1404",
-        DiagnosticSeverity.Error,
-        "`{0}` can't name {1}, because I use that word {2}.",
-        help: "Choose another name.");
-
-    /// <summary>PIB1405: a declared name with a character outside ASCII.</summary>
-    /// <remarks>Arguments: the name, and its first character outside ASCII.</remarks>
-    public static DiagnosticDescriptor NonAsciiName { get; } = new(
-        "PIB1405",
-        DiagnosticSeverity.Error,
-        "`{0}` has `{1}` in it, but a name can only use English letters, digits and `_`.",
-        help: "Replace `{1}` with a letter from a to z.");
-
-    /// <summary>PIB1406: a type that's neither built in nor a declared enum.</summary>
-    /// <remarks>Arguments: the type as written, and the closest type, which the help suggests. The help is left out when nothing is close.</remarks>
-    public static DiagnosticDescriptor UnknownType { get; } = new(
-        "PIB1406",
-        DiagnosticSeverity.Error,
-        "I don't know a type called `{0}`.",
-        help: "Did you mean `{1}`?");
-
-    /// <summary>PIB2612: a parameter with no default after one that has a default.</summary>
-    /// <remarks>Argument: the parameter's name.</remarks>
-    public static DiagnosticDescriptor RequiredAfterOptional { get; } = new(
-        "PIB2612",
-        DiagnosticSeverity.Error,
-        "`{0}` has no default, but it comes after a parameter that has one.",
-        help: "Put the parameters that have defaults last.");
-
-    /// <summary>PIB1208: a tag whose value type is neither <c>string</c> nor an enum.</summary>
-    /// <remarks>Argument: the type.</remarks>
-    public static DiagnosticDescriptor TagValueType { get; } = new(
-        "PIB1208",
-        DiagnosticSeverity.Error,
-        "A tag's value is text, so it can't be `{0}`.",
-        help: "Use `string`, or an enum to allow only certain values.");
-
-    /// <summary>PIB2304: a variable whose initial value is a name, with no type written.</summary>
-    /// <remarks>
-    /// Arguments: the variable, with its <c>$</c>; the initial value; and the declaration with its type written out. The
-    /// help is left out when the value names no enum member, actor or node, or more than one kind of them.
-    /// </remarks>
-    public static DiagnosticDescriptor UntypedVariable { get; } = new(
-        "PIB2304",
-        DiagnosticSeverity.Error,
-        "`{0}` starts as `{1}`, so I need its type written out.",
-        help: "Write the type after the variable: `{2}`.");
-
-    /// <summary>PIB2011: a channel an actor's block names that isn't declared.</summary>
-    /// <remarks>Arguments: the channel as written, and the closest declared channel, or <see langword="null"/> to leave out the help.</remarks>
-    public static DiagnosticDescriptor UnknownChannel { get; } = new(
-        "PIB2011",
-        DiagnosticSeverity.Error,
-        "I don't know a channel called `{0}`.",
-        help: "Did you mean `{1}`?");
-
-    /// <summary>PIB2012: a second <c>@narration</c> in the story.</summary>
-    /// <remarks>Argument: where the first one is, such as <c>on line 3</c>.</remarks>
-    public static DiagnosticDescriptor SecondNarration { get; } = new(
-        "PIB2012",
-        DiagnosticSeverity.Error,
-        "There's already an `@narration`, {0}.",
-        help: "Narration has one block. Merge the two, or remove one.");
-
-    /// <summary>PIB3007: a <c>/</c> or <c>%</c> whose right side is a constant zero.</summary>
-    /// <remarks>Argument: the operation as written, such as <c>$x / 0</c>.</remarks>
-    public static DiagnosticDescriptor DivisionByZero { get; } = new(
-        "PIB3007",
-        DiagnosticSeverity.Warning,
-        "`{0}` divides by zero, so it gives 0.",
-        help: "Divide by something that isn't zero.");
-
-    /// <summary>PIB2401: a statement after one that always leaves its block.</summary>
-    /// <remarks>Arguments: why it never runs, such as <c>of the `@jump` above it</c>, and the statement that leaves, such as <c>@jump</c>.</remarks>
-    public static DiagnosticDescriptor NeverRuns { get; } = new(
-        "PIB2401",
-        DiagnosticSeverity.Warning,
-        "This line never runs, because {0}.",
-        help: "Remove it, or move it above the `{1}`.");
-
-    /// <summary>PIB2102: an option with no text.</summary>
-    public static DiagnosticDescriptor EmptyOption { get; } = new(
-        "PIB2102",
-        DiagnosticSeverity.Info,
-        "This option has no text.",
-        help: "Write what the player picks after the `->`.");
-
-    /// <summary>PIB2402: an <c>@if</c> or <c>@elif</c> condition that is always false.</summary>
-    public static DiagnosticDescriptor ConditionNeverTrue { get; } = new(
-        "PIB2402",
-        DiagnosticSeverity.Warning,
-        "This condition is never true, so the lines under it never run.",
-        help: "Remove them, or write a condition that can change.");
-
-    /// <summary>PIB2403: an <c>@if</c> or <c>@elif</c> condition that is always true, with branches after it.</summary>
-    public static DiagnosticDescriptor ConditionAlwaysTrue { get; } = new(
-        "PIB2403",
-        DiagnosticSeverity.Warning,
-        "This condition is always true, so the branches after it never run.",
-        help: "Remove the branches after it, or write a condition that can change.");
-
-    /// <summary>PIB1302: a line that needs a line ID and has none.</summary>
-    public static DiagnosticDescriptor MissingLineId { get; } = new(
-        "PIB1302",
-        DiagnosticSeverity.Warning,
-        "This line has no `#id`.",
-        help: "Run `pibbles ids` to add one.");
-
-    /// <summary>PIB1303: a line ID that another line already uses.</summary>
-    /// <remarks>Arguments: the ID, and where it's already used, such as <c>on line 3</c>.</remarks>
-    public static DiagnosticDescriptor DuplicateLineId { get; } = new(
-        "PIB1303",
-        DiagnosticSeverity.Error,
-        "The line ID `{0}` is also used {1}.",
-        help: "Delete one of the two IDs and run `pibbles ids` to give that line a new one.");
-
-    /// <summary>PIB1304: a line ID that's also a node's name or old name.</summary>
-    /// <remarks>Arguments: the ID, and what it also is, such as <c>the name of a node</c>.</remarks>
-    public static DiagnosticDescriptor LineIdIsNodeName { get; } = new(
-        "PIB1304",
-        DiagnosticSeverity.Error,
-        "The line ID `{0}` is also {1}.",
-        help: "Delete the ID and run `pibbles ids` to give the line a new one.");
+        "I can't find the `{0}` that ends this `{1}`.",
+        help: "Close it on the same line.{2}");
 
     /// <summary>PIB5001: a block nested deeper than <c>pibbles_max_nesting</c>.</summary>
     /// <remarks>Arguments: how many blocks deep the line is, and the limit.</remarks>
@@ -1008,45 +1008,44 @@ public static class DiagnosticCatalog
         UnsupportedNote,
         NonIndentingSpace,
         ByteOrderMark,
-        UnclosedMarkup,
-        MarkupOutOfOrder,
-        UnopenedMarkup,
-        Unclosed,
-        InvalidEscape,
-        TextAfterTag,
-        NotInOption,
-        UnknownPoint,
-        PointTakesNoValue,
-        MarkerLookalike,
-        MisplacedPrefix,
         DeclarationInNode,
         OutsideNode,
-        DuplicatePrefix,
-        RepeatedDisplayName,
-        StrayClause,
-        NotAlternative,
-        OpenerInAlternative,
-        OpenerColon,
+        NestingLimit,
+        InvalidEscape,
+        MarkerLookalike,
         Unexpected,
         UnterminatedString,
         MalformedNumber,
-        MalformedTagName,
         InputMethodForm,
-        DottedName,
         Missing,
         NumberTooLarge,
-        ObjectReplacementCharacter,
-        MissingDollar,
-        ArgumentOrder,
-        SpaceBeforeCall,
-        InvalidLineId,
+        TextAfterTag,
+        MalformedTagName,
         TagNotAllowed,
-        EmptyLine,
-        NegativeArgument,
         TagsOnlyLine,
-        UnclosedParenthesis,
-        ChainedComparison,
-        NestingLimit,
+        UnknownTag,
+        TagValuePresence,
+        TagValueNotMember,
+        TagValueType,
+        InvalidLineId,
+        MissingLineId,
+        DuplicateLineId,
+        LineIdIsNodeName,
+        DottedName,
+        DuplicateDeclaration,
+        RepeatedName,
+        ReservedName,
+        NonAsciiName,
+        UnknownType,
+        UnknownNode,
+        DuplicateNode,
+        OldNodeName,
+        MisplacedPrefix,
+        DuplicatePrefix,
+        RelativeWithoutPrefix,
+        RepeatedDisplayName,
+        ObjectReplacementCharacter,
+        EmptyLine,
         UnknownSpeaker,
         UnknownChannelValue,
         NotValues,
@@ -1054,6 +1053,25 @@ public static class DiagnosticCatalog
         AfterValues,
         TwoValuesInChannel,
         ValueInTwoChannels,
+        UnknownChannel,
+        SecondNarration,
+        NotInOption,
+        EmptyOption,
+        StrayClause,
+        OpenerColon,
+        NotCondition,
+        MissingDollar,
+        UnknownVariable,
+        ValueType,
+        UntypedVariable,
+        NeverRuns,
+        ConditionNeverTrue,
+        ConditionAlwaysTrue,
+        NotAlternative,
+        OpenerInAlternative,
+        ArgumentOrder,
+        SpaceBeforeCall,
+        NegativeArgument,
         UnknownCommand,
         ArgumentType,
         NotInline,
@@ -1061,43 +1079,25 @@ public static class DiagnosticCatalog
         UnknownParameter,
         MissingArgument,
         RepeatedArgument,
-        UnknownMarkup,
-        UnknownIcon,
         UnknownFunction,
-        UnknownNode,
-        RelativeWithoutPrefix,
-        DuplicateNode,
-        UnknownVariable,
-        ValueType,
-        NotCondition,
+        RequiredAfterOptional,
+        UnclosedParenthesis,
+        ChainedComparison,
         OperatorTypes,
         NameNotAllowed,
         NotValueOfType,
         TwoNames,
+        DivisionByZero,
+        UnclosedMarkup,
+        MarkupOutOfOrder,
+        UnopenedMarkup,
+        UnknownMarkup,
+        UnknownPoint,
+        PointTakesNoValue,
+        UnknownIcon,
         NotShowable,
         NotPositive,
-        UnknownTag,
-        TagValuePresence,
-        OldNodeName,
-        TagValueNotMember,
-        DuplicateDeclaration,
-        RepeatedName,
-        ReservedName,
-        NonAsciiName,
-        UnknownType,
-        RequiredAfterOptional,
-        TagValueType,
-        UntypedVariable,
-        UnknownChannel,
-        SecondNarration,
-        DivisionByZero,
-        NeverRuns,
-        EmptyOption,
-        ConditionNeverTrue,
-        ConditionAlwaysTrue,
-        MissingLineId,
-        DuplicateLineId,
-        LineIdIsNodeName,
+        Unclosed,
         DeepNesting,
         LongOptionBody,
         RepeatedLine,
