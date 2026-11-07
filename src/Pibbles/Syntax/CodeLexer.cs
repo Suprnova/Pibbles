@@ -148,7 +148,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     {
         RecordForms(Position, Position + 2);
         if (Comment.IsNote(code.AsSpan(Position, span.End - Position)))
-            diagnostics?.Add(DiagnosticCatalog.UnsupportedNote.Create(source.GetLocation(new(Position, 3))));
+            diagnostics?.Report(source, DiagnosticCatalog.UnsupportedNote, new(Position, 3));
         else
             comments?.Add(Comment.Read(text, new(Position, span.End - Position), onOwnLine: false));
 
@@ -303,5 +303,5 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     }
 
     private void Report(DiagnosticDescriptor descriptor, int start, params object?[] arguments) =>
-        diagnostics?.Add(descriptor.Create(source.GetLocation(new(start, Position - start)), arguments));
+        diagnostics?.Report(source, descriptor, new(start, Position - start), arguments);
 }

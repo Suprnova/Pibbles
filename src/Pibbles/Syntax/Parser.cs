@@ -495,6 +495,6 @@ internal sealed partial class Parser
         if (reportedLine is { } line && span.Start >= line.Start && span.Start <= line.End)
             return;
 
-        diagnostics.Add(descriptor.Create(source.GetLocation(span), arguments));
+        diagnostics.Report(source, descriptor, span, arguments);
     }
 }

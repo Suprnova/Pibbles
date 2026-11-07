@@ -56,7 +56,7 @@ internal sealed class LineClassifier
         int start = span.Start;
         if (number == 0 && source.Text.StartsWith(ByteOrderMark))
         {
-            Report(DiagnosticCatalog.ByteOrderMark, new(start, 1));
+            diagnostics.Report(source, DiagnosticCatalog.ByteOrderMark, new(start, 1));
             start++;
         }
 
@@ -69,7 +69,7 @@ internal sealed class LineClassifier
             RecordForms(content, indentation.End, line.Kind, forms);
 
         if (line.Kind is LineKind.Note)
-            Report(DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
+            diagnostics.Report(source, DiagnosticCatalog.UnsupportedNote, new(indentation.End, 3));
 
         if (line.Kind is LineKind.Comment)
             comments.Add(Comment.Read(source.Text, line.Content, onOwnLine: true));
@@ -147,7 +147,7 @@ internal sealed class LineClassifier
             tokens.Add(new(LineTokenKind.Dedent, line));
 
         if (indentation.Length != widths.Peek() && !mixed)
-            Report(DiagnosticCatalog.InconsistentIndentation, indentation);
+            diagnostics.Report(source, DiagnosticCatalog.InconsistentIndentation, indentation);
     }
 
     /// <summary>Reports a line whose indentation holds a space separator other than a space or a tab, which doesn't indent.</summary>
@@ -158,7 +158,7 @@ internal sealed class LineClassifier
         if (index < 0)
             return false;
 
-        Report(DiagnosticCatalog.NonIndentingSpace, indentation, Describe(text[index]));
+        diagnostics.Report(source, DiagnosticCatalog.NonIndentingSpace, indentation, Describe(text[index]));
         return true;
     }
 
@@ -188,10 +188,7 @@ internal sealed class LineClassifier
             _ => "tabs",
         };
 
-        Report(DiagnosticCatalog.MixedIndentation, indentation, used, indentCharacter is '\t' ? "tabs" : "spaces");
+        diagnostics.Report(source, DiagnosticCatalog.MixedIndentation, indentation, used, indentCharacter is '\t' ? "tabs" : "spaces");
         return true;
     }
-
-    private void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
-        diagnostics.Add(descriptor.Create(source.GetLocation(span), arguments));
 }
