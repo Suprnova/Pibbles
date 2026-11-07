@@ -324,7 +324,22 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             DeclaresIfWritten(name.Span, symbol);
         }
         else if (valid)
-            Report(DiagnosticCatalog.DuplicateDeclaration, name.Span, kind.Describe(), shown ?? name.Text, first.Location is { } location ? Where(location) : "built into Pibbles");
+            Report(DiagnosticCatalog.DuplicateDeclaration, name.Span, kind.Describe(), shown ?? name.Text, first.Location is { } location ? Where(location) : "built into Pibbles", DuplicateHelp(kind, name));
+    }
+
+    /// <summary>
+    /// Says what to do about a duplicate. Removing a duplicate variable would make two places share one variable, so
+    /// the help for a variable asks for another name instead.
+    /// </summary>
+    private string DuplicateHelp(SymbolKind kind, NameSyntax name)
+    {
+        if (kind is not SymbolKind.Variable)
+            return "Give one of them another name, or remove one.";
+
+        const string twoVariables = "Two `@var`s are two variables, so each needs its own name.";
+        return !name.Text.StartsWith('.') && Tree.Root.Prefix?.Name is { IsMissing: false } prefix
+            ? $"{twoVariables} Write this one as `$.{name.Text}`, which is `${prefix.Text.TrimStart('.')}.{name.Text}`, or give it a name that says whose it is."
+            : $"{twoVariables} Give this one a name that says whose it is.";
     }
 
     /// <summary>Reports a declared name that's reserved for its kind, or isn't ASCII. Returns whether the name is valid.</summary>

@@ -106,6 +106,18 @@ public class CompilationTests
         Assert.Equal(("PIB2060", "There's already a variable called `$kitchen.attempts`, in story/kitchen.pib on line 2."), (duplicate.Code, duplicate.Message));
     }
 
+    [Theory]
+    [InlineData("@var $attempts = 0\n@var $attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Give this one a name that says whose it is.")]
+    [InlineData("@prefix kitchen\n@var $attempts = 0\n@var $attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Write this one as `$.attempts`, which is `$kitchen.attempts`, or give it a name that says whose it is.")]
+    [InlineData("@prefix kitchen\n@var $.attempts = 0\n@var $.attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Give this one a name that says whose it is.")]
+    [InlineData("@enum room: kitchen\n@enum room: cellar\n", "Give one of them another name, or remove one.")]
+    public void Create_DuplicateDeclaration_HelpSuitsTheKind(string source, string help)
+    {
+        var compilation = Compile(source);
+
+        Assert.Equal(help, Assert.Single(compilation.Diagnostics).Help);
+    }
+
     [Fact]
     public void Create_FullVariableName_IsReachedFromAFileWithAnotherPrefix()
     {

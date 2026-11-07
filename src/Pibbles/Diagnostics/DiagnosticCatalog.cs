@@ -672,12 +672,15 @@ public static class DiagnosticCatalog
         help: "{3}");
 
     /// <summary>PIB2060: a declared name that another declaration of the same kind already uses.</summary>
-    /// <remarks>Arguments: the kind with its article, such as <c>an enum</c>; the name; and where the first one is, such as <c>on line 3</c>.</remarks>
+    /// <remarks>
+    /// Arguments: the kind with its article, such as <c>an enum</c>; the name; where the first one is, such as <c>on line 3</c>;
+    /// and the help, which for a variable says that the two are different variables instead of offering to remove one.
+    /// </remarks>
     public static DiagnosticDescriptor DuplicateDeclaration { get; } = new(
         "PIB2060",
         DiagnosticSeverity.Error,
         "There's already {0} called `{1}`, {2}.",
-        help: "Give one of them another name, or remove one.");
+        help: "{3}");
 
     /// <summary>PIB2061: a channel value, enum member, parameter or channel listed twice in one declaration.</summary>
     /// <remarks>Arguments: the name, and the list it's in, such as <c>Mira's `pose` values</c>.</remarks>

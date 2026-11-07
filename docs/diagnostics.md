@@ -1129,6 +1129,17 @@ Use one of the members, `#box:phone`, or add the value to the enum.
 
 Merge the two into one declaration (`@enum room: kitchen, cellar, attic`), or give one of them another name.
 
+**Two `@var`s are two variables, so the fix for a variable is another name, never removing one.** Removing the second `@var` compiles, but then two places share one variable, and a value one of them sets carries into the other's scenes.
+
+```text
+@prefix kitchen
+
+@var $attempts = 0
+@var $attempts = 0
+```
+
+In a file with a `@prefix`, write the second as `$.attempts`, which is `$kitchen.attempts`. Otherwise, give it a name that says whose it is. If both places are meant to share the variable, declare it once and use it in both.
+
 ### PIB2061
 
 **The values of one channel list, the channels in one actor's block, the members of one enum and the parameters of one declaration are all different.** The second of a pair is reported. That includes a value that `+=` adds to a channel that already has it.
