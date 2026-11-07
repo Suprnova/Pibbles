@@ -155,7 +155,7 @@ public class CodeLexerTests
         string tokens = Describe("\"Never ends");
 
         Assert.Equal("String \"Never ends", tokens);
-        Assert.Equal(("PIB1041", new TextSpan(0, 11)), (diagnostics[0].Code, diagnostics[0].Location.Span));
+        Assert.Equal(("PIB1104", new TextSpan(0, 11)), (diagnostics[0].Code, diagnostics[0].Location.Span));
     }
 
     [Theory]
@@ -168,7 +168,7 @@ public class CodeLexerTests
         Token token = Lexer(text, new(0, text.Length)).Next();
 
         Assert.Equal((TokenKind.Number, number.Length), (token.Kind, token.Span.Length));
-        Assert.Equal(("PIB1042", $"`{number}` isn't a number I can read."), (diagnostics[0].Code, diagnostics[0].Message));
+        Assert.Equal(("PIB1105", $"`{number}` isn't a number I can read."), (diagnostics[0].Code, diagnostics[0].Message));
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class CodeLexerTests
         string tokens = Describe("5é");
 
         Assert.Equal("Number 5é", tokens);
-        Assert.Equal("PIB1042", Assert.Single(diagnostics).Code);
+        Assert.Equal("PIB1105", Assert.Single(diagnostics).Code);
     }
 
     [Theory]
@@ -190,7 +190,7 @@ public class CodeLexerTests
         string tokens = Describe(text);
 
         Assert.Equal($"Tag {text}", tokens);
-        Assert.Equal(("PIB1043", $"Write `{suggestion}`."), (diagnostics[0].Code, diagnostics[0].Help));
+        Assert.Equal(("PIB1202", $"Write `{suggestion}`."), (diagnostics[0].Code, diagnostics[0].Help));
     }
 
     [Theory]
@@ -209,7 +209,7 @@ public class CodeLexerTests
     {
         Token token = Lexer("#win-ning[/b]", new(0, 13)).Next();
 
-        Assert.Equal(("#win-ning".Length, "PIB1043", "Write `#win_ning`."), (token.Span.Length, diagnostics[0].Code, diagnostics[0].Help));
+        Assert.Equal(("#win-ning".Length, "PIB1202", "Write `#win_ning`."), (token.Span.Length, diagnostics[0].Code, diagnostics[0].Help));
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class CodeLexerTests
         Describe(text);
 
         Diagnostic diagnostic = Assert.Single(diagnostics);
-        Assert.Equal(("PIB1014", $"I don't know the escape `{escape}`."), (diagnostic.Code, diagnostic.Message));
+        Assert.Equal(("PIB1101", $"I don't know the escape `{escape}`."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Fact]
@@ -264,7 +264,7 @@ public class CodeLexerTests
     {
         Describe($"\"\\{(char)0xFFFC}\"");
 
-        Assert.Equal("PIB1014", Assert.Single(diagnostics).Code);
+        Assert.Equal("PIB1101", Assert.Single(diagnostics).Code);
     }
 
     [Fact]

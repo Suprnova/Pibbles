@@ -16,7 +16,7 @@ Comments:
   1:1-1:115 "A broken declaration keeps its value inside its span, and the lines after an indented first header still belong"
   2:1-2:17 "to that node."
 Diagnostics:
-  PIB1049 4:6 Variables start with `$`, so I need one before `typo`.
-  PIB1046 5:11 I expected `=` after `$typo`.
+  PIB2301 4:6 Variables start with `$`, so I need one before `typo`.
+  PIB1107 5:11 I expected `=` after `$typo`.
   PIB1003 6:1 This line is indented, but the line above it doesn't open a block.
-  PIB1021 8:1 `@command` can't go inside a node.
+  PIB1008 8:1 `@command` can't go inside a node.

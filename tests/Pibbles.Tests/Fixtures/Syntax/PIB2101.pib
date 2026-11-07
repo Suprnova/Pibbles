@@ -1,0 +1,20 @@
+// An option's text can't pause, change speed or run commands.
+
+== fixture.option_text
+-> Wait {w} here
+//      ^^^ PIB2101
+-> Pause {pause 0.5} here
+//       ^^^^^^^^^^^ PIB2101
+-> A newer page{page}
+//             ^^^^^^ PIB2101
+-> Jolt {@jolt mira}
+//      ^^^^^^^^^^^^ PIB2101
+-> {if $a}Wait{w}{/if}
+//            ^^^ PIB2101
+-> Fast {speed 2}
+//      ^^^^^^^^^ PIB2101
+
+// Must not trigger
+
+-> [b]Bold[/b] {$name} {icon interact} {if $a}yes{/if}{br}line two
+mira: Text lines can {w} pause{page}, {speed 2}speed up{speed} and {@jolt mira} run commands.

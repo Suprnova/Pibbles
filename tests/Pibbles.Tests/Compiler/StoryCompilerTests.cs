@@ -45,13 +45,13 @@ public class StoryCompilerTests
 
         Assert.NotNull(result.Story);
         Assert.False(result.HasErrors);
-        Assert.Equal(["PIB3010"], result.Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB1302"], result.Diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
     [Fact]
     public void Compile_WarningRaisedToErrorBySettings_GivesNoStory()
     {
-        FileSettings settings = FileSettings.From([KeyValuePair.Create("pibbles_diagnostic.PIB3010.severity", "error")]);
+        FileSettings settings = FileSettings.From([KeyValuePair.Create("pibbles_diagnostic.PIB1302.severity", "error")]);
         var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["story.pib"] = settings });
 
         CompileResult result = StoryCompiler.Compile([WithWarning], options);

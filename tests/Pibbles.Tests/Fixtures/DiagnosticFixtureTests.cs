@@ -30,5 +30,5 @@ public class DiagnosticFixtureTests
             ? SyntaxTree.Parse(source).Diagnostics
             : [.. Compilation.Create([source]).Diagnostics.Where(diagnostic => !IsOwnTopic(diagnostic) || Path.GetFileNameWithoutExtension(fixture) == diagnostic.Code)];
 
-    private static bool IsOwnTopic(Diagnostic diagnostic) => diagnostic.Code is "PIB3010" || diagnostic.Descriptor?.Category is DiagnosticCategory.Style;
+    private static bool IsOwnTopic(Diagnostic diagnostic) => diagnostic.Code is "PIB1302" || diagnostic.Descriptor?.Category is DiagnosticCategory.Style;
 }

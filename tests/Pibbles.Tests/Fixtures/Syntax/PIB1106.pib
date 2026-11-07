@@ -1,0 +1,74 @@
+// A marker typed through an input method, such as a full-width `＝`, is read as the marker, so the rest of the line is still checked.
+
+@actor mira
+    name：Mira
+//      ^ PIB1106
+    pose： happy、sad
+//      ^ PIB1106
+//             ^ PIB1106
+    pose ＋＝ angry
+//       ^^ PIB1106
+@channel mood： calm、tense
+//           ^ PIB1106
+//                 ^ PIB1106
+// A display name is text, so it can hold any of them.
+@actor rex
+    name: ＡＩ「助手」：＝
+
+== fixture.forms
+@set ＄met ＝ true
+//   ^ PIB1106
+//        ^ PIB1106
+@set ￥met = true
+//   ^ PIB1106
+@jump ime。case
+//       ^ PIB1106
+@pause ０。５s
+//     ^^^ PIB1106
+@if has_item（“key”）
+//          ^^ PIB1106
+//               ^^ PIB1106
+    mira: Found it.
+mira: Wait{if $met ＝＝ true}, yes{/if}.
+//                 ^^ PIB1106
+mira: [b」Bold[/b].
+//      ^ PIB1106
+-> Go @if $met ＠once
+//             ^ PIB1106
+@set ＄met ＝
+//   ^ PIB1106
+//        ^ PIB1106
+//         ^ PIB1107
+
+// At a line's start, a header, an `@` line or an option typed this way still makes that line, so the lines after it keep their place.
+
+＝＝ fixture.lines
+// PIB1106
+＠if $met
+// PIB1106
+    mira: Yes.
+ー＞ はい
+// PIB1106
+    mira: OK.
+－> いいえ
+// PIB1106
+-》 好的
+// PIB1106
+@sequence
+    - one
+    ー　two
+//  ^ PIB1106
+    － three
+//  ^ PIB1106
+
+// Must not trigger
+
+\＠if is text, and so is \＝＝.
+ーっと待って。
+＝ is one sign.
+ー
+mira: She said “hi” and left, ＝＝ then 「b」.
+mira（happy）：Hi.
+@set $quote = "he said “hi” to 「me」"
+@jump ime.case // 「メモ」：＝
+mira: Done. #box:「x」、

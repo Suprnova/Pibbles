@@ -1,23 +1,23 @@
-// A value belongs to one channel, so a line can name it without the channel.
+// A speaker's colon has a space after it.
 
-@channel pose: neutral, none
-@channel effect: still, none
-//                      ^^^^ PIB2007
-@channel camera
+@channel pose
 @actor mira
     name: Mira
-    camera: neutral
-//          ^^^^^^^ PIB2007
-@actor rex
-    name: Rex
-    effect: sad
-//          ^^^ PIB2007
-    pose: sad
+    pose: smug
+
+== kitchen.door
+mira:Hi.
+// PIB2007
+mira (smug):Told you.
+// PIB2007
+mira（smug）:Told you.
+// PIB2007
 
 // Must not trigger
 
-@actor sam
-    name: Sam
-    camera: static
-    pose: none
-    no effect
+mira：Hi.
+mira（smug）：Told you.
+
+Time:3pm, by the clock.
+mira\:Hi.
+mira: Hi.

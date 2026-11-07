@@ -8,7 +8,7 @@ public class FixtureFileTests
     [Fact]
     public void Annotate_WithoutDiagnostics_RemovesMarkers()
     {
-        var source = new SourceText("PIB1015.pib", "mira: I'm #winning today.\n//        ^^^^^^^^ PIB1015\n// PIB1001\nrex: Hm.");
+        var source = new SourceText("PIB1201.pib", "mira: I'm #winning today.\n//        ^^^^^^^^ PIB1201\n// PIB1001\nrex: Hm.");
 
         string annotated = FixtureFile.Annotate(source, []);
 
@@ -18,11 +18,11 @@ public class FixtureFileTests
     [Fact]
     public void Annotate_SpanFromThirdColumn_AlignsCaretsUnderSpan()
     {
-        var source = new SourceText("PIB1015.pib", "mira: I'm #winning today.");
+        var source = new SourceText("PIB1201.pib", "mira: I'm #winning today.");
 
-        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1015", 10, 8)]);
+        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1201", 10, 8)]);
 
-        Assert.Equal("mira: I'm #winning today.\n//        ^^^^^^^^ PIB1015", annotated);
+        Assert.Equal("mira: I'm #winning today.\n//        ^^^^^^^^ PIB1201", annotated);
     }
 
     [Theory]
@@ -40,31 +40,31 @@ public class FixtureFileTests
     [Fact]
     public void Annotate_ZeroLengthSpan_MarksOneCaret()
     {
-        var source = new SourceText("PIB1046.pib", "@jump");
+        var source = new SourceText("PIB1107.pib", "@jump");
 
-        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1046", 5, 0)]);
+        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1107", 5, 0)]);
 
-        Assert.Equal("@jump\n//   ^ PIB1046", annotated);
+        Assert.Equal("@jump\n//   ^ PIB1107", annotated);
     }
 
     [Fact]
     public void Annotate_SpanPastEndOfLine_StopsCaretsAtLineEnd()
     {
-        var source = new SourceText("PIB1010.pib", "mira: [clue]Key\nrex: Hm.");
+        var source = new SourceText("PIB3101.pib", "mira: [clue]Key\nrex: Hm.");
 
-        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1010", 6, 12)]);
+        string annotated = FixtureFile.Annotate(source, [At(source, "PIB3101", 6, 12)]);
 
-        Assert.Equal("mira: [clue]Key\n//    ^^^^^^^^^ PIB1010\nrex: Hm.", annotated);
+        Assert.Equal("mira: [clue]Key\n//    ^^^^^^^^^ PIB3101\nrex: Hm.", annotated);
     }
 
     [Fact]
     public void Annotate_SeveralOnOneLine_OrdersByColumnThenCode()
     {
-        var source = new SourceText("PIB1011.pib", "mira: [b][i]Hi[/b]");
+        var source = new SourceText("PIB3102.pib", "mira: [b][i]Hi[/b]");
 
-        string annotated = FixtureFile.Annotate(source, [At(source, "PIB1011", 14, 4), At(source, "PIB1012", 6, 3), At(source, "PIB1010", 6, 3)]);
+        string annotated = FixtureFile.Annotate(source, [At(source, "PIB3102", 14, 4), At(source, "PIB3103", 6, 3), At(source, "PIB3101", 6, 3)]);
 
-        Assert.Equal("mira: [b][i]Hi[/b]\n//    ^^^ PIB1010\n//    ^^^ PIB1012\n//            ^^^^ PIB1011", annotated);
+        Assert.Equal("mira: [b][i]Hi[/b]\n//    ^^^ PIB3101\n//    ^^^ PIB3103\n//            ^^^^ PIB3102", annotated);
     }
 
     [Fact]
@@ -80,9 +80,9 @@ public class FixtureFileTests
     [Fact]
     public void MarkedCodes_ReadsEveryMarker()
     {
-        string text = "mira: I'm #winning today.\n//        ^^^^^^^^ PIB1015\n/// A note.\n// PIB1005\n// Must not trigger\n// PIB1001 is about tabs.";
+        string text = "mira: I'm #winning today.\n//        ^^^^^^^^ PIB1201\n/// A note.\n// PIB1005\n// Must not trigger\n// PIB1001 is about tabs.";
 
-        Assert.Equal(["PIB1015", "PIB1005"], FixtureFile.MarkedCodes(text));
+        Assert.Equal(["PIB1201", "PIB1005"], FixtureFile.MarkedCodes(text));
     }
 
     private static Diagnostic At(SourceText source, string code, int start, int length) =>

@@ -1,0 +1,19 @@
+// Outside a command's arguments, a call's `(` touches its name.
+
+== fixture.calls
+@if has_item ("key")
+//          ^ PIB2602
+    @end
+@set $n = visits  (fixture.calls)
+//              ^^ PIB2602
+Wait.{pause delay (1)} Then more.
+//               ^ PIB2602
+Fast.{speed rate (2)} Then more.
+//              ^ PIB2602
+
+// Must not trigger
+
+@if has_item("key")
+    @end
+@give item ("key")
+@give item("key")

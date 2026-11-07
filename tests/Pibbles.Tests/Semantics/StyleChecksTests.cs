@@ -10,17 +10,17 @@ public class StyleChecksTests
 {
     public static TheoryData<string, string, string?> Fixes { get; } = new()
     {
-        { "@if $a == true\n    Hi.\n", "PIB5020", "Write `$a`." },
-        { "@if $a != false\n    Hi.\n", "PIB5020", "Write `$a`." },
-        { "@if $a == false\n    Hi.\n", "PIB5020", "Write `not $a`." },
-        { "@if true != $a\n    Hi.\n", "PIB5020", "Write `not $a`." },
-        { "@if ($a and $a) == false\n    Hi.\n", "PIB5020", "Write `not ($a and $a)`." },
-        { "@set $n = $n - 2 * 3\n", "PIB5021", "Write `@set $n -= 2 * 3`." },
-        { "Wait.{pause 0.2}{pause 300ms} Done.\n", "PIB5018", "Write one pause: `{pause 0.5}`." },
-        { "Wait.{pause 0.10}{pause 0.20} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
-        { "Wait.{pause 0.1}{pause 0.2} Done.\n", "PIB5018", "Write one pause: `{pause 0.3}`." },
-        { "Wait.{w}{page}Done.\n", "PIB5017", "Remove it." },
-        { "Wait.{pause 79228162514264337593543950335}{pause 1} Done.\n", "PIB5018", null },
+        { "@if $a == true\n    Hi.\n", "PIB5201", "Write `$a`." },
+        { "@if $a != false\n    Hi.\n", "PIB5201", "Write `$a`." },
+        { "@if $a == false\n    Hi.\n", "PIB5201", "Write `not $a`." },
+        { "@if true != $a\n    Hi.\n", "PIB5201", "Write `not $a`." },
+        { "@if ($a and $a) == false\n    Hi.\n", "PIB5201", "Write `not ($a and $a)`." },
+        { "@set $n = $n - 2 * 3\n", "PIB5202", "Write `@set $n -= 2 * 3`." },
+        { "Wait.{pause 0.2}{pause 300ms} Done.\n", "PIB5105", "Write one pause: `{pause 0.5}`." },
+        { "Wait.{pause 0.10}{pause 0.20} Done.\n", "PIB5105", "Write one pause: `{pause 0.3}`." },
+        { "Wait.{pause 0.1}{pause 0.2} Done.\n", "PIB5105", "Write one pause: `{pause 0.3}`." },
+        { "Wait.{w}{page}Done.\n", "PIB5104", "Remove it." },
+        { "Wait.{pause 79228162514264337593543950335}{pause 1} Done.\n", "PIB5105", null },
     };
 
     [Theory]
@@ -45,15 +45,15 @@ public class StyleChecksTests
     {
         var source = new SourceText("story.pib", $"@channel pose\n@channel effect: still, shake\n@actor mira\n    name: Mira\n    pose: neutral, happy\n\n== a.b\n{line}");
 
-        Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5033");
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5305");
 
         Assert.Equal(help, diagnostic.Help);
     }
 
     [Theory]
-    [InlineData("Wait.{w}\n", "PIB5011", "This wait does nothing, because the end of the line already waits for a click.")]
-    [InlineData("Wait.{w}{page}Done.\n", "PIB5017", "This wait does nothing, because the `{page}` after it already waits.")]
-    [InlineData("Wait.{pause 0.2}{pause 0.3} Done.\n", "PIB5018", "This pause comes right after another one, so the two could be one.")]
+    [InlineData("Wait.{w}\n", "PIB5103", "This wait does nothing, because the end of the line already waits for a click.")]
+    [InlineData("Wait.{w}{page}Done.\n", "PIB5104", "This wait does nothing, because the `{page}` after it already waits.")]
+    [InlineData("Wait.{pause 0.2}{pause 0.3} Done.\n", "PIB5105", "This pause comes right after another one, so the two could be one.")]
     public void Create_RedundantWaitOrPause_SaysWhichItIs(string body, string code, string message)
     {
         var source = new SourceText("story.pib", $"== a.b\n{body}");
@@ -64,13 +64,13 @@ public class StyleChecksTests
     }
 
     [Theory]
-    [InlineData("== a.b\n@if $missing == true\n    Hi.\n@return\n", new[] { "PIB2030", "PIB5014" })]
-    [InlineData("@prefix .a extra\n== a.b\n@return\n", new[] { "PIB1040", "PIB5014" })]
+    [InlineData("== a.b\n@if $missing == true\n    Hi.\n@return\n", new[] { "PIB2302", "PIB5110" })]
+    [InlineData("@prefix .a extra\n== a.b\n@return\n", new[] { "PIB1103", "PIB5110" })]
     public void Create_StyleProblemOnLineWithError_ReportsOnlyTheError(string text, string[] codes)
     {
         var source = new SourceText("story.pib", text);
 
-        IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010");
+        IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB1302");
 
         Assert.Equal(codes, diagnostics.Select(diagnostic => diagnostic.Code));
     }
@@ -83,16 +83,16 @@ public class StyleChecksTests
         IEnumerable<Diagnostic> withDefaults = Compilation.Create([source]).Diagnostics;
         IEnumerable<Diagnostic> withoutStyle = WithoutStyle.Compile(source).Diagnostics;
 
-        Assert.Contains(withDefaults, diagnostic => diagnostic.Code == "PIB5015");
-        Assert.DoesNotContain(withoutStyle, diagnostic => diagnostic.Code == "PIB5015");
+        Assert.Contains(withDefaults, diagnostic => diagnostic.Code == "PIB5111");
+        Assert.DoesNotContain(withoutStyle, diagnostic => diagnostic.Code == "PIB5111");
     }
 
     [Fact]
     public void Create_PibblesIgnoreComment_SilencesRedundantPrefixDot()
     {
-        var source = new SourceText("story.pib", "// pibbles-ignore PIB5015\n@prefix .a\n== a.b\n");
+        var source = new SourceText("story.pib", "// pibbles-ignore PIB5111\n@prefix .a\n== a.b\n");
 
-        Assert.DoesNotContain(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5015");
+        Assert.DoesNotContain(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code == "PIB5111");
     }
 
     [Theory]
@@ -101,7 +101,7 @@ public class StyleChecksTests
     [InlineData("@var $hasKey2 = 0\n", "Write it as `$has_key2`, before anything outside the story uses the name.")]
     public void Create_NameNotInSnakeCase_SuggestsSnakeCase(string text, string help)
     {
-        Diagnostic diagnostic = Assert.Single(Compilation.Create([new SourceText("story.pib", text)]).Diagnostics, diagnostic => diagnostic.Code is "PIB5031");
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([new SourceText("story.pib", text)]).Diagnostics, diagnostic => diagnostic.Code is "PIB5303");
 
         Assert.Equal(help, diagnostic.Help);
     }
@@ -111,21 +111,21 @@ public class StyleChecksTests
     {
         var source = new SourceText("story.pib", "@channel pose\n@actor mira\n    name: Mira\n    pose: happy\n\n== a.b\nmira (happy): One.\nmira (happy): Two.\n");
 
-        Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code is "PIB5016");
+        Diagnostic diagnostic = Assert.Single(Compilation.Create([source]).Diagnostics, diagnostic => diagnostic.Code is "PIB5102");
 
         Assert.Equal("`happy` does nothing, because Mira already has it.", diagnostic.Message);
     }
 
     [Theory]
     [InlineData(new[] { "pibbles_max_nesting=1" }, "== a.b\n@if $a\n    @if $a\n        Two deep.\n", "PIB5001")]
-    [InlineData(new[] { "pibbles_max_message_length=10" }, "== a.b\nEleven char\n", "PIB5030")]
-    [InlineData(new[] { "pibbles_max_option_length=3" }, "== a.b\n-> Four\n-> Ok\n", "PIB5034")]
+    [InlineData(new[] { "pibbles_max_message_length=10" }, "== a.b\nEleven char\n", "PIB5301")]
+    [InlineData(new[] { "pibbles_max_option_length=3" }, "== a.b\n-> Four\n-> Ok\n", "PIB5302")]
     [InlineData(new[] { "pibbles_max_option_body=1" }, "== a.b\n-> Go\n    One.\n    Two.\n", "PIB5002")]
     [InlineData(new[] { "pibbles_min_repeated_lines=2" }, "== a.b\nTwice.\nTwice.\n", "PIB5003")]
     [InlineData(new[] { "pibbles_min_repeated_colors=1" }, "== a.b\n[color \"red\"]Once[/color].\n", "PIB5004")]
-    [InlineData(new[] { "indent_size=2" }, "== a.b\n@if $a\n    Four.\n", "PIB5032")]
-    [InlineData(new[] { "indent_style=tab" }, "== a.b\n@if $a\n    Spaces.\n", "PIB5032")]
-    [InlineData(new[] { "indent_style=space" }, "== a.b\n@if $a\n\tA tab.\n", "PIB5032")]
+    [InlineData(new[] { "indent_size=2" }, "== a.b\n@if $a\n    Four.\n", "PIB5304")]
+    [InlineData(new[] { "indent_style=tab" }, "== a.b\n@if $a\n    Spaces.\n", "PIB5304")]
+    [InlineData(new[] { "indent_style=space" }, "== a.b\n@if $a\n\tA tab.\n", "PIB5304")]
     public void Create_WithStyleSetting_AppliesIt(string[] properties, string body, string code)
     {
         var source = new SourceText("story.pib", $"@var $a = true\n\n{body}");
@@ -140,22 +140,22 @@ public class StyleChecksTests
 
     public static TheoryData<string, string[]> Ignores { get; } = new()
     {
-        { "== a.b\n// pibbles-ignore PIB5014\n@return\n", [] },
-        { "== a.b\n// pibbles-ignore PIB5011 PIB5014\n// Another comment.\n@return\n", [] },
-        { "== a.b\n// pibbles-ignore pib5014\n@return\n", [] },
-        { "== a.b\n// pibbles-ignore PIB5014\n\n@return\n", ["PIB5014"] },
-        { "== a.b\n// pibbles-ignore PIB5014\n@set $n = 1 // Not a comment line.\n@return\n", ["PIB5014"] },
-        { "== a.b\n// pibbles-ignore PIB5011\n// pibbles-ignore PIB5014\n@return\n", [] },
-        { "== a.b\n// pibbles-ignore PIB5011\n@return\n", ["PIB5014"] },
-        { "== a.b\n@set $n = 1 // pibbles-ignore PIB5014\n@return\n", ["PIB5014"] },
-        { "== a.b\n@return // pibbles-ignore PIB5014\n", [] },
-        { "== a.b\n@return // pibbles-ignore PIB5014\n== a.c\n@return\n", ["PIB5014"] },
-        { "== a.b\n@return // pibbles-ignore\n", ["PIB5014"] },
+        { "== a.b\n// pibbles-ignore PIB5110\n@return\n", [] },
+        { "== a.b\n// pibbles-ignore PIB5103 PIB5110\n// Another comment.\n@return\n", [] },
+        { "== a.b\n// pibbles-ignore pib5110\n@return\n", [] },
+        { "== a.b\n// pibbles-ignore PIB5110\n\n@return\n", ["PIB5110"] },
+        { "== a.b\n// pibbles-ignore PIB5110\n@set $n = 1 // Not a comment line.\n@return\n", ["PIB5110"] },
+        { "== a.b\n// pibbles-ignore PIB5103\n// pibbles-ignore PIB5110\n@return\n", [] },
+        { "== a.b\n// pibbles-ignore PIB5103\n@return\n", ["PIB5110"] },
+        { "== a.b\n@set $n = 1 // pibbles-ignore PIB5110\n@return\n", ["PIB5110"] },
+        { "== a.b\n@return // pibbles-ignore PIB5110\n", [] },
+        { "== a.b\n@return // pibbles-ignore PIB5110\n== a.c\n@return\n", ["PIB5110"] },
+        { "== a.b\n@return // pibbles-ignore\n", ["PIB5110"] },
         { "== a.b\nTwice. // pibbles-ignore PIB5003\nTwice.\nTwice.\n", ["PIB5003", "PIB5003"] },
-        { "@var $m = 0 // pibbles-ignore PIB5014\n== a.b\n@return\n", ["PIB5014"] },
-        { "== a.b\n@set $missing = 1 // pibbles-ignore PIB2030\n", ["PIB2030"] },
-        { "// pibbles-ignore PIB5014\n== a.b\n@return\n== a.c\n@return\n", [] },
-        { "== a.b\n// pibbles-ignore PIB2030\n@set $missing = 1\n", ["PIB2030"] },
+        { "@var $m = 0 // pibbles-ignore PIB5110\n== a.b\n@return\n", ["PIB5110"] },
+        { "== a.b\n@set $missing = 1 // pibbles-ignore PIB2302\n", ["PIB2302"] },
+        { "// pibbles-ignore PIB5110\n== a.b\n@return\n== a.c\n@return\n", [] },
+        { "== a.b\n// pibbles-ignore PIB2302\n@set $missing = 1\n", ["PIB2302"] },
     };
 
     [Theory]
@@ -164,7 +164,7 @@ public class StyleChecksTests
     {
         var source = new SourceText("story.pib", $"@var $n = 0\n{text}");
 
-        IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not ("PIB3010" or "PIB5040"));
+        IEnumerable<Diagnostic> diagnostics = Compilation.Create([source]).Diagnostics.Where(diagnostic => diagnostic.Code is not ("PIB1302" or "PIB5401"));
 
         Assert.Equal(codes, diagnostics.Select(diagnostic => diagnostic.Code));
     }

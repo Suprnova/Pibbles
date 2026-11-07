@@ -746,7 +746,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     /// <summary>
     /// Whether a comparison has another comparison of the same level as its left operand, with no brackets, as in
-    /// <c>$a &lt; $b &lt; $c</c>. Comparisons don't chain, and the parser has already reported it (PIB1061).
+    /// <c>$a &lt; $b &lt; $c</c>. Comparisons don't chain, and the parser has already reported it (PIB3002).
     /// </summary>
     private static bool IsChainedComparison(BinaryExpressionSyntax binary) =>
         binary.Left is BinaryExpressionSyntax inner && ComparisonLevel(inner.Operator) is { } level && level == ComparisonLevel(binary.Operator);

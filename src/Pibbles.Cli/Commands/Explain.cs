@@ -29,7 +29,7 @@ internal static class Explain
 
         if (row is not [_, var severity, var message, var help] || !Enum.TryParse(severity, out DiagnosticSeverity level))
         {
-            error.WriteLine($"I don't know the code `{code}`. Codes look like `PIB1011`, as in the brackets of `error[PIB1011]`.");
+            error.WriteLine($"I don't know the code `{code}`. Codes look like `PIB3102`, as in the brackets of `error[PIB3102]`.");
             return Check.CouldNotRun;
         }
 

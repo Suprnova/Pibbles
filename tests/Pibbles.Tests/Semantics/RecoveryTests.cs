@@ -11,7 +11,7 @@ public class RecoveryTests
     {
         var compilation = Compilation.Create([new SourceText("story.pib", "@enum position:\n@var $p: position = left\n\n== a.b\nYou're on the {$p}.\n")]);
 
-        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB2038");
+        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3204");
     }
 
     [Fact]
@@ -19,7 +19,7 @@ public class RecoveryTests
     {
         var compilation = Compilation.Create([new SourceText("story.pib", "@enum position:\n@tag box: position\n\n== a.b\nHi. #box\n")]);
 
-        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB2046" && diagnostic.Help!.Contains("#box:value", StringComparison.Ordinal));
+        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB1206" && diagnostic.Help!.Contains("#box:value", StringComparison.Ordinal));
     }
 
     [Fact]

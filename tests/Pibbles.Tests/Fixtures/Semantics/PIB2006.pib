@@ -1,21 +1,27 @@
-// A line sets one value of a channel.
+// A speaker's parenthesis is a list of names. How a line is said goes in a comment.
 
-@channel pose: neutral, happy, sad
+@channel pose: happy
 @channel effect: still, shake
 @actor mira
     name: Mira
 
 == kitchen.door
-mira (happy, sad): Two poses.
-//           ^^^ PIB2006
-mira (shake, happy, still): A pose and two effects.
-//                  ^^^^^ PIB2006
-mira (happy, happy): The same pose twice.
-//           ^^^^^ PIB2006
+mira (to Rex): Fine.
+//   ^^^^^^^^ PIB2006
+mira (happy,): Fine.
+//   ^^^^^^^^ PIB2006
+mira (): Fine.
+//   ^^ PIB2006
+Breakfast (served daily): eggs.
+//        ^^^^^^^^^^^^^^ PIB2006
+mira（to Rex）：Fine.
+//  ^^^^^^^^ PIB2006
 
 // Must not trigger
 
-mira (happy, shake): One value in each channel.
-mira (sad, still): The order doesn't matter.
-mira (still, neutral):
-mira (happy): One value.
+mira (happy, shake): Fine.
+mira（happy、shake）：Fine.
+Breakfast (served daily)\: eggs.
+Breakfast（served daily）\：eggs.
+// To Rex.
+mira: Fine.

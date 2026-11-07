@@ -1,0 +1,20 @@
+// Each kind of name is declared once.
+
+@enum room: kitchen, cellar
+@enum room: attic
+//    ^^^^ PIB1402
+@var $has_key = false
+@var $has_key = "yes"
+//   ^^^^^^^^ PIB1402
+@icon interact, inventory, interact
+//                         ^^^^^^^^ PIB1402
+@tag thought
+@tag thought: string
+//   ^^^^^^^ PIB1402
+
+// Must not trigger
+
+@enum sfx: thud
+@command sfx(name: sfx)
+@markup clue
+@icon clue

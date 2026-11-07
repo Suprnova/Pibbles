@@ -4,7 +4,7 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// The <c>// pibbles-ignore</c> comments in a file, such as <c>// pibbles-ignore PIB5003 PIB5010</c>. One at the end of a
+/// The <c>// pibbles-ignore</c> comments in a file, such as <c>// pibbles-ignore PIB5003 PIB5101</c>. One at the end of a
 /// line silences the codes it lists on that line. One on its own line silences them on the next line that isn't a
 /// comment, and one above the file's first node silences them in the whole file. Only the style and spelling categories
 /// can be silenced, since a mistake gets fixed, not hidden.

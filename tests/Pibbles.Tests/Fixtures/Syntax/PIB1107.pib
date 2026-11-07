@@ -1,0 +1,49 @@
+// Some lines need a name or a value after their keyword.
+
+@actor mira
+    name: 
+//       ^ PIB1107
+== fixture.missing #was:
+//                      ^ PIB1107
+@jump
+//   ^ PIB1107
+@call #id:k7qp2x
+//   ^ PIB1107
+@prefix
+// PIB1601
+@set $x = 1 +
+//           ^ PIB1107
+@set
+//  ^ PIB1107
+@set $x
+//     ^ PIB1107
+@set $x =
+//       ^ PIB1107
+@pause
+//    ^ PIB1107
+@if 
+// ^ PIB1107
+    @end
+@show mira at=
+//            ^ PIB1107
+mira: [wave amplitude=]Hi[/wave]
+//                    ^ PIB1107
+mira: Hi{@show mira at=}.
+//                     ^ PIB1107
+@set $x = f(1,)
+//            ^ PIB1107
+==
+//^ PIB1107
+== fixture.alias #was
+//                   ^ PIB1107
+== fixture.dot #was:.
+//                  ^ PIB1107
+
+// Must not trigger
+
+== fixture.renamed #was:fixture.old #was:.older
+@jump fixture.renamed
+@call .relative #id:k7qp2x
+@set $x = f()
+@if not($x) and($x) or($x)
+    @end

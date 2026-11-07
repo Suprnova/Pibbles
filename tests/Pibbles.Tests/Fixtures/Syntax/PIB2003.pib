@@ -1,0 +1,15 @@
+// A speaker needs values or something to say.
+
+== fixture.empty
+mira:
+// PIB2003
+mira :   #thought
+// PIB2003
+
+// Must not trigger
+
+mira (sad):
+mira (sad, still):
+mira: {w}
+mira: Something.
+mira\: is narration.

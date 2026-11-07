@@ -24,7 +24,7 @@ The compiler lowers each node's syntax tree to a **flat list of instructions**, 
 
 `Branch` and `BranchIfFalse` move within a node, and `Jump` and `Call` go to another one, so a local index is never mistaken for a node.
 
-**Layout.** A body that doesn't always leave ends with a `Branch` to the place flow continues: the choice's `join`, a variation's `exit`, or the end of an `@if`. Every body gets one, including the last, so the layout is uniform. An option with an empty body starts at `join` and has no instructions. A body *always leaves* when one of its statements is `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose branches all leave, the rule behind PIB3001 ([flow checks](semantics.md#passes)). Conditions are never evaluated, and a nested choice or variation never counts. An `@if` clause is `BranchIfFalse` to the next clause, its body, then `Branch` to the end; the `@else` body just falls through.
+**Layout.** A body that doesn't always leave ends with a `Branch` to the place flow continues: the choice's `join`, a variation's `exit`, or the end of an `@if`. Every body gets one, including the last, so the layout is uniform. An option with an empty body starts at `join` and has no instructions. A body *always leaves* when one of its statements is `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose branches all leave, the rule behind PIB2401 ([flow checks](semantics.md#passes)). Conditions are never evaluated, and a nested choice or variation never counts. An `@if` clause is `BranchIfFalse` to the next clause, its body, then `Branch` to the end; the `@else` body just falls through.
 
 The runner's side of each layout:
 
@@ -195,9 +195,9 @@ Rendering a template resolves the interpolation and conditionals against the sta
   | `{speed x}`, `{speed}` | `SpeedMarker` | The factor in effect after the marker: `x`, or 1 for `{speed}`. Speed resets to 1 at the start of every line, with no marker. |
   | `{@command args}` | `CommandMarker` | A `CommandInvocation` and `Waits`, resolved like a statement command's |
 
-- **A `{pause d}` or `{speed x}` whose value isn't more than zero** produces no marker and a `NonPositivePause` or `NonPositiveSpeed` [warning](#runtime-warnings). Constants are rejected when the story is checked (PIB2039); this covers values computed at run time.
+- **A `{pause d}` or `{speed x}` whose value isn't more than zero** produces no marker and a `NonPositivePause` or `NonPositiveSpeed` [warning](#runtime-warnings). Constants are rejected when the story is checked (PIB3205); this covers values computed at run time.
 - **Only the chosen branch** of conditional text contributes spans, markers and icons. Inline commands fire again when a line is rendered again after a load, which is why only commands declared `inline` can appear in text.
-- **Icons** are in their own array, not among the markers: markers are things the reveal does, and an icon is neither timing nor an effect. A literal U+FFFC can't be written in a story (PIB1048), and one in a shown value shows as U+FFFD, so the character in `Text` always means an icon.
+- **Icons** are in their own array, not among the markers: markers are things the reveal does, and an icon is neither timing nor an effect. A literal U+FFFC can't be written in a story (PIB2002), and one in a shown value shows as U+FFFD, so the character in `Text` always means an icon.
 - **Option text** is a `Line` too, with spans, icons and tags. It can't hold commands, `{w}`, `{page}` or `{speed}`, so its markers are always empty.
 - **Trimming.** The rendered text is trimmed of leading and trailing whitespace, whatever it came from: an `{if}` that renders nothing, a shown value's own spaces, a `{br}` at either end. Spaces inside the text stay. Every position is computed after trimming, and a marker, icon or span edge that fell in trimmed space moves to the nearest end of the text.
 - **Shown values** are inserted literally and never read as markup. A number uses the invariant culture, with no digit grouping and no trailing zeros (`1.50` shows `1.5`), and an actor shows its display name. Localized formatting comes with localization.

@@ -6,7 +6,7 @@ namespace Pibbles.Semantics;
 internal sealed partial class StyleChecks
 {
     /// <summary>
-    /// PIB5040: a variable the story declares and never uses. Setting it counts as a use, since the game's code may read
+    /// PIB5401: a variable the story declares and never uses. Setting it counts as a use, since the game's code may read
     /// it. The game's vocabulary, such as commands and markup, isn't checked: it's a toolbox, and some of it going unused
     /// is normal.
     /// </summary>

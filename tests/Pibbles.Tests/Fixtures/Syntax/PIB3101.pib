@@ -1,0 +1,25 @@
+// Markup closes on the same line, and inside the same conditional branch.
+
+== fixture.markup
+mira: [clue]The key
+//    ^^^^^^ PIB3101
+mira: {if $a}[b]bold{/if}
+//           ^^^ PIB3101
+mira: [wave amplitude=2]Spooky
+//    ^^^^^^^^^^^^^^^^^^ PIB3101
+mira: [b]The key #thought
+//    ^^^ PIB3101
+-> [b]Go @once
+// ^^^ PIB3101
+
+mira: [clue]The key // [/clue]
+//    ^^^^^^ PIB3101
+
+// Must not trigger
+
+mira: [clue]The key[/clue]
+mira: [b]Bold, then[/b] plain.
+mira: [b]Bold[/b] #thought
+mira: {if $a}[b]bold[/b]{/if}
+mira: \[clue] is escaped.
+mira: [clue]The key[/clue] // [clue] in a comment

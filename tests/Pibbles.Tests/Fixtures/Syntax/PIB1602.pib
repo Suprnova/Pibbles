@@ -1,0 +1,12 @@
+// A file has at most one @prefix.
+
+@prefix fixture
+@prefix again
+// PIB1602
+== .first
+@prefix inside
+// PIB1602
+
+// Must not trigger
+
+// The first @prefix above has only comments before it.

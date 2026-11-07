@@ -59,7 +59,7 @@ A header, statement or option marker typed through an input method (`＝＝`, `�
 - **Indentation** defines blocks. A file must indent with spaces or with tabs, not both. Only spaces and tabs indent: a line that starts with any other space, such as the ideographic space U+3000, is an error (PIB1006). A block opens under a block opener (`@if`, `@elif`, `@else`, `@sequence`, `@cycle`, `@once`, `@actor` or `@narration`), a `->` option or a `-` alternative. The opener's keyword says a block follows, so the line has no closing `:`.
 - **Blank lines** are ignored.
 - **Whitespace** between the parts of a line is a tab or any space separator (Unicode category Zs), such as the no-break space U+00A0 and the ideographic space U+3000. A Japanese input method types U+3000 for the space bar, and French typography puts a no-break space before a colon, so each separates exactly as a space does. Only [indentation](#line-classification) is narrower.
-- **Markers are half-width,** typed in ASCII, except the speaker prefix's punctuation, which may also be full-width ([text lines](#text-lines)). An input method types its own form of a marker key: a full-width form (U+FF01 to U+FF5E, apart from the letters and `＿`, which are identifier characters), or `「` and `【` for `[`, `」` and `】` for `]`, `『』` for `{}`, `・` for `/`, `、` for `,`, `。` for `.`, `￥` for `$`, `《》` for `<>` and `“”` for `"`. In code (an `@` line after its keyword, a header after its `==`, `[…]`, `{…}`, an option's modifiers, an actor's lines, and a tag's `#` and `:`), and as a header, statement, option or alternative marker at a line's start ([line classification](#line-classification)), such a form is read as the marker it stands for and is an error (PIB1044), so the rest of the line is still checked. A backslash before a form at a line's start makes the line text (`\＠`). In text, a form can only be text, so it stays text, but where it has the shape of a marker it's a warning (PIB1019): two of `/`, `／`, `・` and `、` starting a text line (with whitespace or the line's end after `・` or `、`, so `・・・` is text), `［` around a markup name, `「b」` or `【b】` with a closing tag for the same name later on the line, `｛` or `『` around what a point holds, `＃` and a letter when only tags follow, and `＠if` or `＠once` after an option's text. Full-width letters are compared as ASCII ones there, so `｛ｗ｝` is one. A backslash before its first character silences it. A quoted string opened with `"` closes only at `"`, so it can hold `“”`. A string's text, a tag's value, a comment and a display name keep their forms as written.
+- **Markers are half-width,** typed in ASCII, except the speaker prefix's punctuation, which may also be full-width ([text lines](#text-lines)). An input method types its own form of a marker key: a full-width form (U+FF01 to U+FF5E, apart from the letters and `＿`, which are identifier characters), or `「` and `【` for `[`, `」` and `】` for `]`, `『』` for `{}`, `・` for `/`, `、` for `,`, `。` for `.`, `￥` for `$`, `《》` for `<>` and `“”` for `"`. In code (an `@` line after its keyword, a header after its `==`, `[…]`, `{…}`, an option's modifiers, an actor's lines, and a tag's `#` and `:`), and as a header, statement, option or alternative marker at a line's start ([line classification](#line-classification)), such a form is read as the marker it stands for and is an error (PIB1106), so the rest of the line is still checked. A backslash before a form at a line's start makes the line text (`\＠`). In text, a form can only be text, so it stays text, but where it has the shape of a marker it's a warning (PIB1102): two of `/`, `／`, `・` and `、` starting a text line (with whitespace or the line's end after `・` or `、`, so `・・・` is text), `［` around a markup name, `「b」` or `【b】` with a closing tag for the same name later on the line, `｛` or `『` around what a point holds, `＃` and a letter when only tags follow, and `＠if` or `＠once` after an option's text. Full-width letters are compared as ASCII ones there, so `｛ｗ｝` is one. A backslash before its first character silences it. A quoted string opened with `"` closes only at `"`, so it can hold `“”`. A string's text, a tag's value, a comment and a display name keep their forms as written.
 - **Comments:** `//` starts a comment, which runs to the end of the line. A comment can have a line to itself, at any indentation, where it doesn't take part in indentation, or it can end any other line, after the line's content. A `//` doesn't start a comment inside a quoted string, in a tag's value (`#link:https://example.com`) or after a backslash. In text, `\//` shows `//`, so a web address is written `https:\//example.com`. A display name can't hold `//`, since `name:` has no escapes. Four or more slashes (`////`) start a comment anywhere, as they do at the start of a line. A `///` after the start of a line is an error, since a note is always a whole line, so a note never silently becomes a comment. A comment inside `[…]` or `{…}` runs to the end of the line, so it leaves the bracket or brace unclosed.
 - **Identifiers:** letters, digits and `_`, not starting with a digit. They are case-sensitive. The convention is `snake_case`. Any Unicode letter is recognized as a letter, but a declared name uses ASCII letters only. So `Café: open late` is read as an unknown speaker rather than as narration, and allowing non-ASCII names later can't change what a valid story means.
 - **Node names:** identifiers joined by dots (`kitchen.door`). A name starting with a dot (`.door`) is relative to the file's [prefix](#prefixes).
@@ -198,7 +198,7 @@ mira (sad):
 - **A line of only tags,** with no speaker and no text, is an error. Tags go at the end of the line they're for, and a parenthesis with no text takes them too: `mira (mad): #anim:shake`.
 - Each line is shown as one message, and its text is inline-markup text ([below](#inline-text)).
 - **Leading and trailing whitespace is trimmed from what the line shows,** not only from what you typed. A conditional that renders nothing, a shown value's own spaces and a `{br}` at either end don't leave blank space at the ends of the box, and the `{if $key}Ah, {/if}there.` case shows `there.` Spaces inside the text stay as they are. A point that falls in the trimmed space moves to the nearest end of the text.
-- **The character U+FFFC (the object replacement character) can't appear in text** (PIB1048), because the runtime uses it to mark where each icon goes in a line's text. One in a shown value shows as U+FFFD.
+- **The character U+FFFC (the object replacement character) can't appear in text** (PIB2002), because the runtime uses it to mark where each icon goes in a line's text. One in a shown value shows as U+FFFD.
 
 ### Choices
 
@@ -316,7 +316,7 @@ Each block has an **entry count** `n` in the state: how many times execution has
 
 Where only a call can follow a name, such as inside `{…}`, a space before its `(` is an error:
 
-```pib-error PIB1051
+```pib-error PIB2602
 mira: You found {item_name ("key")}.
 ```
 
@@ -331,7 +331,7 @@ mira: You found {item_name ("key")}.
 
 A chained comparison is reported, never guessed at:
 
-```pib-error PIB1061
+```pib-error PIB3002
 @if 0 < $bravery < 3
     mira: Not too brave, not too scared.
 ```
@@ -355,7 +355,7 @@ A chained comparison is reported, never guessed at:
 - **Conditions are bool.** `@if`, `@elif`, option `@if` and `{if}` take a bool, with no truthiness: `@if $attempts` is an error that suggests `$attempts > 0`.
 - **`$x += v` means `$x = $x + v`,** and likewise for `-=`. The result must have `$x`'s type, so `+=` works on numbers, durations and strings.
 - **Strings compare by exact characters,** case-sensitive and independent of the locale: `"Sam" == "sam"` is false. Numbers and durations compare by value, so `1.50 == 1.5`.
-- **Dividing by zero gives 0.** `/` and `%` by zero, including a duration divided by zero or by `0s`, give `0` and a [runtime warning](../runtime.md#runtime-warnings); the story carries on. A divisor that is a constant zero (`$x / 0`, `$x % (1 - 1)`) is also a warning when the story is checked (PIB2070).
+- **Dividing by zero gives 0.** `/` and `%` by zero, including a duration divided by zero or by `0s`, give `0` and a [runtime warning](../runtime.md#runtime-warnings); the story carries on. A divisor that is a constant zero (`$x / 0`, `$x % (1 - 1)`) is also a warning when the story is checked (PIB3007).
 - **A result too large for a number is clamped.** A result past about ±7.9 × 10^28 from `+`, `-`, `*` or `/` becomes the largest or smallest number, with the sign of the true result, and gives a runtime warning.
 - **`%` is floored,** as in Python and Lua: the result takes the divisor's sign, so `-7 % 3` is `2`, `7 % -3` is `-2`, and a counter wraps around at any sign.
 - **Division isn't always exact.** `1 / 3 * 3` is `0.9999999999999999999999999999`, because a number holds about 28 digits and results aren't rounded. `+`, `-` and `*` of numbers written in the story are exact: `0.1 + 0.2` is `0.3`.
@@ -421,7 +421,7 @@ Speed resets to the player's setting at the start of every line. Each speed poin
 
 **Pacing values** are the value of `{speed x}` and the durations of `{pause d}` and `@pause d`. They must be greater than zero. A constant that isn't (a literal, or arithmetic on literals, such as `0`, `0s`, `(-1)` or `(2 * 0)`) is an error:
 
-```pib-error PIB2039
+```pib-error PIB3205
 mira: Wait.{pause 0} What?
 ```
 

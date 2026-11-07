@@ -1,0 +1,28 @@
+// A node header only takes #was: tags.
+
+== fixture.thought #thought
+//                 ^^^^^^^^ PIB1203
+== fixture.id #id:k7qp2x
+//            ^^^^^^^^^^ PIB1203
+
+// Must not trigger
+
+== fixture.renamed #was:fixture.old
+@call fixture.renamed #thought #id:k7qp2x
+
+// Tags elsewhere
+
+== fixture.elsewhere
+mira: Hi. #id:a #id:b
+//              ^^^^^ PIB1203
+mira (sad): #id:k7qp2x
+//          ^^^^^^^^^^ PIB1203
+mira: Hi. #was:fixture.old
+//        ^^^^^^^^^^^^^^^^ PIB1203
+@call fixture.renamed #was:x
+//                    ^^^^^^ PIB1203
+@cycle #id:c9wq2a #thought
+//                ^^^^^^^^ PIB1203
+    - mira: Hm.
+-> Go #was:x
+//    ^^^^^^ PIB1203

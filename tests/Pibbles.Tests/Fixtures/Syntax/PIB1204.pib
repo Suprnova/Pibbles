@@ -1,0 +1,21 @@
+// Tags go with a line, so a line of only tags is reported.
+
+== fixture.tags
+#thought
+// PIB1204
+#cam:pan_left #anim:shake
+// PIB1204
+#id:k7qp2x
+// PIB1204
+@sequence
+    - #thought
+//    ^^^^^^^^ PIB1204
+    - Hm.
+
+// Must not trigger
+
+Hi. #thought
+mira: Hi. #thought
+mira (sad): #thought
+\#thought
+my #1 fan

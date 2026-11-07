@@ -68,7 +68,7 @@ repository:
     name: invalid.illegal.note-in-line.pibbles
 
   # A header, `@` line or option marker typed through an input method (`＝＝`, `＠if`, `ー＞`) still makes that line, and is
-  # marked as the error it is (PIB1044).
+  # marked as the error it is (PIB1106).
   header:
     begin: '(?:^|\G)[ \t]*(?:(==)|([=＝]{2}))[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
     beginCaptures:
@@ -348,7 +348,7 @@ repository:
         name: keyword.operator.pibbles
 
   # A marker typed through an input method in code, such as a full-width `＝` for `=` or `、` for `,`, is read as the marker
-  # and reported (PIB1044). Full-width letters and `＿` are identifier characters, so they aren't marked.
+  # and reported (PIB1106). Full-width letters and `＿` are identifier characters, so they aren't marked.
   input-method-form:
     match: '[\x{FF01}-\x{FF20}\x{FF3B}-\x{FF3E}\x{FF40}\x{FF5B}-\x{FF5E}「」【】『』・、。￥《》“”]'
     name: invalid.illegal.input-method.pibbles

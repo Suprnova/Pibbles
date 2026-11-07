@@ -1,0 +1,29 @@
+// A value set by a line with no text that changes again before any line shows.
+
+@channel pose
+@channel effect: still, shake
+@actor mira
+    name: Mira
+    pose: neutral, happy, sad
+
+== kitchen.door
+mira (sad):
+//    ^^^ PIB5101
+mira (happy): The silent change above is never seen.
+mira (sad, shake):
+//    ^^^ PIB5101
+mira (happy): Only the pose is replaced, so the shake above still shows.
+
+// Must not trigger
+
+== kitchen.cellar
+mira (sad):
+@pause 1s
+mira (happy): The sad pose showed during the wait.
+mira (sad):
+mira: Someone speaks, so the sad pose shows.
+mira (sad):
+@call kitchen.door
+mira (happy): After a call, the pose may have changed.
+mira (sad):
+mira (shake): A different channel doesn't replace the pose.

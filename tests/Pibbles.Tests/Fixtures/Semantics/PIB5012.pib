@@ -1,9 +1,0 @@
-// A markup span with nothing inside it.
-
-== kitchen.door
-This line has an empty span: [b][/b]
-//                           ^^^ PIB5012
-
-// Must not trigger
-
-This line has a span with text: [b]bold[/b]

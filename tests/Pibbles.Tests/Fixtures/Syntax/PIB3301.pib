@@ -1,0 +1,28 @@
+// Brackets, braces and conditional text close on the same line.
+
+== fixture.unclosed
+mira: Hi, {$name
+//        ^ PIB3301
+mira: {if $a}Never closed.
+//    ^^^ PIB3301
+mira: [wave amplitude=2
+//    ^ PIB3301
+mira: {if $a}Yes{else}No
+//    ^^^ PIB3301
+mira: {if $a}Yes #thought
+//    ^^^ PIB3301
+
+mira: Hi, {$name // }
+//        ^ PIB3301
+mira: {if $a}Yes // {/if}
+//    ^^^ PIB3301
+-> Go [wave // ]
+//    ^ PIB3301
+
+// Must not trigger
+
+mira: Hi, {$name}.
+mira: {if $a}Yes{else}No{/if}
+mira: {if $a}Yes{/if} #thought
+mira: A } and a ] on their own.
+mira: Hi, {$name}. // An open { in a comment.

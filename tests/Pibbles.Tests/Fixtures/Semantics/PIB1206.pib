@@ -1,0 +1,15 @@
+// A flag tag takes no value, and a value tag needs one.
+
+@tag thought, box: string, mood: string?
+
+== kitchen.door
+Hm. #thought:deep
+//  ^^^^^^^^^^^^^ PIB1206
+Hi. #box
+//  ^^^^ PIB1206
+Hi. #box:
+//  ^^^^^ PIB1206
+
+// Must not trigger
+
+Hi. #box:phone #mood: #thought

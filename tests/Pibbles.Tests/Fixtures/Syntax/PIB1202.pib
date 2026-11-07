@@ -1,0 +1,20 @@
+// Tag names hold letters, digits and _.
+
+== fixture.tags
+@call fixture.other #show-disabled
+//                  ^^^^^^^^^^^^^^ PIB1202
+@call fixture.other #box.big:phone
+//                  ^^^^^^^^ PIB1202
+mira: Go #team!
+//       ^^^^^^ PIB1202
+
+// Must not trigger
+
+mira: Go \#team!
+@call fixture.other #show_disabled
+@call fixture.other #box:any-value.at/all
+@call fixture.other #box:
+@call fixture.other #id:k7qp2x #thought
+@call fixture.other #thought//a comment
+mira: Hi. #thought//a comment
+-> Go #thought//a comment

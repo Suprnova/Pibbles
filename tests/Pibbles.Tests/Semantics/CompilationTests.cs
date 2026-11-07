@@ -72,7 +72,7 @@ public class CompilationTests
             new("story/b.pib", "@enum room: a\n@enum room: b\n@var $x = @\n"),
             new("story/a.pib", "@enum spot: a, a\n@tag café\n"));
 
-        Assert.Equal(["PIB2060", "PIB1040", "PIB2061", "PIB2063"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB1402", "PIB1103", "PIB1403", "PIB1405"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class CompilationTests
             new("story/pantry.pib", "@prefix kitchen\n@var $.attempts = 0\n"));
 
         Diagnostic duplicate = Assert.Single(compilation.Diagnostics);
-        Assert.Equal(("PIB2060", "There's already a variable called `$kitchen.attempts`, in story/kitchen.pib on line 2."), (duplicate.Code, duplicate.Message));
+        Assert.Equal(("PIB1402", "There's already a variable called `$kitchen.attempts`, in story/kitchen.pib on line 2."), (duplicate.Code, duplicate.Message));
     }
 
     [Theory]
@@ -144,7 +144,7 @@ public class CompilationTests
     {
         var compilation = WithoutStyle.Compile(new SourceText("story/kitchen.pib", "@var $open = false\n== kitchen.door\n@set $open = true\n@var $open = true\n== kitchen.window\n"));
 
-        Assert.Equal("PIB2060", Assert.Single(compilation.Diagnostics).Code);
+        Assert.Equal("PIB1402", Assert.Single(compilation.Diagnostics).Code);
     }
 
     public static TheoryData<string, string> LiteralTypes { get; } = new()
@@ -184,7 +184,7 @@ public class CompilationTests
     {
         Compilation compilation = Compile("@var door_open = false\n== kitchen.door\n@if $door_open\n    @end\n");
 
-        Assert.Equal("PIB1049", Assert.Single(compilation.Diagnostics).Code);
+        Assert.Equal("PIB2301", Assert.Single(compilation.Diagnostics).Code);
     }
 
     [Theory]
@@ -193,7 +193,7 @@ public class CompilationTests
     {
         Diagnostic diagnostic = Assert.Single(Compile(text).Diagnostics);
 
-        Assert.Equal(("PIB2067", help), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB2304", help), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -204,7 +204,7 @@ public class CompilationTests
     {
         Diagnostic diagnostic = Assert.Single(Compile($"@enum position: left\n@command show(at: {type})\n").Diagnostics);
 
-        Assert.Equal(("PIB2064", help), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1406", help), (diagnostic.Code, diagnostic.Help));
     }
 
     private static Compilation Compile(string text) => WithoutStyle.Compile(new SourceText("story.pib", text));

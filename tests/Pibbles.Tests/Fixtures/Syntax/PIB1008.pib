@@ -1,0 +1,36 @@
+// A declaration goes before a file's first node, or for `@var` also between nodes, never inside one.
+
+@var $early = 1
+== fixture.declarations
+@var $late = 1
+// PIB1008
+@actor rex
+// PIB1008
+    name: Rex
+@if true
+    @command nope()
+//  ^^^^^^^^ PIB1008
+    @var $nested = 1
+//  ^^^^ PIB1008
+@set $early = 2
+
+@command between()
+// PIB1008
+== fixture.contract
+
+@var $broken_run = 1
+// PIB1008
+@enum interrupts: run
+// PIB1008
+== fixture.broken_run
+
+// Must not trigger
+
+@set $early = 3
+@var $between = 1
+// A comment inside the run.
+
+@var $also_between = 2
+== fixture.after_run
+@show rex
+@var $at_end = 3

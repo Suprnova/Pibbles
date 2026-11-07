@@ -1,0 +1,58 @@
+// Text that looks like a marker typed through an input method stays text, with a warning, so a writer who meant the marker finds out.
+
+== fixture.lookalikes
+・・ ここは後で直す
+// PIB1102
+／／ メモ
+// PIB1102
+、、 待修改
+// PIB1102
+mira: 「b」太字「・b」です。
+//    ^^^ PIB1102
+//         ^^^^ PIB1102
+mira: 【b】粗体【/b】
+//    ^^^ PIB1102
+//         ^^^^ PIB1102
+mira: ［b］太字［／b］
+//    ^^^ PIB1102
+//         ^^^^ PIB1102
+mira: ［color red］赤
+//    ^^^^^^^^^^^ PIB1102
+mira: 待って｛w｝。
+//       ^^^ PIB1102
+mira: 等等『w』。
+//      ^^^ PIB1102
+mira: 待って｛ｗ｝。
+//       ^^^ PIB1102
+mira: Hi {$a}『$name』
+//           ^^^^^^^ PIB1102
+mira: ｛if $met｝また来たね｛/if｝
+//    ^^^^^^^^^ PIB1102
+//                  ^^^^^ PIB1102
+mira: こんにちは。 ＃thought
+//           ^^^^^^^^ PIB1102
+-> はい ＠if $met
+//    ^^^ PIB1102
+-> はい ＠ｏｎｃｅ
+//    ^^^^^ PIB1102
+@cycle
+    - ・・ in an alternative's text too
+//    ^^ PIB1102
+mira: [b]Go「・b」
+//    ^^^ PIB3101
+//         ^^^^ PIB1102
+
+// Must not trigger
+
+・・・ と言った。
+・・えっと。
+mira: ・・ in the middle of a line.
+mira: 【公告】明天放假。
+mira: 「b」だけ。
+mira: 「・・・」
+mira: ￥100です。
+mira: ＃1位
+mira: ＃tag です。
+mira: \「b」太字「・b」
+mira: 『はい』と言った。
+-> ＠home

@@ -1,0 +1,30 @@
+// Anything left on a line that I can't read.
+
+@temp $scratch = 0
+// PIB1103
+
+== fixture.unexpected #was:fixture.old extra
+//                                     ^^^^^ PIB1103
+@temp $scratch = 0
+// PIB1103
+@jump fixture.other fixture.another
+//                  ^^^^^^^^^^^^^^^ PIB1103
+@end now
+//   ^^^ PIB1103
+@call fixture.other #id:k7qp2x "text"
+//                             ^^^^^^ PIB1103
+-> [b]Mail @home[/b] now
+//         ^^^^^ PIB1103
+-> Email me @home
+//          ^^^^^ PIB1103
+@if true
+    == fixture.nested
+//  ^^ PIB1103
+
+// Must not trigger
+
+@jump fixture.other // A comment after a statement.
+@return
+-> Mail @_mira now // An `@` before `_` is text.
+-> Email me \@home
+    @end

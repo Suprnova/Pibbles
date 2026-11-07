@@ -1,0 +1,29 @@
+// A speaker is written `name (a, b):`, with one space before the values, a comma and a space between them, and none inside the parentheses. With a full-width colon it is `name（a、b）：`, with no spaces.
+
+@channel pose
+@channel effect: still, shake
+@actor mira
+    name: Mira
+    pose: neutral, happy
+
+== kitchen.door
+mira(happy): This line has no space before the values.
+// PIB5305
+mira ( happy ): This line has spaces inside the parentheses.
+// PIB5305
+mira (happy,shake): This line has no space after the comma.
+// PIB5305
+mira : This line has a space before the colon.
+// PIB5305
+mira （happy 、shake）：This line has spaces around full-width punctuation.
+// PIB5305
+mira（happy）: This line has an ASCII colon, which makes the usual form ASCII.
+// PIB5305
+
+// Must not trigger
+
+mira (happy): This line uses the usual spacing.
+mira (happy, shake): So does this one, with two values.
+mira: So does this one.
+mira（happy、shake）：This line uses the usual full-width spacing.
+mira：So does this one.

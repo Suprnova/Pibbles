@@ -47,7 +47,7 @@ public class ParserTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal("PIB1047", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1108", Assert.Single(tree.Diagnostics).Code);
         Assert.IsType<ErrorExpressionSyntax>(((PauseStatementSyntax)tree.Root.Nodes[0].Body[0]).Duration);
     }
 
@@ -59,14 +59,14 @@ public class ParserTests
         SyntaxTree tree = SyntaxTree.Parse(source);
 
         Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
-        Assert.Equal(("PIB1032", "`@if` can't start an alternative."), (diagnostic.Code, diagnostic.Message));
+        Assert.Equal(("PIB2502", "`@if` can't start an alternative."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Theory]
-    [InlineData("@cycle\n    - @elif $a\n", "PIB1032")]
-    [InlineData("@cycle\n    - @if $a\n", "PIB1032")]
-    [InlineData("@cycle\n    - @if $a:\n", "PIB1032")]
-    [InlineData("@cycle\n    @var $a = 1\n", "PIB1031")]
+    [InlineData("@cycle\n    - @elif $a\n", "PIB2502")]
+    [InlineData("@cycle\n    - @if $a\n", "PIB2502")]
+    [InlineData("@cycle\n    - @if $a:\n", "PIB2502")]
+    [InlineData("@cycle\n    @var $a = 1\n", "PIB2501")]
     public void Parse_LineReportedInVariationBlock_ReportsNothingMoreOnIt(string block, string code)
     {
         var source = new SourceText("story.pib", $"== fixture.start\n{block}");
@@ -83,7 +83,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1023", $"This file already has a `@prefix`, on line {line}."), (diagnostic.Code, diagnostic.Message));
+        Assert.Equal(("PIB1602", $"This file already has a `@prefix`, on line {line}."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Theory]
@@ -110,7 +110,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1015", $"If `{tag}` is part of what mira says, put a backslash before the `#`:\n{fixedLine}"), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1201", $"If `{tag}` is part of what mira says, put a backslash before the `#`:\n{fixedLine}"), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -122,7 +122,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1040", "I didn't expect `@home` here."), (diagnostic.Code, diagnostic.Message));
+        Assert.Equal(("PIB1103", "I didn't expect `@home` here."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Theory]
@@ -135,7 +135,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1040", "If `@home` is text, put a backslash before the `@`."), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1103", "If `@home` is text, put a backslash before the `@`."), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -148,7 +148,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1043", "Write `#team_`.\nIf `#team!` is text, put a backslash before the `#`."), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1202", "Write `#team_`.\nIf `#team!` is text, put a backslash before the `#`."), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -161,7 +161,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1043", "Write `#team_`."), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1202", "Write `#team_`."), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -176,7 +176,7 @@ public class ParserTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal("PIB1043", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1202", Assert.Single(tree.Diagnostics).Code);
         Assert.Equal(["thought"], TagsOf(tree.Root.Nodes[0].Body[0]).Select(tag => tag.Name));
     }
 
@@ -200,14 +200,14 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1040", null), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1103", null), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
-    [InlineData("mira: [b]x #thought", "PIB1010")]
-    [InlineData("mira: {if $a}x #thought", "PIB1013")]
-    [InlineData("-> [b]x @once", "PIB1010")]
-    [InlineData("-> {if $a}x @once", "PIB1013")]
+    [InlineData("mira: [b]x #thought", "PIB3101")]
+    [InlineData("mira: {if $a}x #thought", "PIB3301")]
+    [InlineData("-> [b]x @once", "PIB3101")]
+    [InlineData("-> {if $a}x @once", "PIB3301")]
     public void Parse_ValidTagOrModifierAfterOpenSpanOrBranch_StillReportsUnclosed(string line, string code)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
@@ -237,7 +237,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(($"An option's text can't contain `{point}`.", "PIB1016"), (diagnostic.Message, diagnostic.Code));
+        Assert.Equal(($"An option's text can't contain `{point}`.", "PIB2101"), (diagnostic.Message, diagnostic.Code));
     }
 
     [Theory]
@@ -253,7 +253,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1018", $"`{{{point}}}` takes no value, so I can't use `{value}` after it.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+        Assert.Equal(("PIB3202", $"`{{{point}}}` takes no value, so I can't use `{value}` after it.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
     }
 
     [Theory]
@@ -267,7 +267,7 @@ public class ParserTests
         SyntaxTree tree = SyntaxTree.Parse(source);
 
         Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
-        Assert.Equal(("PIB1017", $"I don't know what `{point}` means.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+        Assert.Equal(("PIB3201", $"I don't know what `{point}` means.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
     }
 
     [Fact]
@@ -277,7 +277,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal("PIB1017", diagnostic.Code);
+        Assert.Equal("PIB3201", diagnostic.Code);
     }
 
     [Theory]
@@ -289,7 +289,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal("PIB1040", diagnostic.Code);
+        Assert.Equal("PIB1103", diagnostic.Code);
     }
 
     [Fact]
@@ -300,7 +300,7 @@ public class ParserTests
         SyntaxTree tree = SyntaxTree.Parse(source);
 
         var pause = (PauseSyntax)((TextLineSyntax)tree.Root.Nodes[0].Body[0]).Content[^1];
-        Assert.Equal(("PIB1046", true), (Assert.Single(tree.Diagnostics).Code, pause.Duration is ErrorExpressionSyntax));
+        Assert.Equal(("PIB1107", true), (Assert.Single(tree.Diagnostics).Code, pause.Duration is ErrorExpressionSyntax));
     }
 
     [Theory]
@@ -315,7 +315,7 @@ public class ParserTests
 
         var declaration = (VariableDeclarationSyntax)tree.Root.Declarations[0];
         Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
-        Assert.Equal(("PIB1049", $"Write `{corrected}`.", name), (diagnostic.Code, diagnostic.Help, declaration.Variable.Name));
+        Assert.Equal(("PIB2301", $"Write `{corrected}`.", name), (diagnostic.Code, diagnostic.Help, declaration.Variable.Name));
         Assert.IsNotType<ErrorExpressionSyntax>(declaration.Value);
     }
 
@@ -328,7 +328,7 @@ public class ParserTests
 
         var set = (SetStatementSyntax)tree.Root.Nodes[0].Body[0];
         Diagnostic diagnostic = Assert.Single(tree.Diagnostics);
-        Assert.Equal(("PIB1049", "Write `@set $door_open = true`.", "door_open"), (diagnostic.Code, diagnostic.Help, set.Variable.Name));
+        Assert.Equal(("PIB2301", "Write `@set $door_open = true`.", "door_open"), (diagnostic.Code, diagnostic.Help, set.Variable.Name));
     }
 
     [Theory]
@@ -451,10 +451,10 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("mira: Hi {$name // }", "PIB1013")]
-    [InlineData("mira: Hi {if $a}yes // {/if}", "PIB1013")]
-    [InlineData("mira: Hi [wave 1 // ]x[/wave]", "PIB1013")]
-    [InlineData("mira: [b]bold // [/b]", "PIB1010")]
+    [InlineData("mira: Hi {$name // }", "PIB3301")]
+    [InlineData("mira: Hi {if $a}yes // {/if}", "PIB3301")]
+    [InlineData("mira: Hi [wave 1 // ]x[/wave]", "PIB3301")]
+    [InlineData("mira: [b]bold // [/b]", "PIB3101")]
     public void Parse_CommentInsideBracketsOrSpan_LeavesItUnclosed(string line, string code)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\n{line}\n");
@@ -513,7 +513,7 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", $"{line}\n");
 
-        TextSpan span = Assert.Single(SyntaxTree.Parse(source).Diagnostics, diagnostic => diagnostic.Code is "PIB1022").Location.Span;
+        TextSpan span = Assert.Single(SyntaxTree.Parse(source).Diagnostics, diagnostic => diagnostic.Code is "PIB1009").Location.Span;
 
         Assert.Equal(reported, line.Substring(span.Start, span.Length));
     }
@@ -633,7 +633,7 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", text);
 
-        Assert.Equal("PIB1040", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+        Assert.Equal("PIB1103", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
 
     [Theory]
@@ -651,7 +651,7 @@ public class ParserTests
             NarrationDeclarationSyntax narration => narration.DisplayName,
             _ => null,
         };
-        Assert.Equal(("PIB1024", "Mira"), (Assert.Single(tree.Diagnostics).Code, displayName));
+        Assert.Equal(("PIB2001", "Mira"), (Assert.Single(tree.Diagnostics).Code, displayName));
     }
 
     [Fact]
@@ -724,7 +724,7 @@ public class ParserTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal(("PIB1046", 1), (Assert.Single(tree.Diagnostics).Code, tree.Comments.Count));
+        Assert.Equal(("PIB1107", 1), (Assert.Single(tree.Diagnostics).Code, tree.Comments.Count));
     }
 
     [Theory]
@@ -743,11 +743,11 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("@jump \"abc", "PIB1041")]
-    [InlineData("@jump 1x", "PIB1042")]
-    [InlineData("@foo #a!b", "PIB1043")]
-    [InlineData("mira: {pause \"abc}", "PIB1041")]
-    [InlineData("mira: #a!b more", "PIB1043")]
+    [InlineData("@jump \"abc", "PIB1104")]
+    [InlineData("@jump 1x", "PIB1105")]
+    [InlineData("@foo #a!b", "PIB1202")]
+    [InlineData("mira: {pause \"abc}", "PIB1104")]
+    [InlineData("mira: #a!b more", "PIB1202")]
     [InlineData("mira: [///", "PIB1005")]
     public void Parse_TokenTheLexerReported_IsNotReportedAgain(string line, string code)
     {
@@ -761,7 +761,7 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", "== kitchen.door\n@foo \"\\n\" 1x\n");
 
-        Assert.Equal(["PIB1014", "PIB1042"], SyntaxTree.Parse(source).Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB1101", "PIB1105"], SyntaxTree.Parse(source).Diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
     [Theory]
@@ -775,7 +775,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1040", $"I didn't expect {keyword} here."), (diagnostic.Code, diagnostic.Message));
+        Assert.Equal(("PIB1103", $"I didn't expect {keyword} here."), (diagnostic.Code, diagnostic.Message));
     }
 
     [Fact]
@@ -783,12 +783,12 @@ public class ParserTests
     {
         var source = new SourceText("story.pib", "== kitchen.door\nmira: {if $a}x[b]y{else}z[/b]{/if}\n");
 
-        Assert.Equal("PIB1010", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
+        Assert.Equal("PIB3101", Assert.Single(SyntaxTree.Parse(source).Diagnostics).Code);
     }
 
     [Theory]
-    [InlineData("[i][b]x[/i#x]", "PIB1043")]
-    [InlineData("[i][c][b]x[/i \"abc]", "PIB1041")]
+    [InlineData("[i][b]x[/i#x]", "PIB1202")]
+    [InlineData("[i][c][b]x[/i \"abc]", "PIB1104")]
     public void Parse_MalformedCloseOfAnOuterSpan_IsLexedOnce(string text, string code)
     {
         var source = new SourceText("story.pib", $"== kitchen.door\nmira: {text}\n");
@@ -817,7 +817,7 @@ public class ParserTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal("PIB1021", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1008", Assert.Single(tree.Diagnostics).Code);
         Assert.Single(tree.Root.Nodes[0].Body);
     }
 
@@ -834,7 +834,7 @@ public class ParserTests
             ("ime.case", 0.5m, "has_item", "key"),
             (((JumpStatementSyntax)body[0]).Target.Text, ((DurationLiteralSyntax)((PauseStatementSyntax)body[1]).Duration).Seconds, condition.Function.Text, ((StringLiteralSyntax)condition.Arguments[0]).Value));
         Assert.Single(((IfStatementSyntax)body[2]).Body);
-        Assert.All(tree.Diagnostics, diagnostic => Assert.Equal("PIB1044", diagnostic.Code));
+        Assert.All(tree.Diagnostics, diagnostic => Assert.Equal("PIB1106", diagnostic.Code));
     }
 
     [Fact]
@@ -875,8 +875,8 @@ public class ParserTests
 
         Assert.Equal(
             [
-                ("PIB1044", "I read `＄` (U+FF04) as `$`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
-                ("PIB1044", "I read `＝` (U+FF1D) as `=`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
+                ("PIB1106", "I read `＄` (U+FF04) as `$`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
+                ("PIB1106", "I read `＝` (U+FF1D) as `=`, but markers are typed half-width.", "Write `@set $met = true`, typing markers in your input method's direct (half-width) mode."),
             ],
             tree.Diagnostics.Select(diagnostic => (diagnostic.Code, diagnostic.Message, diagnostic.Help)));
     }
@@ -888,7 +888,7 @@ public class ParserTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal(["PIB1044", "PIB1044", "PIB1046"], tree.Diagnostics.OrderBy(diagnostic => diagnostic.Location.Span.Start).Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB1106", "PIB1106", "PIB1107"], tree.Diagnostics.OrderBy(diagnostic => diagnostic.Location.Span.Start).Select(diagnostic => diagnostic.Code));
     }
 
     [Fact]
@@ -903,7 +903,7 @@ public class ParserTests
         Assert.Single(((IfStatementSyntax)node.Body[0]).Body);
         Assert.Single(Assert.Single(((ChoiceSyntax)node.Body[1]).Options).Body);
         Assert.Equal(2, ((VariationStatementSyntax)node.Body[2]).Alternatives.Count);
-        Assert.Equal(5, tree.Diagnostics.Count(diagnostic => diagnostic.Code is "PIB1044"));
+        Assert.Equal(5, tree.Diagnostics.Count(diagnostic => diagnostic.Code is "PIB1106"));
         Assert.Equal(5, tree.Diagnostics.Count);
     }
 
@@ -918,7 +918,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1044", help), (diagnostic.Code, diagnostic.Help));
+        Assert.Equal(("PIB1106", help), (diagnostic.Code, diagnostic.Help));
     }
 
     [Theory]
@@ -933,7 +933,7 @@ public class ParserTests
         Diagnostic diagnostic = SyntaxTree.Parse(source).Diagnostics[0];
 
         Assert.Equal(
-            ("PIB1019", DiagnosticSeverity.Warning, $"I show `{written}` as text, but it looks like `{marker}` typed through an input method.", $"Write `{marker}`, typing markers in your input method's direct (half-width) mode. If `{written}` is text, put a backslash before the `{written[0]}`."),
+            ("PIB1102", DiagnosticSeverity.Warning, $"I show `{written}` as text, but it looks like `{marker}` typed through an input method.", $"Write `{marker}`, typing markers in your input method's direct (half-width) mode. If `{written}` is text, put a backslash before the `{written[0]}`."),
             (diagnostic.Code, diagnostic.Severity, diagnostic.Message, diagnostic.Help));
     }
 
@@ -946,7 +946,7 @@ public class ParserTests
 
         OptionSyntax option = Assert.Single(((ChoiceSyntax)tree.Root.Nodes[0].Body[0]).Options);
         Assert.Equal(("はい ＠if $met", null), (((TextRunSyntax)Assert.Single(option.Text)).Text, option.Condition));
-        Assert.Equal("PIB1019", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1102", Assert.Single(tree.Diagnostics).Code);
     }
 
     [Theory]
@@ -958,7 +958,7 @@ public class ParserTests
 
         Diagnostic diagnostic = Assert.Single(SyntaxTree.Parse(source).Diagnostics);
 
-        Assert.Equal(("PIB1021", $"`{declaration.Split(' ')[0]}` can't go inside a node.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
+        Assert.Equal(("PIB1008", $"`{declaration.Split(' ')[0]}` can't go inside a node.", help), (diagnostic.Code, diagnostic.Message, diagnostic.Help));
     }
 
     private static IReadOnlyList<TagSyntax> TagsOf(StatementSyntax statement) => statement switch

@@ -197,8 +197,8 @@ public class BindingsTests
         (Compilation compilation, _) = Compile("@var $a = 1\n@var $a = \"x\"\n");
 
         string[] codes = [.. compilation.Diagnostics.Select(diagnostic => diagnostic.Code)];
-        Assert.Contains("PIB2060", codes);
-        Assert.DoesNotContain("PIB2031", codes);
+        Assert.Contains("PIB1402", codes);
+        Assert.DoesNotContain("PIB2303", codes);
     }
 
     private static string[] ParameterNames(Compilation compilation, CommandStatementSyntax command) =>

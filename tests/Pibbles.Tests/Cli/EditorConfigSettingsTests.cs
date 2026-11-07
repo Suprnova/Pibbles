@@ -14,8 +14,8 @@ public sealed class EditorConfigSettingsTests : IDisposable
     public EditorConfigSettingsTests()
     {
         Directory.CreateDirectory(Path.Combine(root.FullName, "story", "drafts"));
-        Write(".editorconfig", "root = true\n\n[*.pib]\npibbles_diagnostic.PIB3010.severity = error\n");
-        Write("story/drafts/.editorconfig", "[*.pib]\npibbles_diagnostic.PIB3010.severity = none\n");
+        Write(".editorconfig", "root = true\n\n[*.pib]\npibbles_diagnostic.PIB1302.severity = error\n");
+        Write("story/drafts/.editorconfig", "[*.pib]\npibbles_diagnostic.PIB1302.severity = none\n");
         Write("story/kitchen.pib", "== kitchen.door\nLocked.\n");
         Write("story/drafts/cellar.pib", "== cellar.stairs\nDark.\n");
     }
@@ -36,7 +36,7 @@ public sealed class EditorConfigSettingsTests : IDisposable
         int exitCode = Check.Run(sources, new(OutputFormat.MSBuild), output, options);
 
         Assert.Equal(Check.Failed, exitCode);
-        Assert.Equal("story/kitchen.pib(2,8): error PIB3010: This line has no `#id`.\n", output.ToString().ReplaceLineEndings("\n"));
+        Assert.Equal("story/kitchen.pib(2,8): error PIB1302: This line has no `#id`.\n", output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Fact]

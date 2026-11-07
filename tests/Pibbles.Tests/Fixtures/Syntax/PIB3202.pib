@@ -1,0 +1,17 @@
+// A value after a point that takes none.
+
+== fixture.points
+Wait.{w 0.5} Then more.
+//      ^^^ PIB3202
+Page.{page 2} Then more.
+//         ^ PIB3202
+Break.{br 1} Then more.
+//        ^ PIB3202
+
+// Must not trigger
+
+Wait.{w} Then more.
+Pause.{pause 0.5} Then more.
+Fast.{speed 2} Then more.
+Page.{page}Then more.
+Break.{br}Then more.

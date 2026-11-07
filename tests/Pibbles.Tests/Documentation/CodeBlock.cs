@@ -5,7 +5,7 @@ namespace Pibbles.Tests.Documentation;
 /// <summary>A fenced code block in the language reference or the writer's guide.</summary>
 /// <param name="Document">The document's file name, such as <c>reference.md</c>.</param>
 /// <param name="Line">The 1-based line of the opening fence.</param>
-/// <param name="Info">The fence's info string, such as <c>pib</c> or <c>pib-error PIB1061</c>.</param>
+/// <param name="Info">The fence's info string, such as <c>pib</c> or <c>pib-error PIB3002</c>.</param>
 /// <param name="Text">The block's text, without its fences.</param>
 internal sealed partial record CodeBlock(string Document, int Line, string Info, string Text)
 {

@@ -1,0 +1,20 @@
+// A negative number in a command argument goes in brackets.
+
+== fixture.negative
+@shake_screen -1
+//            ^^ PIB2603
+@shake_screen strength=-0.5
+//                     ^^^^ PIB2603
+@move_by -$distance
+//       ^^^^^^^^^^ PIB2603
+
+// Must not trigger
+
+@shake_screen (-1)
+@shake_screen strength=(-0.5)
+@set $x = -1
+@pause -1s - -2s
+@shake_screen -
+//             ^ PIB1107
+mira: Wait{pause -}.
+//                ^ PIB1107

@@ -124,18 +124,18 @@ File 1:1-19:1
 Comments:
   1:1-1:52 "Broken inline text still leaves a complete tree."
 Diagnostics:
-  PIB1010 4:7 I can't find the end of this `[clue]`.
-  PIB1011 5:21 I expected `[/i]` here, because `[i]` was opened last.
-  PIB1012 6:14 `[/b]` closes markup that was never opened.
-  PIB1013 7:7 I can't find the `}` that ends this `{`.
-  PIB1017 8:7 I don't know what `{they}` means.
-  PIB1015 9:11 I read `#winning` as a tag, but tags go at the end of the line.
-  PIB1016 10:9 An option's text can't contain `{w}`.
-  PIB1013 11:7 I can't find the `{/if}` that ends this `{if}`.
-  PIB1054 12:1 `mira:` has nothing after it.
-  PIB1046 13:20 I expected a value after `pause`.
-  PIB1018 14:16 `{w}` takes no value, so I can't use `0.5` after it.
-  PIB1040 15:22 I didn't expect `{else}` here.
-  PIB1040 16:22 I didn't expect `{elif $b}` here.
-  PIB1040 17:11 I didn't expect `{else}` here.
-  PIB1040 18:11 I didn't expect `{/if}` here.
+  PIB3101 4:7 I can't find the end of this `[clue]`.
+  PIB3102 5:21 I expected `[/i]` here, because `[i]` was opened last.
+  PIB3103 6:14 `[/b]` closes markup that was never opened.
+  PIB3301 7:7 I can't find the `}` that ends this `{`.
+  PIB3201 8:7 I don't know what `{they}` means.
+  PIB1201 9:11 I read `#winning` as a tag, but tags go at the end of the line.
+  PIB2101 10:9 An option's text can't contain `{w}`.
+  PIB3301 11:7 I can't find the `{/if}` that ends this `{if}`.
+  PIB2003 12:1 `mira:` has nothing after it.
+  PIB1107 13:20 I expected a value after `pause`.
+  PIB3202 14:16 `{w}` takes no value, so I can't use `0.5` after it.
+  PIB1103 15:22 I didn't expect `{else}` here.
+  PIB1103 16:22 I didn't expect `{elif $b}` here.
+  PIB1103 17:11 I didn't expect `{else}` here.
+  PIB1103 18:11 I didn't expect `{/if}` here.

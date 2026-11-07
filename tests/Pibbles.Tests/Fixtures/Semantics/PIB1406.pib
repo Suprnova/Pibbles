@@ -1,0 +1,14 @@
+// A type is built in, or an enum the story declares.
+
+@enum position: left, right
+@command show(at: postion)
+//                ^^^^^^^ PIB1406
+@var $count: numbr = 0
+//           ^^^^^ PIB1406
+@function mood() -> feeling
+//                  ^^^^^^^ PIB1406
+
+// Must not trigger
+
+@command hide(at: position)
+@function name() -> string

@@ -1,0 +1,18 @@
+// A declared name is a single name. Only node names have dots.
+
+@enum rooms.kitchen: a, b
+//    ^^^^^^^^^^^^^ PIB1401
+@actor .mira
+//     ^^^^^ PIB1401
+    name: Mira
+@command show(who.ever: actor)
+//            ^^^^^^^^ PIB1401
+@var $where: positions.all = left
+//           ^^^^^^^^^^^^^ PIB1401
+@icon a, b.c
+//       ^^^ PIB1401
+
+// Must not trigger
+
+@var $next: node = kitchen.door
+@command move(who: actor, to: position = left)

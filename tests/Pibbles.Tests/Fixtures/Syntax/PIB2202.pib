@@ -1,0 +1,28 @@
+// Block openers have no `:`.
+
+@actor mira:
+//         ^ PIB2202
+    name: Mira
+
+== fixture.colons
+@if $door_open:
+//            ^ PIB2202
+    The block still belongs to the @if.
+@elif has_item("crowbar"):
+//                       ^ PIB2202
+    @end
+@else:
+//   ^ PIB2202
+    @end
+@cycle: #id:b8k2qd
+//    ^ PIB2202
+    - The tag after it is still read.
+@once:
+//   ^ PIB2202
+
+// Must not trigger
+
+@if $door_open // A comment: with a colon.
+    mira: A speaker's colon is fine.
+@once #id:c4m9xt
+    @set $a = 1

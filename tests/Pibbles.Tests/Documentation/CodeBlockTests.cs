@@ -40,7 +40,7 @@ public partial class CodeBlockTests
         string[] expected = [.. block.Info.Split(' ').Skip(1)];
 
         var (diagnostics, headerLines) = Compile(block);
-        Diagnostic[] reported = [.. diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010" && (error || diagnostic.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning))];
+        Diagnostic[] reported = [.. diagnostics.Where(diagnostic => diagnostic.Code is not "PIB1302" && (error || diagnostic.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning))];
 
         Assert.True(reported.Select(diagnostic => diagnostic.Code).SequenceEqual(expected),
             $"Expected [{string.Join(", ", expected)}], got:\n{string.Join("\n", reported.Select(diagnostic => Describe(block, headerLines, diagnostic)))}");
@@ -49,7 +49,7 @@ public partial class CodeBlockTests
     /// <summary>The prelude's variables are for the blocks to use, so on its own nothing uses them.</summary>
     [Fact]
     public void Compile_DocumentationPrelude_ReportsOnlyMissingIdsAndUnusedVariables() =>
-        Assert.All(Compilation.Create([Prelude]).Diagnostics, diagnostic => Assert.Contains(diagnostic.Code, (string[])["PIB3010", "PIB5040"]));
+        Assert.All(Compilation.Create([Prelude]).Diagnostics, diagnostic => Assert.Contains(diagnostic.Code, (string[])["PIB1302", "PIB5401"]));
 
     private static bool HasValidInfo(CodeBlock block) => block.Info.Split(' ') switch
     {

@@ -10,12 +10,12 @@ public sealed class ExplainTests : IDisposable
 
         | Code | Default | Message | Help |
         | --- | --- | --- | --- |
-        | PIB1010 | Error | I can't find the end of this `[clue]`. | Close it with `[/clue]`. |
-        | PIB2001 | Error | I don't know an actor called `Note`. | Escape the colon. |
+        | PIB3101 | Error | I can't find the end of this `[clue]`. | Close it with `[/clue]`. |
+        | PIB2004 | Error | I don't know an actor called `Note`. | Escape the colon. |
 
         ## Explanations
 
-        ### PIB1010
+        ### PIB3101
 
         **A span closes on its line.**
 
@@ -38,25 +38,25 @@ public sealed class ExplainTests : IDisposable
     }
 
     [Theory]
-    [InlineData("PIB1010")]
-    [InlineData("pib1010")]
-    [InlineData(" PIB1010 ")]
+    [InlineData("PIB3101")]
+    [InlineData("pib3101")]
+    [InlineData(" PIB3101 ")]
     public void Run_DocumentedCode_PrintsHeadlineHelpAndExplanation(string code)
     {
         int exitCode = Explain.Run(code, Catalog, output, error);
 
         Assert.Equal(Check.Passed, exitCode);
         Assert.Equal(
-            "error[PIB1010]: I can't find the end of this `[clue]`.\n  = help: Close it with `[/clue]`.\n\nA span closes on its line.\n\n    mira: [clue]Key\n\nClose it.\n\n",
+            "error[PIB3101]: I can't find the end of this `[clue]`.\n  = help: Close it with `[/clue]`.\n\nA span closes on its line.\n\n    mira: [clue]Key\n\nClose it.\n\n",
             output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Fact]
     public void Run_CodeWithoutExplanation_PrintsHeadlineAndHelp()
     {
-        Explain.Run("PIB2001", Catalog, output, error);
+        Explain.Run("PIB2004", Catalog, output, error);
 
-        Assert.Equal("error[PIB2001]: I don't know an actor called `Note`.\n  = help: Escape the colon.\n", output.ToString().ReplaceLineEndings("\n"));
+        Assert.Equal("error[PIB2004]: I don't know an actor called `Note`.\n  = help: Escape the colon.\n", output.ToString().ReplaceLineEndings("\n"));
     }
 
     [Theory]
@@ -86,10 +86,10 @@ public sealed class ExplainTests : IDisposable
     [Fact]
     public void Run_WithColor_PaintsHeadlineAndExamples()
     {
-        Explain.Run("PIB1010", Catalog, output, error, color: true);
+        Explain.Run("PIB3101", Catalog, output, error, color: true);
 
         string text = output.ToString();
-        Assert.Contains("\e[1;31merror[PIB1010]", text);
+        Assert.Contains("\e[1;31merror[PIB3101]", text);
         Assert.Contains("    \e[32mmira: [clue]Key", text);
     }
 }

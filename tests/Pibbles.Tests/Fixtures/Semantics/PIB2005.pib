@@ -1,29 +1,36 @@
-// Only the values go between a speaker's name and its colon.
+// A value is one of the values its speaker has.
 
 @channel pose
 @channel effect: still, shake
+@narration
+    effect: still
 @actor mira
     name: Mira
-    pose: mad
+    pose: neutral, smug
+@actor rex
+    name: Rex
+    no effect
 
 == kitchen.door
-mira (mad) (shake): Fine.
-//         ^^^^^^^ PIB2005
-mira(mad)(shake): Fine.
-//       ^^^^^^^ PIB2005
-mira (mad) shake: Fine.
-//         ^^^^^ PIB2005
-mira（mad）（shake）：Fine.
-//       ^^^^^^^ PIB2005
+mira (smirk): I knew it.
+//    ^^^^^ PIB2005
+mira (happy):
+//    ^^^^^ PIB2005
+mira (smug, wobble): I knew it.
+//          ^^^^^^ PIB2005
+rex (shake): Hm.
+//   ^^^^^ PIB2005
+(still, shake): The effect list is narration's own.
+//      ^^^^^ PIB2005
+mira（smirk）：I knew it.
+//   ^^^^^ PIB2005
 
 // Must not trigger
 
-mira（mad）shake\：Fine.
-mira（mad）：Fine.
-
-mira (mad) leaves the room.
-mira (mad) leaves the room: she said.
-mira (mad) shake\: Fine.
-Breakfast (served) daily: eggs.
-mira (mad): Fine.
-mira (mad, shake): Fine.
+mira（smug）：I knew it.
+（still）：Narration's own value.
+mira (smug): I knew it.
+mira (neutral):
+mira (smug, shake): Both channels.
+(still): Narration's own value.
+rex: Hm.

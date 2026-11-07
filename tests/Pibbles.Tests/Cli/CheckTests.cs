@@ -41,7 +41,7 @@ public sealed class CheckTests : IDisposable
 
         Assert.Equal(Check.Failed, exitCode);
         Assert.EndsWith(
-            "warning[PIB3010]: 6 lines have no `#id`.\n" +
+            "warning[PIB1302]: 6 lines have no `#id`.\n" +
             " --> story/rooms.pib: 4 lines\n" +
             " --> story/hall.pib: 2 lines\n" +
             "  |\n" +
@@ -49,7 +49,7 @@ public sealed class CheckTests : IDisposable
             "\n" +
             "Checked 2 files: 1 error and 6 warnings.\n",
             output.ToString().ReplaceLineEndings("\n"));
-        Assert.Equal(1, Regex.Count(output.ToString(), @"\[PIB3010\]"));
+        Assert.Equal(1, Regex.Count(output.ToString(), @"\[PIB1302\]"));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class CheckTests : IDisposable
 
         Check.Run([story], new(OutputFormat.Pretty), output);
 
-        Assert.Equal(5, Regex.Count(output.ToString(), @"warning\[PIB3010\]: This line has no `#id`\."));
+        Assert.Equal(5, Regex.Count(output.ToString(), @"warning\[PIB1302\]: This line has no `#id`\."));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class CheckTests : IDisposable
 
         Check.Run([story], new(OutputFormat.MSBuild), output);
 
-        Assert.Equal(6, Regex.Count(output.ToString(), "warning PIB3010"));
+        Assert.Equal(6, Regex.Count(output.ToString(), "warning PIB1302"));
     }
 
     [Fact]
@@ -78,8 +78,8 @@ public sealed class CheckTests : IDisposable
         Check.Run([broken], new(OutputFormat.MSBuild), output);
 
         Assert.Equal(
-            "story/broken.pib(2,5): error PIB1015: I read `#winning` as a tag, but tags go at the end of the line.\n" +
-            "story/broken.pib(3,6): error PIB1046: I expected a node name after `@jump`.\n",
+            "story/broken.pib(2,5): error PIB1201: I read `#winning` as a tag, but tags go at the end of the line.\n" +
+            "story/broken.pib(3,6): error PIB1107: I expected a node name after `@jump`.\n",
             output.ToString().ReplaceLineEndings("\n"));
     }
 
@@ -90,7 +90,7 @@ public sealed class CheckTests : IDisposable
 
         JsonElement first = JsonDocument.Parse(output.ToString()).RootElement[0];
         Assert.Equal(
-            ("story/broken.pib", 2, 5, 2, 13, "error", "PIB1015", false),
+            ("story/broken.pib", 2, 5, 2, 13, "error", "PIB1201", false),
             (first.GetProperty("path").GetString(), first.GetProperty("line").GetInt32(), first.GetProperty("column").GetInt32(),
              first.GetProperty("endLine").GetInt32(), first.GetProperty("endColumn").GetInt32(), first.GetProperty("severity").GetString(),
              first.GetProperty("code").GetString(), first.TryGetProperty("label", out _)));

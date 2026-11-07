@@ -1,0 +1,20 @@
+// Every `(` needs a `)` on the same line.
+
+== fixture.parentheses
+@set $x = (1 + 2
+//        ^ PIB3001
+@if has_item("key"
+//          ^ PIB3001
+    @end
+@shake_screen ($bravery * 0.5
+//            ^ PIB3001
+
+// Must not trigger
+
+@set $x = ((1 + 2) * 3)
+@if has_item("key")
+    @end
+@shake_screen f(1 2)
+//                ^ PIB1103
+@set $x = (1 2)
+//           ^ PIB1103

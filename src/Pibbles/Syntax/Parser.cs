@@ -16,7 +16,7 @@ internal sealed partial class Parser
 {
     /// <summary>
     /// The most levels the parser nests: indented blocks, markup spans, conditional-text branches, parentheses, call
-    /// arguments, <c>not</c> and <c>-</c> operators, and chained operators. Past it the parser reports PIB1062 and builds
+    /// arguments, <c>not</c> and <c>-</c> operators, and chained operators. Past it the parser reports PIB1010 and builds
     /// nothing deeper, so every pass that walks the tree recurses a bounded number of times.
     /// </summary>
     internal const int MaxNesting = 64;

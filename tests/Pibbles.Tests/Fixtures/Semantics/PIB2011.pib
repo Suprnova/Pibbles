@@ -1,27 +1,21 @@
-// An argument has the type of its parameter.
+// A block can only change channels the story declares.
 
-@enum room: kitchen, cellar
-@enum position: left, right
+@channel pose
+@channel effect: still, shake
 @actor mira
     name: Mira
-@function has_item(id: string) -> bool
-@function is_in(where: room) -> bool
-@function after(time: duration) -> bool
-@command show(who: actor, at: position = left)
-
-== kitchen.door
-@if has_item(3)
-//           ^ PIB2011
-    It's not an item.
-@if is_in("kitchen")
-//        ^^^^^^^^^ PIB2011
-    Rooms aren't quoted.
-@show "mira" at=3
-//    ^^^^^^ PIB2011
-//              ^ PIB2011
+    pos: happy
+//  ^^^ PIB2011
+    effect += wobble
+    no camra
+//     ^^^^^ PIB2011
 
 // Must not trigger
 
-@if has_item("key") and is_in(cellar) and after(2)
-    A number stands in for a duration.
-@show mira at=right
+@actor rex
+    name: Rex
+    pose: sad
+    effect += wobble
+@actor sam
+    name: Sam
+    no effect

@@ -1,0 +1,28 @@
+// A relative name needs a `@prefix` to be relative to.
+
+@var $.attempts = 0
+//   ^^^^^^^^^^ PIB1603
+@var $kitchen.tries = 0
+@var $lights = false
+
+== .door
+// ^^^^^ PIB1603
+== kitchen.cellar #was:.old_cellar
+//                     ^^^^^^^^^^^ PIB1603
+@if visits(.cellar) > 0
+//         ^^^^^^^ PIB1603
+    Back in the cellar.
+@set $.attempts += 1
+//   ^^^^^^^^^^ PIB1603
+Tried {$.attempts} times.
+//     ^^^^^^^^^^ PIB1603
+@jump .leave
+//    ^^^^^^ PIB1603
+
+// Must not trigger
+
+== kitchen.leave #was:kitchen.exit
+@set $kitchen.tries += 1
+@if $lights
+    Tried {$kitchen.tries} times.
+@jump kitchen.cellar

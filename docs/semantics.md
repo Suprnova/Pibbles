@@ -6,7 +6,7 @@ Semantic analysis resolves every name in the syntax trees, checks every type, an
 
 `Compilation.Create` takes a story's sources, as `(path, text)` pairs, parses each file and runs the passes below over all of them together. It never throws on bad input. Its diagnostics, from parsing and analysis alike, are grouped by file in the order the files were given, then ordered by position.
 
-1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, one namespace per kind of name, and reports PIB2007, PIB2021, PIB2022, PIB2060–PIB2069 and the style rule PIB5015. [Relative node and variable names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
+1. **Declaration pass.** Gathers declarations and node names from every file (plus the prelude) into a symbol table, one namespace per kind of name, and reports PIB1208, PIB1402–PIB1406, PIB1502, PIB1603, PIB2010–PIB2012, PIB2304, PIB2612 and the style rule PIB5111. [Relative node and variable names](language/reference.md#prefixes) are expanded with their file's prefix here and in binding, so every later stage sees only full names.
    - **The prelude** is Pibbles source built into the core, parsed like any other file: `@markup b`, `i`, `u`, `s` and `color(value: string)`, and `@function visits(target: node) -> number`, which the core handles itself. Its names are [reserved](language/reference.md#reserved-words), so a story can't declare them again, and its symbols have no source location.
    - **Order:** enums are declared first, then channels, then actors and narration, and variables last, across every file, so declaration order never matters. An actor's block changes the values every actor has, so channels come before actors. Every type is known before a parameter, function or tag uses it, and a variable whose initial value is a name can be told which type that name belongs to.
    - **One problem, one diagnostic.** A name that's reserved or not ASCII is reported and still declared, so the places that use it don't report it again. A duplicate is reported at the later declaration, which names where the earlier one is, and the earlier one is the one the story uses. A type that doesn't exist is reported once, and whatever has it gets the error type, which nothing reports on.
@@ -19,9 +19,9 @@ Semantic analysis resolves every name in the syntax trees, checks every type, an
    - **"Did you mean" suggestions** compare a name only with the names that could go there, such as this actor's values or this enum's members, by the rule in the [diagnostics catalog](diagnostics.md#ranges). When the name is valid as another kind, the help says so instead: a bare `has_key` in a condition suggests `$has_key`, and `crowbar` where text is expected suggests `"crowbar"`.
    - **The error type** is what anything gets when its type can't be known, because of a problem already reported, such as an unknown variable. It converts to and from every type, and no check reports on it, so one mistake is reported once however deep it sits in an expression.
 3. **Flow and content checks.** Statements that never run, options with no text, and missing or duplicate line IDs. What option text may contain is a [syntax check](syntax.md#syntax-checks).
-   - **Statements that never run (PIB3001).** A statement always leaves its block when it's `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose every branch always leaves. The first statement after one in the same block is reported, once per block. It's decided from the statements alone: conditions are never evaluated and values never tracked. Choices and variations never count as leaving, since a choice is skipped when no option is available and a variation's block can be skipped too.
-   - **Conditions that never change (PIB3040, PIB3041).** An `@if` or `@elif` condition made only of constants is worked out: `true` and `false`, `not`, comparisons of numbers and durations written out, an `and` with a side that is false, and an `or` with a side that is true, whatever the other side is (`$x and false`, `true or $x`). A condition that is always false is reported (PIB3040), and so is the first that is always true when an `@elif` or `@else` follows it (PIB3041). `{if}` text and option conditions aren't checked.
-   - **Options with no text (PIB3002)** are information, not errors. The story runs, and the host decides what an empty option looks like, so a game that wants one turns the code off.
+   - **Statements that never run (PIB2401).** A statement always leaves its block when it's `@jump`, `@end` or `@return`, or an `@if` with an `@else` whose every branch always leaves. The first statement after one in the same block is reported, once per block. It's decided from the statements alone: conditions are never evaluated and values never tracked. Choices and variations never count as leaving, since a choice is skipped when no option is available and a variation's block can be skipped too.
+   - **Conditions that never change (PIB2402, PIB2403).** An `@if` or `@elif` condition made only of constants is worked out: `true` and `false`, `not`, comparisons of numbers and durations written out, an `and` with a side that is false, and an `or` with a side that is true, whatever the other side is (`$x and false`, `true or $x`). A condition that is always false is reported (PIB2402), and so is the first that is always true when an `@elif` or `@else` follows it (PIB2403). `{if}` text and option conditions aren't checked.
+   - **Options with no text (PIB2102)** are information, not errors. The story runs, and the host decides what an empty option looks like, so a game that wants one turns the code off.
 4. **Style checks.** The [style rules](#style-rules), over the syntax trees, with the symbol table for actors and the recorded references for unused variables. Each file's thresholds come from its settings. Most rules look at one file; repeated lines (PIB5003) and repeated colors (PIB5004) count across the story, and each place is reported when the count reaches its own file's threshold.
 
 Once every pass has run, each diagnostic gets the severity its file's settings give it, or is dropped when they turn it off, and then [`// pibbles-ignore`](#levels-and-visibility) comments silence what they cover. Last, style hints on a line that has an error are dropped.
@@ -220,11 +220,11 @@ There's no quick fix. A new markup only looks right once the game implements its
 
 ### Redundancy
 
-#### PIB5010 and PIB5016 – Redundant channel value ⚡
+#### PIB5101 and PIB5102 – Redundant channel value ⚡
 
 **Level:** hint
 
-Flags a value that has no visible effect. PIB5010 reports a value set by a line with no text that another change in its channel overrides before any line shows. PIB5016 reports a value the speaker already has in that channel. They follow each actor's and narration's value in each channel, and only fire when that's certain: in straight-line flow, with nothing but lines, `@set` and `@pause` in between. A command, `@call`, choice, jump or block might change a value or skip ahead, so after one nothing is known. A `@pause` shows the values, so a line with no text before one is seen.
+Flags a value that has no visible effect. PIB5101 reports a value set by a line with no text that another change in its channel overrides before any line shows. PIB5102 reports a value the speaker already has in that channel. They follow each actor's and narration's value in each channel, and only fire when that's certain: in straight-line flow, with nothing but lines, `@set` and `@pause` in between. A command, `@call`, choice, jump or block might change a value or skip ahead, so after one nothing is known. A `@pause` shows the values, so a line with no text before one is seen.
 
 Non-compliant:
 
@@ -245,14 +245,14 @@ mira: This line keeps it.
 mira (happy): Only the pose that's actually seen is written.
 ```
 
-#### PIB5011, PIB5017 and PIB5018 – Redundant wait or pause ⚡
+#### PIB5103, PIB5104 and PIB5105 – Redundant wait or pause ⚡
 
 **Level:** hint
 
 Flags waits and pauses that do nothing or could be one:
-- PIB5011: `{w}` at the very end of a line. The end of a line already waits for a click.
-- PIB5017: `{w}` directly before `{page}`. The page break already waits.
-- PIB5018: timed pauses right next to each other.
+- PIB5103: `{w}` at the very end of a line. The end of a line already waits for a click.
+- PIB5104: `{w}` directly before `{page}`. The page break already waits.
+- PIB5105: timed pauses right next to each other.
 
 Timed pauses at the end of a line aren't flagged, because they add a delay in auto mode.
 
@@ -272,14 +272,14 @@ This line waits once here.{page}New page.
 This line pauses{pause 0.5} in one step.
 ```
 
-#### PIB5012, PIB5019 and PIB5050 – Redundant markup ⚡
+#### PIB5106, PIB5107 and PIB5108 – Redundant markup ⚡
 
 **Level:** hint
 
 Flags markup that does nothing:
-- PIB5012: empty spans
-- PIB5019: a span nested inside one just like it
-- PIB5050: two like spans side by side, which could be one
+- PIB5106: empty spans
+- PIB5107: a span nested inside one just like it
+- PIB5108: two like spans side by side, which could be one
 
 Spans are alike when they have the same name and the same arguments, so a `[color]` inside a different color isn't flagged.
 
@@ -299,7 +299,7 @@ This line is [b]bold and still just bold[/b].
 This line is [b]one span[/b].
 ```
 
-#### PIB5013 – Redundant condition ⚡
+#### PIB5109 – Redundant condition ⚡
 
 **Level:** hint
 
@@ -323,7 +323,7 @@ This line says the same thing.
 This line appears either way.
 ```
 
-#### PIB5014 – Redundant `@return` ⚡
+#### PIB5110 – Redundant `@return` ⚡
 
 **Level:** hint
 
@@ -346,7 +346,7 @@ This line is shared.
 
 `@return` earlier in a node, for example inside an `@if`, is fine.
 
-#### PIB5015 – Redundant `@prefix` dot ⚡
+#### PIB5111 – Redundant `@prefix` dot ⚡
 
 **Level:** info
 
@@ -368,7 +368,7 @@ Compliant:
 
 ### Expressions
 
-#### PIB5020 – Comparing with `true` or `false` ⚡
+#### PIB5201 – Comparing with `true` or `false` ⚡
 
 **Level:** hint
 
@@ -386,7 +386,7 @@ Compliant:
 @if not $has_key
 ```
 
-#### PIB5021 – Use `+=` and `-=` ⚡
+#### PIB5202 – Use `+=` and `-=` ⚡
 
 **Level:** hint
 
@@ -408,9 +408,9 @@ Compliant:
 
 ### Readability
 
-#### PIB5030 and PIB5034 – Long text
+#### PIB5301 and PIB5302 – Long text
 
-**Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters) for lines, PIB5030, and `pibbles_max_option_length` (default 80) for options, PIB5034
+**Level:** hint · **Settings:** `pibbles_max_message_length` (default 300 characters) for lines, PIB5301, and `pibbles_max_option_length` (default 80) for options, PIB5302
 
 Flags a line or option whose text is too long to read comfortably in one go. Markup and pacing don't count toward the length, an icon counts as one character, and a value shown with `{…}` counts nothing, since its length isn't known. For conditional text, the longest branch counts. A line counts its longest page, since `{page}` starts a new one. Long options also crowd the choice menu.
 
@@ -435,7 +435,7 @@ Alternative, keeping one message (and one voice clip) but splitting it into page
 mira: This line makes its point.{page}The rest appears on the next page.
 ```
 
-#### PIB5031 – Naming convention
+#### PIB5303 – Naming convention
 
 **Level:** hint
 
@@ -463,7 +463,7 @@ Deliberate renames use the editor's **Rename**:
 - It always adds a `#was:` alias to renamed nodes, which saves, scenes and game code refer to by name. It doesn't matter whether they've shipped. The `pibbles.rename.aliases` VS Code setting can turn this off.
 - For names the game's code uses, the rename preview warns that the code must change too. A renamed command, markup, icon or function shows up as a missing handler when the game launches ([Godot design](godot.md#failures)). Other names in the game's code are the game developer's to update.
 
-#### PIB5032 – Inconsistent indentation width ⚡
+#### PIB5304 – Inconsistent indentation width ⚡
 
 **Level:** hint
 
@@ -487,7 +487,7 @@ Compliant:
     Every block is indented four spaces.
 ```
 
-#### PIB5033 – Speaker spacing ⚡
+#### PIB5305 – Speaker spacing ⚡
 
 **Level:** hint
 
@@ -515,7 +515,7 @@ mira（happy、shake）：This line uses the usual full-width spacing.
 
 ### Maintenance
 
-#### PIB5040 – Unused declaration
+#### PIB5401 – Unused declaration
 
 **Level:** info
 
@@ -551,7 +551,7 @@ Compliant: remove it, or use it.
 What the [grammar extensions](language/design.md#grammar-extensions) and later tiers ([roadmap](roadmap.md#feature-tiers)) add to the style rules.
 
 - **Localization:** PIB5004's hint also suggests marking the new markup `required`, so no translation loses it.
-- **Terms:** PIB5040 also flags unused terms, and PIB5005 (below) joins the rules.
+- **Terms:** PIB5401 also flags unused terms, and PIB5005 (below) joins the rules.
 - **Release manifests:** renaming a variable also adds a `#was:` alias to its `@var`. Extract to node's new `@call` gets restored for old saves: a save made inside the moved block has no call frame for it, so restoring adds that frame, and the dialogue still returns where it used to continue ([runtime design](runtime.md#release-manifests-and-migrations)).
 
 ### PIB5005 – Repeated inline condition ⚡ (with terms)

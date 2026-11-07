@@ -1,25 +1,181 @@
-// Markup closes on the same line, and inside the same conditional branch.
+// Nothing nests more than 64 levels deep.
+
+== fixture.blocks
+@if a
+ @if a
+  @if a
+   @if a
+    @if a
+     @if a
+      @if a
+       @if a
+        @if a
+         @if a
+          @if a
+           @if a
+            @if a
+             @if a
+              @if a
+               @if a
+                @if a
+                 @if a
+                  @if a
+                   @if a
+                    @if a
+                     @if a
+                      @if a
+                       @if a
+                        @if a
+                         @if a
+                          @if a
+                           @if a
+                            @if a
+                             @if a
+                              @if a
+                               @if a
+                                @if a
+                                 @if a
+                                  @if a
+                                   @if a
+                                    @if a
+                                     @if a
+                                      @if a
+                                       @if a
+                                        @if a
+                                         @if a
+                                          @if a
+                                           @if a
+                                            @if a
+                                             @if a
+                                              @if a
+                                               @if a
+                                                @if a
+                                                 @if a
+                                                  @if a
+                                                   @if a
+                                                    @if a
+                                                     @if a
+                                                      @if a
+                                                       @if a
+                                                        @if a
+                                                         @if a
+                                                          @if a
+                                                           @if a
+                                                            @if a
+                                                             @if a
+                                                              @if a
+                                                               @if a
+                                                                @if a
+                                                                 Hi.
+//                                                               ^^^ PIB1010
 
 == fixture.markup
-mira: [clue]The key
-//    ^^^^^^ PIB1010
-mira: {if $a}[b]bold{/if}
-//           ^^^ PIB1010
-mira: [wave amplitude=2]Spooky
-//    ^^^^^^^^^^^^^^^^^^ PIB1010
-mira: [b]The key #thought
-//    ^^^ PIB1010
--> [b]Go @once
-// ^^^ PIB1010
+[b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b]x[/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b]
+//                                                                                                                                                                                              ^ PIB1010
 
-mira: [clue]The key // [/clue]
-//    ^^^^^^ PIB1010
+== fixture.branches
+{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}x{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}
+//                                                                                                                                                                                                                                                                                                                                                                                              ^^^ PIB1010
+
+== fixture.parentheses
+@set $x = (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+//                                                                        ^ PIB1010
+
+== fixture.calls
+@set $x = f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+//                                                                                                                                         ^ PIB1010
+
+== fixture.nots
+@set $x = not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not $a
+//                                                                                                                                                                                                                                                                        ^^^ PIB1010
+
+== fixture.sums
+@set $x = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+//                                                                                                                                                                                                                                                                          ^ PIB1010
 
 // Must not trigger
 
-mira: [clue]The key[/clue]
-mira: [b]Bold, then[/b] plain.
-mira: [b]Bold[/b] #thought
-mira: {if $a}[b]bold[/b]{/if}
-mira: \[clue] is escaped.
-mira: [clue]The key[/clue] // [clue] in a comment
+== fixture.blocks_at_the_limit
+@if a
+ @if a
+  @if a
+   @if a
+    @if a
+     @if a
+      @if a
+       @if a
+        @if a
+         @if a
+          @if a
+           @if a
+            @if a
+             @if a
+              @if a
+               @if a
+                @if a
+                 @if a
+                  @if a
+                   @if a
+                    @if a
+                     @if a
+                      @if a
+                       @if a
+                        @if a
+                         @if a
+                          @if a
+                           @if a
+                            @if a
+                             @if a
+                              @if a
+                               @if a
+                                @if a
+                                 @if a
+                                  @if a
+                                   @if a
+                                    @if a
+                                     @if a
+                                      @if a
+                                       @if a
+                                        @if a
+                                         @if a
+                                          @if a
+                                           @if a
+                                            @if a
+                                             @if a
+                                              @if a
+                                               @if a
+                                                @if a
+                                                 @if a
+                                                  @if a
+                                                   @if a
+                                                    @if a
+                                                     @if a
+                                                      @if a
+                                                       @if a
+                                                        @if a
+                                                         @if a
+                                                          @if a
+                                                           @if a
+                                                            @if a
+                                                             @if a
+                                                              @if a
+                                                               @if a
+                                                                Hi.
+
+== fixture.markup_at_the_limit
+[b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b][b]x[/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b][/b]
+
+== fixture.branches_at_the_limit
+{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}{if a}x{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}{/if}
+
+== fixture.parentheses_at_the_limit
+@set $x = ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+
+== fixture.calls_at_the_limit
+@set $x = f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+
+== fixture.nots_at_the_limit
+@set $x = not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not not $a
+
+== fixture.sums_at_the_limit
+@set $x = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1

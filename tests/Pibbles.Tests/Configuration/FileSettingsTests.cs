@@ -8,20 +8,20 @@ namespace Pibbles.Tests.Configuration;
 public class FileSettingsTests
 {
     /// <summary>
-    /// A story with an unknown variable (PIB2030, an error), a line with no ID (PIB3010, a warning with no category) and an
-    /// <c>@return</c> that does nothing (PIB5014, style).
+    /// A story with an unknown variable (PIB2302, an error), a line with no ID (PIB1302, a warning with no category) and an
+    /// <c>@return</c> that does nothing (PIB5110, style).
     /// </summary>
     private readonly SourceText story = new("story.pib", "== a.b\n@set $missing = 1\nNarration.\n@return\n");
 
     public static TheoryData<string[], string[]> Severities { get; } = new()
     {
-        { [], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Hint"] },
-        { ["pibbles_diagnostic.PIB3010.severity=error"], ["PIB2030 Error", "PIB3010 Error", "PIB5014 Hint"] },
-        { ["pibbles_diagnostic.pib3010.severity=None"], ["PIB2030 Error", "PIB5014 Hint"] },
-        { ["pibbles_diagnostic.category-style.severity=none"], ["PIB2030 Error", "PIB3010 Warning"] },
-        { ["pibbles_diagnostic.category-style.severity=warning"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Warning"] },
-        { ["pibbles_diagnostic.PIB5014.severity=info", "pibbles_diagnostic.category-style.severity=none"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Info"] },
-        { ["pibbles_diagnostic.category-style.severity=none", "pibbles_diagnostic.PIB5014.severity=warning"], ["PIB2030 Error", "PIB3010 Warning", "PIB5014 Warning"] },
+        { [], ["PIB2302 Error", "PIB1302 Warning", "PIB5110 Hint"] },
+        { ["pibbles_diagnostic.PIB1302.severity=error"], ["PIB2302 Error", "PIB1302 Error", "PIB5110 Hint"] },
+        { ["pibbles_diagnostic.pib1302.severity=None"], ["PIB2302 Error", "PIB5110 Hint"] },
+        { ["pibbles_diagnostic.category-style.severity=none"], ["PIB2302 Error", "PIB1302 Warning"] },
+        { ["pibbles_diagnostic.category-style.severity=warning"], ["PIB2302 Error", "PIB1302 Warning", "PIB5110 Warning"] },
+        { ["pibbles_diagnostic.PIB5110.severity=info", "pibbles_diagnostic.category-style.severity=none"], ["PIB2302 Error", "PIB1302 Warning", "PIB5110 Info"] },
+        { ["pibbles_diagnostic.category-style.severity=none", "pibbles_diagnostic.PIB5110.severity=warning"], ["PIB2302 Error", "PIB1302 Warning", "PIB5110 Warning"] },
     };
 
     [Theory]
@@ -40,7 +40,7 @@ public class FileSettingsTests
     {
         var options = new CompilationOptions(new Dictionary<string, FileSettings> { ["other.pib"] = Settings(["pibbles_diagnostic.category-style.severity=none"]) });
 
-        Assert.Contains(Compilation.Create([story], options).Diagnostics, diagnostic => diagnostic.Code == "PIB5014");
+        Assert.Contains(Compilation.Create([story], options).Diagnostics, diagnostic => diagnostic.Code == "PIB5110");
     }
 
     [Theory]
@@ -64,10 +64,10 @@ public class FileSettingsTests
         "pibbles_diagnostic.category-binding.severity=none",
         "pibbles_diagnostic.category-localization.severity=none",
         "pibbles_diagnostic.category-spelling.severity=none",
-        "pibbles_diagnostic.PIB3010=none",
-        "pibbles_diagnostic.PIB3010.severity=loud",
-        "pibbles_diagnostic.PIB2030.severity=warning",
-        "pibbles_diagnostic.pib2030.severity=none",
+        "pibbles_diagnostic.PIB1302=none",
+        "pibbles_diagnostic.PIB1302.severity=loud",
+        "pibbles_diagnostic.PIB2302.severity=warning",
+        "pibbles_diagnostic.pib2302.severity=none",
         "pibbles_max_nesting=deep",
         "pibbles_max_option_length=0",
     ];
@@ -85,10 +85,10 @@ public class FileSettingsTests
     [Fact]
     public void From_ErrorSetToError_KeepsIt()
     {
-        FileSettings settings = Settings(["pibbles_diagnostic.PIB2030.severity=error"]);
+        FileSettings settings = Settings(["pibbles_diagnostic.PIB2302.severity=error"]);
 
         Assert.Empty(settings.Problems);
-        Assert.Equal(new Dictionary<string, string> { ["pibbles_diagnostic.pib2030.severity"] = "error" }, settings.Properties);
+        Assert.Equal(new Dictionary<string, string> { ["pibbles_diagnostic.pib2302.severity"] = "error" }, settings.Properties);
     }
 
     [Fact]

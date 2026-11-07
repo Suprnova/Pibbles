@@ -1,0 +1,20 @@
+// A variable's name starts with `$` in declarations and assignments too.
+
+@var door_open = false
+//   ^^^^^^^^^ PIB2301
+@var is_locked: bool = true // a comment doesn't join the correction
+//   ^^^^^^^^^ PIB2301
+@var .attempts = 0
+//   ^^^^^^^^^ PIB2301
+@var $other = false
+
+== fixture.assign
+@set door_open = true
+//   ^^^^^^^^^ PIB2301
+@set count += 1
+//   ^^^^^ PIB2301
+
+// Must not trigger
+
+@jump fixture.assign
+@set $other = true

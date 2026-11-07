@@ -1,0 +1,28 @@
+// A line the player sees, an option, a `@call` and a variation block each have an `#id`.
+
+@channel pose
+@actor mira
+    name: Mira
+    pose: sad
+
+== kitchen.door
+mira: No ID here.
+//               ^ PIB1302
+-> Leave
+//      ^ PIB1302
+    @end
+@call kitchen.cellar // Back down.
+//                  ^ PIB1302
+@once // First visit only.
+//   ^ PIB1302
+    Once.
+//       ^ PIB1302
+
+// Must not trigger
+
+mira: Has one. #id:a1b2c3
+mira (sad):
+@cycle #id:c4d5e6
+    - Each alternative has its own. #id:e7f8g9
+
+== kitchen.cellar

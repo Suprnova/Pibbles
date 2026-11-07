@@ -9,7 +9,7 @@ namespace Pibbles.Semantics;
 internal sealed partial class StyleChecks
 {
     /// <summary>
-    /// PIB5010 and PIB5016: follows each actor's and narration's value in each channel down a block, but only while that's certain. Text
+    /// PIB5101 and PIB5102: follows each actor's and narration's value in each channel down a block, but only while that's certain. Text
     /// lines, <c>@set</c> and <c>@pause</c> keep what's known; anything else, such as a command, a call or a choice,
     /// might change a value or skip ahead, so it forgets everything.
     /// </summary>
@@ -74,7 +74,7 @@ internal sealed partial class StyleChecks
             unseen.Clear();
     }
 
-    /// <summary>PIB5011, PIB5017 and PIB5018: <c>{w}</c> at the end of a line or before <c>{page}</c>, and timed pauses side by side.</summary>
+    /// <summary>PIB5103, PIB5104 and PIB5105: <c>{w}</c> at the end of a line or before <c>{page}</c>, and timed pauses side by side.</summary>
     private void CheckPauses(IReadOnlyList<InlineSyntax> content)
     {
         if (content is [.., InputWaitSyntax last])
@@ -111,7 +111,7 @@ internal sealed partial class StyleChecks
     };
 
     /// <summary>
-    /// PIB5012, PIB5019 and PIB5050: empty spans, a span inside one just like it, and two like spans side by side. Spans are alike when they
+    /// PIB5106, PIB5107 and PIB5108: empty spans, a span inside one just like it, and two like spans side by side. Spans are alike when they
     /// have the same name and the same arguments.
     /// </summary>
     private void CheckMarkup(IReadOnlyList<InlineSyntax> run, IReadOnlySet<string> outer)
@@ -149,7 +149,7 @@ internal sealed partial class StyleChecks
     }
 
     /// <summary>
-    /// PIB5013: an <c>@if</c> with an <c>@else</c> whose branches all read the same, apart from indentation, line IDs,
+    /// PIB5109: an <c>@if</c> with an <c>@else</c> whose branches all read the same, apart from indentation, line IDs,
     /// blank lines and comments. Branches that count how often they ran are left alone, since merging them would share one count.
     /// </summary>
     private void CheckBranches(IfStatementSyntax @if)
@@ -162,7 +162,7 @@ internal sealed partial class StyleChecks
             Report(DiagnosticCatalog.RedundantCondition, new(@if.Span.Start, @if.Condition.Span.End - @if.Span.Start), "@if");
     }
 
-    /// <summary>PIB5013: conditional text with an <c>{else}</c> whose branches are all written the same.</summary>
+    /// <summary>PIB5109: conditional text with an <c>{else}</c> whose branches are all written the same.</summary>
     private void CheckBranches(ConditionalTextSyntax conditional)
     {
         if (conditional.Else is not null && SyntaxWalk.Branches(conditional).Select(branch => branch.Count > 0 ? TextOf(SpanOf(branch)) : "").Distinct().Count() == 1)
@@ -181,7 +181,7 @@ internal sealed partial class StyleChecks
         return string.Join('\n', lines);
     }
 
-    /// <summary>PIB5014: <c>@return</c> as the last statement of a node.</summary>
+    /// <summary>PIB5110: <c>@return</c> as the last statement of a node.</summary>
     private void CheckReturn(NodeSyntax node)
     {
         if (node.Body is [.., ReturnStatementSyntax @return])

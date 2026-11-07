@@ -113,7 +113,7 @@ var update = new Option<bool>("--update") { Description = "Rewrite each transcri
 var test = new Command("test", "Replay the transcripts in the project's transcripts folder, and show any that no longer match the story.") { testRoot, update };
 test.SetAction(result => Test.Run(result.GetValue(testRoot) ?? ".", Directory.GetCurrentDirectory(), result.GetValue(update), Console.Out, errors, outputColor));
 
-var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB1011." };
+var code = new Argument<string>("code") { Description = "A diagnostic code, such as PIB3102." };
 var explain = new Command("explain", "Explain a diagnostic: what it means, an example, and how to fix it.") { code };
 explain.SetAction(result => Explain.Run(result.GetValue(code)!, Console.Out, errors, outputColor));
 

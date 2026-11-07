@@ -1,0 +1,20 @@
+// A point is a variable, a call, a command or a brace keyword.
+
+== fixture.points
+mira: {name} is not a point.
+//    ^^^^^^ PIB3201
+mira: {} is empty.
+//    ^^ PIB3201
+mira: {42} is a number.
+//    ^^^^ PIB3201
+mira: {auto} is reserved.
+//    ^^^^^^ PIB3201
+mira: First.{p}Second.
+//          ^^^ PIB3201
+mira: First.{p 0.5}Second.
+//          ^^^^^^^ PIB3201
+
+// Must not trigger
+
+mira: {$name}, {name()}, {@jolt mira}, {w}, {page}, {br} and {icon interact}.
+mira: \{name} is escaped.

@@ -1,0 +1,30 @@
+// A name can't be a word Pibbles already uses where that name appears.
+
+@command if()
+//       ^^ PIB1404
+@command term()
+//       ^^^^ PIB1404
+@actor true
+//     ^^^^ PIB1404
+    name: True
+@enum bool: yes, no
+//    ^^^^ PIB1404
+@enum answer: yes, no, wait
+//                     ^^^^ PIB1404
+@function visits(n: node) -> number
+//        ^^^^^^ PIB1404
+@tag id
+//   ^^ PIB1404
+@command shake(nowait: bool)
+//             ^^^^^^ PIB1404
+
+// Must not trigger here: `speed` is a free markup name.
+@markup speed
+
+== wait
+// ^^^^ PIB1404
+
+// Must not trigger
+
+== if
+== kitchen.wait #was:kitchen.true

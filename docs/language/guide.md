@@ -282,14 +282,14 @@ A speaker's colon, parentheses and commas are the exception: type them either wa
 
 When a marker slips through, Pibbles tells you. One that decides what a line is, or one inside an `@` line, `[…]` or `{…}`, is read as the marker you meant and reported as an error, so the rest of the line is still checked:
 
-```pib-error PIB1044
+```pib-error PIB1106
 ＠if $has_key
     mira: You found it.
 ```
 
 Text that only looks like a marker stays text, with a warning, since you may have meant the punctuation:
 
-```pib-error PIB1019 PIB1019
+```pib-error PIB1102 PIB1102
 mira: Look under the 【clue】mat【/clue】.
 ```
 

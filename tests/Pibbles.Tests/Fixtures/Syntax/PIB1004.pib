@@ -17,7 +17,7 @@
     // A comment line alone isn't a block, but this line is.
     @end
 @if $a:
-//    ^ PIB1033
+//    ^ PIB2202
 
 // A stray `:` is reported, and the block check is left out for that line.
 

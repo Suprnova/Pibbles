@@ -458,7 +458,7 @@ Draft content is written and tested alongside the real story, but isn't part of 
 
 - **A node is a draft** if its file matches a `drafts` glob in `pibbles.json`, or if its header has a `#draft` tag. Declarations in a draft file are drafts too. Paths in `pibbles.json` settings are relative to the story folder.
 - **Development builds include drafts.** They're parsed, checked, playable in `pibbles play`, and startable by the host like any other node.
-- **Release builds compile as if drafts didn't exist.** Anything that then fails to resolve is an ordinary error in `pibbles check --release`, for example a real node that jumps to a draft, or uses a variable only a draft declares. In development builds the same references get a warning (PIB3030), so the problem shows up long before release.
+- **Release builds compile as if drafts didn't exist.** Anything that then fails to resolve is an ordinary error in `pibbles check --release`, for example a real node that jumps to a draft, or uses a variable only a draft declares. In development builds the same references get a warning (PIB1801), so the problem shows up long before release.
 - **Drafts skip the production pipeline:** line IDs aren't required, `pibbles ids` leaves them alone, and they're excluded from localization extraction, recording scripts and release manifests.
 - **Promoting a draft** means moving it out of the drafts path or removing its `#draft` tag. From then on it's held to the full rules, and `pibbles ids` gives it IDs.
 

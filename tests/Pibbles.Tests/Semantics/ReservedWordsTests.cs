@@ -61,7 +61,7 @@ public class ReservedWordsTests
     private static bool IsRejected(string text) => WithoutStyle.Compile(new SourceText("story.pib", text)).Diagnostics switch
     {
         [] => false,
-        [{ Code: "PIB2062" }] => true,
+        [{ Code: "PIB1404" }] => true,
         var diagnostics => throw new Xunit.Sdk.XunitException($"`{text}` reported {string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Code))}."),
     };
 }

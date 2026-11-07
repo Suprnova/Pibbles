@@ -1,0 +1,29 @@
+// Only the values go between a speaker's name and its colon.
+
+@channel pose
+@channel effect: still, shake
+@actor mira
+    name: Mira
+    pose: mad
+
+== kitchen.door
+mira (mad) (shake): Fine.
+//         ^^^^^^^ PIB2008
+mira(mad)(shake): Fine.
+//       ^^^^^^^ PIB2008
+mira (mad) shake: Fine.
+//         ^^^^^ PIB2008
+mira（mad）（shake）：Fine.
+//       ^^^^^^^ PIB2008
+
+// Must not trigger
+
+mira（mad）shake\：Fine.
+mira（mad）：Fine.
+
+mira (mad) leaves the room.
+mira (mad) leaves the room: she said.
+mira (mad) shake\: Fine.
+Breakfast (served) daily: eggs.
+mira (mad): Fine.
+mira (mad, shake): Fine.

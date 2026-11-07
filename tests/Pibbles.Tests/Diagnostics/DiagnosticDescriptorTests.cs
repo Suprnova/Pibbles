@@ -11,17 +11,17 @@ public class DiagnosticDescriptorTests
     [Fact]
     public void Create_WithMessageAndHelp_FormatsEachWithArguments()
     {
-        var descriptor = new DiagnosticDescriptor("PIB1010", DiagnosticSeverity.Error, "I can't find the end of this `[{0}]`.", "Close it with `[/{0}]`.");
+        var descriptor = new DiagnosticDescriptor("PIB3101", DiagnosticSeverity.Error, "I can't find the end of this `[{0}]`.", "Close it with `[/{0}]`.");
 
         Diagnostic diagnostic = descriptor.Create(location, "clue");
 
-        Assert.Equal(new("PIB1010", DiagnosticSeverity.Error, location, "I can't find the end of this `[clue]`.", "Close it with `[/clue]`."), diagnostic);
+        Assert.Equal(new("PIB3101", DiagnosticSeverity.Error, location, "I can't find the end of this `[clue]`.", "Close it with `[/clue]`."), diagnostic);
     }
 
     [Fact]
     public void Create_WithoutHelp_LeavesItNull()
     {
-        var descriptor = new DiagnosticDescriptor("PIB3001", DiagnosticSeverity.Warning, "This line never runs.");
+        var descriptor = new DiagnosticDescriptor("PIB2401", DiagnosticSeverity.Warning, "This line never runs.");
 
         Diagnostic diagnostic = descriptor.Create(location);
 
@@ -33,7 +33,7 @@ public class DiagnosticDescriptorTests
     [InlineData("")]
     public void Create_HelpThatFormatsToNothing_LeavesItNull(string? help)
     {
-        var descriptor = new DiagnosticDescriptor("PIB1040", DiagnosticSeverity.Error, "I didn't expect {0} here.", "{1}");
+        var descriptor = new DiagnosticDescriptor("PIB1103", DiagnosticSeverity.Error, "I didn't expect {0} here.", "{1}");
 
         Diagnostic diagnostic = descriptor.Create(location, "`extra`", help);
 
@@ -42,8 +42,8 @@ public class DiagnosticDescriptorTests
 
     [Theory]
     [InlineData("PIB1001", null)]
-    [InlineData("PIB2001", null)]
-    [InlineData("PIB3001", null)]
+    [InlineData("PIB2004", null)]
+    [InlineData("PIB2401", null)]
     [InlineData("PIB4001", DiagnosticCategory.Localization)]
     [InlineData("PIB5001", DiagnosticCategory.Style)]
     [InlineData("PIB6001", DiagnosticCategory.Spelling)]
@@ -59,7 +59,7 @@ public class DiagnosticDescriptorTests
     [InlineData("fr-FR")]
     public void Create_UnderCultureWithDecimalComma_FormatsNumbersWithDot(string culture)
     {
-        var descriptor = new DiagnosticDescriptor("PIB1042", DiagnosticSeverity.Error, "Write it as `{0}`.");
+        var descriptor = new DiagnosticDescriptor("PIB1105", DiagnosticSeverity.Error, "Write it as `{0}`.");
         CultureInfo previous = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
 

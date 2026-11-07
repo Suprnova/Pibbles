@@ -43,7 +43,7 @@ public class NestingLimitTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal("PIB1062", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1010", Assert.Single(tree.Diagnostics).Code);
     }
 
     [Theory]
@@ -65,7 +65,7 @@ public class NestingLimitTests
 
         SyntaxTree tree = SyntaxTree.Parse(source);
 
-        Assert.Equal("PIB1062", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("PIB1010", Assert.Single(tree.Diagnostics).Code);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class NestingLimitTests
 
         SyntaxTree tree = SyntaxTree.Parse(new("story.pib", $"== t.n\n{text}"));
 
-        Assert.Single(tree.Diagnostics, diagnostic => diagnostic.Code is "PIB1062");
+        Assert.Single(tree.Diagnostics, diagnostic => diagnostic.Code is "PIB1010");
     }
 
     private static string Story(string shape, int depth) => $"@function f(n: number) -> number\n== t.n\n@set $key = true\n{Shapes[shape](depth)}";

@@ -7,7 +7,7 @@ namespace Pibbles.Semantics;
 /// <summary>Readability: long text, names that aren't <c>snake_case</c>, uneven indentation and speaker spacing.</summary>
 internal sealed partial class StyleChecks
 {
-    /// <summary>PIB5030 and PIB5034: a line's longest page, or an option's text, past the file's limit.</summary>
+    /// <summary>PIB5301 and PIB5302: a line's longest page, or an option's text, past the file's limit.</summary>
     private void CheckLength(IReadOnlyList<InlineSyntax> content, bool option)
     {
         if (content.Count == 0)
@@ -57,7 +57,7 @@ internal sealed partial class StyleChecks
         _ => 0,
     };
 
-    /// <summary>PIB5031: the names a file declares, and its prefix and node names, written with a capital letter.</summary>
+    /// <summary>PIB5303: the names a file declares, and its prefix and node names, written with a capital letter.</summary>
     private void CheckNames()
     {
         IEnumerable<(TextSpan Span, string Written)> names =
@@ -110,7 +110,7 @@ internal sealed partial class StyleChecks
     }
 
     /// <summary>
-    /// PIB5032: how far each block indents past the one it's in. Every block should match <c>indent_size</c> in
+    /// PIB5304: how far each block indents past the one it's in. Every block should match <c>indent_size</c> in
     /// <c>.editorconfig</c>, or else the file's first block. A file that indents with the character <c>indent_style</c>
     /// doesn't ask for is reported once. Lines that mix tabs and spaces are PIB1001's, so they're skipped.
     /// </summary>
@@ -170,7 +170,7 @@ internal sealed partial class StyleChecks
     };
 
     /// <summary>
-    /// PIB5033: a speaker written other than <c>name:</c> or <c>name (a, b):</c>, or <c>name：</c> or <c>name（a、b）：</c> when its
+    /// PIB5305: a speaker written other than <c>name:</c> or <c>name (a, b):</c>, or <c>name：</c> or <c>name（a、b）：</c> when its
     /// colon is full-width.
     /// </summary>
     private void CheckSpeakerSpacing(TextLineSyntax line)

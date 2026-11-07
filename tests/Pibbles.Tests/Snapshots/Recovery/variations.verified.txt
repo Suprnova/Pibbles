@@ -98,19 +98,19 @@ Comments:
   23:5-23:38 "A comment line in a variation."
   24:39-24:61 trailing "A trailing comment."
 Diagnostics:
-  PIB1045 3:7 I can't use `rooms.kitchen` as a name here, because only node names can have dots.
-  PIB1031 6:5 A `@cycle` block can only hold alternatives.
-  PIB1032 10:7 `@if` can't start an alternative.
+  PIB1401 3:7 I can't use `rooms.kitchen` as a name here, because only node names can have dots.
+  PIB2501 6:5 A `@cycle` block can only hold alternatives.
+  PIB2502 10:7 `@if` can't start an alternative.
   PIB1004 12:5 I expected indented lines under `-`.
-  PIB1021 13:1 `@var` can't go inside a node.
-  PIB1053 14:13 `#id:k7qp2x` can't go on a line that only sets values.
-  PIB1052 15:7 `#id:BAD` isn't a line ID I can use.
-  PIB1040 16:12 I didn't expect `@once` here.
-  PIB1040 17:13 I didn't expect `@if` here.
-  PIB1040 18:6 I didn't expect `@home` here.
-  PIB1043 19:12 `#team!` isn't a tag name: tag names only have letters, digits and `_`.
-  PIB1043 20:4 `#team!` isn't a tag name: tag names only have letters, digits and `_`.
-  PIB1046 21:12 I expected a value after `＝`.
-  PIB1031 24:5 A `@cycle` block can only hold alternatives.
-  PIB1044 21:6 I read `＄` (U+FF04) as `$`, but markers are typed half-width.
-  PIB1044 21:11 I read `＝` (U+FF1D) as `=`, but markers are typed half-width.
+  PIB1008 13:1 `@var` can't go inside a node.
+  PIB1203 14:13 `#id:k7qp2x` can't go on a line that only sets values.
+  PIB1301 15:7 `#id:BAD` isn't a line ID I can use.
+  PIB1103 16:12 I didn't expect `@once` here.
+  PIB1103 17:13 I didn't expect `@if` here.
+  PIB1103 18:6 I didn't expect `@home` here.
+  PIB1202 19:12 `#team!` isn't a tag name: tag names only have letters, digits and `_`.
+  PIB1202 20:4 `#team!` isn't a tag name: tag names only have letters, digits and `_`.
+  PIB1107 21:12 I expected a value after `＝`.
+  PIB2501 24:5 A `@cycle` block can only hold alternatives.
+  PIB1106 21:6 I read `＄` (U+FF04) as `$`, but markers are typed half-width.
+  PIB1106 21:11 I read `＝` (U+FF1D) as `=`, but markers are typed half-width.

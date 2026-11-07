@@ -1,0 +1,22 @@
+// A variation block holds only alternatives.
+
+== fixture.variations
+@cycle
+    mira: No dash.
+//  ^^^^^^^^^^^^^^ PIB2501
+    mira: Reported once per block.
+@sequence
+    - mira: A real alternative.
+    @set $x = 1
+//  ^^^^^^^^^^^ PIB2501
+@cycle
+    mira: Hm. // The span stops before a comment.
+//  ^^^^^^^^^ PIB2501
+
+// Must not trigger
+
+@cycle
+    - mira: Hm.
+    - mira: Huh.
+@once
+    mira: @once holds statements, not alternatives.

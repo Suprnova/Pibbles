@@ -88,7 +88,7 @@ public class BinderTests
     [Theory]
     [MemberData(nameof(InvalidOperations))]
     public void Compile_InvalidOperation_ReportsOperatorTypesOnly(string expression, string type) =>
-        Assert.Equal(["PIB2033"], Diagnose($"{Operands}@set $out_{type} = {expression}\n").Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB3003"], Diagnose($"{Operands}@set $out_{type} = {expression}\n").Select(diagnostic => diagnostic.Code));
 
     public static TheoryData<string, string, string?> Messages { get; } = new()
     {
@@ -290,16 +290,16 @@ public class BinderTests
     };
 
     [Theory]
-    [InlineData("@var $n = 0\n\n== a.b\n@if 0 < $n < 3\n    Hm.\n", "PIB1061")]
-    [InlineData("@var $n = 0\n\n== a.b\n@if $n == 1 != true\n    Hm.\n", "PIB1061")]
-    [InlineData("@function item_name(id: string) -> string\n\n== a.b\nYou found {item_name (\"key\")}.\n", "PIB1051")]
+    [InlineData("@var $n = 0\n\n== a.b\n@if 0 < $n < 3\n    Hm.\n", "PIB3002")]
+    [InlineData("@var $n = 0\n\n== a.b\n@if $n == 1 != true\n    Hm.\n", "PIB3002")]
+    [InlineData("@function item_name(id: string) -> string\n\n== a.b\nYou found {item_name (\"key\")}.\n", "PIB2602")]
     public void Compile_SyntaxProblemInExpression_ReportsOnlyIt(string text, string code) =>
         Assert.Equal([code], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Fact]
     public void Compile_SpeakerNotDeclared_NamesSpeakerByIdInSyntaxMessage()
     {
-        Diagnostic diagnostic = Assert.Single(Diagnose("== a.b\nmira:\n"), diagnostic => diagnostic.Code == "PIB1054");
+        Diagnostic diagnostic = Assert.Single(Diagnose("== a.b\nmira:\n"), diagnostic => diagnostic.Code == "PIB2003");
 
         Assert.StartsWith("Write what mira says", diagnostic.Help);
     }
@@ -324,30 +324,30 @@ public class BinderTests
     [InlineData("== a.b\nWait.{pause (1 / 0)} Done.\n")]
     [InlineData("== a.b\nWait.{speed (1 / 0)} Done.\n")]
     public void Compile_PacingValueThatDividesByZero_GetsOnlyTheDivisionWarning(string text) =>
-        Assert.Equal(["PIB2070"], Diagnose(text).Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB3007"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Theory]
     [InlineData("== a.b\nSlow.{speed 0s} Done.\n")]
     [InlineData("== a.b\nSlow.{pause \"0\"} Done.\n")]
     [InlineData("== a.b\n@pause \"0\"\n")]
     public void Compile_PacingValueOfWrongType_ReportsOnlyTheType(string text) =>
-        Assert.Equal(["PIB2031"], Diagnose(text).Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB2303"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Theory]
     [InlineData("@prefix kitchen\n@var $attempts = 0\n\n== .door\n@set $.attempts += 1\n")]
     [InlineData("@prefix kitchen\n@var $.attempts = 0\n\n== .door\n@set $attempts += 1\n")]
     public void Compile_VariableWrittenRelativelyOrNot_NeverFallsBackToTheOther(string text) =>
-        Assert.Equal(["PIB2030"], Diagnose(text).Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB2302"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Fact]
     public void Compile_ProblemInsideBrokenExpression_ReportsOnce()
     {
         Diagnostic[] diagnostics = Diagnose("@var $n = 0\n\n== a.b\n@if ($missing + 1) * 2 > $n and not $missing\n    Hm.\n");
 
-        Assert.Equal(["PIB2030", "PIB2030"], diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB2302", "PIB2302"], diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
     /// <summary>Compiles a story of one file, leaving out style and missing line IDs, which these stories don't write.</summary>
     private static Diagnostic[] Diagnose(string text) =>
-        [.. WithoutStyle.Compile(new SourceText("story.pib", text)).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB3010")];
+        [.. WithoutStyle.Compile(new SourceText("story.pib", text)).Diagnostics.Where(diagnostic => diagnostic.Code is not "PIB1302")];
 }
