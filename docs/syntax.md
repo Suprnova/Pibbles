@@ -20,7 +20,7 @@ Why hand-written, with no parser generator: the grammar is small, error recovery
 
 ## Syntax checks
 
-The front end owns every check that needs only one file's text: indentation, malformed tokens, markers typed through an input method, file and block structure, span nesting, nesting depth, escapes, where tags and `#id` may go, argument order, call adjacency, what option text may contain, and display names. These are the PIB1xxx codes ([diagnostics](diagnostics.md)). Anything that needs declarations or another file, such as whether a speaker is a declared actor, belongs to the [semantic passes](semantics.md#passes).
+The front end owns every check that needs only one file's text: indentation, malformed tokens, markers typed through an input method and text that looks like one, file and block structure, span nesting, nesting depth, escapes, where tags and `#id` may go, argument order, call adjacency, what option text may contain, and display names. These are the PIB1xxx codes ([diagnostics](diagnostics.md)). Anything that needs declarations or another file, such as whether a speaker is a declared actor, belongs to the [semantic passes](semantics.md#passes).
 
 ## Syntax tree
 

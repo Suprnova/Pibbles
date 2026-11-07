@@ -155,6 +155,17 @@ public static class DiagnosticCatalog
         "`{{{0}}}` takes no value, so I can't use `{1}` after it.",
         help: "{2}");
 
+    /// <summary>
+    /// PIB1019: text that looks like a marker typed through an input method, such as <c>【b】…【/b】</c> for markup or
+    /// <c>・・</c> at a line's start for a comment. It stays text.
+    /// </summary>
+    /// <remarks>Arguments: the text as written; the marker it looks like, half-width; and how to fix it, which also offers the escape.</remarks>
+    public static DiagnosticDescriptor MarkerLookalike { get; } = new(
+        "PIB1019",
+        DiagnosticSeverity.Warning,
+        "I show `{0}` as text, but it looks like `{1}` typed through an input method.",
+        help: "{2}");
+
     /// <summary>PIB1020: a file's only <c>@prefix</c> line, after something other than comments.</summary>
     public static DiagnosticDescriptor MisplacedPrefix { get; } = new(
         "PIB1020",
@@ -996,6 +1007,7 @@ public static class DiagnosticCatalog
         NotInOption,
         UnknownPoint,
         PointTakesNoValue,
+        MarkerLookalike,
         MisplacedPrefix,
         DeclarationInNode,
         OutsideNode,

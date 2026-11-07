@@ -21,6 +21,7 @@ internal sealed partial class Parser
         int start = line.Content.Start;
         textOwner = "the text";
         textLineStart = start;
+        ReportCommentLookalike(start);
 
         SpeakerSyntax? speaker = null;
         int textStart = start;

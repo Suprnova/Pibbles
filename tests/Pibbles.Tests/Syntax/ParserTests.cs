@@ -849,6 +849,34 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("mira: 【b】粗体【/b】", "【b】", "[b]")]
+    [InlineData("mira: 待って｛ｗ｝。", "｛ｗ｝", "{w}")]
+    [InlineData("・・ メモ", "・・", "//")]
+    [InlineData("、、 待修改", "、、", "//")]
+    public void Parse_TextLikeMarkerTypedThroughInputMethod_WarnsAndNamesTheMarker(string line, string written, string marker)
+    {
+        var source = new SourceText("story.pib", $"== a.b\n{line}\n");
+
+        Diagnostic diagnostic = SyntaxTree.Parse(source).Diagnostics[0];
+
+        Assert.Equal(
+            ("PIB1019", DiagnosticSeverity.Warning, $"I show `{written}` as text, but it looks like `{marker}` typed through an input method.", $"Write `{marker}`, typing markers in your input method's direct (half-width) mode. If `{written}` is text, put a backslash before the `{written[0]}`."),
+            (diagnostic.Code, diagnostic.Severity, diagnostic.Message, diagnostic.Help));
+    }
+
+    [Fact]
+    public void Parse_ModifierLikeMarkerTypedThroughInputMethod_StaysOptionText()
+    {
+        var source = new SourceText("story.pib", "== a.b\n-> はい ＠if $met\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        OptionSyntax option = Assert.Single(((ChoiceSyntax)tree.Root.Nodes[0].Body[0]).Options);
+        Assert.Equal(("はい ＠if $met", null), (((TextRunSyntax)Assert.Single(option.Text)).Text, option.Condition));
+        Assert.Equal("PIB1019", Assert.Single(tree.Diagnostics).Code);
+    }
+
+    [Theory]
     [InlineData("@var $a = 1", "Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`.")]
     [InlineData("@command knock()", "Only `@var` can go between nodes. Move this above the first `==` line, or into another file.")]
     public void Parse_DeclarationInNode_SaysWhereItsKindCanGo(string declaration, string help)

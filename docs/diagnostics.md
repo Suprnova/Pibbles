@@ -52,6 +52,7 @@ Most people who read a diagnostic are writers, not programmers. Each catalog ent
 | PIB1016 | Error | An option's text can't contain `{w}`. | Pauses, speed changes and commands go in the indented lines under the option. |
 | PIB1017 | Error | I don't know what `{name}` means. | To show a variable, write `{$name}`. To call a function, write `{name()}`. If the braces are part of the text, put a backslash before the `{`. |
 | PIB1018 | Error | `{w}` takes no value, so I can't use `0.5` after it. | To pause for that long, write `{pause 0.5}`. |
+| PIB1019 | Warning | I show `【b】` as text, but it looks like `[b]` typed through an input method. | Write `[b]`, typing markers in your input method's direct (half-width) mode. If `【b】` is text, put a backslash before the `【`. |
 | PIB1020 | Error | `@prefix` has to come first in the file. | Move it to the top. Only comments can go above it. |
 | PIB1021 | Error | `@var` can't go inside a node. | Move it above the first `==` line, or below the node's last line. To change a variable here, use `@set`. |
 | PIB1022 | Error | This line isn't inside a node. | Add a node header above it: `== name`. |
@@ -355,6 +356,24 @@ mira: Locked.{pause 0.5} Of course it's locked.
 ```
 
 For `{page}` and `{br}`, remove the value. A point that does take a value, such as `{speed 2}`, reports a second value as an unexpected one instead.
+
+### PIB1019
+
+**Text can look like a marker typed through an input method.** In the mode Japanese and Chinese prose is written in, an input method types its own punctuation for a marker key, and in text that punctuation can only be read as text, so Pibbles shows it as written. Where it has the shape of a marker, it's a warning, since the writer more likely meant the marker:
+
+```text
+・・ ここは後で直す
+mira: 【b】粗体【/b】
+mira: 待って｛w｝。
+mira: こんにちは。 ＃thought
+-> はい ＠if $met
+```
+
+The first line is narration, not a comment, so the player sees it. The others show their brackets, braces, `＃thought` and `＠if $met` as text, and the last option is always available. To mean the marker, type it half-width in the input method's direct mode: `//`, `[b]…[/b]`, `{w}`, `#thought`, `@if`.
+
+The shapes are narrow, so ordinary punctuation stays quiet: two of `/ ／ ・ 、` at a line's start, with a space after `・` or `、` (so `・・・` is text); `［` around a markup name; `「b」` or `【b】` with a closing `「・b」` or `【/b】` for the same name later on the line (so `【公告】` is text); `｛` or `『` around what a point holds; `＃` and a letter when only tags follow; `＠if` or `＠once` after an option's text. Full-width letters count as their ASCII ones, so `｛ｗ｝` is reported too.
+
+If it's meant as text, put a backslash before its first character, `\【b】粗体【/b】`, or turn the code off for the file in `.editorconfig` ([configuration](tooling.md#configuration)). A form that decides what a line or a token is, such as `＝＝` at a line's start or `＝` in an `@` line, is read as the marker and is an error instead ([PIB1044](#pib1044)).
 
 ### PIB1020
 

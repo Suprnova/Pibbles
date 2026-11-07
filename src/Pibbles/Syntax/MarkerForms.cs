@@ -57,6 +57,9 @@ internal static class MarkerForms
             }
         });
     }
+
+    /// <summary><paramref name="c"/> as an ASCII letter if it's a full-width one, such as <c>ｗ</c> for <c>w</c>, or else <paramref name="c"/> itself.</summary>
+    public static char Narrow(char c) => c is (>= 'Ａ' and <= 'Ｚ') or (>= 'ａ' and <= 'ｚ') ? (char)(c - 0xFEE0) : c;
 }
 
 /// <summary>

@@ -12,7 +12,7 @@ namespace Pibbles.Syntax;
 /// </summary>
 internal sealed partial class Parser
 {
-    private static readonly SearchValues<char> InlineBreaks = SearchValues.Create("\\[{#@\uFFFC");
+    private static readonly SearchValues<char> InlineBreaks = SearchValues.Create("\\[{#@\uFFFC［「【｛『＃＠");
 
     private int inlinePosition;
     private int inlineEnd;
@@ -33,6 +33,7 @@ internal sealed partial class Parser
         inOption = option;
         pendingClose = null;
         deferredUnclosed = null;
+        pairedLookalikes.Clear();
 
         List<InlineSyntax> items = ParseInlineItems(trimEnd: true);
         while (AtInline('{'))
@@ -70,6 +71,8 @@ internal sealed partial class Parser
             {
                 if (c is '\uFFFC')
                     Fail(DiagnosticCatalog.ObjectReplacementCharacter, new(inlinePosition, 1));
+                else if (IsLookalikeStart(c))
+                    ReportLookalike();
 
                 ReadOnlySpan<char> rest = source.Text.AsSpan(inlinePosition + 1, inlineEnd - inlinePosition - 1);
                 int next = rest.IndexOfAny(InlineBreaks);
