@@ -27,7 +27,7 @@ public class LineIdsPropertyTests
         Assert.Equal(before.Comments.Select(comment => comment.Text), after.Comments.Select(comment => comment.Text));
         Assert.Empty(after.Diagnostics);
         Assert.Empty(LineIds.Assign(recompiled, new Random(0)));
-    }, iterations: 3000, print: file => $"{file.Name}, mutated:\n{file.Text}");
+    }, print: file => $"{file.Name}, mutated:\n{file.Text}");
 
     /// <summary>The tree's shape without its <c>#id</c> tags, or the empty tag lists they leave.</summary>
     private static string WithoutIds(SyntaxTree tree) => string.Join('\n', SyntaxDump.WriteShape(tree.Root)

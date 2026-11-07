@@ -47,7 +47,7 @@ public partial class LineIndependenceTests
             .Where(line => line != @case.Line && !before[line].SequenceEqual(after[line]))
             .Select(line => $"line {line + 1}: [{string.Join("; ", before[line])}] became [{string.Join("; ", after[line])}]")];
         Assert.Empty(differences);
-    }, iterations: 1000, print: @case => @case.ToString());
+    }, print: @case => @case.ToString());
 
     private static bool IsGarbage(string garbage) =>
         garbage.Length > 0

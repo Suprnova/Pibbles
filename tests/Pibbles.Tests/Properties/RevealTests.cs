@@ -37,11 +37,11 @@ public class RevealTests
 
     [Fact]
     public void Skip_AtAnyPoint_FiresTheSameEffectsAsRevealingFully() =>
-        PropertyCheck.Run(Gen.Select(RandomLine, Operations, Gen.Bool, (line, operations, instant) => (Line: line, Operations: operations, Instant: instant)), Check, iterations: 3000, print: Print);
+        PropertyCheck.Run(Gen.Select(RandomLine, Operations, Gen.Bool, (line, operations, instant) => (Line: line, Operations: operations, Instant: instant)), Check, print: Print);
 
     [Fact]
     public void Advance_TheSameTotalTimeSplitDifferently_ReachesTheSamePlace() =>
-        PropertyCheck.Run(Gen.Select(RandomLine, Gen.Int[1, 400].Array[1, 12], (line, deltas) => (Line: line, Deltas: deltas)), CheckSplit, iterations: 3000, print: pair => $"{Describe(pair.Line)} deltas {string.Join(',', pair.Deltas)}");
+        PropertyCheck.Run(Gen.Select(RandomLine, Gen.Int[1, 400].Array[1, 12], (line, deltas) => (Line: line, Deltas: deltas)), CheckSplit, print: pair => $"{Describe(pair.Line)} deltas {string.Join(',', pair.Deltas)}");
 
     private static void Check((Line Line, int[] Operations, bool Instant) input)
     {

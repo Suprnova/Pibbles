@@ -29,7 +29,7 @@ public class SaveAnywhereTests
 
     [Fact]
     public void Restore_SavedAtAnyStep_FinishesLikeAnUninterruptedRun() =>
-        PropertyCheck.Run(Gen.Select(Walk.Gen, Gen.Int[0, 1000], (walk, save) => (Walk: walk, Save: save)), Check, iterations: 400, print: input => $"{input.Walk}, save {input.Save}");
+        PropertyCheck.Run(Gen.Select(Walk.Gen, Gen.Int[0, 1000], (walk, save) => (Walk: walk, Save: save)), Check, print: input => $"{input.Walk}, save {input.Save}");
 
     /// <summary>Saves at a step the walk reaches: step <c>1 + Save mod n</c>, where <c>n</c> is the number of steps the uninterrupted run takes within the limit.</summary>
     private static void Check((Walk Walk, int Save) input)

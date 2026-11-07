@@ -12,7 +12,7 @@ public class DeterminismTests
 
     [Fact]
     public void Play_SameWalkTwice_GivesTheSameTranscript() =>
-        PropertyCheck.Run(Walk.Gen, Check, iterations: 300, print: walk => walk.ToString());
+        PropertyCheck.Run(Walk.Gen, Check, print: walk => walk.ToString());
 
     private static void Check(Walk walk)
     {

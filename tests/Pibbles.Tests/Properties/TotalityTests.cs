@@ -46,24 +46,24 @@ public class TotalityTests
 
     [Fact]
     public void Compile_RandomInput_IsTotal() =>
-        PropertyCheck.Run(RandomInput, AssertTotal, iterations: 3000, print: Visible);
+        PropertyCheck.Run(RandomInput, AssertTotal, print: Visible);
 
     [Fact]
     public void Compile_MutatedFile_IsTotal() =>
-        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal(file.Text), print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     [Fact]
     public void Compile_MutatedFileWithEveryThresholdAtOne_IsTotal() =>
-        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal([new SourceText("input.pib", file.Text)], Strict(["input.pib"])), iterations: 1000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertTotal([new SourceText("input.pib", file.Text)], Strict(["input.pib"])), print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     [Fact]
     public void Compile_CrossedFiles_IsTotal() =>
-        PropertyCheck.Run(Mutations.CrossedFile, file => AssertTotal(file.Text), iterations: 1000, print: file => $"{file.Name}:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.CrossedFile, file => AssertTotal(file.Text), print: file => $"{file.Name}:\n{Visible(file.Text)}");
 
     [Fact]
     public void Compile_MutatedStory_IsTotal() =>
         PropertyCheck.Run(Gen.Select(Mutations.MutatedStory, Gen.Bool), input => AssertTotal(input.Item1, input.Item2 ? Strict(input.Item1.Select(file => file.Path)) : null),
-            iterations: 1000, print: input => string.Join("\n", input.Item1.Select(file => $"{file.Path}{(input.Item2 ? " (strict)" : "")}:\n{Visible(file.Text)}")));
+            print: input => string.Join("\n", input.Item1.Select(file => $"{file.Path}{(input.Item2 ? " (strict)" : "")}:\n{Visible(file.Text)}")));
 
     [Fact]
     public void Compile_CorpusFileWithoutErrors_LowersWithoutThrowing() =>
@@ -71,7 +71,7 @@ public class TotalityTests
 
     [Fact]
     public void Compile_MutatedFileWithoutErrors_LowersWithoutThrowing() =>
-        PropertyCheck.Run(Mutations.MutatedFile, file => AssertLowers(file.Text), iterations: 3000, print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
+        PropertyCheck.Run(Mutations.MutatedFile, file => AssertLowers(file.Text), print: file => $"{file.Name}, mutated:\n{Visible(file.Text)}");
 
     /// <summary>Compiling lowers a story with no errors, and a name the binder left unresolved there would throw.</summary>
     private static void AssertLowers(string text)

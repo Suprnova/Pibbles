@@ -17,7 +17,7 @@ public class RoundTripTests
         Assert.Empty(tree.Diagnostics);
         Assert.Equal(SyntaxDump.WriteShape(file), SyntaxDump.WriteShape(tree.Root));
         Assert.Equal(comments, tree.Comments.Select(comment => comment.Text));
-    }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
+    }, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
 
     [Fact]
     public void Parse_PrintedTreeWithComments_MarksCommentsAloneOnTheirLine() => PropertyCheck.Run(Gen.Select(SyntaxGenerators.File, SyntaxGenerators.Comments), input =>
@@ -33,7 +33,7 @@ public class RoundTripTests
             bool aloneOnLine = source.Text.AsSpan(line.Start, comment.Span.Start - line.Start).Trim(" \t").IsEmpty;
             Assert.Equal(aloneOnLine, comment.OnOwnLine);
         }
-    }, iterations: 500, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
+    }, print: input => SyntaxPrinter.Print(input.Item1, input.Item2));
 
     [Fact]
     public void Parse_PrintedCorpusFile_GivesBackTheTreeAndComments() => Assert.All(Corpus.CleanFiles, AssertRoundTrips);
@@ -44,7 +44,7 @@ public class RoundTripTests
         var source = new SourceText(file.Name, file.Text);
         if (SyntaxTree.Parse(source).Diagnostics.Count == 0)
             AssertRoundTrips(source);
-    }, iterations: 3000, print: file => $"{file.Name}, mutated:\n{file.Text}");
+    }, print: file => $"{file.Name}, mutated:\n{file.Text}");
 
     private static void AssertRoundTrips(SourceText source)
     {
