@@ -119,6 +119,7 @@ Each extension below is fully designed, and joins the language when its trigger 
 | [`speaker` parameter defaults](#speaker-parameter-defaults) | Voice barks |
 | [Drafts](#drafts), with development and release build profiles | Content in the repository that must not ship |
 | [Release manifests, `#was:` on lines and `@var`, migrations and `@resume`](#migrations), `pibbles release` | Before the first public release of a game that saves mid-dialogue, since only then do old saves exist |
+| [Dialogue temporaries](#dialogue-temporaries) (`@temp`) | The first per-attempt state whose hand-written reset goes wrong, or `random()`, whichever comes first |
 
 [Notes](#notes) and [`required` markup](#required-markup) aren't triggered by a need: they arrive with the localization pipeline ([roadmap](../roadmap.md#feature-tiers)). [Voice tooling](#voice) is a stretch goal.
 
@@ -138,6 +139,7 @@ The full grammar is the [v1 grammar](reference.md#appendix-grammar) plus the cha
 | `speaker` parameter defaults | Additive | `constant` |
 | Drafts | None: `#draft` is a tag | |
 | Release manifests, `#was:` on lines and `@var`, migrations and `@resume` | Additive: v1 accepts `#was:` only on node headers | `var_decl`, `flow_stmt`; new claim grammar inside `#migrates:` values |
+| Dialogue temporaries | Additive | `declaration`, `file`; new `temp_decl` |
 | Notes (with localization) | Gives the NOTE line class, reserved in v1, a meaning | Line classification only |
 | `required` markup (with localization) | Additive: v1 reports the extra word | `markup_decl` |
 
@@ -553,6 +555,61 @@ claim           ::= NAME (".." NAME)? ("@" version)?                     /* Q20 
 >
 > `pibbles check` lists every old save point that has nowhere to go, and warns when an update adds or removes a variable change before a line that already shipped.
 
+### Dialogue temporaries
+
+A temporary is a variable that belongs to one dialogue. It starts over whenever a dialogue starts, and saves don't keep it between dialogues. It suits scratch state that spans several nodes, such as a quiz's score or a dice roll shown a few lines later, where a hand-written `@set` at the top of the sequence is easy to miss when the game can start the sequence from more than one node.
+
+```
+@prefix quiz
+@temp $.score = 0
+@var $passed = false
+
+== .start
+mira: What is two plus two?
+-> Four
+    @set $.score += 1
+    @jump .last
+-> Five
+    @jump .last
+
+== .last
+@if $.score >= 1
+    @set $passed = true
+```
+
+- **`@temp $name [: type] = value`** is declared like `@var`: the same types and starting values, and dotted and relative names (`@temp $.score = 0`). It goes wherever `@var` can, before a file's first node or between nodes. Where it's written doesn't change what it means.
+- **Temporaries and variables share one namespace.** A name can't be both.
+- **Each runner has its own temporaries.** They take their starting values whenever `Start` begins a dialogue, last through every `@jump`, `@call` and `@return`, and are dropped when the dialogue ends. A second runner's temporaries are separate, so remarks on it can't disturb the main dialogue's scratch.
+- **They're never in `StoryState` or its snapshot.** The runner snapshot carries them while a dialogue is in progress ([runtime design](../runtime.md#dialogue-temporaries)).
+- **The game can't read a temporary through the state,** so one that is set and never read is dead.
+- **State that outlives a dialogue is a `@var`.** A quiz interrupted by gameplay, where the player answers, finds a clue and comes back, spans several dialogues, so its score has to be a variable. Dice rolls from [`random()`](#shuffle-shuffle-once-and-random) are a use: the roll is stored before it's shown, and a temporary keeps it for the dialogue.
+
+**Grammar:**
+
+```
+declaration     ::= … | temp_decl
+file            ::= prefix_line? declaration* (node (var_decl | temp_decl)*)*
+temp_decl       ::= "@temp" VARIABLE (":" type)? "=" constant EOL
+```
+
+- `temp_decl` has the shape of `var_decl`.
+- Sharing a namespace with variables is a check.
+
+**Guide text:**
+
+> #### Scratch values: temporaries
+>
+> A variable is saved with the game and keeps its value until something changes it. Some values only matter for one conversation, like the score of a quiz. Declare those with `@temp` instead of `@var`. A temporary starts over every time a conversation starts, however the game gets into it, and it isn't saved.
+>
+> ```
+> @prefix quiz
+> @temp $.score = 0
+> ```
+>
+> - **Use `@set` and `@if` on it** like any variable. It lasts through every `@jump` and `@call` until the conversation ends.
+> - **Use a `@var` if the quiz can be interrupted.** If the player leaves for gameplay and comes back, that's a new conversation, and a temporary starts over.
+> - **A dice roll** from `random()` is a good temporary: roll once, then show and compare it for the rest of the conversation.
+
 ### Open questions
 
 Each is decided when its extension is implemented, preferring to reject a form over giving it a fallback meaning, as the [v1 grammar](reference.md#appendix-grammar) does.
@@ -563,6 +620,8 @@ Each is decided when its extension is implemented, preferring to reject a form o
 | 19 | `persona_prop` | Can a persona override nothing? A persona that only changes host presentation, like sprites, has no `name:` to set. | The block becomes optional; the block stays required, and can be empty |
 | 20 | `claim` | What is a `version`? | Runs to the next `,`; follows the `pibbles.json` version format |
 | 21 | `variation` (`@shuffle`) | Where does each round's order come from? | A shuffle bag drawn from the state's random generator, saved per block; a permutation derived from the seed, the block's ID and the round number, as `{shuffle}` does, so nothing beyond the entry count is saved and a block never draws from the generator |
+| 22 | `temp_decl` | How does a transcript's `set` treat a temporary? A `set` runs before the first `start`, which resets temporaries. | `set` seeds the temporary right after that `start`, so a transcript can begin partway through a quiz; `set` rejects temporaries, so a transcript plays the quiz through |
+| 23 | `temp_decl` | How does a host read or set a temporary? The game has no way to reach one through `StoryState`. | The runner reads and sets them, as the state does variables; the runner only reads them, so the story alone decides their values |
 
 ## With localization
 

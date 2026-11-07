@@ -387,6 +387,15 @@ What the [grammar extensions](language/design.md#grammar-extensions) and later t
 
 `StoryState` holds line show counts, by line ID. Loading a save re-renders the saved line without bumping its count, so it picks the same alternatives as before. Saves from before this extension count every line as unseen ([known exception](language/reference.md#extension-compatibility)). Line templates gain variations.
 
+### Dialogue temporaries
+
+[Temporaries](language/design.md#dialogue-temporaries) belong to a runner, not to the state.
+
+- `DialogueRunner` holds the values of the story's temporaries. `Start` gives each its starting value, `@jump`, `@call` and `@return` leave them alone, and the dialogue ending drops them. Runners that share a `StoryState` don't share temporaries.
+- `StoryState` and its snapshot don't change, so renaming or removing a temporary only affects saves made partway through a dialogue.
+- The runner snapshot gains the values by name, in a new snapshot format. `DialogueRunner.Restore` reports an unknown name, a changed type and an invalid value as `StoryState.Restore` does, and restores a snapshot from before the format at the starting values.
+- How a host or a transcript reads and sets a temporary is open ([language design Q22 and Q23](language/design.md#open-questions)).
+
 ### Localization
 
 - `DialogueRunner.Locale` selects the language, and rendering resolves templates against the state and the locale. A translation compiles to a template of the same shape as the source ([localization design](localization.md)).
