@@ -12,13 +12,25 @@ namespace Pibbles.Tests.Properties;
 /// </summary>
 public class TotalityTests
 {
-    private const string Alphabet = "@-=>[]{}$#\\:(),.\"'/%*+<!?_ abxyz019\té́﻿\uD83D：（）、，" + Spaces.Ideographic + Spaces.NoBreak;
+    private const string Alphabet = "@-=>[]{}$#\\:(),.\"'/%*+<!?_ abxyz019\té́﻿\0\v\f\u0085\u2028\u200D\uDC00\uD83D：（）、，" + Spaces.Ideographic + Spaces.NoBreak;
+
+    /// <summary>Words and markers the grammar reads, with the full-width forms an input method types in their place.</summary>
+    private static readonly string[] Words =
+    [
+        "if", "elif", "else", "{if", "{elif", "{else}", "{/if}", "true", "false", "and", "or", "not", "not(", "and(", "or(", "was", "id", "inline", "waits", "wait", "nowait",
+        "{w}", "{br}", "{page}", "{pause", "{speed", "{icon", "{@", "[b]", "[/b]", "[color=", "1s", "0.5s", "12", "-3", "$x", "$", "x", "x.y", "f(", "#a", "#id:", "#was:", "@once", "@if",
+        "＠", "＃", "＄", "＄x", "＝", "＝＝", "＞", "ー", "ー＞", "「", "」", "【", "】", "［", "］", "｛", "｝", "『", "』", "・", "、", "￥", "：", "（", "）", "！＝",
+        "\\", "//", "\r", "\n", " ", "  ", "\t",
+    ];
+
+    private static readonly Gen<string> Chunk = Gen.Frequency((4, Gen.OneOfConst(Words)), (1, Gen.String[Gen.Char[Alphabet], 1, 4]));
 
     private static readonly Gen<string> RandomLine = Gen.Select(
         Gen.OneOfConst("", "", "    ", "        ", "\t", "  ", " \t"),
         Gen.OneOfConst("", "==", "@", "->", "- ", "-", "//", "///", "@if ", "@elif ", "@else", "@once", "@cycle", "@sequence", "@actor ", "@var ",
-            "@command ", "@prefix ", "@set ", "@jump ", "@call ", "mira: ", "mira (sad):", "name: ", "pose: ", "pose += ", "no ", "@channel ", "@narration ", "(sad):", "mira (sad, still):", "{", "[", "#"),
-        Gen.String[Gen.Char[Alphabet], 0, 16],
+            "@command ", "@prefix ", "@set ", "@jump ", "@call ", "mira: ", "mira (sad):", "name: ", "pose: ", "pose += ", "no ", "@channel ", "@narration ", "(sad):", "mira (sad, still):", "{", "[", "#",
+            "＠", "＠if ", "ー", "ー＞ ", "＝＝ ", "mira： ", "（sad）：", "mira （sad）："),
+        Gen.OneOf(Chunk.Array[0, 6].Select(string.Concat), Chunk.Array[0, 6].Select(chunks => string.Join(' ', chunks)), Gen.String[Gen.Char[Alphabet], 0, 16]),
         (indent, start, rest) => indent + start + rest);
 
     private static readonly Gen<string> RandomInput = Gen.OneOf(
