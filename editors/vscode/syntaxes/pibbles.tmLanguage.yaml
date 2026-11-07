@@ -67,11 +67,14 @@ repository:
     match: '(?<!/)///(?!/).*$'
     name: invalid.illegal.note-in-line.pibbles
 
+  # A header, `@` line or option marker typed through an input method (`＝＝`, `＠if`, `ー＞`) still makes that line, and is
+  # marked as the error it is (PIB1044).
   header:
-    begin: '(?:^|\G)[ \t]*(==)[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
+    begin: '(?:^|\G)[ \t]*(?:(==)|([=＝]{2}))[\t\p{Zs}]*(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*)?'
     beginCaptures:
       '1': { name: keyword.control.header.pibbles }
-      '2': { name: entity.name.section.node.pibbles }
+      '2': { name: invalid.illegal.input-method.pibbles }
+      '3': { name: entity.name.section.node.pibbles }
     end: '$'
     name: meta.header.pibbles
     patterns:
@@ -138,10 +141,12 @@ repository:
         name: constant.other.enum-member.pibbles
 
   at-line:
-    begin: '(?:^|\G)[\t\p{Zs}]*(?=@)'
+    begin: '(?:^|\G)[\t\p{Zs}]*(?=@|＠\p{L})'
     end: '$'
     name: meta.statement.pibbles
     patterns:
+      - match: '\G＠'
+        name: invalid.illegal.input-method.pibbles
       - match: '\G(@prefix)(?![\p{L}\p{M}\p{N}_])(?:[\t\p{Zs}]+(\.?[\p{L}_][\p{L}\p{M}\p{N}_]*(?:\.[\p{L}_][\p{L}\p{M}\p{N}_]*)*))?'
         captures:
           '1': { name: storage.type.declaration.pibbles }
@@ -170,12 +175,14 @@ repository:
           '1': { name: punctuation.separator.type.pibbles }
           '2': { name: entity.name.type.pibbles }
           '3': { name: keyword.operator.optional.pibbles }
+      - include: '#input-method-form'
       - include: '#code'
 
   option:
-    begin: '(?:^|\G)[\t\p{Zs}]*(->)'
+    begin: '(?:^|\G)[\t\p{Zs}]*(?:(->)|([-－ー][>＞》]))'
     beginCaptures:
       '1': { name: keyword.control.option.pibbles }
+      '2': { name: invalid.illegal.input-method.pibbles }
     end: '$'
     name: meta.option.pibbles
     patterns:
@@ -339,6 +346,12 @@ repository:
         name: variable.parameter.pibbles
       - match: '==|!=|<=|>=|\+=|-=|->|[<>=+\-*/%]'
         name: keyword.operator.pibbles
+
+  # A marker typed through an input method in code, such as a full-width `＝` for `=` or `、` for `,`, is read as the marker
+  # and reported (PIB1044). Full-width letters and `＿` are identifier characters, so they aren't marked.
+  input-method-form:
+    match: '[\x{FF01}-\x{FF20}\x{FF3B}-\x{FF3E}\x{FF40}\x{FF5B}-\x{FF5E}「」【】『』・、。￥《》“”]'
+    name: invalid.illegal.input-method.pibbles
 
   string:
     begin: '"'

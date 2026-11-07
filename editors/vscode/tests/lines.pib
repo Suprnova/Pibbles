@@ -201,3 +201,27 @@ mira: Done!　Next.
 
     name: Mira
 //  ^^^^ support.type.property-name.pibbles - invalid.illegal.indentation.pibbles
+
+＝＝ kitchen.door
+// <-- meta.header.pibbles invalid.illegal.input-method.pibbles
+// ^^^^^^^^^^^^ entity.name.section.node.pibbles
+
+ー＞ はい
+// <-- meta.option.pibbles invalid.illegal.input-method.pibbles
+
+-> はい
+// <-- keyword.control.option.pibbles - invalid.illegal.input-method.pibbles
+
+＠if $met
+// <- meta.statement.pibbles invalid.illegal.input-method.pibbles
+
+@set ＄met ＝ true
+//   ^ invalid.illegal.input-method.pibbles
+//        ^ invalid.illegal.input-method.pibbles
+
+@set $quote = "「x」" // 「y」
+//             ^^^ string.quoted.double.pibbles - invalid.illegal.input-method.pibbles
+//                     ^^^ comment.line.double-slash.pibbles - invalid.illegal.input-method.pibbles
+
+＠ is text, and so is ・・ text.
+// <------------------------------- - invalid.illegal.input-method.pibbles
