@@ -207,5 +207,15 @@ public class CompilationTests
         Assert.Equal(("PIB1406", help), (diagnostic.Code, diagnostic.Help));
     }
 
+    [Theory]
+    [InlineData("clu", "Did you mean `clue`?")]
+    [InlineData("e", null)]
+    public void Create_UnknownMarkup_SuggestsClosestMarkupSharingALetter(string markup, string? help)
+    {
+        Diagnostic diagnostic = Assert.Single(Compile($"@markup clue\n\n== kitchen.door\n[{markup}]the key[/{markup}]\n").Diagnostics, d => d.Code is "PIB3104");
+
+        Assert.Equal(help, diagnostic.Help);
+    }
+
     private static Compilation Compile(string text) => WithoutStyle.Compile(new SourceText("story.pib", text));
 }

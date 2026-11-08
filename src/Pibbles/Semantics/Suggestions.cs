@@ -4,8 +4,9 @@ namespace Pibbles.Semantics;
 internal static class Suggestions
 {
     /// <summary>
-    /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits,
-    /// counting letters, not UTF-16 code units. An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
+    /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits
+    /// and always fewer edits than the name has letters, so a suggestion shares a letter with the name.
+    /// Letters are counted, not UTF-16 code units. An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
     /// </summary>
     /// <param name="name">The name as written.</param>
     /// <param name="candidates">The names it could have meant.</param>
@@ -13,7 +14,7 @@ internal static class Suggestions
     public static string? Closest(string name, IEnumerable<string> candidates)
     {
         int[] letters = Letters(name);
-        int limit = Math.Max(1, letters.Length / 3);
+        int limit = Math.Min(Math.Max(1, letters.Length / 3), letters.Length - 1);
         return candidates
             .Select(candidate => (Candidate: candidate, Distance: Distance(letters, Letters(candidate))))
             .Where(match => match.Distance <= limit)

@@ -15,6 +15,9 @@ public class SuggestionsTests
         { "window", ["win"], null },
         { "fridge", ["position", "room"], null },
         { "anything", [], null },
+        { "y", ["u", "x"], null },
+        { "e", ["b"], null },
+        { "E", ["b", "e"], "e" },
         { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB7\U00020BB7"], "\U00020BB8\U00020BB7\U00020BB7" },
         { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB8\U00020BB7"], null },
     };

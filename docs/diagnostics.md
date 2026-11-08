@@ -23,7 +23,7 @@ A new code takes the next free number in its construct's hundred. A new construc
 
 Severities are error, warning, info and hint. `.editorconfig` can change any of them but an error, since a story with an error can't compile ([configuration](tooling.md#configuration)).
 
-"Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). Ties go to the name declared first. When nothing is close enough, the help is left out.
+"Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). It also has to share a letter with the name written, so a one-letter name is only ever matched to the same letter in another case. Ties go to the name declared first. When nothing is close enough, the help is left out.
 
 ## Writing messages
 
