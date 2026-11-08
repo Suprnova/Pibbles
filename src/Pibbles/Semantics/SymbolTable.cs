@@ -34,9 +34,9 @@ internal sealed class SymbolTable
     public IEnumerable<Symbol> All() =>
     [
         .. TypeSymbol.BuiltIn,
-        .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))]),
+        .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. OwnValues(actor.Channels)]),
         .. Channels.Values.SelectMany(channel => (IEnumerable<Symbol>)[channel, .. channel.Defaults]),
-        .. Narration.Location is null ? [] : (IEnumerable<Symbol>)[Narration, .. Narration.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))],
+        .. Narration.Location is null ? [] : (IEnumerable<Symbol>)[Narration, .. OwnValues(Narration.Channels)],
         .. Enums.Values.SelectMany(@enum => (IEnumerable<Symbol>)[@enum, .. @enum.Members]),
         .. Variables.Values,
         .. Commands.Values.SelectMany(command => (IEnumerable<Symbol>)[command, .. command.Parameters]),
@@ -46,6 +46,10 @@ internal sealed class SymbolTable
         .. Functions.Values.SelectMany(function => (IEnumerable<Symbol>)[function, .. function.Parameters]),
         .. Nodes.Values,
     ];
+
+    /// <summary>The values a speaker's channels have beyond the channels' defaults, which are listed with their channels.</summary>
+    private static IEnumerable<ChannelValueSymbol> OwnValues(IEnumerable<SpeakerChannel> channels) =>
+        channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)));
 
     /// <summary>Finds a built-in type or a declared enum by name.</summary>
     public TypeSymbol? FindType(string name) => TypeSymbol.BuiltIn.FirstOrDefault(type => type.Name == name) ?? Enums.GetValueOrDefault(name);
