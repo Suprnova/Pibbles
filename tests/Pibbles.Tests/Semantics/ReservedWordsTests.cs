@@ -37,6 +37,8 @@ public class ReservedWordsTests
         { "@enum {0}: member", BuiltInTypes },
         { "@enum things: {0}", [.. Value, .. Argument] },
         { "== {0}", [.. Value, .. Argument] },
+        { "== scene.{0}", [] },
+        { "== {0}.scene", [] },
         { "@actor {0}\n    name: Someone", [.. Value, .. Argument, .. Brace] },
         { "@command show({0}: number)", ["wait", "nowait"] },
         { "@tag {0}", ReservedTags },
