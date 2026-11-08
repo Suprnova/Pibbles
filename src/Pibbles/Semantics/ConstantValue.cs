@@ -46,6 +46,29 @@ internal static class ConstantValue
         _ => null,
     };
 
+    /// <summary>
+    /// Determines if the operands of <paramref name="binary"/> are both constant, but the operation gives a result too
+    /// large or too small for a <see cref="decimal"/>. <see cref="Fold"/> gives no value for such an operation either, and
+    /// so for none above it, which is why only the innermost operation is ever reported.
+    /// </summary>
+    /// <param name="binary">The operation to check.</param>
+    /// <returns><see langword="true"/> if the operation overflows, or <see langword="false"/> if it fits or isn't constant.</returns>
+    public static bool Overflows(BinaryExpressionSyntax binary)
+    {
+        if (Fold(binary.Left) is not { } left || Fold(binary.Right) is not { } right)
+            return false;
+
+        try
+        {
+            Calculate(binary.Operator, left, right);
+            return false;
+        }
+        catch (OverflowException)
+        {
+            return true;
+        }
+    }
+
     /// <summary>Adds two values.</summary>
     /// <param name="left">The first value.</param>
     /// <param name="right">The second value.</param>
@@ -65,19 +88,21 @@ internal static class ConstantValue
 
     private static decimal Floored(decimal remainder, decimal divisor) => remainder != 0 && (remainder < 0) != (divisor < 0) ? remainder + divisor : remainder;
 
+    private static decimal? Calculate(BinaryOperator @operator, decimal left, decimal right) => @operator switch
+    {
+        BinaryOperator.Add => left + right,
+        BinaryOperator.Subtract => left - right,
+        BinaryOperator.Multiply => left * right,
+        BinaryOperator.Divide when right != 0 => left / right,
+        BinaryOperator.Remainder when right != 0 => Floored(left % right, right),
+        _ => null,
+    };
+
     private static decimal? Apply(BinaryOperator @operator, decimal left, decimal right)
     {
         try
         {
-            return @operator switch
-            {
-                BinaryOperator.Add => left + right,
-                BinaryOperator.Subtract => left - right,
-                BinaryOperator.Multiply => left * right,
-                BinaryOperator.Divide when right != 0 => left / right,
-                BinaryOperator.Remainder when right != 0 => Floored(left % right, right),
-                _ => null,
-            };
+            return Calculate(@operator, left, right);
         }
         catch (OverflowException)
         {

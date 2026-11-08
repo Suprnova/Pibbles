@@ -45,6 +45,37 @@ public class ConstantValueTests
     public void FoldCondition_ConditionThatCanChange_GivesNothing(string condition) =>
         Assert.Null(FoldCondition(condition));
 
+    [Theory]
+    [InlineData("99999999999999999999999999 * 99999999999999999999999999")]
+    [InlineData("79228162514264337593543950335 + 1")]
+    [InlineData("-79228162514264337593543950335 - 1")]
+    [InlineData("79228162514264337593543950335 / 0.1")]
+    [InlineData("(1 + 1) * 79228162514264337593543950335")]
+    [InlineData("79228162514264337593543950335s + 1s")]
+    public void Overflows_ConstantOperationTooLargeToHold_IsTrue(string operation) =>
+        Assert.True(Overflows(operation));
+
+    [Theory]
+    [InlineData("79228162514264337593543950335 - 1")]
+    [InlineData("79228162514264337593543950335 * 0")]
+    [InlineData("79228162514264337593543950335 / 1")]
+    [InlineData("79228162514264337593543950335 % 3")]
+    [InlineData("79228162514264337593543950335 / 0")]
+    [InlineData("79228162514264337593543950335 % 0")]
+    [InlineData("$x * 99999999999999999999999999")]
+    [InlineData("f(1) + 79228162514264337593543950335")]
+    [InlineData("(99999999999999999999999999 * 99999999999999999999999999) * 2")]
+    public void Overflows_OperationThatFitsOrIsNotConstant_IsFalse(string operation) =>
+        Assert.False(Overflows(operation));
+
+    private static bool Overflows(string operation)
+    {
+        var tree = SyntaxTree.Parse(new SourceText("story.pib", $"== a.b\n@if {operation} > 0\n    Hi.\n"));
+        var comparison = (BinaryExpressionSyntax)((IfStatementSyntax)tree.Root.Nodes[0].Body[0]).Condition;
+
+        return ConstantValue.Overflows((BinaryExpressionSyntax)comparison.Left);
+    }
+
     private static bool? FoldCondition(string condition)
     {
         var tree = SyntaxTree.Parse(new SourceText("story.pib", $"== a.b\n@if {condition}\n    Hi.\n"));
