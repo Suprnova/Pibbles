@@ -324,7 +324,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             DeclaresIfWritten(name.Span, symbol);
         }
         else if (valid)
-            Report(DiagnosticCatalog.DuplicateDeclaration, name.Span, kind.Describe(), shown ?? name.Text, first.Location is { } location ? Where(location) : "built into Pibbles", DuplicateHelp(kind, name));
+            Report(DiagnosticCatalog.DuplicateDeclaration, name.Span, kind.Describe(), shown ?? name.Text, Where(first.Location!.Value), DuplicateHelp(kind, name));
     }
 
     /// <summary>
