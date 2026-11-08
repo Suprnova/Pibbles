@@ -83,6 +83,24 @@ public class SemanticModelTests
     }
 
     [Fact]
+    public void FindReferences_BoundOutOfSourceOrder_ListsUsesByPosition()
+    {
+        var comparison = Compilation.Create([new(KitchenPath, """
+            @enum position: left, right
+            @function f(at: position) -> position
+
+            == start
+            @if right == f(right)
+                @jump start
+            """)]);
+        EnumMemberSymbol right = comparison.Model.Symbols<EnumMemberSymbol>().Single(member => member.Name == "right");
+
+        string[] uses = [.. comparison.Model.FindReferences(right).Select(location => $"{location.Start.Line + 1}:{location.Start.Column + 1}")];
+
+        Assert.Equal(["5:5", "5:16"], uses);
+    }
+
+    [Fact]
     public void Location_DeclaredSymbol_IsItsDeclaredName()
     {
         NodeSymbol door = compilation.Model.Symbols<NodeSymbol>().Single();

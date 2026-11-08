@@ -19,5 +19,7 @@ internal sealed class ReferenceIndex
     /// <summary>Where a symbol is used, in the order the files were given, then by position.</summary>
     public IEnumerable<SourceLocation> UsesOf(Symbol symbol) => entries
         .Where(entry => !entry.IsDeclaration && entry.Symbol == symbol)
-        .Select(entry => entry.Location);
+        .Select(entry => entry.Location)
+        .GroupBy(location => location.Path)
+        .SelectMany(file => file.OrderBy(location => location.Span.Start));
 }
