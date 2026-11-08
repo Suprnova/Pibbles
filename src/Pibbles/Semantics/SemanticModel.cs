@@ -1,4 +1,5 @@
 using Pibbles.Diagnostics;
+using Pibbles.Syntax;
 
 namespace Pibbles.Semantics;
 
@@ -19,7 +20,7 @@ public sealed class SemanticModel
     }
 
     /// <summary>Finds the symbol a name refers to, where it's used or where it's declared.</summary>
-    /// <param name="path">The file's path, as given in its <see cref="Syntax.SourceText"/>.</param>
+    /// <param name="path">The file's path, as given in its <see cref="SourceText"/>.</param>
     /// <param name="position">A position in the file. A position just past the end of a name still counts as on it.</param>
     /// <returns>The symbol, or <see langword="null"/> if no name that refers to one is there.</returns>
     public Symbol? GetSymbolAt(string path, int position) => references.SymbolAt(path, position);
@@ -31,7 +32,7 @@ public sealed class SemanticModel
 
     /// <summary>
     /// Lists the symbols of one kind, such as every <see cref="ActorSymbol"/>, including the ones built into Pibbles.
-    /// Poses, enum members and parameters are listed along with the symbols they belong to.
+    /// Channel values, enum members and parameters are listed along with the symbols they belong to.
     /// </summary>
     /// <typeparam name="T">The kind of symbol, or <see cref="Symbol"/> for all of them.</typeparam>
     public IEnumerable<T> Symbols<T>()

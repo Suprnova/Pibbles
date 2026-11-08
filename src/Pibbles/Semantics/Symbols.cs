@@ -12,7 +12,7 @@ public abstract class Symbol
         Location = location;
     }
 
-    /// <summary>The symbol's name as declared: without the <c>$</c> of a variable, and in full for a node.</summary>
+    /// <summary>The symbol's name as declared: without the <c>$</c> of a variable, and with its whole path for a node or a variable, such as <c>kitchen.door_open</c>.</summary>
     public string Name { get; }
 
     /// <summary>Where the symbol's name is declared, or <see langword="null"/> for a symbol built into Pibbles.</summary>

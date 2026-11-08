@@ -16,8 +16,8 @@ internal readonly record struct ExpressionType(TypeSymbol Type, TypeSymbol Conve
 /// different places are different nodes.
 /// </summary>
 /// <remarks>
-/// A name is keyed by the node that spells it: the <see cref="NameSyntax"/> of a speaker, pose, command, markup, icon,
-/// called function, named argument, or <c>@jump</c> and <c>@call</c> target; the <see cref="VariableExpressionSyntax"/>
+/// A name is keyed by the node that spells it: the <see cref="NameSyntax"/> of a speaker, channel value, command, markup, icon,
+/// called function, named argument, node header, or <c>@jump</c> and <c>@call</c> target; the <see cref="VariableExpressionSyntax"/>
 /// of a variable; the <see cref="NameExpressionSyntax"/> of a bare name (an enum member, an actor or a node); and the
 /// <see cref="TagSyntax"/> of a tag, whose enum value is in <see cref="TagValueOf"/>. A name that couldn't be resolved has
 /// no entry. Every bound expression has a type, which is <see cref="TypeSymbol.Error"/> where it couldn't be known.
