@@ -3,7 +3,7 @@ using Pibbles.Syntax;
 namespace Pibbles.Semantics;
 
 /// <summary>
-/// Folds expressions made only of literals, unary minus, <c>+ - * /</c> and parentheses into one value, in
+/// Folds expressions made only of literals, unary minus, <c>+ - * / %</c> and parentheses into one value, in
 /// <see cref="decimal"/> so that sums like <c>0.3s - 0.1s - 0.2s</c> are exact. Anything else, and anything that
 /// overflows or divides by zero, has no constant value. <see cref="FoldCondition"/> does the same for conditions.
 /// </summary>
@@ -52,6 +52,8 @@ internal static class ConstantValue
         _ => null,
     };
 
+    private static decimal Floored(decimal remainder, decimal divisor) => remainder != 0 && (remainder < 0) != (divisor < 0) ? remainder + divisor : remainder;
+
     private static decimal? Apply(BinaryOperator @operator, decimal left, decimal right)
     {
         try
@@ -62,6 +64,7 @@ internal static class ConstantValue
                 BinaryOperator.Subtract => left - right,
                 BinaryOperator.Multiply => left * right,
                 BinaryOperator.Divide when right != 0 => left / right,
+                BinaryOperator.Remainder when right != 0 => Floored(left % right, right),
                 _ => null,
             };
         }

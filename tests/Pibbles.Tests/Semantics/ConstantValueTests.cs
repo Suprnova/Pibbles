@@ -16,6 +16,9 @@ public class ConstantValueTests
     [InlineData("1 != 1", false)]
     [InlineData("1s < 2s", true)]
     [InlineData("1 + 1 == 2", true)]
+    [InlineData("7 % 3 == 1", true)]
+    [InlineData("-7 % 3 == 2", true)]
+    [InlineData("7 % -3 == -2", true)]
     [InlineData("true == true", true)]
     [InlineData("true != false", true)]
     [InlineData("true and false", false)]
@@ -37,6 +40,7 @@ public class ConstantValueTests
     [InlineData("false or $x")]
     [InlineData("f(1)")]
     [InlineData("1 / 0 > 1")]
+    [InlineData("1 % 0 > 1")]
     [InlineData("\"a\" == \"a\"")]
     public void FoldCondition_ConditionThatCanChange_GivesNothing(string condition) =>
         Assert.Null(FoldCondition(condition));
