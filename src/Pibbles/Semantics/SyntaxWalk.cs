@@ -8,12 +8,22 @@ internal static class SyntaxWalk
     /// <summary>The blocks a statement holds: an <c>@if</c>'s branches, a choice's options, a variation's alternatives, or <c>@once</c>'s block.</summary>
     public static IEnumerable<IReadOnlyList<StatementSyntax>> BlocksOf(StatementSyntax statement) => statement switch
     {
-        IfStatementSyntax @if => [@if.Body, .. @if.ElseIfs.Select(elseIf => elseIf.Body), .. @if.Else is { } @else ? [@else.Body] : Array.Empty<IReadOnlyList<StatementSyntax>>()],
+        IfStatementSyntax @if => Branches(@if),
         ChoiceSyntax choice => choice.Options.Select(option => option.Body),
         VariationStatementSyntax variation => variation.Alternatives.Select(alternative => alternative.Body),
         OnceStatementSyntax once => [once.Body],
         _ => [],
     };
+
+    private static IEnumerable<IReadOnlyList<StatementSyntax>> Branches(IfStatementSyntax @if)
+    {
+        yield return @if.Body;
+        foreach (ElseIfClauseSyntax elseIf in @if.ElseIfs)
+            yield return elseIf.Body;
+
+        if (@if.Else is { } @else)
+            yield return @else.Body;
+    }
 
     /// <summary>
     /// Whether a statement always leaves its block: <c>@jump</c>, <c>@end</c> or <c>@return</c>, or an <c>@if</c> with an
@@ -82,8 +92,15 @@ internal static class SyntaxWalk
     };
 
     /// <summary>Each branch of conditional text, in order, including the <c>{else}</c>.</summary>
-    public static IEnumerable<IReadOnlyList<InlineSyntax>> Branches(ConditionalTextSyntax conditional) =>
-        [conditional.Content, .. conditional.ElseIfs.Select(elseIf => elseIf.Content), .. conditional.Else is { } @else ? [@else.Content] : Array.Empty<IReadOnlyList<InlineSyntax>>()];
+    public static IEnumerable<IReadOnlyList<InlineSyntax>> Branches(ConditionalTextSyntax conditional)
+    {
+        yield return conditional.Content;
+        foreach (ElseIfTextSyntax elseIf in conditional.ElseIfs)
+            yield return elseIf.Content;
+
+        if (conditional.Else is { } @else)
+            yield return @else.Content;
+    }
 
     /// <summary>Every expression a statement's own line holds, in its text too, with every expression inside each one.</summary>
     public static IEnumerable<ExpressionSyntax> ExpressionsOf(StatementSyntax statement)
