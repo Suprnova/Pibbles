@@ -1,6 +1,4 @@
-using Pibbles.Diagnostics;
 using Pibbles.Semantics;
-using Pibbles.Syntax;
 
 namespace Pibbles.Tests.Semantics;
 

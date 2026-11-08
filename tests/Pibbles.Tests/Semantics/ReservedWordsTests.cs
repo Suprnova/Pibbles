@@ -1,6 +1,5 @@
-using System.Globalization;
-using Pibbles.Semantics;
 using Pibbles.Syntax;
+using System.Globalization;
 
 namespace Pibbles.Tests.Semantics;
 
