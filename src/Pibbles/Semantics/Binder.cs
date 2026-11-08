@@ -162,21 +162,37 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     /// <summary>Binds each value in a speaker's parenthesis to the channel that has it, and reports a second value of one channel.</summary>
     private void BindValues(IReadOnlyList<NameSyntax> written, IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, TextLineSyntax line)
     {
-        Dictionary<ChannelSymbol, NameSyntax> set = [];
+        Dictionary<ChannelSymbol, NameSyntax>? set = null;
         foreach (NameSyntax value in written)
         {
-            if (channels.FirstOrDefault(channel => channel.Values.Any(known => known.Name == value.Text)) is not { } has)
+            if (FindValue(channels, value.Text) is not var (channel, known))
             {
                 ReportUnknownValue(channels, owner, declaration, value, line);
                 continue;
             }
 
-            Refers(value, has.Values.First(known => known.Name == value.Text));
-            if (set.TryGetValue(has.Channel, out NameSyntax? first))
-                Report(DiagnosticCatalog.TwoValuesInChannel, value.Span, first.Text, value.Text, owner, has.Channel.Name);
+            Refers(value, known);
+            set ??= [];
+            if (set.TryGetValue(channel, out NameSyntax? first))
+                Report(DiagnosticCatalog.TwoValuesInChannel, value.Span, first.Text, value.Text, owner, channel.Name);
             else
-                set.Add(has.Channel, value);
+                set.Add(channel, value);
         }
+    }
+
+    /// <summary>Finds the value a speaker's parenthesis names, and the channel that has it.</summary>
+    private static (ChannelSymbol Channel, ChannelValueSymbol Value)? FindValue(IReadOnlyList<SpeakerChannel> channels, string name)
+    {
+        foreach (SpeakerChannel has in channels)
+        {
+            foreach (ChannelValueSymbol known in has.Values)
+            {
+                if (known.Name == name)
+                    return (has.Channel, known);
+            }
+        }
+
+        return null;
     }
 
     private void ReportUnknownValue(IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, NameSyntax value, TextLineSyntax line)
