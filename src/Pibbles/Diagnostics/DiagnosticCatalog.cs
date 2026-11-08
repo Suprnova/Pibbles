@@ -999,7 +999,10 @@ public static class DiagnosticCatalog
         help: "Remove its `@var`, or use it.");
 
     /// <summary>Every registered descriptor.</summary>
-    public static IReadOnlyList<DiagnosticDescriptor> All { get; } =
+    public static IReadOnlyList<DiagnosticDescriptor> All { get; }
+
+    // Assigned here, not in an initializer, so every descriptor in the partial files exists first.
+    static DiagnosticCatalog() => All =
     [
         MixedIndentation,
         InconsistentIndentation,
