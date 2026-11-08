@@ -130,7 +130,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             TypeSymbol type = declaration.Type is { } written ? ResolveType(written)
                 : name.IsMissing ? TypeSymbol.Error
                 : TypeOfValue(declaration);
-            if (FullName(name.Text, name.Span, $"${name.Text}") is { } fullName)
+            if (FullName(name.Text, name.Span, sigil: "$") is { } fullName)
                 Declare(symbols.Variables, new VariableSymbol(fullName, Location(name.Span), type, declaration.Value), name, SymbolKind.Variable, $"${fullName}");
         }
     }

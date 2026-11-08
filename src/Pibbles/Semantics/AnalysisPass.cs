@@ -23,10 +23,10 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
 
     /// <summary>
     /// Expands a node or variable name with its file's prefix, or returns <see langword="null"/> if it can't be: the
-    /// name is missing, or it's relative in a file with no prefix, which is reported as <paramref name="shown"/>, or
-    /// as written if that's <see langword="null"/>.
+    /// name is missing, or it's relative in a file with no prefix, which is reported as written, after
+    /// <paramref name="sigil"/>.
     /// </summary>
-    protected string? FullName(string written, TextSpan span, string? shown = null)
+    protected string? FullName(string written, TextSpan span, string sigil = "")
     {
         if (written.Length == 0)
             return null;
@@ -36,7 +36,7 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
 
         if (Tree.Root.Prefix is not { } prefix)
         {
-            Report(DiagnosticCatalog.RelativeWithoutPrefix, span, shown ?? written);
+            Report(DiagnosticCatalog.RelativeWithoutPrefix, span, sigil + written);
             return null;
         }
 

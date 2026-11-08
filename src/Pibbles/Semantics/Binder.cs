@@ -138,7 +138,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             if (symbols.Actors.TryGetValue(name.Text, out ActorSymbol? actor))
             {
                 Refers(name, actor);
-                BindValues(speaker.Values, actor.Channels, actor.DisplayName, $"@actor {actor.Name}", line);
+                BindValues(speaker.Values, actor.Channels, actor.DisplayName, line);
             }
             else
             {
@@ -148,7 +148,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         }
         else if (line.Speaker is { } narration)
         {
-            BindValues(narration.Values, symbols.Narration.Channels, "Narration", "@narration", line);
+            BindValues(narration.Values, symbols.Narration.Channels, "Narration", line);
         }
         else
         {
@@ -160,14 +160,14 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     }
 
     /// <summary>Binds each value in a speaker's parenthesis to the channel that has it, and reports a second value of one channel.</summary>
-    private void BindValues(IReadOnlyList<NameSyntax> written, IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, TextLineSyntax line)
+    private void BindValues(IReadOnlyList<NameSyntax> written, IReadOnlyList<SpeakerChannel> channels, string owner, TextLineSyntax line)
     {
         Dictionary<ChannelSymbol, NameSyntax>? set = null;
         foreach (NameSyntax value in written)
         {
             if (FindValue(channels, value.Text) is not var (channel, known))
             {
-                ReportUnknownValue(channels, owner, declaration, value, line);
+                ReportUnknownValue(channels, owner, value, line);
                 continue;
             }
 
@@ -195,8 +195,9 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         return null;
     }
 
-    private void ReportUnknownValue(IReadOnlyList<SpeakerChannel> channels, string owner, string declaration, NameSyntax value, TextLineSyntax line)
+    private void ReportUnknownValue(IReadOnlyList<SpeakerChannel> channels, string owner, NameSyntax value, TextLineSyntax line)
     {
+        string declaration = line.Speaker is { Name: { } actor } ? $"@actor {actor.Text}" : "@narration";
         string[] values = [.. channels.SelectMany(channel => channel.Values).Select(known => known.Name)];
         ChannelSymbol? dropped = symbols.Channels.Values.FirstOrDefault(channel => channels.All(has => has.Channel != channel) && channel.Defaults.Any(known => known.Name == value.Text));
         string help = dropped is not null ? $"{owner} has no `{dropped.Name}`, which has `{value.Text}`."
@@ -306,7 +307,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         if (symbols.Markup.TryGetValue(markup.Name.Text, out MarkupSymbol? symbol))
         {
             Refers(markup.Name, symbol);
-            BindArguments($"[{symbol.Name}]", symbol.Parameters, markup.Arguments, markup.Name.Span, named: true);
+            BindArguments(symbol, symbol.Parameters, markup.Arguments, markup.Name.Span, named: true);
         }
         else
         {
@@ -354,7 +355,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         if (inline && !command.IsInline)
             Report(DiagnosticCatalog.NotInline, name.Span, name.Text);
 
-        BindArguments($"@{command.Name}", command.Parameters, arguments, span, named: true);
+        BindArguments(command, command.Parameters, arguments, span, named: true);
     }
 
     private void BindTags(IEnumerable<TagSyntax> tags)
@@ -494,7 +495,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     private TypeSymbol BindVariable(VariableExpressionSyntax variable)
     {
-        if (FullName(variable.Name, variable.Span, $"${variable.Name}") is not { } name)
+        if (FullName(variable.Name, variable.Span, sigil: "$") is not { } name)
             return TypeSymbol.Error;
 
         if (symbols.Variables.TryGetValue(name, out VariableSymbol? symbol))
@@ -593,7 +594,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
         Refers(call.Function, function);
         ArgumentSyntax[] arguments = [.. call.Arguments.Select(argument => new ArgumentSyntax(null, argument) { Span = argument.Span })];
-        BindArguments($"{function.Name}()", function.Parameters, arguments, call.Span, named: false);
+        BindArguments(function, function.Parameters, arguments, call.Span, named: false);
         return function.ReturnType;
     }
 
@@ -602,12 +603,12 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     /// ones by name. Every parameter without a default needs one, unless an argument's name is unknown, since that
     /// argument was most likely meant for it.
     /// </summary>
-    /// <param name="owner">What takes the arguments, as messages write it: <c>@show</c>, <c>[wave]</c> or <c>has_item()</c>.</param>
+    /// <param name="owner">What takes the arguments: a command, markup or function.</param>
     /// <param name="parameters">The owner's parameters.</param>
     /// <param name="arguments">The arguments, positional ones first.</param>
     /// <param name="span">Where a missing argument is reported.</param>
     /// <param name="named">Whether arguments can be named, which says how a missing one can be added.</param>
-    private void BindArguments(string owner, IReadOnlyList<ParameterSymbol> parameters, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool named)
+    private void BindArguments(Symbol owner, IReadOnlyList<ParameterSymbol> parameters, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool named)
     {
         HashSet<ParameterSymbol> given = [];
         List<ArgumentSyntax> extra = [];
@@ -628,14 +629,14 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 if (parameter is null)
                 {
                     misnamed = true;
-                    ReportWithOptionalHelp(DiagnosticCatalog.UnknownParameter, name.Span, owner, name.Text, Suggestions.Closest(name.Text, parameters.Select(candidate => candidate.Name)));
+                    ReportWithOptionalHelp(DiagnosticCatalog.UnknownParameter, name.Span, Spelled(owner), name.Text, Suggestions.Closest(name.Text, parameters.Select(candidate => candidate.Name)));
                 }
                 else
                 {
                     Refers(name, parameter);
                     if (given.Contains(parameter))
                     {
-                        Report(DiagnosticCatalog.RepeatedArgument, argument.Span, owner, parameter.Name);
+                        Report(DiagnosticCatalog.RepeatedArgument, argument.Span, Spelled(owner), parameter.Name);
                         parameter = null;
                     }
                 }
@@ -652,13 +653,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             if (Converts(type, parameter.Type))
                 bindings.ConvertTo(argument.Value, parameter.Type);
             else
-                ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Value.Span, owner, parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
+                ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Value.Span, Spelled(owner), parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
         }
 
         if (extra.Count > 0)
         {
             string takes = parameters.Count switch { 0 => "no arguments", 1 => "only 1 argument", var count => $"only {count} arguments" };
-            Report(DiagnosticCatalog.TooManyArguments, new(extra[0].Span.Start, extra[^1].Span.End - extra[0].Span.Start), owner, takes);
+            Report(DiagnosticCatalog.TooManyArguments, new(extra[0].Span.Start, extra[^1].Span.End - extra[0].Span.Start), Spelled(owner), takes);
         }
 
         string[] missing = [.. parameters.Where(parameter => !parameter.IsOptional && !given.Contains(parameter)).Select(parameter => parameter.Name)];
@@ -672,9 +673,17 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 (false, 1) => "Add it in the brackets, in order.",
                 (false, _) => "Add them in the brackets, in order.",
             };
-            Report(DiagnosticCatalog.MissingArgument, span, owner, needs, help);
+            Report(DiagnosticCatalog.MissingArgument, span, Spelled(owner), needs, help);
         }
     }
+
+    /// <summary>What takes arguments, as messages write it: <c>@show</c>, <c>[wave]</c> or <c>has_item()</c>.</summary>
+    private static string Spelled(Symbol owner) => owner switch
+    {
+        CommandSymbol => $"@{owner.Name}",
+        MarkupSymbol => $"[{owner.Name}]",
+        _ => $"{owner.Name}()",
+    };
 
     /// <summary>Binds the arguments of something that doesn't exist, so problems inside them are still reported, but not their types.</summary>
     private void BindUnmatched(IEnumerable<ArgumentSyntax> arguments)
