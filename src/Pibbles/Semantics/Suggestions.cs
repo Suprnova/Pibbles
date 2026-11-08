@@ -7,6 +7,8 @@ internal static class Suggestions
     /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits,
     /// counting letters, not UTF-16 code units. An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
     /// </summary>
+    /// <param name="name">The name as written.</param>
+    /// <param name="candidates">The names it could have meant.</param>
     /// <returns>The closest candidate, or <see langword="null"/> if none is close enough.</returns>
     public static string? Closest(string name, IEnumerable<string> candidates)
     {

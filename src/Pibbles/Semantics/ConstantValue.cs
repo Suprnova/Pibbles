@@ -9,7 +9,13 @@ namespace Pibbles.Semantics;
 /// </summary>
 internal static class ConstantValue
 {
-    /// <summary>The value of <paramref name="expression"/> if it's constant, in seconds for a duration, or <see langword="null"/>.</summary>
+    /// <summary>
+    /// Determines if the provided <paramref name="expression"/> is constant, and returns the value if so.
+    /// </summary>
+    /// <param name="expression">The expression to fold.</param>
+    /// <returns>
+    /// The value of <paramref name="expression"/> if it's constant, or <see langword="null"/> if it's not.
+    /// </returns>
     public static decimal? Fold(ExpressionSyntax expression) => expression switch
     {
         NumberLiteralSyntax number => number.Value,
@@ -21,10 +27,12 @@ internal static class ConstantValue
     };
 
     /// <summary>
-    /// Whether <paramref name="condition"/> is always true or always false, or <see langword="null"/> if it can change. It's
-    /// made of <c>true</c> and <c>false</c>, <c>not</c>, and comparisons of values <see cref="Fold"/> knows. <c>and</c> with
-    /// a side that is false is false, and <c>or</c> with a side that is true is true, whatever the other side is.
+    /// Determines if the provided boolean <paramref name="condition"/> is constant, and returns the value if so.
     /// </summary>
+    /// <param name="condition">The condition to fold.</param>
+    /// <returns>
+    /// <c>true</c> if the condition is always true, <c>false</c> if it's always false, or <see langword="null"/> if it can change.
+    /// </returns>
     public static bool? FoldCondition(ExpressionSyntax condition) => condition switch
     {
         BooleanLiteralSyntax boolean => boolean.Value,
@@ -38,7 +46,10 @@ internal static class ConstantValue
         _ => null,
     };
 
-    /// <summary>The sum of two values, or <see langword="null"/> if it's too large for a <see cref="decimal"/>.</summary>
+    /// <summary>Adds two values.</summary>
+    /// <param name="left">The first value.</param>
+    /// <param name="right">The second value.</param>
+    /// <returns>The sum, or <see langword="null"/> if it's too large for a <see cref="decimal"/>.</returns>
     public static decimal? Add(decimal left, decimal right) => Apply(BinaryOperator.Add, left, right);
 
     private static bool? Compare(BinaryOperator @operator, decimal left, decimal right) => @operator switch

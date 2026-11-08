@@ -30,7 +30,8 @@ internal sealed class SymbolTable
     /// <summary>Nodes by each of their former full names.</summary>
     public Dictionary<string, NodeSymbol> Aliases { get; } = [];
 
-    /// <summary>Every symbol, with the built-in types and the channel values, enum members and parameters that belong to them.</summary>
+    /// <summary>Lists every symbol, with the built-in types and the channel values, enum members and parameters that belong to them.</summary>
+    /// <returns>The symbols, in no particular order.</returns>
     public IEnumerable<Symbol> All() =>
     [
         .. TypeSymbol.BuiltIn,
@@ -52,5 +53,7 @@ internal sealed class SymbolTable
         channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)));
 
     /// <summary>Finds a built-in type or a declared enum by name.</summary>
+    /// <param name="name">The type's name.</param>
+    /// <returns>The type, or <see langword="null"/> if there is none by that name.</returns>
     public TypeSymbol? FindType(string name) => TypeSymbol.BuiltIn.FirstOrDefault(type => type.Name == name) ?? Enums.GetValueOrDefault(name);
 }

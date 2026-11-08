@@ -29,28 +29,49 @@ internal sealed class Bindings
     private readonly Dictionary<ExpressionSyntax, ParameterSymbol> parameters = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<ExpressionSyntax, ExpressionType> types = new(ReferenceEqualityComparer.Instance);
 
-    /// <summary>The symbol a name refers to, or <see langword="null"/> if the name wasn't resolved.</summary>
+    /// <summary>Finds the symbol a name refers to.</summary>
+    /// <param name="name">The node that spells the name.</param>
+    /// <returns>The symbol, or <see langword="null"/> if the name wasn't resolved.</returns>
     public Symbol? SymbolOf(SyntaxNode name) => symbols.GetValueOrDefault(name);
 
-    /// <summary>The enum member a tag's value names, or <see langword="null"/> if the tag has no enum value or it isn't a member.</summary>
+    /// <summary>Finds the enum member a tag's value names.</summary>
+    /// <param name="tag">The tag.</param>
+    /// <returns>The member, or <see langword="null"/> if the tag has no enum value or it isn't a member.</returns>
     public EnumMemberSymbol? TagValueOf(TagSyntax tag) => tagValues.GetValueOrDefault(tag);
 
-    /// <summary>The type of an expression, and what its context converts it to, or <see langword="null"/> if it wasn't bound.</summary>
+    /// <summary>Finds the type of an expression, and what its context converts it to.</summary>
+    /// <param name="expression">The expression.</param>
+    /// <returns>Its types, or <see langword="null"/> if it wasn't bound.</returns>
     public ExpressionType? TypeOf(ExpressionSyntax expression) => types.TryGetValue(expression, out ExpressionType type) ? type : null;
 
-    /// <summary>The parameter an argument fills, or <see langword="null"/> if it fills none (it's extra, or repeated, or its owner doesn't exist).</summary>
+    /// <summary>Finds the parameter an argument fills.</summary>
     /// <param name="argument">The argument's value expression, which is how an argument is keyed whether it's positional or named.</param>
+    /// <returns>The parameter, or <see langword="null"/> if it fills none (it's extra, or repeated, or its owner doesn't exist).</returns>
     public ParameterSymbol? ParameterOf(ExpressionSyntax argument) => parameters.GetValueOrDefault(argument);
 
+    /// <summary>Records the parameter an argument fills.</summary>
+    /// <param name="argument">The argument's value expression.</param>
+    /// <param name="parameter">The parameter it fills.</param>
     public void BindArgument(ExpressionSyntax argument, ParameterSymbol parameter) => parameters[argument] = parameter;
 
+    /// <summary>Records the symbol a name refers to.</summary>
+    /// <param name="name">The node that spells the name.</param>
+    /// <param name="symbol">The symbol it refers to.</param>
     public void BindName(SyntaxNode name, Symbol symbol) => symbols[name] = symbol;
 
+    /// <summary>Records the enum member a tag's value names.</summary>
+    /// <param name="tag">The tag.</param>
+    /// <param name="member">The member its value names.</param>
     public void BindTagValue(TagSyntax tag, EnumMemberSymbol member) => tagValues[tag] = member;
 
+    /// <summary>Records the type of an expression, before its context converts it.</summary>
+    /// <param name="expression">The expression.</param>
+    /// <param name="type">Its type.</param>
     public void BindType(ExpressionSyntax expression, TypeSymbol type) => types[expression] = new(type, type);
 
     /// <summary>Records that the context uses a number as a duration. Any other type is left as it is.</summary>
+    /// <param name="expression">The expression the context uses.</param>
+    /// <param name="target">The type the context expects.</param>
     public void ConvertTo(ExpressionSyntax expression, TypeSymbol target)
     {
         if (types.TryGetValue(expression, out ExpressionType type) && type.Type == TypeSymbol.Number && target == TypeSymbol.Duration)

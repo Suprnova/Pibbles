@@ -54,6 +54,7 @@ public abstract class TypeSymbol : Symbol
     internal static IReadOnlyList<TypeSymbol> BuiltIn { get; } = [Bool, Number, String, Duration, Node, Actor];
 
     /// <summary>The type as messages write it: a built-in type with its article, <c>a `number`</c> or <c>an `actor`</c>, and an enum as <c>a value of `position`</c>, since no rule picks the article for a name the writer chose.</summary>
+    /// <returns>The description, ready to put in a message.</returns>
     internal string Describe() => this is EnumSymbol ? $"a value of `{Name}`" : $"{(Name[0] is 'a' or 'e' or 'i' or 'o' or 'u' ? "an" : "a")} `{Name}`";
 
     private sealed class BuiltInType(string name) : TypeSymbol(name, null);
