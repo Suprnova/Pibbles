@@ -30,8 +30,18 @@ internal static class SyntaxWalk
     public static bool AlwaysLeaves(IReadOnlyList<StatementSyntax> block) => block.Any(AlwaysLeaves);
 
     /// <summary>Every statement in a block and in the blocks under it, in the order they're written.</summary>
-    public static IEnumerable<StatementSyntax> Statements(IEnumerable<StatementSyntax> block) =>
-        block.SelectMany(statement => (IEnumerable<StatementSyntax>)[statement, .. BlocksOf(statement).SelectMany(Statements)]);
+    public static IEnumerable<StatementSyntax> Statements(IEnumerable<StatementSyntax> block)
+    {
+        foreach (StatementSyntax statement in block)
+        {
+            yield return statement;
+            foreach (IReadOnlyList<StatementSyntax> inner in BlocksOf(statement))
+            {
+                foreach (StatementSyntax nested in Statements(inner))
+                    yield return nested;
+            }
+        }
+    }
 
     /// <summary>
     /// Whether a block holds, at any depth, a statement that counts how often it ran: <c>@sequence</c>, <c>@cycle</c>,
@@ -50,8 +60,18 @@ internal static class SyntaxWalk
     };
 
     /// <summary>A run of text, and every run inside its markup spans and conditional branches.</summary>
-    public static IEnumerable<IReadOnlyList<InlineSyntax>> Runs(IReadOnlyList<InlineSyntax> content) =>
-        [content, .. content.SelectMany(item => InnerRuns(item).SelectMany(Runs))];
+    public static IEnumerable<IReadOnlyList<InlineSyntax>> Runs(IReadOnlyList<InlineSyntax> content)
+    {
+        yield return content;
+        foreach (InlineSyntax item in content)
+        {
+            foreach (IReadOnlyList<InlineSyntax> inner in InnerRuns(item))
+            {
+                foreach (IReadOnlyList<InlineSyntax> run in Runs(inner))
+                    yield return run;
+            }
+        }
+    }
 
     /// <summary>The runs of text an inline item holds: a span's content, or each branch of conditional text.</summary>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> InnerRuns(InlineSyntax item) => item switch
@@ -93,16 +113,22 @@ internal static class SyntaxWalk
         _ => [],
     };
 
-    public static IEnumerable<ExpressionSyntax> Subexpressions(ExpressionSyntax expression) =>
-    [
-        expression,
-        .. (expression switch
+    public static IEnumerable<ExpressionSyntax> Subexpressions(ExpressionSyntax expression)
+    {
+        yield return expression;
+        IEnumerable<ExpressionSyntax> operands = expression switch
         {
             CallExpressionSyntax call => call.Arguments,
             ParenthesizedExpressionSyntax parenthesized => [parenthesized.Expression],
             UnaryExpressionSyntax unary => [unary.Operand],
             BinaryExpressionSyntax binary => [binary.Left, binary.Right],
             _ => [],
-        }).SelectMany(Subexpressions),
-    ];
+        };
+
+        foreach (ExpressionSyntax operand in operands)
+        {
+            foreach (ExpressionSyntax inner in Subexpressions(operand))
+                yield return inner;
+        }
+    }
 }
