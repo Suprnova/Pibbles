@@ -370,7 +370,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
 
         if (symbols.FindType(name.Text) is { } found)
         {
-            if (found is EnumSymbol && !builtIn)
+            if (!builtIn)
                 Refers(name.Span, found);
 
             return found;

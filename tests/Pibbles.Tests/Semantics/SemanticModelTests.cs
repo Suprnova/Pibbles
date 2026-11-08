@@ -70,6 +70,19 @@ public class SemanticModelTests
     }
 
     [Fact]
+    public void GetSymbolAt_BuiltInTypeName_FindsTheTypeAndItsUses()
+    {
+        Symbol? symbol = compilation.Model.GetSymbolAt(CastPath, PositionOf(CastPath, "who: ac|tor"));
+
+        Assert.NotNull(symbol);
+        Assert.Equal(("actor", null, 1), (symbol.Name, symbol.Location, compilation.Model.FindReferences(symbol).Count));
+    }
+
+    [Fact]
+    public void Symbols_Types_ListsBuiltInAndDeclared() =>
+        Assert.Equal(["bool", "number", "string", "duration", "node", "actor", "position"], compilation.Model.Symbols<TypeSymbol>().Select(type => type.Name));
+
+    [Fact]
     public void GetSymbolAt_Whitespace_FindsNothing() => Assert.Null(compilation.Model.GetSymbolAt(KitchenPath, PositionOf(KitchenPath, "Hi[/clue] |{icon")));
 
     [Fact]

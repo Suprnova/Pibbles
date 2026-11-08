@@ -30,9 +30,10 @@ internal sealed class SymbolTable
     /// <summary>Nodes by each of their former full names.</summary>
     public Dictionary<string, NodeSymbol> Aliases { get; } = [];
 
-    /// <summary>Every symbol, with the channel values, enum members and parameters that belong to them.</summary>
+    /// <summary>Every symbol, with the built-in types and the channel values, enum members and parameters that belong to them.</summary>
     public IEnumerable<Symbol> All() =>
     [
+        .. TypeSymbol.BuiltIn,
         .. Actors.Values.SelectMany(actor => (IEnumerable<Symbol>)[actor, .. actor.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))]),
         .. Channels.Values.SelectMany(channel => (IEnumerable<Symbol>)[channel, .. channel.Defaults]),
         .. Narration.Location is null ? [] : (IEnumerable<Symbol>)[Narration, .. Narration.Channels.SelectMany(channel => channel.Values.Where(value => !channel.Channel.Defaults.Contains(value)))],
