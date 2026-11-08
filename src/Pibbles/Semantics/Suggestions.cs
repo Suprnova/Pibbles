@@ -4,23 +4,26 @@ namespace Pibbles.Semantics;
 internal static class Suggestions
 {
     /// <summary>
-    /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits.
-    /// An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
+    /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits,
+    /// counting letters, not UTF-16 code units. An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
     /// </summary>
     /// <returns>The closest candidate, or <see langword="null"/> if none is close enough.</returns>
     public static string? Closest(string name, IEnumerable<string> candidates)
     {
-        int limit = Math.Max(1, name.Length / 3);
+        int[] letters = Letters(name);
+        int limit = Math.Max(1, letters.Length / 3);
         return candidates
-            .Select(candidate => (Candidate: candidate, Distance: Distance(name.ToLowerInvariant(), candidate.ToLowerInvariant())))
+            .Select(candidate => (Candidate: candidate, Distance: Distance(letters, Letters(candidate))))
             .Where(match => match.Distance <= limit)
             .OrderBy(match => match.Distance)
             .Select(match => match.Candidate)
             .FirstOrDefault();
     }
 
+    private static int[] Letters(string text) => [.. text.ToLowerInvariant().EnumerateRunes().Select(letter => letter.Value)];
+
     /// <summary>The optimal string alignment distance: Levenshtein distance, plus swaps of two letters side by side.</summary>
-    private static int Distance(string a, string b)
+    private static int Distance(int[] a, int[] b)
     {
         int[,] distance = new int[a.Length + 1, b.Length + 1];
         for (int i = 0; i <= a.Length; i++)

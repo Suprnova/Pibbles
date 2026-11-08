@@ -13,6 +13,8 @@ public class SuggestionsTests
         { "ab", ["xy"], null },
         { "fridge", ["position", "room"], null },
         { "anything", [], null },
+        { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB7\U00020BB7"], "\U00020BB8\U00020BB7\U00020BB7" },
+        { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB8\U00020BB7"], null },
     };
 
     [Theory]
