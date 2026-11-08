@@ -48,10 +48,10 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
         location.Path == Tree.Source.Path ? $"on line {location.Start.Line + 1}" : $"in {location.Path} on line {location.Start.Line + 1}";
 
     /// <summary>Records that the name at <paramref name="span"/> declares <paramref name="symbol"/>.</summary>
-    protected void Declares(TextSpan span, Symbol symbol) => references.Add(Tree.Source.GetLocation(span), symbol, isDeclaration: true);
+    protected void Declares(TextSpan span, Symbol symbol) => references.Add(Tree.Source, span, symbol, isDeclaration: true);
 
     /// <summary>Records that the name at <paramref name="span"/> refers to <paramref name="symbol"/>.</summary>
-    protected void Refers(TextSpan span, Symbol symbol) => references.Add(Tree.Source.GetLocation(span), symbol, isDeclaration: false);
+    protected void Refers(TextSpan span, Symbol symbol) => references.Add(Tree.Source, span, symbol, isDeclaration: false);
 
     protected void Report(DiagnosticDescriptor descriptor, TextSpan span, params object?[] arguments) =>
         ReportAt(descriptor, Tree.Source.GetLocation(span), arguments);
