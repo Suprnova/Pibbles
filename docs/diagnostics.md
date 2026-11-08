@@ -80,7 +80,7 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB1204 | Error | `#cam:pan_left #anim:shake` has no line to go with. | Tags go at the end of the line they're for. Move them onto it. |
 | PIB1205 | Error | I don't know a tag called `#thougth`. | Did you mean `#thought`? If this is text, escape it: `\#thougth`. |
 | PIB1206 | Error | `#thought` doesn't take a value. / `#box` needs a value. | Write `#thought` on its own. / Write a value after the colon: `#box:phone`. |
-| PIB1207 | Error | `fone` isn't a `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
+| PIB1207 | Error | `fone` isn't a value of `box_style`, which `#box` takes. | Use one of `phone` or `letter`. |
 | PIB1208 | Error | A tag's value is text, so it can't be `number`. | Use `string`, or an enum to allow only certain values. |
 
 ### PIB13xx: Line IDs
@@ -200,7 +200,7 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB3002 | Error | I can't compare three things at once: `$a < $b < $c`. | Compare two at a time: `$a < $b and $b < $c`. |
 | PIB3003 | Error | I can't use `<` with a `string` and a `string`. | `<`, `<=`, `>` and `>=` compare two numbers or two durations. |
 | PIB3004 | Error | I don't know what `has_key` means here. | Did you mean `$has_key`? |
-| PIB3005 | Error | `lfet` isn't a `position`. | Did you mean `left`? |
+| PIB3005 | Error | `lfet` isn't a value of `position`. | Did you mean `left`? |
 | PIB3006 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB3007 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
 

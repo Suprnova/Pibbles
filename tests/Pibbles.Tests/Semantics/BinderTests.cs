@@ -144,18 +144,23 @@ public class BinderTests
         },
         {
             "@enum position: left, right\n@var $where: position = lfet\n",
-            "`lfet` isn't a `position`.",
+            "`lfet` isn't a value of `position`.",
             "Did you mean `left`?"
         },
         {
             "@enum position: left, right\n@var $where: position = middle\n",
-            "`middle` isn't a `position`.",
+            "`middle` isn't a value of `position`.",
             "Use one of `left` or `right`."
         },
         {
             "@enum position: left, center, right\n@var $where: position = 3\n",
-            "`$where` holds a `position`, but this is a `number`.",
+            "`$where` holds a value of `position`, but this is a `number`.",
             "Use one of `left`, `center` or `right`."
+        },
+        {
+            "@enum uniform: red, blue\n@var $u: uniform = red\n\n== a.b\n@set $u = 1\n",
+            "`$u` holds a value of `uniform`, but this is a `number`.",
+            "Use one of `red` or `blue`."
         },
         {
             "@function near(who: string, where: string) -> bool\n\n== a.b\n@if near()\n    Hm.\n",
@@ -284,7 +289,7 @@ public class BinderTests
         },
         {
             "@enum box_style: phone, letter\n@tag box: box_style\n\n== a.b\nHi. #box:phon\n",
-            "`phon` isn't a `box_style`, which `#box` takes.",
+            "`phon` isn't a value of `box_style`, which `#box` takes.",
             "Did you mean `#box:phone`?"
         },
     };
