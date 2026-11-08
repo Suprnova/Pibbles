@@ -610,45 +610,48 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     /// <param name="named">Whether arguments can be named, which says how a missing one can be added.</param>
     private void BindArguments(Symbol owner, IReadOnlyList<ParameterSymbol> parameters, IReadOnlyList<ArgumentSyntax> arguments, TextSpan span, bool named)
     {
-        HashSet<ParameterSymbol> given = [];
-        List<ArgumentSyntax> extra = [];
+        bool[] given = new bool[parameters.Count];
+        TextSpan? extra = null;
         bool misnamed = false;
         int next = 0;
         foreach (ArgumentSyntax argument in arguments)
         {
-            ParameterSymbol? parameter;
+            int index = -1;
             if (argument.Name is not { } name)
             {
-                parameter = parameters.ElementAtOrDefault(next++);
-                if (parameter is null)
-                    extra.Add(argument);
+                if (next < parameters.Count)
+                    index = next++;
+                else
+                    extra = extra is { } first ? new(first.Start, argument.Span.End - first.Start) : argument.Span;
             }
             else
             {
-                parameter = parameters.FirstOrDefault(candidate => candidate.Name == name.Text);
-                if (parameter is null)
+                index = IndexOf(parameters, name.Text);
+                if (index < 0)
                 {
                     misnamed = true;
                     ReportWithOptionalHelp(DiagnosticCatalog.UnknownParameter, name.Span, Spelled(owner), name.Text, Suggestions.Closest(name.Text, parameters.Select(candidate => candidate.Name)));
                 }
                 else
                 {
-                    Refers(name, parameter);
-                    if (given.Contains(parameter))
+                    Refers(name, parameters[index]);
+                    if (given[index])
                     {
-                        Report(DiagnosticCatalog.RepeatedArgument, argument.Span, Spelled(owner), parameter.Name);
-                        parameter = null;
+                        Report(DiagnosticCatalog.RepeatedArgument, argument.Span, Spelled(owner), parameters[index].Name);
+                        index = -1;
                     }
                 }
             }
 
-            if (parameter is not null)
-                given.Add(parameter);
-
-            TypeSymbol type = Bind(argument.Value, parameter?.Type ?? TypeSymbol.Error);
-            if (parameter is null)
+            if (index < 0)
+            {
+                Bind(argument.Value, TypeSymbol.Error);
                 continue;
+            }
 
+            given[index] = true;
+            ParameterSymbol parameter = parameters[index];
+            TypeSymbol type = Bind(argument.Value, parameter.Type);
             bindings.BindArgument(argument.Value, parameter);
             if (Converts(type, parameter.Type))
                 bindings.ConvertTo(argument.Value, parameter.Type);
@@ -656,13 +659,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 ReportWithOptionalHelp(DiagnosticCatalog.ArgumentType, argument.Value.Span, Spelled(owner), parameter.Type.Describe(), parameter.Name, type.Describe(), ValueHelp(parameter.Type));
         }
 
-        if (extra.Count > 0)
+        if (extra is { } extraSpan)
         {
             string takes = parameters.Count switch { 0 => "no arguments", 1 => "only 1 argument", var count => $"only {count} arguments" };
-            Report(DiagnosticCatalog.TooManyArguments, new(extra[0].Span.Start, extra[^1].Span.End - extra[0].Span.Start), Spelled(owner), takes);
+            Report(DiagnosticCatalog.TooManyArguments, extraSpan, Spelled(owner), takes);
         }
 
-        string[] missing = [.. parameters.Where(parameter => !parameter.IsOptional && !given.Contains(parameter)).Select(parameter => parameter.Name)];
+        string[] missing = [.. Missing(parameters, given)];
         if (missing.Length > 0 && !misnamed)
         {
             string needs = missing.Length == 1 ? $"a value for {Phrase.And(missing)}" : $"values for {Phrase.And(missing)}";
@@ -674,6 +677,27 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
                 (false, _) => "Add them in the brackets, in order.",
             };
             Report(DiagnosticCatalog.MissingArgument, span, Spelled(owner), needs, help);
+        }
+    }
+
+    private static int IndexOf(IReadOnlyList<ParameterSymbol> parameters, string name)
+    {
+        for (int i = 0; i < parameters.Count; i++)
+        {
+            if (parameters[i].Name == name)
+                return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>The names of the parameters without a default that no argument filled, in order.</summary>
+    private static IEnumerable<string> Missing(IReadOnlyList<ParameterSymbol> parameters, bool[] given)
+    {
+        for (int i = 0; i < parameters.Count; i++)
+        {
+            if (!parameters[i].IsOptional && !given[i])
+                yield return parameters[i].Name;
         }
     }
 
