@@ -258,7 +258,7 @@ internal sealed class StoryLowerer(Compilation compilation)
     }
 
     private TemplateTag[] LowerTags(IEnumerable<TagSyntax> tags) =>
-        [.. tags.Select(tag => new TemplateTag(tag.Name, tag.Value, bindings.TagValueOf(tag) as EnumMemberSymbol))];
+        [.. tags.Select(tag => new TemplateTag(tag.Name, tag.Value, bindings.TagValueOf(tag)))];
 
     private TemplateElement[] LowerInline(IEnumerable<InlineSyntax> content) => [.. content.Select(LowerElement)];
 

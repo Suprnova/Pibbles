@@ -25,7 +25,7 @@ internal readonly record struct ExpressionType(TypeSymbol Type, TypeSymbol Conve
 internal sealed class Bindings
 {
     private readonly Dictionary<SyntaxNode, Symbol> symbols = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<SyntaxNode, Symbol> tagValues = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<TagSyntax, EnumMemberSymbol> tagValues = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<ExpressionSyntax, ParameterSymbol> parameters = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<ExpressionSyntax, ExpressionType> types = new(ReferenceEqualityComparer.Instance);
 
@@ -33,7 +33,7 @@ internal sealed class Bindings
     public Symbol? SymbolOf(SyntaxNode name) => symbols.GetValueOrDefault(name);
 
     /// <summary>The enum member a tag's value names, or <see langword="null"/> if the tag has no enum value or it isn't a member.</summary>
-    public Symbol? TagValueOf(TagSyntax tag) => tagValues.GetValueOrDefault(tag);
+    public EnumMemberSymbol? TagValueOf(TagSyntax tag) => tagValues.GetValueOrDefault(tag);
 
     /// <summary>The type of an expression, and what its context converts it to, or <see langword="null"/> if it wasn't bound.</summary>
     public ExpressionType? TypeOf(ExpressionSyntax expression) => types.TryGetValue(expression, out ExpressionType type) ? type : null;
@@ -46,7 +46,7 @@ internal sealed class Bindings
 
     public void BindName(SyntaxNode name, Symbol symbol) => symbols[name] = symbol;
 
-    public void BindTagValue(TagSyntax tag, Symbol member) => tagValues[tag] = member;
+    public void BindTagValue(TagSyntax tag, EnumMemberSymbol member) => tagValues[tag] = member;
 
     public void BindType(ExpressionSyntax expression, TypeSymbol type) => types[expression] = new(type, type);
 
