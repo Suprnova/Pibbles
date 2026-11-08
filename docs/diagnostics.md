@@ -19,6 +19,8 @@ The rest of the number follows the doc that explains the code. A code with no ca
 
 A new code takes the next free number in its construct's hundred. A new construct takes the next free hundred in its range, and a new category a free first digit, 7 to 9. The codes the [extensions](#with-extensions) reserve stay free. From 1.0 on, a code keeps its number.
 
+`DiagnosticCatalog` keeps each range's descriptors in a file of their own, in code order, such as `DiagnosticCatalog.Style.cs` for PIB5xxx. `DiagnosticCatalog.cs` holds the helpers and `All`, which lists every descriptor in code order. A new range adds its file.
+
 Severities are error, warning, info and hint. `.editorconfig` can change any of them but an error, since a story with an error can't compile ([configuration](tooling.md#configuration)).
 
 "Did you mean" suggestions use edit distance against the relevant symbol kind. They're cheap to add and help a lot with the typos a branching script is most exposed to. A suggestion is the closest name, ignoring case, within `max(1, length / 3)` edits, where an edit inserts, deletes or replaces a letter, or swaps two letters side by side (`thougth` is one edit from `thought`). Ties go to the name declared first. When nothing is close enough, the help is left out.
