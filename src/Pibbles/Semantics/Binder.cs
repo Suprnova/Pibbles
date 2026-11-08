@@ -707,6 +707,9 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             if (binary.Operator is BinaryOperator.Divide or BinaryOperator.Remainder && ConstantValue.Fold(binary.Right) == 0m)
                 Report(DiagnosticCatalog.DivisionByZero, binary.Span, TextOf(binary.Span));
 
+            if (ConstantValue.Overflows(binary))
+                Report(DiagnosticCatalog.ConstantOverflow, binary.Span, TextOf(binary.Span));
+
             if (binary.Operator is not (BinaryOperator.Multiply or BinaryOperator.Divide or BinaryOperator.Remainder))
             {
                 bindings.ConvertTo(binary.Left, right);

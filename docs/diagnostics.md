@@ -203,6 +203,7 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB3005 | Error | `lfet` isn't a value of `position`. | Did you mean `left`? |
 | PIB3006 | Error | I can't compare two names: `left == right`. | Compare a variable with a name instead, like `$where == left`. |
 | PIB3007 | Warning | `$total / 0` divides by zero, so it gives 0. | Divide by something that isn't zero. |
+| PIB3009 | Warning | `99999999999999999999999999 * 99999999999999999999999999` is more than I can hold, so it gives the closest number I can. | Use smaller numbers. |
 
 ### PIB31xx: Markup
 
@@ -1332,6 +1333,19 @@ Compare a variable, a function or another value with the name: `@if $where == le
 ```
 
 Divide by something that isn't zero. If you meant to guard against a zero that can happen, check it first: `@if $count > 0`.
+
+### PIB3009
+
+**A number holds up to about 7.9 × 10^28, positive or negative, so a bigger result is clamped to the largest or smallest number it can hold, and the game receives a warning when it runs.** This is reported when both sides of `+`, `-`, `*` or `/` are constants and the result is out of range. Only the operation that overflows is reported, not the ones built on it. A result that depends on a variable or a function isn't checked here. A single number too large to write is [PIB1108](#pib1108).
+
+```text
+@var $total = 10
+
+== shop.till
+@set $total = 99999999999999999999999999 * 99999999999999999999999999
+```
+
+Use smaller numbers.
 
 ### PIB3101
 

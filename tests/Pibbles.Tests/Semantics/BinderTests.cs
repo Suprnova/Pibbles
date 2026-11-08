@@ -323,7 +323,8 @@ public class BinderTests
     [Theory]
     [InlineData("== a.b\nWait.{pause (79228162514264337593543950335 * 2)} Done.\n")]
     [InlineData("== a.b\nWait.{speed (79228162514264337593543950335 * 2)} Done.\n")]
-    public void Compile_PacingValueThatIsNotRepresentable_IsNotConstant(string text) => Assert.Empty(Diagnose(text));
+    public void Compile_PacingValueThatOverflows_GetsOnlyTheOverflowWarning(string text) =>
+        Assert.Equal(["PIB3009"], Diagnose(text).Select(diagnostic => diagnostic.Code));
 
     [Theory]
     [InlineData("== a.b\nWait.{pause (1 / 0)} Done.\n")]

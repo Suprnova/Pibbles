@@ -22,5 +22,4 @@ A {pause (0.5s - 1s)} B.
 // Must not trigger
 
 A {pause 0.1} B {speed $s} C {pause $d} D {speed 0.5} E {speed} F.
-A {pause (79228162514264337593543950335 * 2)} B {speed (79228162514264337593543950335 * 2)} C.
 @pause 0.5s

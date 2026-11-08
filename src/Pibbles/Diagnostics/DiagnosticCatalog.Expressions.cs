@@ -57,6 +57,14 @@ public static partial class DiagnosticCatalog
         "`{0}` divides by zero, so it gives 0.",
         help: "Divide by something that isn't zero.");
 
+    /// <summary>PIB3009: an operation on constants whose result is too large or too small for a number to hold.</summary>
+    /// <remarks>Argument: the operation as written, such as <c>99999999999999999999999999 * 99999999999999999999999999</c>.</remarks>
+    public static DiagnosticDescriptor ConstantOverflow { get; } = new(
+        "PIB3009",
+        DiagnosticSeverity.Warning,
+        "`{0}` is more than I can hold, so it gives the closest number I can.",
+        help: "Use smaller numbers.");
+
     /// <summary>What PIB3101 and PIB3301's help adds when the line has a trailing comment, which runs to the end of the line and so takes any closer written after it.</summary>
     public const string CommentSwallowedCloserHelp = " The `//` on this line starts a comment that runs to the end of it, so put the closer before the `//`.";
 

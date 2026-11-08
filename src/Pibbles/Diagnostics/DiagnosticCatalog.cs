@@ -106,6 +106,7 @@ public static partial class DiagnosticCatalog
         NotValueOfType,
         TwoNames,
         DivisionByZero,
+        ConstantOverflow,
         UnclosedMarkup,
         MarkupOutOfOrder,
         UnopenedMarkup,
