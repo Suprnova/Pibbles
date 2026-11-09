@@ -54,14 +54,11 @@ internal sealed partial class Parser
         return new(speaker, content, tags) { Span = new(start, inlineEnd - start) };
     }
 
-    /// <summary>A speaker's name or one of its values, which the code lexer doesn't read, so it's reported here if it isn't in Unicode's composed form.</summary>
+    /// <summary>A speaker's name or one of its values, which the code lexer doesn't read, so its form is checked here.</summary>
     private NameSyntax SpeakerName(TextSpan span)
     {
-        if (Identifiers.Composed(source.Text, span) is not { } composed)
-            return new(TextOf(span)) { Span = span };
-
-        Report(DiagnosticCatalog.UncomposedName, span, TextOf(span), composed);
-        return new(composed) { Span = span };
+        CheckNameForm(span);
+        return new(NameOf(span)) { Span = span };
     }
 
     private ChoiceSyntax ParseChoice(SourceLine first)

@@ -1,3 +1,5 @@
+using Pibbles.Syntax;
+
 namespace Pibbles.Diagnostics;
 
 public static partial class DiagnosticCatalog
@@ -296,13 +298,29 @@ public static partial class DiagnosticCatalog
         "I don't know a type called `{0}`.",
         help: "Did you mean `{1}`?");
 
-    /// <summary>PIB1407: a name with an accent typed as a separate mark, which isn't in Unicode's composed form (NFC).</summary>
-    /// <remarks>Arguments: the name as written, and the name composed.</remarks>
-    public static DiagnosticDescriptor UncomposedName { get; } = new(
+    /// <summary>
+    /// PIB1407: a name or keyword not written in its ordinary form: with an accent typed as a separate mark, so not in
+    /// Unicode's composed form (NFC), or with a half-width or full-width form.
+    /// </summary>
+    /// <remarks>Arguments, from <see cref="IrregularNameArguments"/>: the identifier as written, what's wrong with it, and how to fix it.</remarks>
+    public static DiagnosticDescriptor IrregularName { get; } = new(
         "PIB1407",
         DiagnosticSeverity.Error,
-        "`{0}` has an accent typed as a separate mark after its letter, but a name has to use the accented letter itself.",
-        help: "Write `{1}`. If your keyboard types accents as separate marks, as some Vietnamese keyboards do, switch it to precomposed Unicode, then retype the name.");
+        "`{0}` {1}.",
+        help: "{2}");
+
+    /// <summary>The arguments of an <see cref="IrregularName"/> diagnostic.</summary>
+    /// <param name="written">The identifier as written.</param>
+    /// <param name="form">How it's written, other than <see cref="NameForm.Ordinary"/>.</param>
+    /// <param name="ordinary">The identifier in its ordinary form, for a form that has one.</param>
+    internal static object[] IrregularNameArguments(string written, NameForm form, string ordinary) => form switch
+    {
+        NameForm.FullWidth => [written, "is typed in full-width characters, but names and keywords use ordinary letters, digits and `_`", $"Write `{ordinary}`, typing it in your input method's direct (half-width) mode."],
+        NameForm.HalfWidthKatakana => [written, "is typed in half-width katakana, but a name uses ordinary katakana", "Retype it in full-width katakana, which your input method types by default."],
+        NameForm.HalfWidthHangul => [written, "is typed in half-width Hangul, but a name uses ordinary Hangul", "Retype it in ordinary Hangul, which your input method types by default."],
+        NameForm.HangulFiller => [written, "holds U+FFA0, the half-width Hangul filler, which is invisible", "Remove it."],
+        _ => [written, "has an accent typed as a separate mark after its letter, but a name has to use the accented letter itself", $"Write `{ordinary}`. If your keyboard types accents as separate marks, as some Vietnamese keyboards do, switch it to precomposed Unicode, then retype the name."],
+    };
 
     /// <summary>PIB1501: a node name that names no node.</summary>
     /// <remarks>Arguments: the name as written, and the closest node, or <see langword="null"/> to leave out the help.</remarks>

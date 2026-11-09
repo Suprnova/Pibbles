@@ -112,7 +112,7 @@ internal sealed partial class Parser
         inlineEnd = TrimmedEnd(line);
         int start = line.Content.Start;
         int wordEnd = SkipIdentifier(start);
-        string word = source.Text[start..wordEnd];
+        string word = code[start..wordEnd];
         int next = SkipWhitespace(wordEnd);
         bool colon = next < inlineEnd && code[next] is ':';
         bool plusEquals = next + 1 < inlineEnd && code.AsSpan(next, 2) is "+=";
@@ -134,6 +134,7 @@ internal sealed partial class Parser
 
         if (word is "name" && colon)
         {
+            CheckNameForm(new(start, wordEnd - start));
             if (code[next] != source.Text[next])
                 forms.Record(next, ':');
 

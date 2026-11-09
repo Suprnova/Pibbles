@@ -512,6 +512,6 @@ internal sealed partial class Parser
     private string AtWordOf(SourceLine line)
     {
         int start = line.Content.Start;
-        return code[start..Identifiers.Skip(code, start + 1, line.Content.End)];
+        return code[start..Identifiers.Skip(source.Text, start + 1, line.Content.End)];
     }
 }

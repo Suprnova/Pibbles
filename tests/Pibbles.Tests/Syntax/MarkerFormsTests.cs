@@ -41,7 +41,7 @@ public class MarkerFormsTests
     [Fact]
     public void Map_TextWithoutForms_IsTheSameString()
     {
-        string text = "@set $a = 1 // ＡＩ";
+        string text = "@set $a = 1 // アイ";
 
         string mapped = MarkerForms.Map(text);
 
@@ -49,7 +49,17 @@ public class MarkerFormsTests
     }
 
     [Fact]
-    public void Map_TextWithForms_KeepsEveryPosition() => Assert.Equal("@set $ａ = [ＡＩ]", MarkerForms.Map("@set ＄ａ ＝ 「ＡＩ」"));
+    public void Map_TextWithFormsAndFullWidthLetters_MapsAndNarrowsInPlace() => Assert.Equal("@set $a_1 = [AI]", MarkerForms.Map("@set ＄ａ＿１ ＝ 「ＡＩ」"));
+
+    [Theory]
+    [InlineData('ｗ', 'w')]
+    [InlineData('Ｚ', 'Z')]
+    [InlineData('５', '5')]
+    [InlineData('＿', '_')]
+    [InlineData('ｶ', 'ｶ')]
+    [InlineData('あ', 'あ')]
+    [InlineData('＝', '＝')]
+    public void Narrow_Character_IsItsAsciiFormIfItHasOne(char c, char expected) => Assert.Equal(expected, MarkerForms.Narrow(c));
 
     [Fact]
     public void Report_FormRecordedTwice_IsReportedOnce()

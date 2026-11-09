@@ -163,6 +163,8 @@ public class CodeLexerTests
     [InlineData("1_000 x", "1_000")]
     [InlineData("1.2.3", "1.2.3")]
     [InlineData("2sec", "2sec")]
+    [InlineData("0.5ｓ", "0.5ｓ")]
+    [InlineData("5ｍｓ", "5ｍｓ")]
     public void Next_MalformedNumber_IsOneNumberAndReports(string text, string number)
     {
         Token token = Lexer(text, new(0, text.Length)).Next();
@@ -195,6 +197,30 @@ public class CodeLexerTests
         Describe(text);
 
         Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("ｇｕｉｄｅ", "Name ｇｕｉｄｅ", "is typed in full-width characters, but names and keywords use ordinary letters, digits and `_`")]
+    [InlineData("$score１", "Variable $score１", "is typed in full-width characters, but names and keywords use ordinary letters, digits and `_`")]
+    [InlineData("@ｉｆ", "AtWord @ｉｆ", "is typed in full-width characters, but names and keywords use ordinary letters, digits and `_`")]
+    [InlineData("#ｔｈｏｕｇｈｔ", "Tag #ｔｈｏｕｇｈｔ", "is typed in full-width characters, but names and keywords use ordinary letters, digits and `_`")]
+    [InlineData("ｶﾞｲﾄﾞ", "Name ｶﾞｲﾄﾞ", "is typed in half-width katakana, but a name uses ordinary katakana")]
+    [InlineData("a\uFFA0b", "Name a\uFFA0b", "holds U+FFA0, the half-width Hangul filler, which is invisible")]
+    public void Next_WidthFormIdentifier_IsOneTokenAndOneDiagnostic(string text, string expected, string clause)
+    {
+        string tokens = Describe(text);
+
+        Diagnostic diagnostic = Assert.Single(diagnostics);
+        Assert.Equal((expected, "PIB1407"), (tokens, diagnostic.Code));
+        Assert.EndsWith($" {clause}.", diagnostic.Message);
+    }
+
+    [Fact]
+    public void Next_FullWidthName_HelpsWithTheNarrowedName()
+    {
+        Describe("$score１");
+
+        Assert.Equal("Write `score1`, typing it in your input method's direct (half-width) mode.", Assert.Single(diagnostics).Help);
     }
 
     [Fact]
@@ -356,6 +382,19 @@ public class CodeLexerTests
 
     [Fact]
     public void Next_StringOpenedWithAsciiQuote_ClosesOnlyAtAsciiQuote() => Assert.Equal("String \"he said “hi”\"", Describe("\"he said “hi”\""));
+
+    [Fact]
+    public void Next_WidthFormsInIdentifiers_AreNoMarkerForms()
+    {
+        var source = new SourceText("story.pib", "$score１ ｇｕｉｄｅ ＄a_b １２");
+        var forms = new MarkerFormLog();
+        var lexer = new CodeLexer(source, diagnostics, forms);
+        lexer.Start(new(0, source.Text.Length));
+
+        ReadToEnd(lexer);
+
+        Assert.Equal([(14, 1), (19, 2)], forms.Report(source).Select(diagnostic => (diagnostic.Location.Span.Start, diagnostic.Location.Span.Length)));
+    }
 
     [Fact]
     public void Next_FormsInStringTagValueAndComment_RecordsOnlyTheMarkers()

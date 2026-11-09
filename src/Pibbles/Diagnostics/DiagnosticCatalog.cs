@@ -54,7 +54,7 @@ public static partial class DiagnosticCatalog
         RepeatedName,
         ReservedName,
         UnknownType,
-        UncomposedName,
+        IrregularName,
         UnknownNode,
         DuplicateNode,
         OldNodeName,

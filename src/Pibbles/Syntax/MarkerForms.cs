@@ -15,12 +15,12 @@ namespace Pibbles.Syntax;
 internal static class MarkerForms
 {
     private static readonly SearchValues<char> CodeForms = SearchValues.Create(
-        [.. Enumerable.Range(0xFF01, 0x5E).Select(c => (char)c).Where(c => Map(c) is not '\0'), .. "「」【】『』・、。￥《》“”"]);
+        [.. Enumerable.Range(0xFF01, 0x5E).Select(c => (char)c), .. "「」【】『』・、。￥《》“”"]);
 
     /// <summary>The ASCII marker character <paramref name="c"/> stands for, or <c>'\0'</c> if it stands for none.</summary>
     /// <param name="c">The character as written.</param>
     /// <param name="lineStart">Whether it starts a line, where <c>ー</c> is a dash. Elsewhere it's a letter, the long-vowel mark.</param>
-    /// <remarks>Full-width letters and <c>＿</c> aren't markers: they're part of identifiers, which read them as they're written.</remarks>
+    /// <remarks>Full-width letters and <c>＿</c> aren't markers: they're identifier characters, which <see cref="Narrow"/> reads as ASCII.</remarks>
     public static char Map(char c, bool lineStart = false) => c switch
     {
         >= '！' and <= '～' when !char.IsAsciiLetter((char)(c - 0xFEE0)) && c is not '＿' => (char)(c - 0xFEE0),
@@ -39,7 +39,11 @@ internal static class MarkerForms
         _ => '\0',
     };
 
-    /// <summary><paramref name="text"/> with every form mapped to its marker, as the code-mode lexer reads it. Returns <paramref name="text"/> itself if it has none.</summary>
+    /// <summary>
+    /// <paramref name="text"/> as the code-mode lexer reads it: every form mapped to its marker, and full-width letters and
+    /// <c>＿</c> narrowed, so a keyword typed in full-width letters reads as the keyword. Returns <paramref name="text"/>
+    /// itself if it has none.
+    /// </summary>
     /// <remarks>Each form is one character, as its marker is, so every position in the result is the same as in <paramref name="text"/>.</remarks>
     public static string Map(string text)
     {
@@ -51,15 +55,12 @@ internal static class MarkerForms
         {
             state.text.CopyTo(chars);
             for (int i = state.first; i < chars.Length; i++)
-            {
-                if (Map(chars[i]) is not '\0' and var ascii)
-                    chars[i] = ascii;
-            }
+                chars[i] = Map(chars[i]) is not '\0' and var ascii ? ascii : Narrow(chars[i]);
         });
     }
 
-    /// <summary><paramref name="c"/> as an ASCII letter if it's a full-width one, such as <c>ｗ</c> for <c>w</c>, or else <paramref name="c"/> itself.</summary>
-    public static char Narrow(char c) => c is (>= 'Ａ' and <= 'Ｚ') or (>= 'ａ' and <= 'ｚ') ? (char)(c - 0xFEE0) : c;
+    /// <summary><paramref name="c"/> as ASCII if it's a full-width letter, digit or <c>＿</c>, such as <c>ｗ</c> for <c>w</c>, or else <paramref name="c"/> itself.</summary>
+    public static char Narrow(char c) => c is (>= 'Ａ' and <= 'Ｚ') or (>= 'ａ' and <= 'ｚ') or (>= '０' and <= '９') or '＿' ? (char)(c - 0xFEE0) : c;
 }
 
 /// <summary>

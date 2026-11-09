@@ -88,6 +88,42 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parse_FullWidthKeywordsAndNames_AreReportedAndReadNarrowed()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@ｉｆ $met\n    ｇｕｉｄｅ: Wait{ｗ} here.\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal(["PIB1407", "PIB1407", "PIB1407"], tree.Diagnostics.Select(diagnostic => diagnostic.Code));
+        var line = (TextLineSyntax)Assert.IsType<IfStatementSyntax>(tree.Root.Nodes[0].Body[0]).Body[0];
+        Assert.Equal("guide", line.Speaker!.Name!.Text);
+        Assert.IsType<InputWaitSyntax>(line.Content[1]);
+    }
+
+    [Fact]
+    public void Parse_FullWidthDisplayNameKeyword_IsReportedAndSetsTheDisplayName()
+    {
+        var source = new SourceText("story.pib", "@actor guide\n    ｎａｍｅ: Ｇｕｉｄｅ\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal("PIB1407", Assert.Single(tree.Diagnostics).Code);
+        Assert.Equal("Ｇｕｉｄｅ", ((ActorDeclarationSyntax)tree.Root.Declarations[0]).DisplayName);
+    }
+
+    [Fact]
+    public void Parse_FullWidthBraceKeywords_AreReportedOnceEachAndReadAsConditionalText()
+    {
+        var source = new SourceText("story.pib", "== a.b\n{ｉｆ $met}yes{ｅｌｓｅ}no{/ｉｆ}\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal([8, 20, 29], tree.Diagnostics.Select(diagnostic => diagnostic.Location.Span.Start));
+        var conditional = Assert.IsType<ConditionalTextSyntax>(Assert.Single(((TextLineSyntax)tree.Root.Nodes[0].Body[0]).Content));
+        Assert.NotNull(conditional.Else);
+    }
+
+    [Fact]
     public void Parse_AtWordWithNonAsciiDigitInAlternative_ReportsTheOpener()
     {
         var source = new SourceText("story.pib", "== fixture.start\n@cycle\n    - @if٣ $a\n");

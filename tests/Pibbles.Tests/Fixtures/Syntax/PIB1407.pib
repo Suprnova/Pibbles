@@ -1,4 +1,4 @@
-// A name is in Unicode's composed form. Above `// Must not trigger`, each `é`, `ê` and `ë` is typed as `e` and a separate accent.
+// A name is in its ordinary form. Above `// Must not trigger`, each `é`, `ê` and `ë` is typed as `e` and a separate accent, and each name has a half-width or full-width form.
 
 @actor zoë
 //     ^^^^ PIB1407
@@ -10,6 +10,15 @@
 //   ^^^^^ PIB1407
 @enum mood: calm, éveillé
 //                ^^^^^^^^^ PIB1407
+@actor ｇｕｉｄｅ
+//     ^^^^^ PIB1407
+    ｎａｍｅ: Ｇｕｉｄｅ
+//  ^^^^ PIB1407
+@actor ｶﾞｲﾄﾞ
+//     ^^^^^ PIB1407
+    name: ガイド
+@var $aﾠb = 0
+//    ^^^ PIB1407
 
 == kitchen.café
 //         ^^^^^ PIB1407
@@ -26,6 +35,20 @@ zoë (gaié): Salut. #café
 //        ^^^^^ PIB1407
 @jump kitchen.café
 //            ^^^^^ PIB1407
+ｇｕｉｄｅ: こんにちは。
+// PIB1407
+@ｉｆ $met
+// PIB1407
+    Hi.
+Wait{ｗ} here.
+//   ^ PIB1407
+@set $score１ = 1
+//    ^^^^^^ PIB1407
+Hi. #ｔｈｏｕｇｈｔ
+//   ^^^^^^^ PIB1407
+{ｉｆ $met}yes{ｅｌｓｅ}no{/if}
+// PIB1407
+//           ^^^^ PIB1407
 
 // Must not trigger
 
@@ -35,3 +58,6 @@ zoë (gaié): Salut. #café
 田中: こんにちは。
 mira: Hi.
 Paul sourié: the word before the colon makes this narration, and text keeps any accent.
+ガイド: はい。
+철수: 네.
+Ｗｅｌｃｏｍｅ home.

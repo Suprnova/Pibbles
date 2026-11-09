@@ -722,13 +722,18 @@ Fix the spelling, `@command show(at: position)`, or declare the enum the type na
 
 ### PIB1407
 
-**A name's accented letters are single characters.** `é` can be one character, or `e` followed by a separate accent mark. The two look the same, but they're different names to the story, to the game's code and to saves, so Pibbles takes only the first: Unicode's composed form (NFC), which keyboards type. The separate form comes from pasting, such as a name copied from a macOS file name, and from some Vietnamese keyboards, which type tone marks separately. It's reported wherever a name is written: where it's declared, where it's used, as a speaker or a speaker's value, and in a tag. The name is then read composed, so the rest of the story is checked as if it were fixed.
+**A name's accented letters are single characters.** `é` can be one character, or `e` followed by a separate accent mark. The two look the same, but they're different names to the story, to the game's code and to saves, so Pibbles takes only the first: Unicode's composed form (NFC), which keyboards type. The separate form comes from pasting, such as a name copied from a macOS file name, and from some Vietnamese keyboards, which type tone marks separately.
+
+**Nor do names and keywords hold half-width or full-width forms** (U+FF00 to U+FFEF). An input method in full-width alphanumeric mode types `ｇｕｉｄｅ` for `guide`: the letters look alike, but they're other characters, so without this check `ｇｕｉｄｅ` would be a name of its own and `@ｉｆ` an unknown command. Full-width letters, digits and `＿` have ASCII forms, so the help gives the name with them, and the name is read that way. Half-width katakana and Hangul are older forms of the ordinary ones with no fixed mapping, so they're reported and read as written; the half-width Hangul filler U+FFA0 is invisible.
+
+Either is reported wherever an identifier is written: where a name is declared, where it's used, as a speaker or a speaker's value, in a tag, and as a keyword. The name is then read in its ordinary form where it has one, so the rest of the story is checked as if it were fixed.
 
 ```text
 @var $café = false
+@ｉｆ $met
 ```
 
-Here `é` is `e` and U+0301. Retype the name, or switch the keyboard to precomposed Unicode first. Text, display names and strings can hold either form.
+In the first line `é` is `e` and U+0301: retype the name, or switch the keyboard to precomposed Unicode first. The second is typed in full-width letters: switch the input method to direct (half-width) mode for code. Text, display names and strings can hold any of these forms.
 
 ### PIB1501
 

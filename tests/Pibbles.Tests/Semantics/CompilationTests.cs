@@ -69,6 +69,14 @@ public class CompilationTests
     }
 
     [Fact]
+    public void Create_FullWidthUsesOfNames_ReportOnlyHowTheyAreWritten()
+    {
+        var compilation = Compile("@actor guide\n    name: Guide\n@var $score1 = 0\n\n== kitchen.door\nｇｕｉｄｅ: Hi. #id:a00001\n@set $score１ = 1\n@ｊｕｍｐ kitchen.door\n");
+
+        Assert.Equal(["PIB1407", "PIB1407", "PIB1407"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
+    [Fact]
     public void Create_DuplicateInSameFile_SaysWhichLine()
     {
         var compilation = Compile("@enum room: kitchen\n@enum room: cellar\n");

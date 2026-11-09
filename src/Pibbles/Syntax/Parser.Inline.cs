@@ -339,6 +339,7 @@ internal sealed partial class Parser
     {
         int open = inlinePosition;
         var openSpan = new TextSpan(open, BraceKeyword().End - open);
+        CheckBraceKeywordForm("if", openSpan.End);
         ExpressionSyntax condition = ParseBranchCondition(openSpan);
         List<InlineSyntax> content = ParseBranchContent(openSpan);
 
@@ -352,12 +353,14 @@ internal sealed partial class Parser
             var keywordSpan = new TextSpan(branch, keywordEnd - branch);
             if (word is "elif" && @else is null)
             {
+                CheckBraceKeywordForm(word, keywordEnd);
                 ExpressionSyntax branchCondition = ParseBranchCondition(keywordSpan);
                 List<InlineSyntax> branchContent = ParseBranchContent(keywordSpan);
                 elseIfs.Add(new(branchCondition, branchContent) { Span = new(branch, inlinePosition - branch) });
             }
             else if (word is "else" && @else is null)
             {
+                CheckBraceKeywordForm(word, keywordEnd);
                 StartCode(keywordEnd, keywordSpan);
                 CloseCode(TokenKind.CloseBrace, "}", "{else", keywordSpan);
                 List<InlineSyntax> branchContent = ParseBranchContent(keywordSpan);
@@ -520,6 +523,11 @@ internal sealed partial class Parser
         return index < 0 ? null : index + 1;
     }
 
+    /// <summary>Checks the form of a keyword <see cref="BraceKeyword"/> read, once its branch is taken, since the code lexer never reads it.</summary>
+    /// <param name="word">The keyword.</param>
+    /// <param name="end">Where it ends.</param>
+    private void CheckBraceKeywordForm(string word, int end) => CheckNameForm(new(end - word.Length, word.Length));
+
     /// <summary>The keyword fused with the <c>{</c> at the inline position (<c>if</c>, <c>elif</c>, <c>else</c> or <c>/</c>), and where it ends.</summary>
     private (string? Word, int End) BraceKeyword()
     {
@@ -528,7 +536,7 @@ internal sealed partial class Parser
             return ("/", start + 1);
 
         int end = Identifiers.Skip(source.Text, start, inlineEnd);
-        return source.Text.AsSpan(start, end - start) switch
+        return code.AsSpan(start, end - start) switch
         {
             "if" => ("if", end),
             "elif" => ("elif", end),

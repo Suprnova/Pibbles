@@ -10,6 +10,8 @@ public class IdentifiersTests
     [InlineData("é", true)]
     [InlineData("\U00010400", true)]
     [InlineData("1", false)]
+    [InlineData("１", false)]
+    [InlineData("＿", false)]
     [InlineData("٣", false)]
     [InlineData("́", false)]
     [InlineData("-", false)]
@@ -20,6 +22,8 @@ public class IdentifiersTests
     [InlineData("a", true)]
     [InlineData("_", true)]
     [InlineData("1", true)]
+    [InlineData("１", true)]
+    [InlineData("＿", true)]
     [InlineData("́", true)]
     [InlineData("\U00010400", true)]
     [InlineData("٣", false)]
@@ -70,6 +74,22 @@ public class IdentifiersTests
 
         Assert.Equal("café", composed);
     }
+
+    [Theory]
+    [InlineData("guide", "Ordinary")]
+    [InlineData("田中", "Ordinary")]
+    [InlineData("caf\u00E9", "Ordinary")]
+    [InlineData("ｇｕｉｄｅ", "FullWidth")]
+    [InlineData("score１", "FullWidth")]
+    [InlineData("a＿b", "FullWidth")]
+    [InlineData("ｶﾞｲﾄﾞ", "HalfWidthKatakana")]
+    [InlineData("ﾡﾢ", "HalfWidthHangul")]
+    [InlineData("a\uFFA0b", "HangulFiller")]
+    [InlineData("cafe\u0301", "Decomposed")]
+    [InlineData("ｃａｆe\u0301", "FullWidth")]
+    [InlineData("ｇｕｉｄｅｶ", "HalfWidthKatakana")]
+    public void FormOf_Identifier_IsHowItIsWritten(string name, string expected) =>
+        Assert.Equal(expected, Identifiers.FormOf(name, new(0, name.Length)).ToString());
 
     [Fact]
     public void Skip_IdentifierPastEnd_StopsAtEnd()

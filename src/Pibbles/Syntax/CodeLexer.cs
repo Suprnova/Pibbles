@@ -57,7 +57,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         previous = kind;
         previousStart = start;
         if (kind is not (TokenKind.String or TokenKind.Tag or TokenKind.Comment or TokenKind.Bad or TokenKind.EndOfLine))
-            RecordForms(start, Position);
+            RecordForms(start, Position, identifier: kind is TokenKind.Name or TokenKind.Variable or TokenKind.AtWord);
 
         return new(kind, new(start, Position - start));
     }
@@ -168,7 +168,7 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         }
 
         TokenKind kind = TokenKind.Number;
-        int unit = Peek(0) is 'm' && Peek(1) is 's' ? 2 : Peek(0) is 's' ? 1 : 0;
+        int unit = PeekWritten(0) is 'm' && PeekWritten(1) is 's' ? 2 : PeekWritten(0) is 's' ? 1 : 0;
         if (unit > 0 && !IsNumberContinuation(Position + unit))
         {
             Position += unit;
@@ -260,13 +260,14 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         return suggestion.ToString();
     }
 
-    /// <summary>Reads an identifier, and reports it if it isn't in Unicode's composed form.</summary>
+    /// <summary>Reads an identifier, and reports it if it isn't in its ordinary form.</summary>
     private void SkipIdentifier()
     {
         int start = Position;
         Position = Identifiers.Skip(text, Position, span.End);
-        if (Identifiers.Composed(text, new(start, Position - start)) is { } composed)
-            Report(DiagnosticCatalog.UncomposedName, start, text[start..Position], composed);
+        var identifier = new TextSpan(start, Position - start);
+        if (Identifiers.FormOf(text, identifier) is not NameForm.Ordinary and var form)
+            Report(DiagnosticCatalog.IrregularName, start, DiagnosticCatalog.IrregularNameArguments(text[start..Position], form, Identifiers.Composed(code, identifier) ?? code[start..Position]));
     }
 
     private void SkipDigits()
@@ -276,6 +277,9 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
     }
 
     private char Peek(int offset) => Position + offset < span.End ? code[Position + offset] : '\0';
+
+    /// <summary>The character <paramref name="offset"/> after the position as written, for what has to be ASCII as written, such as a duration's unit.</summary>
+    private char PeekWritten(int offset) => Position + offset < span.End ? text[Position + offset] : '\0';
 
     private bool AtIdentifierStart(int index, bool allowUnderscore = true) =>
         index < span.End && Identifiers.IsStart(text, index) && (allowUnderscore || text[index] is not '_');
@@ -296,15 +300,21 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
             or UnicodeCategory.OtherPunctuation or UnicodeCategory.MathSymbol or UnicodeCategory.CurrencySymbol
             or UnicodeCategory.ModifierSymbol or UnicodeCategory.OtherSymbol;
 
-    /// <summary>Records each form from <paramref name="start"/> to <paramref name="end"/> as the marker it's read as.</summary>
-    private void RecordForms(int start, int end)
+    /// <summary>
+    /// Records each form from <paramref name="start"/> to <paramref name="end"/> as the marker it's read as. A full-width
+    /// letter or <c>＿</c> is no marker, and nor is a full-width digit in an identifier: <see cref="SkipIdentifier"/> reports those.
+    /// </summary>
+    /// <param name="start">Where the forms may start.</param>
+    /// <param name="end">Where they end.</param>
+    /// <param name="identifier">Whether the stretch is a name, a variable or an <c>@</c> word, whose digits are part of an identifier.</param>
+    private void RecordForms(int start, int end, bool identifier = false)
     {
         if (forms is null || ReferenceEquals(code, text))
             return;
 
         for (int i = start; i < end; i++)
         {
-            if (code[i] != text[i])
+            if (code[i] != text[i] && MarkerForms.Map(text[i]) is not '\0' && !(identifier && Identifiers.IsPart(text, i)))
                 forms.Record(i, code[i]);
         }
     }

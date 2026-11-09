@@ -314,7 +314,7 @@ internal sealed partial class Parser
     private bool IsVariableDeclaration(SourceLine line)
     {
         int start = line.Content.Start;
-        return line.Kind is LineKind.At && code.AsSpan(start, Identifiers.Skip(code, start + 1, line.Content.End) - start) is "@var";
+        return line.Kind is LineKind.At && code.AsSpan(start, Identifiers.Skip(source.Text, start + 1, line.Content.End) - start) is "@var";
     }
 
     private void ReportUnexpectedIndentation()
@@ -395,13 +395,13 @@ internal sealed partial class Parser
 
     /// <summary>
     /// Reads the next token. Once the lexer reports a malformed token on a line, the parser reports nothing more on it. A
-    /// name reported only for not being composed isn't malformed: it's read composed.
+    /// name reported only for its form isn't malformed: it's read in its ordinary form, or as written if it has none.
     /// </summary>
     private Token NextToken()
     {
         int count = diagnostics.Count;
         Token next = lexer.Next();
-        bool malformed = diagnostics.FindIndex(count, static diagnostic => diagnostic.Descriptor != DiagnosticCatalog.UncomposedName) >= 0;
+        bool malformed = diagnostics.FindIndex(count, static diagnostic => diagnostic.Descriptor != DiagnosticCatalog.IrregularName) >= 0;
         malformedTag = malformed && next.Kind is TokenKind.Tag;
         if (malformed)
             MuteLineOf(diagnostics[^1].Location.Span.Start);
@@ -492,8 +492,18 @@ internal sealed partial class Parser
     /// <summary>The text at <paramref name="span"/> as the code-mode lexer reads it, with any marker typed through an input method read as the marker, for a token's name or keyword.</summary>
     private string CodeOf(TextSpan span) => code.Substring(span.Start, span.Length);
 
-    /// <summary>The name at <paramref name="span"/> as the code-mode lexer reads it, composed if an accent was typed as a separate mark, which the lexer reports.</summary>
+    /// <summary>
+    /// The name at <paramref name="span"/> as the code-mode lexer reads it, in its ordinary form: full-width forms narrowed,
+    /// and composed if an accent was typed as a separate mark. The lexer, or <see cref="CheckNameForm"/>, reports either.
+    /// </summary>
     private string NameOf(TextSpan span) => Identifiers.Composed(code, span) ?? CodeOf(span);
+
+    /// <summary>Reports the identifier at <paramref name="span"/> if it isn't in its ordinary form, for one the code lexer doesn't read.</summary>
+    private void CheckNameForm(TextSpan span)
+    {
+        if (Identifiers.FormOf(source.Text, span) is not NameForm.Ordinary and var form)
+            Report(DiagnosticCatalog.IrregularName, span, DiagnosticCatalog.IrregularNameArguments(TextOf(span), form, NameOf(span)));
+    }
 
     /// <inheritdoc cref="CodeOf"/>
     private ReadOnlySpan<char> CodeSpanOf(TextSpan span) => code.AsSpan(span.Start, span.Length);
