@@ -477,7 +477,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Enum | In types | A built-in type |
 | Enum member, single-segment node name | Bare in arguments and expressions | A value word or argument word |
 | Actor | Bare in arguments and expressions, and *(ext)* `{actor (value)}` | A value word, argument word or brace keyword |
-| Channel | In an actor's or narration's block | `name` or `no` |
+| Channel | In an actor's or narration's block | `name`, `no` or *(ext)* `persona` |
 | Parameter | In `name=value` | `wait` or `nowait` |
 | *(ext)* Term | `{name}` | A brace keyword or function |
 | *(ext)* Persona | Inside `@actor` | `default`, the name of the base presentation |
@@ -485,7 +485,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 
 A clash is reported at the declaration (or node header). Declared names share one namespace per kind: two kinds may use the same name, such as `@enum sfx` and `@command sfx`, because their positions never overlap.
 
-**Contextual words** are keywords only where the syntax lists them, and are never reserved: `name`, `no`, `inline`, `waits`, and *(ext)* `required` and `persona`.
+**Contextual words** are keywords only where the syntax lists them: `inline`, `waits` and *(ext)* `required` are never reserved, and `name`, `no` and *(ext)* `persona` are reserved only as channel names (above).
 
 **Reserved tags:** `#id` and `#was`; *(ext)* `#migrates`, `#draft`, and `#voice` and `#unvoiced` ([voice](../localization.md#recorded-lines)). A tag can't be declared with one of these names.
 

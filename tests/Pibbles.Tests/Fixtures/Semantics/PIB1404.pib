@@ -17,6 +17,8 @@
 //   ^^ PIB1404
 @command shake(nowait: bool)
 //             ^^^^^^ PIB1404
+@channel persona
+//       ^^^^^^^ PIB1404
 
 // Must not trigger here: `speed` is a free markup name.
 @markup speed

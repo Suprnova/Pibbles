@@ -29,7 +29,7 @@ internal static class ReservedWords
 
     private static readonly Group BuiltInMarkup = new("for its own markup", PreludeNames<MarkupDeclarationSyntax>(markup => markup.Name), []);
 
-    private static readonly Group ActorBlock = new("in an actor's block", ["name", "no"], []);
+    private static readonly Group ActorBlock = new("in an actor's block", ["name", "no"], ["persona"]);
 
     private static readonly Group ReservedTag = new("for its own tag", ["id", "was"], ["migrates", "draft", "voice", "unvoiced"]);
 

@@ -25,10 +25,12 @@ public class ReservedWordsTests
 
     private static readonly string[] ReservedTags = ["id", "was", "migrates", "draft", "voice", "unvoiced"];
 
-    private static readonly string[] Contextual = ["name", "no", "inline", "waits", "required", "persona"];
+    private static readonly string[] ActorBlock = ["name", "no", "persona"];
+
+    private static readonly string[] Contextual = ["inline", "waits", "required"];
 
     private static readonly string[] Words =
-        [.. Statement.Concat(Brace).Concat(Value).Concat(Argument).Concat(BuiltInFunctions).Concat(BuiltInTypes).Concat(BuiltInMarkup).Concat(ReservedTags).Concat(Contextual).Distinct()];
+        [.. Statement.Concat(Brace).Concat(Value).Concat(Argument).Concat(BuiltInFunctions).Concat(BuiltInTypes).Concat(BuiltInMarkup).Concat(ReservedTags).Concat(ActorBlock).Concat(Contextual).Distinct()];
 
     public static TheoryData<string, string[]> Kinds { get; } = new()
     {
@@ -43,7 +45,7 @@ public class ReservedWordsTests
         { "@actor {0}\n    name: Someone", [.. Value, .. Argument, .. Brace] },
         { "@command show({0}: number)", ["wait", "nowait"] },
         { "@tag {0}", ReservedTags },
-        { "@channel {0}", ["name", "no"] },
+        { "@channel {0}", ActorBlock },
         { "@channel pose: {0}", [] },
         { "@channel pose\n@actor someone\n    pose: {0}", [] },
         { "@icon {0}", [] },
