@@ -521,7 +521,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     /// <summary>Reads a bare name against the expected type: a member of an enum, an actor or a node. No other type has names.</summary>
     private TypeSymbol BindName(NameExpressionSyntax name, TypeSymbol? expected)
     {
-        if (expected == TypeSymbol.Error)
+        if (expected == TypeSymbol.Error || expected is EnumSymbol { Members: [] })
             return TypeSymbol.Error;
 
         if (expected == TypeSymbol.Node)
@@ -875,9 +875,13 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         _ => null,
     };
 
-    /// <summary>Whether a value of type <paramref name="from"/> can go where <paramref name="to"/> is expected: the same type, a number where a duration is, or a type that can't be known.</summary>
+    /// <summary>
+    /// Whether a value of type <paramref name="from"/> can go where <paramref name="to"/> is expected: the same type, a
+    /// number where a duration is, or a type that can't be known, which includes an enum with no members, since it's
+    /// already reported.
+    /// </summary>
     private static bool Converts(TypeSymbol from, TypeSymbol to) =>
-        from == to || from == TypeSymbol.Error || to == TypeSymbol.Error || (from == TypeSymbol.Number && to == TypeSymbol.Duration);
+        from == to || from == TypeSymbol.Error || to == TypeSymbol.Error || to is EnumSymbol { Members: [] } || (from == TypeSymbol.Number && to == TypeSymbol.Duration);
 
     /// <summary>The type a declaration names. A type that doesn't exist has already been reported by the declaration pass.</summary>
     private TypeSymbol TypeNamed(NameSyntax name) => symbols.FindType(name.Text) ?? TypeSymbol.Error;

@@ -14,6 +14,16 @@ public class RecoveryTests
         Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3204" && diagnostic.Help!.Contains("`{if …}…{/if}`", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("@enum position:\n@var $p: position = left\n")]
+    [InlineData("@enum position:\n@var $p: position = 1\n")]
+    public void Compile_ValueOfEnumWithNoMembers_IsNotReported(string story)
+    {
+        var compilation = Compilation.Create([new SourceText("story.pib", story)]);
+
+        Assert.DoesNotContain(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3005" or "PIB2303");
+    }
+
     [Fact]
     public void Compile_EnumWithNoMembersAsATagType_SuggestsAGenericValue()
     {
