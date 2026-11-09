@@ -45,7 +45,7 @@ repository:
 
   note:
     match: '^[\t\p{Zs}]*///(?!/).*$'
-    name: comment.line.note.pibbles
+    name: invalid.illegal.note.pibbles
 
   comment-line:
     match: '^[\t\p{Zs}]*(//).*$'

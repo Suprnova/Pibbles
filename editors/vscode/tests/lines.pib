@@ -5,10 +5,10 @@
 //   ^^^^^^^ comment.line.double-slash.pibbles
 
 /// A note, reserved for localization.
-// <------ comment.line.note.pibbles
+// <------ invalid.illegal.note.pibbles
 
 //// A banner is a comment.
-// <---- comment.line.double-slash.pibbles - comment.line.note.pibbles
+// <---- comment.line.double-slash.pibbles - invalid.illegal.note.pibbles
 
 == kitchen.fridge #was:kitchen.icebox // The old name still works.
 // <-- meta.header.pibbles keyword.control.header.pibbles
