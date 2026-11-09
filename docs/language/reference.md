@@ -479,7 +479,7 @@ A word is reserved only where it could be read two ways. Each kind of declared n
 | Actor | Bare in arguments and expressions, and *(ext)* `{actor (value)}` | A value word, argument word or brace keyword |
 | Channel | In an actor's or narration's block | `name`, `no` or *(ext)* `persona` |
 | Parameter | In `name=value` | `wait` or `nowait` |
-| *(ext)* Term | `{name}` | A brace keyword or function |
+| *(ext)* Term | `{name}` | A brace keyword, a function, or a plural case word (`zero`, `one`, `two`, `few`, `many`, `other`) |
 | *(ext)* Persona | Inside `@actor` | `default`, the name of the base presentation |
 | Channel value, icon, tag, variable, segment of a dotted node name | Only in their own positions | Nothing reserved |
 
