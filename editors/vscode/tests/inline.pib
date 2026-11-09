@@ -53,3 +53,8 @@ mira: Very {speed 0.3}slowly{speed} now.
 //          ^^^^^ keyword.other.point.pibbles
 //                ^^^ constant.numeric.pibbles
 //                           ^^^^^ keyword.other.point.pibbles
+
+mira: {plural $count}
+//     ^^^^^^ - keyword.other.point.pibbles
+mira: {auto}
+//     ^^^^ - keyword.other.point.pibbles

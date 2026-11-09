@@ -85,3 +85,14 @@
 @once
 // <----- keyword.control.pibbles
     mira: Whoa.
+
+== extensions
+// Words that extensions will use have no meaning yet, so none of them is a keyword.
+@temp $score = 0
+// <---- - keyword.control.pibbles
+@term they = they
+// <---- - keyword.control.pibbles
+@resume k7qp2x
+// <------ - keyword.control.pibbles
+@shuffle once
+// <------- - keyword.control.pibbles
