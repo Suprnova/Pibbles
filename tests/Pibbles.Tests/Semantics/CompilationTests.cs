@@ -77,6 +77,15 @@ public class CompilationTests
     }
 
     [Fact]
+    public void Create_TagValueInFullWidthLetters_SuggestsTheMember()
+    {
+        var compilation = Compile("@enum mood: calm, happy\n@tag feel: mood\n\n== kitchen.door\nHi. #id:a00001 #feel:ｈａｐｐｙ\n");
+
+        Diagnostic diagnostic = Assert.Single(compilation.Diagnostics);
+        Assert.Equal(("PIB1207", "Did you mean `#feel:happy`?"), (diagnostic.Code, diagnostic.Help));
+    }
+
+    [Fact]
     public void Create_DuplicateInSameFile_SaysWhichLine()
     {
         var compilation = Compile("@enum room: kitchen\n@enum room: cellar\n");

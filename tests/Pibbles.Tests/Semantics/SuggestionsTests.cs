@@ -18,6 +18,9 @@ public class SuggestionsTests
         { "y", ["u", "x"], null },
         { "e", ["b"], null },
         { "E", ["b", "e"], "e" },
+        { "ｈａｐｐｙ", ["calm", "happy"], "happy" },
+        { "ＨＡＰＰＹ１", ["happy1"], "happy1" },
+        { "ｈ", ["h"], "h" },
         { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB7\U00020BB7"], "\U00020BB8\U00020BB7\U00020BB7" },
         { "\U00020BB7\U00020BB7\U00020BB7", ["\U00020BB8\U00020BB8\U00020BB7"], null },
     };

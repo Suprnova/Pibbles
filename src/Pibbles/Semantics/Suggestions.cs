@@ -1,3 +1,5 @@
+using Pibbles.Syntax;
+
 namespace Pibbles.Semantics;
 
 /// <summary>"Did you mean" suggestions: the closest name to a misspelled one, among the names it could have meant.</summary>
@@ -6,7 +8,9 @@ internal static class Suggestions
     /// <summary>
     /// Finds the candidate closest to <paramref name="name"/>, ignoring case, within <c>max(1, length / 3)</c> edits
     /// and always fewer edits than the name has letters, so a suggestion shares a letter with the name.
-    /// Letters are counted, not UTF-16 code units. An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
+    /// Letters are counted, not UTF-16 code units, and full-width letters, digits and <c>＿</c> count as their ASCII forms,
+    /// so <c>ｈａｐｐｙ</c>, which isn't read as an identifier in a tag's value, finds <c>happy</c>.
+    /// An edit inserts, deletes or replaces a letter, or swaps two letters side by side. Ties go to the earliest candidate.
     /// </summary>
     /// <param name="name">The name as written.</param>
     /// <param name="candidates">The names it could have meant.</param>
@@ -23,7 +27,8 @@ internal static class Suggestions
             .FirstOrDefault();
     }
 
-    private static int[] Letters(string text) => [.. text.ToLowerInvariant().EnumerateRunes().Select(letter => letter.Value)];
+    private static int[] Letters(string text) =>
+        [.. new string([.. text.Select(MarkerForms.Narrow)]).ToLowerInvariant().EnumerateRunes().Select(letter => letter.Value)];
 
     /// <summary>The optimal string alignment distance: Levenshtein distance, plus swaps of two letters side by side.</summary>
     private static int Distance(int[] a, int[] b)
