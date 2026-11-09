@@ -99,6 +99,7 @@ public class StyleChecksTests
     [InlineData("@actor HTTPServer\n    name: Server\n", "Write it as `http_server`, before anything outside the story uses the name.")]
     [InlineData("== Kitchen.FrontDoor\n", "Write it as `kitchen.front_door`, before anything outside the story uses the name.")]
     [InlineData("@var $hasKey2 = 0\n", "Write it as `$has_key2`, before anything outside the story uses the name.")]
+    [InlineData("@actor caféÉtoile\n    name: Café\n", "Write it as `café_étoile`, before anything outside the story uses the name.")]
     public void Create_NameNotInSnakeCase_SuggestsSnakeCase(string text, string help)
     {
         Diagnostic diagnostic = Assert.Single(Compilation.Create([new SourceText("story.pib", text)]).Diagnostics, diagnostic => diagnostic.Code is "PIB5303");

@@ -440,7 +440,7 @@ mira: This line makes its point.{page}The rest appears on the next page.
 
 **Level:** hint
 
-Flags names that aren't `snake_case`, where they're declared. That covers nodes (each dot-separated part) and the file's prefix, actors, channels and their values, personas, variables, enums and their members, commands, markup, icons, terms and functions. Display names like `name: Mira` aren't affected.
+Flags names that aren't `snake_case`, where they're declared. That covers nodes (each dot-separated part) and the file's prefix, actors, channels and their values, personas, variables, enums and their members, commands, markup, icons, terms and functions. A capital is any uppercase letter, in any script, so `Émile` is written `émile`; scripts without case, such as `田中`, never trigger it. Display names like `name: Mira` aren't affected.
 
 Non-compliant:
 

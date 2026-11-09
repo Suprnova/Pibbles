@@ -10,6 +10,9 @@
 //                 ^^^^^^^^^ PIB5303
 @var $HasKey = false
 //   ^^^^^^^ PIB5303
+@actor Émile
+//     ^^^^^ PIB5303
+    name: Émile
 @enum Room: Kitchen, cellar
 //    ^^^^ PIB5303
 //          ^^^^^^^ PIB5303
@@ -22,4 +25,7 @@
 // Must not trigger
 
 == kitchen.front_door
+Narration.
+
+== kitchen.émile
 Narration.

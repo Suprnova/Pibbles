@@ -67,7 +67,7 @@ internal sealed partial class StyleChecks
             .. Tree.Root.Nodes.Select(node => (node.Name.Span, node.Name.Text)),
         ];
 
-        foreach ((TextSpan span, string written) in names.Where(name => name.Written.Any(char.IsAsciiLetterUpper)))
+        foreach ((TextSpan span, string written) in names.Where(name => name.Written.EnumerateRunes().Any(Rune.IsUpper)))
             Report(DiagnosticCatalog.NamingConvention, span, written, SnakeCase(written));
     }
 
@@ -90,20 +90,24 @@ internal sealed partial class StyleChecks
             : names.Select(name => (name.Span, name.Text));
     }
 
-    /// <summary>Writes a name in <c>snake_case</c>: <c>FrontDoor</c> is <c>front_door</c>, and <c>HTTPServer</c> is <c>http_server</c>.</summary>
+    /// <summary>
+    /// Writes a name in <c>snake_case</c>, judging capitals by Unicode case: <c>FrontDoor</c> is <c>front_door</c>,
+    /// <c>HTTPServer</c> is <c>http_server</c>, and <c>Émile</c> is <c>émile</c>.
+    /// </summary>
     private static string SnakeCase(string name)
     {
+        Rune[] runes = [.. name.EnumerateRunes()];
         var builder = new StringBuilder();
-        for (int i = 0; i < name.Length; i++)
+        for (int i = 0; i < runes.Length; i++)
         {
-            char c = name[i];
-            bool startsWord = i > 0 && char.IsAsciiLetterUpper(c)
-                && (char.IsAsciiLetterLower(name[i - 1]) || char.IsAsciiDigit(name[i - 1])
-                    || char.IsAsciiLetterUpper(name[i - 1]) && i + 1 < name.Length && char.IsAsciiLetterLower(name[i + 1]));
+            Rune c = runes[i];
+            bool startsWord = i > 0 && Rune.IsUpper(c)
+                && (Rune.IsLower(runes[i - 1]) || Rune.IsDigit(runes[i - 1])
+                    || Rune.IsUpper(runes[i - 1]) && i + 1 < runes.Length && Rune.IsLower(runes[i + 1]));
             if (startsWord)
                 builder.Append('_');
 
-            builder.Append(char.ToLowerInvariant(c));
+            builder.Append(Rune.ToLowerInvariant(c).ToString());
         }
 
         return builder.ToString();
