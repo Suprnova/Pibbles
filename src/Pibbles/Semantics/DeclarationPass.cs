@@ -35,8 +35,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         pass.ForEachFile(trees, pass.DeclareChannels);
         pass.ForEachFile(trees, pass.DeclareOthers);
         pass.ForEachFile(trees, pass.DeclareVariables);
-        if (pass.narrationLocation is null)
-            pass.symbols.Narration = new(null, null, [.. pass.symbols.Channels.Values.Select(channel => new SpeakerChannel(channel, channel.Defaults))]);
+        pass.symbols.Narration ??= new(null, null, [.. pass.symbols.Channels.Values.Select(channel => new SpeakerChannel(channel, channel.Defaults))]);
 
         return pass.symbols;
     }
@@ -154,13 +153,17 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     private void DeclareNarration(NarrationDeclarationSyntax narration)
     {
         var keyword = new TextSpan(narration.Span.Start, "@narration".Length);
-        if (narrationLocation is { } first)
+        if (!builtIn)
         {
-            Report(DiagnosticCatalog.SecondNarration, keyword, Where(first));
-            return;
+            if (narrationLocation is { } first)
+            {
+                Report(DiagnosticCatalog.SecondNarration, keyword, Where(first));
+                return;
+            }
+
+            narrationLocation = Tree.Source.GetLocation(keyword);
         }
 
-        narrationLocation = Tree.Source.GetLocation(keyword);
         symbols.Narration = new NarrationSymbol(Location(keyword), narration.DisplayName, ResolveChannels(narration.Channels, "Narration"));
         DeclaresIfWritten(keyword, symbols.Narration);
     }
