@@ -99,8 +99,10 @@ public class BindingsTests
         (Compilation compilation, SyntaxTree tree) = Compile(Story + "\n@show mira left delay=2\n");
 
         var line = Assert.IsType<TextLineSyntax>(Statements(tree).First(statement => statement is TextLineSyntax));
+        var command = Assert.IsType<CommandStatementSyntax>(Statements(tree).Last());
 
         Assert.IsType<ActorSymbol>(compilation.Bindings.SymbolOf(line.Speaker!.Name!));
+        Assert.Equal("delay", Assert.IsType<ParameterSymbol>(compilation.Bindings.SymbolOf(command.Arguments[2].Name!)).Name);
     }
 
     [Fact]

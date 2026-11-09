@@ -11,7 +11,7 @@ public class RecoveryTests
     {
         var compilation = Compilation.Create([new SourceText("story.pib", "@enum position:\n@var $p: position = left\n\n== a.b\nYou're on the {$p}.\n")]);
 
-        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3204");
+        Assert.Contains(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3204" && diagnostic.Help!.Contains("`{if …}…{/if}`", StringComparison.Ordinal));
     }
 
     [Fact]
