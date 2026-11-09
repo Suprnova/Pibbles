@@ -24,6 +24,18 @@ public class RecoveryTests
         Assert.DoesNotContain(compilation.Diagnostics, diagnostic => diagnostic.Code is "PIB3005" or "PIB2303");
     }
 
+    [Theory]
+    [InlineData("@var $t = not\n")]
+    [InlineData("@var $u = and\n")]
+    [InlineData("@var $w: bool = not true\n")]
+    [InlineData("@command wave(times: number = or)\n")]
+    public void Compile_OperatorWordAsConstant_ReportsOnlyTheWord(string story)
+    {
+        var compilation = Compilation.Create([new SourceText("story.pib", story)]);
+
+        Assert.Equal(["PIB1103"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
     [Fact]
     public void Compile_EnumWithNoMembersAsATagType_SuggestsAGenericValue()
     {

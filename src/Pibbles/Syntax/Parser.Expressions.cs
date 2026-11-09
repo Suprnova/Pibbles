@@ -243,6 +243,8 @@ internal sealed partial class Parser
 
     private bool IsWord(string word) => token.Kind is TokenKind.Name && CodeSpanOf(token.Span).SequenceEqual(word);
 
+    private bool AtOperatorWord => IsWord("and") || IsWord("or") || IsWord("not");
+
     /// <summary>
     /// Reads a number the lexer accepted. Returns <see langword="null"/> for one it reported as malformed, and for one too
     /// large for a <see cref="decimal"/>, which is reported here. Fraction digits past what a <see cref="decimal"/> holds round.

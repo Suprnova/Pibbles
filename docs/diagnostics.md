@@ -444,6 +444,14 @@ In an option's text, an `@` followed by a letter starts the modifiers, so an `@`
 
 Put a backslash before the `@`: `-> Email me \@home`.
 
+A starting value or a parameter's default is a literal or a name, so an operator word (`and`, `or`, `not`) there is reported too:
+
+```text
+@var $ready: bool = not true
+```
+
+Write the value itself: `@var $ready: bool = true`. A condition is written where the story uses it, in `@if`.
+
 ### PIB1104
 
 **Quoted text has to end with a `"` on the same line it starts on.** Everything after an opening `"` is part of the text until the closing one, so without it, the rest of the line becomes text too.

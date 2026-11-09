@@ -2,6 +2,15 @@
 
 @temp $scratch = 0
 // PIB1103
+@var $ready: bool = not true
+//                  ^^^ PIB1103
+@var $open = and
+//           ^^^ PIB1103
+@command wave(times: number = or)
+//                            ^^ PIB1103
+@command nod(times: number = 1)
+@var $count = -1
+@var $where: position = notable
 
 == fixture.unexpected #was:fixture.old extra
 //                                     ^^^^^ PIB1103

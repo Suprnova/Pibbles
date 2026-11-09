@@ -312,7 +312,10 @@ internal sealed partial class Parser
         return parameters;
     }
 
-    /// <summary>Parses a constant: a literal, a negative number or duration, or a bare name such as an enum member or a node.</summary>
+    /// <summary>
+    /// Parses a constant: a literal, a negative number or duration, or a bare name such as an enum member or a node.
+    /// An operator word (<c>and</c>, <c>or</c> or <c>not</c>) is none of these, so it's reported and read as an error.
+    /// </summary>
     private ExpressionSyntax ParseConstant()
     {
         if (token.Kind is TokenKind.Minus)
@@ -329,12 +332,13 @@ internal sealed partial class Parser
         if (token.Kind is TokenKind.Number or TokenKind.Duration or TokenKind.String)
             return ParsePrimary(argument: true);
 
-        if (token.Kind is not TokenKind.Name)
+        bool operatorWord = AtOperatorWord;
+        if (token.Kind is not TokenKind.Name || operatorWord)
         {
             if (AtLineEnd)
                 return MissingValue();
 
-            FailUnexpected(token.Span);
+            FailUnexpected(token.Span, operatorWord ? $"`{TextOf(token.Span)}` is an operator, so it can't be a value here. Use a literal, or the name of an enum member, actor or node." : null);
             var error = new ErrorExpressionSyntax { Span = token.Span };
             Advance();
             return error;

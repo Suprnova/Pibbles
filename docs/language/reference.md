@@ -646,7 +646,7 @@ tag_entry       ::= NAME (":" type "?"?)?
 name_list       ::= NAME ("," NAME)*
 var_decl        ::= "@var" VARIABLE (":" type)? "=" constant EOL
 type            ::= NAME                             /* a single identifier */
-constant        ::= literal | "-" (NUMBER | DURATION) | NAME
+constant        ::= literal | "-" (NUMBER | DURATION) | NAME   /* a NAME other than "and", "or" and "not" */
 literal         ::= NUMBER | DURATION | STRING | "true" | "false"
 command_decl    ::= "@command" NAME "(" params? ")" command_flag* EOL
 command_flag    ::= "inline" | "waits"
