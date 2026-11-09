@@ -182,7 +182,7 @@ public class BindingsTests
     }
 
     [Fact]
-    public void Bindings_ParameterAndVariable_KeepTheirDefaultAndStartingValue()
+    public void Bindings_ParameterAndRepeatedVariable_KeepTheDefaultAndFirstStartingValue()
     {
         (Compilation compilation, _) = Compile(Story + "\n@var $count = 5\n");
 
