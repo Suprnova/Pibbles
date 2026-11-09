@@ -148,6 +148,16 @@ public class BinderTests
             "If it's text, put it in quotes: `\"crowbar\"`."
         },
         {
+            "@function has_item(id: string) -> bool\n\n== a.b\n@if has_item(\"a\" + crowbar)\n    Hm.\n",
+            "I don't know what `crowbar` means here.",
+            "If it's text, put it in quotes: `\"crowbar\"`."
+        },
+        {
+            "@var $s = \"\"\n\n== a.b\n@set $s = crowbar + \"a\"\n",
+            "I don't know what `crowbar` means here.",
+            "If it's text, put it in quotes: `\"crowbar\"`."
+        },
+        {
             "@enum position: left, right\n@var $where: position = lfet\n",
             "`lfet` isn't a value of `position`.",
             "Did you mean `left`?"

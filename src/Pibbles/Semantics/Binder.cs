@@ -750,8 +750,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return TypeSymbol.Bool;
         }
 
-        (TypeSymbol left, TypeSymbol right) = binary.Operator is BinaryOperator.Equals or BinaryOperator.NotEquals
-            ? BindEqualityOperands(binary)
+        (TypeSymbol left, TypeSymbol right) = binary.Operator is BinaryOperator.Equals or BinaryOperator.NotEquals or BinaryOperator.Add
+            ? BindNamedOperands(binary)
             : (Bind(binary.Left), Bind(binary.Right));
 
         TypeSymbol fallback = binary.Operator is BinaryOperator.Or or BinaryOperator.And or BinaryOperator.Equals or BinaryOperator.NotEquals
@@ -783,15 +783,19 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
     }
 
     /// <summary>
-    /// Binds the operands of <c>==</c> or <c>!=</c>. A bare name on one side is read against the other side's type, so
-    /// that side is bound first. Two bare names have no type to be read against.
+    /// Binds the operands of <c>==</c>, <c>!=</c> or <c>+</c>. A bare name on one side is read against the other side's
+    /// type, so that side is bound first. Two bare names have no type to be read against: <c>==</c> and <c>!=</c> report
+    /// them together, and <c>+</c> reports each.
     /// </summary>
-    private (TypeSymbol Left, TypeSymbol Right) BindEqualityOperands(BinaryExpressionSyntax binary)
+    private (TypeSymbol Left, TypeSymbol Right) BindNamedOperands(BinaryExpressionSyntax binary)
     {
         bool leftIsName = Unwrap(binary.Left) is NameExpressionSyntax;
         bool rightIsName = Unwrap(binary.Right) is NameExpressionSyntax;
         if (leftIsName && rightIsName)
         {
+            if (binary.Operator is BinaryOperator.Add)
+                return (Bind(binary.Left), Bind(binary.Right));
+
             Report(DiagnosticCatalog.TwoNames, binary.Span, TextOf(binary.Span));
             return (TypeSymbol.Error, TypeSymbol.Error);
         }
