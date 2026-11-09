@@ -110,6 +110,7 @@ public class CompilationTests
     [InlineData("@var $attempts = 0\n@var $attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Give this one a name that says whose it is.")]
     [InlineData("@prefix kitchen\n@var $attempts = 0\n@var $attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Write this one as `$.attempts`, which is `$kitchen.attempts`, or give it a name that says whose it is.")]
     [InlineData("@prefix kitchen\n@var $.attempts = 0\n@var $.attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Give this one a name that says whose it is.")]
+    [InlineData("@prefix kitchen\n@var $kitchen.attempts = 0\n@var $kitchen.attempts = 0\n", "Two `@var`s are two variables, so each needs its own name. Give this one a name that says whose it is.")]
     [InlineData("@enum room: kitchen\n@enum room: cellar\n", "Give one of them another name, or remove one.")]
     public void Create_DuplicateDeclaration_HelpSuitsTheKind(string source, string help)
     {

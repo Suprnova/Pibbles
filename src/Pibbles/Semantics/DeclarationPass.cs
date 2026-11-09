@@ -351,7 +351,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             return "Give one of them another name, or remove one.";
 
         const string twoVariables = "Two `@var`s are two variables, so each needs its own name.";
-        return !name.Text.StartsWith('.') && Tree.Root.Prefix?.Name is { IsMissing: false } prefix
+        return !name.Text.Contains('.') && Tree.Root.Prefix?.Name is { IsMissing: false } prefix
             ? $"{twoVariables} Write this one as `$.{name.Text}`, which is `${prefix.Text.TrimStart('.')}.{name.Text}`, or give it a name that says whose it is."
             : $"{twoVariables} Give this one a name that says whose it is.";
     }
