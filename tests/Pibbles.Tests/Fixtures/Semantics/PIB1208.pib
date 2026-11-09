@@ -9,3 +9,6 @@
 
 @enum box_style: phone, letter
 @tag box: box_style, label: string?
+
+== kitchen.door
+Hi. #count #who

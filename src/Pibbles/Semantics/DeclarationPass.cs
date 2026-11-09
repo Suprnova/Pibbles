@@ -242,7 +242,10 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     {
         TypeSymbol? type = tag.Value is { } value ? ResolveType(value.Type) : null;
         if (type is not (null or EnumSymbol) && type != TypeSymbol.String && type != TypeSymbol.Error)
+        {
             Report(DiagnosticCatalog.TagValueType, tag.Value!.Type.Span, type.Name);
+            type = TypeSymbol.Error;
+        }
 
         Declare(symbols.Tags, new TagSymbol(tag.Name.Text, Location(tag.Name.Span), type, tag.Value?.AllowsEmpty ?? false), tag.Name, SymbolKind.Tag);
     }

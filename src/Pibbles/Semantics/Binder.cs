@@ -392,6 +392,9 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             return;
         }
 
+        if (type == TypeSymbol.Error)
+            return;
+
         if (tag.Value is null || (tag.Value.Length == 0 && !symbol.AllowsEmpty))
         {
             string example = type is EnumSymbol { Members: [var first, ..] } ? first.Name : "value";

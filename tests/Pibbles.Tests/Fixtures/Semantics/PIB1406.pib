@@ -7,8 +7,13 @@
 //           ^^^^^ PIB1406
 @function mood() -> feeling
 //                  ^^^^^^^ PIB1406
+@tag box: sytle
+//        ^^^^^ PIB1406
 
 // Must not trigger
 
 @command hide(at: position)
 @function name() -> string
+
+== kitchen.door
+Hi. #box
