@@ -296,7 +296,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         List<string> aliases = [];
         var symbol = new NodeSymbol(name, Location(node.Name.Span), aliases);
         symbols.Nodes.Add(name, symbol);
-        Declares(node.Name.Span, symbol);
+        DeclaresIfWritten(node.Name.Span, symbol);
         bindings.BindName(node.Name, symbol);
 
         foreach (NameSyntax alias in node.Aliases)
@@ -305,7 +305,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             {
                 aliases.Add(old);
                 symbols.Aliases.Add(old, symbol);
-                Declares(alias.Span, symbol);
+                DeclaresIfWritten(alias.Span, symbol);
             }
         }
     }
