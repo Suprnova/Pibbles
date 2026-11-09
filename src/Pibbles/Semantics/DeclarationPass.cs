@@ -22,6 +22,12 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     private SourceLocation? narrationLocation;
     private bool builtIn;
 
+    /// <summary>Declares everything in the prelude and the story's files.</summary>
+    /// <param name="trees">The story's files.</param>
+    /// <param name="diagnostics">Where problems with declarations are reported.</param>
+    /// <param name="references">Where each declaration and each type named is recorded.</param>
+    /// <param name="bindings">Where each declared name is bound to its symbol.</param>
+    /// <returns>The symbol table, with one namespace for each kind of name.</returns>
     public static SymbolTable Run(IReadOnlyList<SyntaxTree> trees, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings)
     {
         var pass = new DeclarationPass(diagnostics, references, bindings);
@@ -401,7 +407,9 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         }
     }
 
-    /// <summary>The type a variable's starting value gives it when no type is written: a literal's, or <see cref="TypeSymbol.Error"/> for anything else.</summary>
+    /// <summary>The type a variable's starting value gives it when no type is written.</summary>
+    /// <param name="value">The starting value.</param>
+    /// <returns>A literal's type, with or without a sign, or <see cref="TypeSymbol.Error"/> for anything else.</returns>
     public static TypeSymbol TypeOfStartingValue(ExpressionSyntax value) => value switch
     {
         UnaryExpressionSyntax { Operand: var operand } => TypeOfLiteral(operand),

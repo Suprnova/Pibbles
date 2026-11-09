@@ -15,6 +15,12 @@ namespace Pibbles.Semantics;
 /// </remarks>
 internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings) : AnalysisPass(diagnostics, references)
 {
+    /// <summary>Binds every file's declarations and node bodies against the symbol table.</summary>
+    /// <param name="trees">The story's files.</param>
+    /// <param name="symbols">The symbol table the declaration pass made.</param>
+    /// <param name="diagnostics">Where problems with names, types and arguments are reported.</param>
+    /// <param name="references">Where each name that refers to a symbol is recorded.</param>
+    /// <param name="bindings">Where each name, expression and argument is bound.</param>
     public static void Run(IReadOnlyList<SyntaxTree> trees, SymbolTable symbols, List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings)
     {
         var binder = new Binder(symbols, diagnostics, references, bindings);

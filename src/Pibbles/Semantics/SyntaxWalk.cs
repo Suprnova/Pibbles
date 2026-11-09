@@ -6,6 +6,8 @@ namespace Pibbles.Semantics;
 internal static class SyntaxWalk
 {
     /// <summary>The blocks a statement holds: an <c>@if</c>'s branches, a choice's options, a variation's alternatives, or <c>@once</c>'s block.</summary>
+    /// <param name="statement">The statement to look in.</param>
+    /// <returns>Its blocks in the order they're written, or none if it holds none.</returns>
     public static IEnumerable<IReadOnlyList<StatementSyntax>> BlocksOf(StatementSyntax statement) => statement switch
     {
         IfStatementSyntax @if => Branches(@if),
@@ -29,6 +31,8 @@ internal static class SyntaxWalk
     /// Whether a statement always leaves its block: <c>@jump</c>, <c>@end</c> or <c>@return</c>, or an <c>@if</c> with an
     /// <c>@else</c> whose every branch leaves. Conditions are never evaluated, and choices and variations never count.
     /// </summary>
+    /// <param name="statement">The statement to check.</param>
+    /// <returns><see langword="true"/> if it always leaves its block.</returns>
     public static bool AlwaysLeaves(StatementSyntax statement) => statement switch
     {
         JumpStatementSyntax or EndStatementSyntax or ReturnStatementSyntax => true,
@@ -37,9 +41,13 @@ internal static class SyntaxWalk
     };
 
     /// <summary>Whether a block always leaves, because one of its statements does.</summary>
+    /// <param name="block">The block to check.</param>
+    /// <returns><see langword="true"/> if one of its statements always leaves.</returns>
     public static bool AlwaysLeaves(IReadOnlyList<StatementSyntax> block) => block.Any(AlwaysLeaves);
 
     /// <summary>Every statement in a block and in the blocks under it, in the order they're written.</summary>
+    /// <param name="block">The block to walk.</param>
+    /// <returns>The block's statements, each followed by the statements inside it.</returns>
     public static IEnumerable<StatementSyntax> Statements(IEnumerable<StatementSyntax> block)
     {
         foreach (StatementSyntax statement in block)
@@ -58,10 +66,14 @@ internal static class SyntaxWalk
     /// <c>@once</c>, or a choice with an <c>@once</c> option. The count is kept for each block, so two blocks written the
     /// same don't behave like one.
     /// </summary>
+    /// <param name="block">The block to look in.</param>
+    /// <returns><see langword="true"/> if the block holds such a statement.</returns>
     public static bool HoldsState(IEnumerable<StatementSyntax> block) => Statements(block).Any(statement =>
         statement is VariationStatementSyntax or OnceStatementSyntax || statement is ChoiceSyntax choice && choice.Options.Any(option => option.IsOnce));
 
     /// <summary>The text on a statement's own line: a text line's content, or each option's text.</summary>
+    /// <param name="statement">The statement to look in.</param>
+    /// <returns>Its runs of text, or none if its line holds none.</returns>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> TextOf(StatementSyntax statement) => statement switch
     {
         TextLineSyntax line => [line.Content],
@@ -70,6 +82,8 @@ internal static class SyntaxWalk
     };
 
     /// <summary>A run of text, and every run inside its markup spans and conditional branches.</summary>
+    /// <param name="content">The run to start from.</param>
+    /// <returns>The run itself, then each run inside it, at any depth, in the order they're written.</returns>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> Runs(IReadOnlyList<InlineSyntax> content)
     {
         yield return content;
@@ -84,6 +98,8 @@ internal static class SyntaxWalk
     }
 
     /// <summary>The runs of text an inline item holds: a span's content, or each branch of conditional text.</summary>
+    /// <param name="item">The item to look in.</param>
+    /// <returns>Its runs, or none if it holds none.</returns>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> InnerRuns(InlineSyntax item) => item switch
     {
         MarkupSyntax markup => [markup.Content],
@@ -92,6 +108,8 @@ internal static class SyntaxWalk
     };
 
     /// <summary>Each branch of conditional text, in order, including the <c>{else}</c>.</summary>
+    /// <param name="conditional">The conditional text.</param>
+    /// <returns>The content of each branch.</returns>
     public static IEnumerable<IReadOnlyList<InlineSyntax>> Branches(ConditionalTextSyntax conditional)
     {
         yield return conditional.Content;
@@ -103,6 +121,8 @@ internal static class SyntaxWalk
     }
 
     /// <summary>Every expression a statement's own line holds, in its text too, with every expression inside each one.</summary>
+    /// <param name="statement">The statement to look in.</param>
+    /// <returns>Each expression followed by the expressions inside it.</returns>
     public static IEnumerable<ExpressionSyntax> ExpressionsOf(StatementSyntax statement)
     {
         IEnumerable<ExpressionSyntax> own = statement switch
@@ -130,6 +150,9 @@ internal static class SyntaxWalk
         _ => [],
     };
 
+    /// <summary>An expression and every expression inside it, at any depth.</summary>
+    /// <param name="expression">The expression to walk.</param>
+    /// <returns>The expression itself, then its operands and arguments, each followed by the expressions inside it.</returns>
     public static IEnumerable<ExpressionSyntax> Subexpressions(ExpressionSyntax expression)
     {
         yield return expression;
