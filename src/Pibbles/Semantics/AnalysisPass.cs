@@ -23,8 +23,8 @@ internal abstract class AnalysisPass(List<Diagnostic> diagnostics, ReferenceInde
 
     /// <summary>
     /// Expands a node or variable name with its file's prefix, or returns <see langword="null"/> if it can't be: the
-    /// name is missing, or it's relative in a file with no prefix, which is reported as written, after
-    /// <paramref name="sigil"/>.
+    /// name is missing, the file's prefix has no name (which is reported elsewhere), or the name is relative in a file
+    /// with no prefix, which is reported as written, after <paramref name="sigil"/>.
     /// </summary>
     protected string? FullName(string written, TextSpan span, string sigil = "")
     {

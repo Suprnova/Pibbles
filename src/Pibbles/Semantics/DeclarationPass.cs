@@ -6,13 +6,14 @@ namespace Pibbles.Semantics;
 
 /// <summary>
 /// Gathers every declaration and node name in a story, and the prelude's, into a <see cref="SymbolTable"/>. It expands
-/// relative node names, and reports names that clash, are reserved or aren't ASCII, and types that don't exist.
+/// relative node and variable names, and reports names that clash, are reserved or aren't ASCII, and types that don't
+/// exist.
 /// </summary>
 /// <remarks>
 /// Enums are declared first and variables last, so every type is known before anything uses one, and a variable's
-/// missing type can be suggested from every other name. Channels come before actors, whose blocks change the values
-/// every actor has. A name with a problem is still declared, so the places that use it don't report it again; a
-/// duplicate isn't, and the first declaration wins.
+/// missing type can be suggested from every other name. Channels come before actors: every actor starts with each
+/// channel's values, and its own block changes them. A name with a problem is still declared, so the places that use
+/// it don't report it again; a duplicate isn't, and the first declaration wins.
 /// </remarks>
 internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceIndex references, Bindings bindings) : AnalysisPass(diagnostics, references)
 {
@@ -295,7 +296,10 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         }
     }
 
-    /// <summary>Claims a node name or alias, which share one namespace, reporting it if it's taken.</summary>
+    /// <summary>
+    /// Claims a node name or alias, which share one namespace. Returns <see langword="true"/> if the name was free, or
+    /// <see langword="false"/> if it was already taken, which is reported.
+    /// </summary>
     private bool DeclareNodeName(string fullName, NameSyntax written)
     {
         bool valid = CheckName(written, SymbolKind.Node);
