@@ -223,8 +223,8 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
 
     /// <summary>
     /// Reports narration that almost looks like a speaker, so a mistake never shows as narration: a parenthesis that
-    /// isn't a list of names, anything between a declared actor's values and the colon, or a declared actor with no space
-    /// after the colon.
+    /// isn't a list of names, anything between a declared actor's values and the colon, a word between a declared actor
+    /// and the colon, or a declared actor with no space after the colon.
     /// </summary>
     private void CheckNarration(TextLineSyntax line)
     {
@@ -240,6 +240,10 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
         else if (prefix is { Extra: { } extra, Parentheses: { } valuesParentheses } && IsActor(prefix))
         {
             Report(DiagnosticCatalog.AfterValues, extra, TextOf(extra), TextOf(valuesParentheses), escaped);
+        }
+        else if (prefix is { Extra: { } word, Name: { } actor, Parentheses: null } && IsActor(prefix))
+        {
+            Report(DiagnosticCatalog.WordBeforeColon, word, TextOf(word), TextOf(actor), escaped);
         }
         else if (IsActor(prefix))
         {

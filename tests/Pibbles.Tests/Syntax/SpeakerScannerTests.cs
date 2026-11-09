@@ -95,8 +95,21 @@ public class SpeakerScannerTests
     }
 
     [Theory]
+    [InlineData("mira happy: Hi.")]
+    [InlineData("mira happy:Hi.")]
+    [InlineData("mira happy：Hi.")]
+    public void Scan_WordAfterNameWithoutParenthesis_IsExtraAndNotASpeaker(string text)
+    {
+        SpeakerPrefix prefix = Scan(text)!.Value;
+
+        Assert.Equal((false, "happy", "mira", null), (prefix.IsSpeaker, Read(text, prefix.Extra), Read(text, prefix.Name), prefix.Parentheses));
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("mira")]
+    [InlineData("mira happy")]
+    [InlineData("mira is happy: Hi.")]
     [InlineData("Hello there.")]
     [InlineData("mira (sad: Hi.")]
     [InlineData("(sad: Hi.")]

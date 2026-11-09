@@ -1,0 +1,23 @@
+// A word between a speaker's name and its colon is a value written without parentheses.
+
+@channel pose
+@actor mira
+    name: Mira
+    pose: happy
+
+== kitchen.door
+mira happy: Hi.
+//   ^^^^^ PIB2014
+mira happy:Hi.
+//   ^^^^^ PIB2014
+mira happy：Hi.
+//   ^^^^^ PIB2014
+
+// Must not trigger
+
+mira is happy: Hi.
+mira happy
+mira happy\: Hi.
+Rex nodded: yes.
+mira (happy): Hi.
+mira: Hi.

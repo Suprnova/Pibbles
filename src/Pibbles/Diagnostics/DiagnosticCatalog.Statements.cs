@@ -99,6 +99,14 @@ public static partial class DiagnosticCatalog
         "There's already an `@narration`, {0}.",
         help: "Narration has one block. Merge the two, or remove one.");
 
+    /// <summary>PIB2014: a word between a declared actor and the colon, as in <c>mira happy:</c>.</summary>
+    /// <remarks>Arguments: the word; the actor as written; and the line's start through its colon, with the colon escaped.</remarks>
+    public static DiagnosticDescriptor WordBeforeColon { get; } = new(
+        "PIB2014",
+        DiagnosticSeverity.Warning,
+        "`{0}` has no place between `{1}` and the colon.",
+        help: "If `{0}` is one of `{1}`'s values, put it in parentheses: `{1} ({0}):`. For how a line is said, use a `//` comment. If this is narration, escape the colon: `{2}`.");
+
     /// <summary>PIB2101: a command, <c>{w}</c>, <c>{page}</c> or <c>{speed}</c> in an option's text.</summary>
     /// <remarks>Argument: the point, such as <c>{w}</c> or <c>{@jolt}</c>.</remarks>
     public static DiagnosticDescriptor NotInOption { get; } = new(

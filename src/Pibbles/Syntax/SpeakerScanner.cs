@@ -11,7 +11,7 @@ namespace Pibbles.Syntax;
 /// <param name="Name">The name before the parenthesis or colon, or <see langword="null"/> when the line starts with the parenthesis.</param>
 /// <param name="Parentheses">The parenthesis, brackets included, or <see langword="null"/> if there's none.</param>
 /// <param name="Values">The names inside the parenthesis, separated by commas. Empty if there's no parenthesis or it holds something else; <paramref name="Parentheses"/> tells which.</param>
-/// <param name="Extra">What stands between the parenthesis and the colon, or <see langword="null"/> if there's nothing: further parentheses and at most one word.</param>
+/// <param name="Extra">What stands between the parenthesis and the colon, or <see langword="null"/> if there's nothing: further parentheses and at most one word. With no parenthesis, a single word between the name and the colon.</param>
 /// <param name="Colon">Where the colon is.</param>
 /// <param name="IsSpeaker">Whether the line has a speaker, rather than starting with something that looks like one.</param>
 internal readonly record struct SpeakerPrefix(TextSpan? Name, TextSpan? Parentheses, IReadOnlyList<TextSpan> Values, TextSpan? Extra, int Colon, bool IsSpeaker);
@@ -53,6 +53,11 @@ internal static class SpeakerScanner
                 extra = new TextSpan(extraStart, extraEnd - extraStart);
 
             position = Whitespace.Skip(text, extraEnd, end);
+        }
+        else if (hasName && Identifiers.Skip(text, position, end) is var wordEnd && wordEnd > position)
+        {
+            extra = new TextSpan(position, wordEnd - position);
+            position = Whitespace.Skip(text, wordEnd, end);
         }
 
         if (position >= end || !IsColon(text[position]))

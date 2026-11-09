@@ -73,6 +73,7 @@ public static partial class DiagnosticCatalog
         ValueInTwoChannels,
         UnknownChannel,
         SecondNarration,
+        WordBeforeColon,
         NotInOption,
         EmptyOption,
         StrayClause,

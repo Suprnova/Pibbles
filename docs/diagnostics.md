@@ -135,6 +135,7 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB2010 | Error | `none` is already a value of `pose`, so `effect` can't have it too. | A line names a value without its channel, so each value belongs to one channel. Give one of them another name. |
 | PIB2011 | Error | I don't know a channel called `pos`. | Did you mean `pose`? |
 | PIB2012 | Error | There's already an `@narration`, on line 6. | Narration has one block. Merge the two, or remove one. |
+| PIB2014 | Warning | `happy` has no place between `mira` and the colon. | If `happy` is one of `mira`'s values, put it in parentheses: `mira (happy):`. For how a line is said, use a `//` comment. If this is narration, escape the colon: `mira happy\:`. |
 
 ### PIB21xx: Choices
 
@@ -952,6 +953,16 @@ Merge the two into one block:
     name: Narrator
     no pose
 ```
+
+### PIB2014
+
+**A speaker's values go in parentheses,** so a word between an actor's name and the colon is reported rather than shown as narration. It's a warning, because the line may be narration that happens to start with an actor's name. A line with more than one word before the colon, such as `mira is happy: Hi.`, is narration and isn't reported.
+
+```text
+mira happy: Hi.
+```
+
+Put the value in parentheses, `mira (happy): Hi.`, or escape the colon if the line really is narration: `mira happy\: Hi.` Names that aren't actors are never reported.
 
 ### PIB2101
 
