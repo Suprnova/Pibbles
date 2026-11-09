@@ -11,6 +11,9 @@
 @tag thought
 @tag thought: string
 //   ^^^^^^^ PIB1402
+@channel mood: calm, tense
+@channel mood: calm, angry
+//       ^^^^ PIB1402
 
 // Must not trigger
 

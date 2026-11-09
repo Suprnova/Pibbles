@@ -67,9 +67,10 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         {
             List<ChannelValueSymbol> defaults = DeclareList(declaration.Values, value => value, SymbolKind.ChannelValue,
                 $"the values of `{declaration.Name.Text}`", value => new ChannelValueSymbol(value.Text, Location(value.Span)));
+            bool isDuplicate = symbols.Channels.ContainsKey(declaration.Name.Text);
             foreach (ChannelValueSymbol value in defaults)
             {
-                if (symbols.Channels.Values.FirstOrDefault(other => other.Defaults.Any(known => known.Name == value.Name)) is { } sharing)
+                if (!isDuplicate && symbols.Channels.Values.FirstOrDefault(other => other.Defaults.Any(known => known.Name == value.Name)) is { } sharing)
                     ReportSharedValue(declaration.Values.First(candidate => candidate.Text == value.Name), $"`{sharing.Name}`", declaration.Name.Text);
             }
 
