@@ -51,6 +51,8 @@
 //     ^^^^^ constant.numeric.duration.pibbles
 @pause .5s
 //     ^^^ constant.numeric.duration.pibbles
+@pause ٣s
+//     ^^ - constant.numeric.duration.pibbles
 
 @move mira offscreen speed=(-1) nowait
 // <----- entity.name.function.command.pibbles

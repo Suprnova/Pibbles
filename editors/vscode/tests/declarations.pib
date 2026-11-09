@@ -57,6 +57,15 @@ name: Narration once the block has ended.
 //              ^^^^ constant.other.enum-member.pibbles
 //                    ^^^^^^ constant.other.enum-member.pibbles
 
+// A name continues with ASCII digits, full-width digits and `＿`, as the compiler reads it, and stops at any other digit.
+@actor x１
+//     ^^ entity.name.type.pibbles
+@actor x٣
+//     ^ entity.name.type.pibbles
+//      ^ - entity.name.type.pibbles
+@var $a＿b = 1
+//   ^^^^ variable.other.pibbles
+
 @var $bravery: number = -1
 // <---- storage.type.declaration.pibbles
 //   ^^^^^^^^ variable.other.pibbles
