@@ -2,7 +2,7 @@
 
 This reference is the authoritative specification of the `.pib` language: its syntax, what each construct means, and what the analyzer checks. When code and this reference disagree, the code is wrong or the change isn't finished. Writers learn the same language from the [writer's guide](guide.md), and [`samples/kitchen`](../../samples/kitchen/) shows it in context.
 
-The [language design](design.md) explains why the language is shaped this way, and holds the [grammar extensions](design.md#grammar-extensions): features that are designed but wait until a need for them comes up. New features only ever add to the grammar, and v1 already reserves every word, tag and line marker they use, so adding one never changes what a valid v1 story means. The [known exceptions](#extension-compatibility) are line show counts for inline variations and the stretch-goal plurals.
+The [language design](design.md) explains why the language is shaped this way, and holds the [grammar extensions](design.md#grammar-extensions): features that are designed but wait until a need for them comes up. New features only ever add to the grammar, and v1 already reserves every word, tag and line marker they use, so adding one never changes what a valid v1 story means. What a writer types keeps working: line show counts for inline variations are the only known exception ([Compatibility](#compatibility)).
 
 ## At a glance
 
@@ -791,13 +791,26 @@ Characters and tokens are defined first, from the bottom up, because every later
 | 31 | `cond` |
 | 32 | `expr`, `or_expr`, `and_expr`, `not_expr`, `eq_expr`, `rel_expr`, `add_expr`, `mul_expr`, `unary`, `primary` |
 
-### Extension compatibility
+### Compatibility
 
-The [grammar extensions](design.md#grammar-extensions), and the notes and `required` markup that arrive with localization, only add to this grammar, and none of them needs more than one token of lookahead. The [language design](design.md#grammar) lists each one's changes. These keep that true:
+What a writer types keeps working. From the syntax freeze on, a release changes it only in the ways below.
+
+**What the freeze covers:** `.pib` source and line IDs, the style and spelling codes named in `// pibbles-ignore`, and script directives and answers. A story that compiles without errors at the freeze keeps compiling, and plays the same steps for the same choices, state and host answers, apart from the changes below. What Pibbles prints (transcript steps, diagnostics' wording, CLI output), the host API, the save format, CLI flags, `pibbles.json`, `.editorconfig` keys and the VS Code extension are outside it.
+
+**What a release may change:**
+
+- **Additions:** a meaning for a form v1 rejects, or for a reserved word.
+- **New warnings and hints.**
+- **A fix to what a valid story does,** only toward what this reference or a diagnostic already said. Anywhere else the behavior stands and the docs are corrected to it.
+- **A new error on input that compiled,** only if that input never worked: it crashed, hung, or did something this reference says can't happen. A new check on input that worked is a warning.
+
+Anything else is a break. Each release's notes list every change a writer can notice.
+
+**Breaks.** An unavoidable break is on from the release that brings it, and a `pibbles.json` key named in that release's notes keeps the old behavior for a project that sets it. The release reports the lines whose meaning changes, as a warning that names the key, wherever they can be found.
+
+**Extensions.** The [grammar extensions](design.md#grammar-extensions), and the notes and `required` markup that arrive with localization, only add to this grammar, and none of them needs more than one token of lookahead. The [language design](design.md#grammar) lists each one's changes. These keep that true:
 
 - A letter or digit after `\` is an error, so new escapes (`\n`, `\u1234`) can be added.
 - v1 [reserves](#reserved-words) every word, tag and line marker the extensions use, in the positions the extensions will use them, so no valid v1 story can already mean something by them.
 - v1 rejects `{name (…)}` with a space before the `(`, since a call's `(` touches its name. That leaves `{actor (value)}` free for the [mid-line value extension](design.md#values-set-partway-through-a-line).
 - **Known exception: line show counts.** [Inline variations](design.md#inline-variations) choose their wording from how many times a line has been shown, and v1 doesn't record that. When the extension lands, saves made before it count every line as unseen, so first-time wording (`{once}`) can appear once more for those players. This is cosmetic, never a lost effect or a softlock, and it's accepted rather than storing a count v1 never reads.
-- **Known exception: plurals.** The stretch-goal `{plural}` syntax ([localization design](../localization.md#text-direction-plurals-and-formatting)) reserves its keyword, `plural`, but not its case markers (`zero`, `one`, `two`, `few`, `many`, `other`). Those are free in v1, so a story could already use one as a function, term or actor name, and adding plurals could then change what that story means. This is accepted: plurals aren't scheduled, and v1 has few users. When plurals are designed in full, their case markers are chosen to avoid names stories already use, or the change is announced as breaking.
-- `[`, `{` and `\` in a display name are errors, so display names can later hold markup.

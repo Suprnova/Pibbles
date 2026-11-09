@@ -240,7 +240,7 @@ mira: {once}A note!{else}The note again.{/once}
 ```
 
 - `{sequence}`, `{cycle}`, `{shuffle}`, `{shuffle once}` and `{once}` work like their block forms, with alternatives separated by `|`. `{once}` has a single alternative. `{once}` and `{shuffle once}` accept an optional `{else}` before the closing tag (`{/once}`, `{/shuffle}`), shown once they've run out. As with blocks, `{else}` in any other variation is an error.
-- **Selection depends on how many times this line has been shown,** which the state tracks per line ID from this extension on. Saves made before it count every line as unseen ([known exception](reference.md#extension-compatibility)). It doesn't depend on counters for each variation. So a translation can have a different number of alternatives without desynchronizing saves ([localization design](../localization.md#what-a-translation-may-change)).
+- **Selection depends on how many times this line has been shown,** which the state tracks per line ID from this extension on. Saves made before it count every line as unseen ([known exception](reference.md#compatibility)). It doesn't depend on counters for each variation. So a translation can have a different number of alternatives without desynchronizing saves ([localization design](../localization.md#what-a-translation-may-change)).
 - **`{shuffle}` never draws from the random generator.** Each round's order is derived from the state's seed, the line ID and the round number. So a translation with a different number of alternatives doesn't shift any later random result.
 - Variations are allowed in text lines and option text. Spans can't cross a variation boundary.
 - `|` becomes a special character in text, escaped as `\|`.

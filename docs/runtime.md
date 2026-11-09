@@ -385,7 +385,7 @@ What the [grammar extensions](language/design.md#grammar-extensions) and later t
 
 ### Inline variations
 
-`StoryState` holds line show counts, by line ID. Loading a save re-renders the saved line without bumping its count, so it picks the same alternatives as before. Saves from before this extension count every line as unseen ([known exception](language/reference.md#extension-compatibility)). Line templates gain variations.
+`StoryState` holds line show counts, by line ID. Loading a save re-renders the saved line without bumping its count, so it picks the same alternatives as before. Saves from before this extension count every line as unseen ([known exception](language/reference.md#compatibility)). Line templates gain variations.
 
 ### Dialogue temporaries
 
