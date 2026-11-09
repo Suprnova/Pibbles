@@ -210,6 +210,7 @@ internal sealed class Binder(SymbolTable symbols, List<Diagnostic> diagnostics, 
             : Suggestions.Closest(value.Text, values) is { } suggestion ? DiagnosticCatalog.DidYouMean(suggestion).TrimEnd()
             : values.Length switch
             {
+                0 when symbols.Channels.Keys.FirstOrDefault() is { } channel => $"{owner} has no values to set. List {owner}'s values under `{declaration}`: `{channel}: neutral, happy`.",
                 0 => $"{owner} has no values to set. Declare a channel such as `@channel pose`, then list {owner}'s values under `{declaration}`: `pose: neutral, happy`.",
                 1 => $"{owner}'s only value is {Phrase.And(values)}.",
                 _ => $"{owner}'s values are {Phrase.And(values)}.",

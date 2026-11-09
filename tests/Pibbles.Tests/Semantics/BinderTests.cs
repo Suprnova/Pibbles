@@ -220,7 +220,7 @@ public class BinderTests
         {
             $"{Cast}(Meanwhile): Fine.\n",
             "Narration has no value called `Meanwhile`.",
-            "Narration has no values to set. Declare a channel such as `@channel pose`, then list Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\(Meanwhile):`."
+            "Narration has no values to set. List Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\(Meanwhile):`."
         },
         {
             "@channel camera: static, orbit\n@narration\n    no camera\n\n== a.b\n(orbit): Fine.\n",
@@ -230,7 +230,7 @@ public class BinderTests
         {
             $"{Cast}（Meanwhile）：Fine.\n",
             "Narration has no value called `Meanwhile`.",
-            "Narration has no values to set. Declare a channel such as `@channel pose`, then list Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\（Meanwhile）：`."
+            "Narration has no values to set. List Narration's values under `@narration`: `pose: neutral, happy`. If this is text, put a backslash before the `(`: `\\（Meanwhile）：`."
         },
         {
             $"{Cast}mira (to Rex): Fine.\n",
