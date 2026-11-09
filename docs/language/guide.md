@@ -2,7 +2,7 @@
 
 This guide explains how to write stories in Pibbles, from a writer's point of view. It covers what you can do, not how it works inside. The technical version is the [language reference](reference.md), which wins if the two ever disagree.
 
-Part one covers the basics, which are enough to write most scenes. Part two covers repeat visits, conditional wording, the file that lists the cast, and organizing your files. A cheat sheet at the end sums everything up.
+Part one covers the basics, which are enough to write most scenes. Part two covers repeat visits, conditional wording, the file that lists the cast, and organizing your files. The [cheat sheet](cheat-sheet.md) is a one-page summary.
 
 ---
 
@@ -584,41 +584,3 @@ This node used to be called kitchen.door.
 - **`pibbles check --style`** also shows style hints: places that work, but could read better or be easier to translate, such as a line said word for word in three places, or a value that's already set. They're only suggestions. To silence one you mean to keep, put `// pibbles-ignore` and its code at the end of that line or on the line above it, such as `// pibbles-ignore PIB5003`.
 - **`pibbles play --start kitchen.door`** plays the story as text in a terminal, with numbered choices and effects shown in place, so you can test a branch without launching the game. When the story asks the game something, such as whether the player has an item, it asks you instead. Add `--record bug.transcript` to save what happened, so a bug you found can be played again exactly.
 - **`pibbles test`** plays every saved transcript in your project's `transcripts` folder again, and shows any whose story has changed since. If the change is what you meant, `pibbles test --update` saves the new version.
-
----
-
-# Cheat sheet
-
-| Write | Meaning |
-| --- | --- |
-| `== area.name` | Start a node |
-| `@prefix area` then `== .name` | At the top of a file: `.name` means `area.name`, and `$.name` means `$area.name` |
-| `== area.name #was:area.old_name` | Rename a node without breaking the game or old saves |
-| `mira: text` | Mira says a line |
-| `mira (happy): text` | Change Mira's pose, then she speaks |
-| `mira (happy, shake): text` | Set a value in each of two channels, in any order, then she speaks |
-| `mira (happy):` | Change Mira's pose silently |
-| `text` | Narration |
-| `(shake): text` | Narration that sets a value |
-| `-> text` | Choice option |
-| `-> text  @if $x` | Option only available if `$x` is true |
-| `-> text  @once` | Option disappears after it's picked |
-| `@if …` / `@elif …` / `@else` | Conditions |
-| `@set $x = value` / `+=` / `-=` | Change a variable |
-| `@jump node` | Go to another node |
-| `@call node` / `@return` | Run another node and come back |
-| `@end` | End the conversation |
-| `@pause 1s` | Pause without text |
-| `@sequence` `@cycle` `@once` | Vary lines on repeat visits |
-| `@command args` | Stage direction or game event |
-| `[b]…[/b]` `[i]` `[u]` `[s]` `[color "#hex"]` | Formatting |
-| `{speed 0.5}` / `{speed}` | Slower or faster typing / back to normal |
-| `{$x}` | Show a variable's value |
-| `{pause 0.5}` / `{w}` | Timed pause / wait for click |
-| `{page}` / `{br}` | New page / new line |
-| `{@command}` | Effect at this point in the line (`inline` commands only) |
-| `{icon name}` | Inline icon |
-| `{if …}…{else}…{/if}` | Conditional wording |
-| `#tag` | Label for the game (listed with `@tag`) |
-| `// comment` | Note to other writers |
-| `\` | Write the next special character as-is |

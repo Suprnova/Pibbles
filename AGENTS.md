@@ -50,7 +50,7 @@ These checklists are where work tends to stop too early. Finish every step.
 
 **Adding or changing a language construct**
 
-1. Update `docs/language/reference.md`, plus `docs/language/guide.md` if writers can see the change (and `docs/language/design.md` if the reasoning changes). A [grammar extension](docs/language/design.md#grammar-extensions) moves out of the design doc into both in the same change.
+1. Update `docs/language/reference.md`, plus `docs/language/guide.md` and `docs/language/cheat-sheet.md` if writers can see the change (and `docs/language/design.md` if the reasoning changes). A [grammar extension](docs/language/design.md#grammar-extensions) moves out of the design doc into them in the same change.
 2. Line classifier and parser, plus syntax snapshot tests.
 3. Binder and checks, plus diagnostic fixtures for every new error.
 4. Compiler and runtime, plus transcript tests.
@@ -97,6 +97,7 @@ Read the relevant design doc before changing a subsystem, and update it in the s
 | [diagnostics.md](docs/diagnostics.md) | Every diagnostic code |
 | [language/reference.md](docs/language/reference.md) | The authoritative language specification, with the grammar |
 | [language/guide.md](docs/language/guide.md) | The language for writers: what's possible, no implementation |
+| [language/cheat-sheet.md](docs/language/cheat-sheet.md) | The language for writers on one page |
 | [language/design.md](docs/language/design.md) | Goals and principles, and the designed grammar extensions |
 | [syntax.md](docs/syntax.md) | Line classifier, parser, syntax tree, diagnostics infrastructure |
 | [semantics.md](docs/semantics.md) | Binder, types, checks, style rules |
