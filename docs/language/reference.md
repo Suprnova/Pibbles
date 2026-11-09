@@ -615,7 +615,7 @@ BRACE_CLOSE     ::= "{" ws* "/"
 Raw mode:
 
 ```ebnf
-RAW             ::= [^#xA#xD]*                         /* up to a COMMENT, trimmed; a "[", "{" or #x5C in it is an error */
+RAW             ::= [^#xA#xD]*                         /* up to a COMMENT, trimmed */
 ```
 
 ### Structure
