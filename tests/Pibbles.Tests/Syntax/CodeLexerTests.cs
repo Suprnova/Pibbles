@@ -171,6 +171,32 @@ public class CodeLexerTests
         Assert.Equal(("PIB1105", $"`{number}` isn't a number I can read."), (diagnostics[0].Code, diagnostics[0].Message));
     }
 
+    [Theory]
+    [InlineData("café", 0)]
+    [InlineData("$café", 1)]
+    [InlineData("@café", 1)]
+    [InlineData("#café", 1)]
+    [InlineData("kitchen.café", 8)]
+    public void Next_DecomposedIdentifier_IsOneTokenAndReportsItsIdentifier(string text, int start)
+    {
+        string tokens = Describe(text);
+
+        Diagnostic diagnostic = Assert.Single(diagnostics);
+        Assert.Single(tokens.Split('|'));
+        Assert.Equal(("PIB1407", new TextSpan(start, 5), "`café` has an accent typed as a separate mark after its letter, but a name has to use the accented letter itself."), (diagnostic.Code, diagnostic.Location.Span, diagnostic.Message));
+        Assert.StartsWith("Write `café`.", diagnostic.Help);
+    }
+
+    [Theory]
+    [InlineData("café $zoë @fête #été kitchen.door")]
+    [InlineData("田中 $한국")]
+    public void Next_ComposedIdentifiers_ReportNothing(string text)
+    {
+        Describe(text);
+
+        Assert.Empty(diagnostics);
+    }
+
     [Fact]
     public void Next_NumberBeforeCombiningMark_IsOneNumberAndOneDiagnostic()
     {

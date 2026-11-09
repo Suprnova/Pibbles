@@ -46,6 +46,31 @@ public class IdentifiersTests
     public void Skip_NoIdentifierAtStart_ReturnsStart(string text, int start) =>
         Assert.Equal(start, Identifiers.Skip(text, start, text.Length));
 
+    [Theory]
+    [InlineData("kitchen")]
+    [InlineData("café")]
+    [InlineData("田中")]
+    [InlineData("한국")]
+    public void Composed_ComposedName_IsNull(string name) =>
+        Assert.Null(Identifiers.Composed(name, new(0, name.Length)));
+
+    [Theory]
+    [InlineData("café", "café")]
+    [InlineData("zoë", "zoë")]
+    [InlineData("한", "한")]
+    public void Composed_DecomposedName_IsComposed(string name, string expected) =>
+        Assert.Equal(expected, Identifiers.Composed(name, new(0, name.Length)));
+
+    [Fact]
+    public void Composed_SpanInsideText_ComposesOnlyTheSpan()
+    {
+        const string text = "é café é";
+
+        string? composed = Identifiers.Composed(text, new(3, 5));
+
+        Assert.Equal("café", composed);
+    }
+
     [Fact]
     public void Skip_IdentifierPastEnd_StopsAtEnd()
     {

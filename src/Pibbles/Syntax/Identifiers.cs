@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 
 namespace Pibbles.Syntax;
 
@@ -26,5 +27,23 @@ internal static class Identifiers
             position += char.IsSurrogatePair(text, position) ? 2 : 1;
 
         return position;
+    }
+
+    /// <summary>
+    /// The text at <paramref name="span"/> in Unicode's composed form (NFC), or <see langword="null"/> if it's in that form
+    /// already. A name has to be: <c>é</c> written as <c>e</c> and a separate accent looks the same, but is another name.
+    /// </summary>
+    /// <remarks>
+    /// In .NET's invariant-globalization mode, every string counts as composed, so nothing is reported there. A story
+    /// is checked by the CLI before a game in that mode compiles it.
+    /// </remarks>
+    public static string? Composed(string text, TextSpan span)
+    {
+        ReadOnlySpan<char> written = text.AsSpan(span.Start, span.Length);
+        if (Ascii.IsValid(written))
+            return null;
+
+        string name = written.ToString();
+        return name.IsNormalized() ? null : name.Normalize();
     }
 }

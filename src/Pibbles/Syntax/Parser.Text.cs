@@ -27,8 +27,8 @@ internal sealed partial class Parser
         int textStart = start;
         if (SpeakerScanner.Scan(source.Text, start, inlineEnd) is { IsSpeaker: true } match)
         {
-            NameSyntax? name = match.Name is { } nameSpan ? new(TextOf(nameSpan)) { Span = nameSpan } : null;
-            IReadOnlyList<NameSyntax> values = match.Values.Count == 0 ? [] : [.. match.Values.Select(span => new NameSyntax(TextOf(span)) { Span = span })];
+            NameSyntax? name = match.Name is { } nameSpan ? SpeakerName(nameSpan) : null;
+            IReadOnlyList<NameSyntax> values = match.Values.Count == 0 ? [] : [.. match.Values.Select(SpeakerName)];
             speaker = new(name, values) { Span = new(start, (match.Parentheses?.End ?? match.Name!.Value.End) - start) };
             if (name is not null)
                 textOwner = new SpeakerMention(name.Text, "what {0} says");
@@ -52,6 +52,16 @@ internal sealed partial class Parser
 
         index++;
         return new(speaker, content, tags) { Span = new(start, inlineEnd - start) };
+    }
+
+    /// <summary>A speaker's name or one of its values, which the code lexer doesn't read, so it's reported here if it isn't in Unicode's composed form.</summary>
+    private NameSyntax SpeakerName(TextSpan span)
+    {
+        if (Identifiers.Composed(source.Text, span) is not { } composed)
+            return new(TextOf(span)) { Span = span };
+
+        Report(DiagnosticCatalog.UncomposedName, span, TextOf(span), composed);
+        return new(composed) { Span = span };
     }
 
     private ChoiceSyntax ParseChoice(SourceLine first)

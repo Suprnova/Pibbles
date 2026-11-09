@@ -247,11 +247,11 @@ internal sealed partial class Parser
         {
             case TokenKind.Variable:
                 Advance();
-                return (new InterpolationSyntax(new VariableExpressionSyntax(text[1..].ToString()) { Span = first.Span }) { Span = default }, null);
+                return (new InterpolationSyntax(new VariableExpressionSyntax(NameOf(first.Span)[1..]) { Span = first.Span }) { Span = default }, null);
 
             case TokenKind.AtWord:
                 Advance();
-                var command = new NameSyntax(text[1..].ToString()) { Span = new(first.Span.Start + 1, first.Span.Length - 1) };
+                var command = new NameSyntax(NameOf(first.Span)[1..]) { Span = new(first.Span.Start + 1, first.Span.Length - 1) };
                 List<ArgumentSyntax> arguments = ParseArguments(allowWait: true, out CommandWait wait);
                 return (new InlineCommandSyntax(command, arguments, wait) { Span = default }, $"{{{text}}}");
 

@@ -61,6 +61,14 @@ public class CompilationTests
     }
 
     [Fact]
+    public void Create_DecomposedUsesOfComposedNames_ReportOnlyHowTheyAreWritten()
+    {
+        var compilation = Compile("@actor zoë\n    name: Zoë\n@var $café = false\n\n== kitchen.café\nzoë: Salut. #id:a00001\n@set $café = true\n@jump kitchen.café\n");
+
+        Assert.Equal(["PIB1407", "PIB1407", "PIB1407"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
+    [Fact]
     public void Create_DuplicateInSameFile_SaysWhichLine()
     {
         var compilation = Compile("@enum room: kitchen\n@enum room: cellar\n");

@@ -393,14 +393,17 @@ internal sealed partial class Parser
         token = NextToken();
     }
 
-    /// <summary>Reads the next token. Once the lexer reports a problem on a line, the parser reports nothing more on it.</summary>
+    /// <summary>
+    /// Reads the next token. Once the lexer reports a malformed token on a line, the parser reports nothing more on it. A
+    /// name reported only for not being composed isn't malformed: it's read composed.
+    /// </summary>
     private Token NextToken()
     {
         int count = diagnostics.Count;
         Token next = lexer.Next();
-        bool reported = diagnostics.Count > count;
-        malformedTag = reported && next.Kind is TokenKind.Tag;
-        if (reported)
+        bool malformed = diagnostics.FindIndex(count, static diagnostic => diagnostic.Descriptor != DiagnosticCatalog.UncomposedName) >= 0;
+        malformedTag = malformed && next.Kind is TokenKind.Tag;
+        if (malformed)
             MuteLineOf(diagnostics[^1].Location.Span.Start);
 
         return next;
@@ -424,7 +427,7 @@ internal sealed partial class Parser
     {
         if (token.Kind is TokenKind.Name)
         {
-            var name = new NameSyntax(CodeOf(token.Span)) { Span = token.Span };
+            var name = new NameSyntax(NameOf(token.Span)) { Span = token.Span };
             Advance();
             return name;
         }
@@ -438,7 +441,7 @@ internal sealed partial class Parser
     {
         if (token.Kind is TokenKind.Variable)
         {
-            var variable = new VariableExpressionSyntax(CodeOf(token.Span)[1..]) { Span = token.Span };
+            var variable = new VariableExpressionSyntax(NameOf(token.Span)[1..]) { Span = token.Span };
             Advance();
             return variable;
         }
@@ -449,7 +452,7 @@ internal sealed partial class Parser
             string corrected = $"{source.Text[line.Content.Start..name.Start]}${source.Text[name.Start..PeekContentEnd(line)]}";
             Fail(DiagnosticCatalog.MissingDollar, name, TextOf(name), corrected);
             Advance();
-            return new(CodeOf(name)) { Span = name };
+            return new(NameOf(name)) { Span = name };
         }
 
         Fail(DiagnosticCatalog.Missing, new(previousEnd, 0), "a variable", after);
@@ -478,8 +481,8 @@ internal sealed partial class Parser
         int end = tag.Span.End;
         int colon = code.IndexOf(':', name, end - name);
         return colon < 0
-            ? new TagSyntax(text[name..end], null) { Span = tag.Span }
-            : new TagSyntax(text[name..colon], text[(colon + 1)..end]) { Span = tag.Span };
+            ? new TagSyntax(NameOf(new(name, end - name)), null) { Span = tag.Span }
+            : new TagSyntax(NameOf(new(name, colon - name)), text[(colon + 1)..end]) { Span = tag.Span };
     }
 
     private TextSpan SpanFrom(int start) => new(start, previousEnd - start);
@@ -488,6 +491,9 @@ internal sealed partial class Parser
 
     /// <summary>The text at <paramref name="span"/> as the code-mode lexer reads it, with any marker typed through an input method read as the marker, for a token's name or keyword.</summary>
     private string CodeOf(TextSpan span) => code.Substring(span.Start, span.Length);
+
+    /// <summary>The name at <paramref name="span"/> as the code-mode lexer reads it, composed if an accent was typed as a separate mark, which the lexer reports.</summary>
+    private string NameOf(TextSpan span) => Identifiers.Composed(code, span) ?? CodeOf(span);
 
     /// <inheritdoc cref="CodeOf"/>
     private ReadOnlySpan<char> CodeSpanOf(TextSpan span) => code.AsSpan(span.Start, span.Length);

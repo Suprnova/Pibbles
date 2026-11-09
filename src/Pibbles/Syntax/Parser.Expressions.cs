@@ -146,7 +146,7 @@ internal sealed partial class Parser
 
             case TokenKind.Variable:
                 Advance();
-                return new VariableExpressionSyntax(CodeOf(current.Span)[1..]) { Span = current.Span };
+                return new VariableExpressionSyntax(NameOf(current.Span)[1..]) { Span = current.Span };
 
             case TokenKind.Name:
                 Advance();
@@ -171,7 +171,7 @@ internal sealed partial class Parser
     /// <summary>Finishes a value that starts with an already-read name: a boolean, a call or a bare name.</summary>
     private ExpressionSyntax ParseNameValue(Token name, bool argument)
     {
-        string text = CodeOf(name.Span);
+        string text = NameOf(name.Span);
         if (text is "true" or "false")
             return new BooleanLiteralSyntax(text is "true") { Span = name.Span };
 
@@ -212,7 +212,7 @@ internal sealed partial class Parser
         ExpectCloseParen(open);
         nesting--;
         height = tallest + 1;
-        var function = new NameSyntax(CodeOf(name.Span)) { Span = name.Span };
+        var function = new NameSyntax(NameOf(name.Span)) { Span = name.Span };
         return new CallExpressionSyntax(function, arguments) { Span = SpanFrom(name.Span.Start) };
     }
 

@@ -52,6 +52,42 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parse_DecomposedSpeakerAndValue_ReportsEachOnceAndReadsThemComposed()
+    {
+        var source = new SourceText("story.pib", "== a.b\nzoë (gaié): Salut.\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal([("PIB1407", new TextSpan(7, 4)), ("PIB1407", new TextSpan(13, 5))], tree.Diagnostics.Select(diagnostic => (diagnostic.Code, diagnostic.Location.Span)));
+        SpeakerSyntax speaker = Assert.IsType<TextLineSyntax>(tree.Root.Nodes[0].Body[0]).Speaker!;
+        Assert.Equal(("zoë", "gaié"), (speaker.Name!.Text, Assert.Single(speaker.Values).Text));
+    }
+
+    [Fact]
+    public void Parse_DecomposedNames_ReadsThemComposed()
+    {
+        var source = new SourceText("story.pib", "== a.café\n@set $café = true\nHi. #été\n@jump a.café\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        NodeSyntax node = tree.Root.Nodes[0];
+        Assert.Equal(4, tree.Diagnostics.Count);
+        Assert.Equal(
+            ("a.caf\u00E9", "caf\u00E9", "\u00E9t\u00E9", "a.caf\u00E9"),
+            (node.Name.Text, ((SetStatementSyntax)node.Body[0]).Variable.Name, Assert.Single(((TextLineSyntax)node.Body[1]).Tags).Name, ((JumpStatementSyntax)node.Body[2]).Target.Text));
+    }
+
+    [Fact]
+    public void Parse_DecomposedNameThenMistake_ReportsBoth()
+    {
+        var source = new SourceText("story.pib", "== a.b\n@set $cafe\u0301 = )\n");
+
+        SyntaxTree tree = SyntaxTree.Parse(source);
+
+        Assert.Equal(["PIB1407", "PIB1107"], tree.Diagnostics.Select(diagnostic => diagnostic.Code));
+    }
+
+    [Fact]
     public void Parse_AtWordWithNonAsciiDigitInAlternative_ReportsTheOpener()
     {
         var source = new SourceText("story.pib", "== fixture.start\n@cycle\n    - @if٣ $a\n");

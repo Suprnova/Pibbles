@@ -260,7 +260,14 @@ internal sealed class CodeLexer(SourceText source, List<Diagnostic>? diagnostics
         return suggestion.ToString();
     }
 
-    private void SkipIdentifier() => Position = Identifiers.Skip(text, Position, span.End);
+    /// <summary>Reads an identifier, and reports it if it isn't in Unicode's composed form.</summary>
+    private void SkipIdentifier()
+    {
+        int start = Position;
+        Position = Identifiers.Skip(text, Position, span.End);
+        if (Identifiers.Composed(text, new(start, Position - start)) is { } composed)
+            Report(DiagnosticCatalog.UncomposedName, start, text[start..Position], composed);
+    }
 
     private void SkipDigits()
     {

@@ -1,0 +1,37 @@
+// A name is in Unicode's composed form. Above `// Must not trigger`, each `é`, `ê` and `ë` is typed as `e` and a separate accent.
+
+@actor zoë
+//     ^^^^ PIB1407
+    pose: calm, gaié
+//              ^^^^^ PIB1407
+@var $café = false
+//    ^^^^^ PIB1407
+@tag café
+//   ^^^^^ PIB1407
+@enum mood: calm, éveillé
+//                ^^^^^^^^^ PIB1407
+
+== kitchen.café
+//         ^^^^^ PIB1407
+zoë (gaié): Salut. #café
+// PIB1407
+//    ^^^^^ PIB1407
+//                    ^^^^^ PIB1407
+@set $café = true
+//    ^^^^^ PIB1407
+@fêté zoë
+// PIB1407
+//      ^^^^ PIB1407
+Ça fait {$café}.
+//        ^^^^^ PIB1407
+@jump kitchen.café
+//            ^^^^^ PIB1407
+
+// Must not trigger
+
+== kitchen.café
+zoë (gaié): Salut. #café
+@set $café = true
+田中: こんにちは。
+mira: Hi.
+Paul sourié: the word before the colon makes this narration, and text keeps any accent.

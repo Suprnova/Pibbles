@@ -346,7 +346,7 @@ internal sealed partial class Parser
 
         Token name = token;
         Advance();
-        string text = TextOf(name.Span);
+        string text = NameOf(name.Span);
         return text is "true" or "false"
             ? new BooleanLiteralSyntax(text is "true") { Span = name.Span }
             : new NameExpressionSyntax(text) { Span = name.Span };

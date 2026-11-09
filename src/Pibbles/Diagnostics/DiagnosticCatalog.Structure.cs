@@ -296,6 +296,14 @@ public static partial class DiagnosticCatalog
         "I don't know a type called `{0}`.",
         help: "Did you mean `{1}`?");
 
+    /// <summary>PIB1407: a name with an accent typed as a separate mark, which isn't in Unicode's composed form (NFC).</summary>
+    /// <remarks>Arguments: the name as written, and the name composed.</remarks>
+    public static DiagnosticDescriptor UncomposedName { get; } = new(
+        "PIB1407",
+        DiagnosticSeverity.Error,
+        "`{0}` has an accent typed as a separate mark after its letter, but a name has to use the accented letter itself.",
+        help: "Write `{1}`. If your keyboard types accents as separate marks, as some Vietnamese keyboards do, switch it to precomposed Unicode, then retype the name.");
+
     /// <summary>PIB1501: a node name that names no node.</summary>
     /// <remarks>Arguments: the name as written, and the closest node, or <see langword="null"/> to leave out the help.</remarks>
     public static DiagnosticDescriptor UnknownNode { get; } = new(

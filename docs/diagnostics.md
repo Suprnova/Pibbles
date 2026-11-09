@@ -101,6 +101,7 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB1403 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
 | PIB1404 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
 | PIB1406 | Error | I don't know a type called `postion`. | Did you mean `position`? |
+| PIB1407 | Error | `café` has an accent typed as a separate mark after its letter, but a name has to use the accented letter itself. | Write `café`. If your keyboard types accents as separate marks, as some Vietnamese keyboards do, switch it to precomposed Unicode, then retype the name. |
 
 ### PIB15xx: Nodes
 
@@ -718,6 +719,16 @@ Choose another name, such as `@command check_door()`.
 ```
 
 Fix the spelling, `@command show(at: position)`, or declare the enum the type names.
+
+### PIB1407
+
+**A name's accented letters are single characters.** `é` can be one character, or `e` followed by a separate accent mark. The two look the same, but they're different names to the story, to the game's code and to saves, so Pibbles takes only the first: Unicode's composed form (NFC), which keyboards type. The separate form comes from pasting, such as a name copied from a macOS file name, and from some Vietnamese keyboards, which type tone marks separately. It's reported wherever a name is written: where it's declared, where it's used, as a speaker or a speaker's value, and in a tag. The name is then read composed, so the rest of the story is checked as if it were fixed.
+
+```text
+@var $café = false
+```
+
+Here `é` is `e` and U+0301. Retype the name, or switch the keyboard to precomposed Unicode first. Text, display names and strings can hold either form.
 
 ### PIB1501
 

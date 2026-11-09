@@ -402,7 +402,7 @@ internal sealed partial class Parser
 
     private CommandStatementSyntax ParseCommand(int start)
     {
-        var command = new NameSyntax(CodeOf(token.Span)[1..]) { Span = new(token.Span.Start + 1, token.Span.Length - 1) };
+        var command = new NameSyntax(NameOf(token.Span)[1..]) { Span = new(token.Span.Start + 1, token.Span.Length - 1) };
         Advance();
 
         List<ArgumentSyntax> arguments = ParseArguments(allowWait: true, out CommandWait wait);
@@ -466,7 +466,7 @@ internal sealed partial class Parser
         if ((AtArgumentsEnd ? MissingValue() : ParseArgumentValue()) is not { } named)
             return null;
 
-        var parameter = new NameSyntax(TextOf(name.Span)) { Span = name.Span };
+        var parameter = new NameSyntax(NameOf(name.Span)) { Span = name.Span };
         return new(parameter, named) { Span = new(name.Span.Start, named.Span.End - name.Span.Start) };
     }
 
