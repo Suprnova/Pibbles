@@ -1,3 +1,4 @@
+using Pibbles.Semantics;
 using Pibbles.Syntax;
 using System.Globalization;
 
@@ -56,6 +57,20 @@ public class ReservedWordsTests
         string[] rejected = [.. Words.Where(word => IsRejected(string.Format(CultureInfo.InvariantCulture, declaration, word)))];
 
         Assert.Equal(reserved.Distinct().Order(), rejected.Order());
+    }
+
+    [Fact]
+    public void UseOf_NamesThePreludeDeclares_AreReserved()
+    {
+        var declarations = Prelude.Tree.Root.Declarations;
+        (string Name, SymbolKind Kind)[] declared =
+        [
+            .. declarations.OfType<MarkupDeclarationSyntax>().Select(markup => (markup.Name.Text, SymbolKind.Markup)),
+            .. declarations.OfType<FunctionDeclarationSyntax>().Select(function => (function.Name.Text, SymbolKind.Function)),
+        ];
+
+        Assert.NotEmpty(declared);
+        Assert.All(declared, name => Assert.NotNull(ReservedWords.UseOf(name.Name, name.Kind)));
     }
 
     /// <summary>Whether a one-line story reports a reserved name. Anything other than that, or nothing, fails the test.</summary>

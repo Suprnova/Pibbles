@@ -1,8 +1,11 @@
+using Pibbles.Syntax;
+
 namespace Pibbles.Semantics;
 
 /// <summary>
 /// The words each kind of name can't be, from the reserved words in <c>docs/language/reference.md</c>. A word is
 /// reserved only where it could be read two ways, so each kind avoids only the words that appear in its positions.
+/// The built-in functions and markup are the ones the <see cref="Prelude"/> declares.
 /// </summary>
 internal static class ReservedWords
 {
@@ -20,11 +23,11 @@ internal static class ReservedWords
 
     private static readonly Group ParameterArgument = new("in a command's arguments", ["wait", "nowait"], []);
 
-    private static readonly Group BuiltInFunction = new("for its own function", ["visits"], ["random"]);
+    private static readonly Group BuiltInFunction = new("for its own function", PreludeNames<FunctionDeclarationSyntax>(function => function.Name), ["random"]);
 
     private static readonly Group BuiltInType = new("for its own type", ["bool", "number", "string", "duration", "node", "actor"], []);
 
-    private static readonly Group BuiltInMarkup = new("for its own markup", ["b", "i", "u", "s", "color"], []);
+    private static readonly Group BuiltInMarkup = new("for its own markup", PreludeNames<MarkupDeclarationSyntax>(markup => markup.Name), []);
 
     private static readonly Group ActorBlock = new("in an actor's block", ["name", "no"], []);
 
@@ -55,6 +58,9 @@ internal static class ReservedWords
 
         return groups.Select(group => group.UseOf(name)).FirstOrDefault(use => use is not null);
     }
+
+    private static string[] PreludeNames<T>(Func<T, NameSyntax> name) where T : DeclarationSyntax =>
+        [.. Prelude.Tree.Root.Declarations.OfType<T>().Select(declaration => name(declaration).Text)];
 
     private sealed record Group(string Use, string[] Words, string[] PlannedWords)
     {
