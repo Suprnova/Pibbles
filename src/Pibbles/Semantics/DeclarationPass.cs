@@ -205,11 +205,11 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
         }
 
         List<SpeakerChannel> channels = [.. lists.Where(list => list.Value is not null).Select(list => new SpeakerChannel(list.Key, list.Value!))];
-        foreach ((NameSyntax syntax, ChannelValueSymbol value, ChannelSymbol channel) in introduced)
+        for (int index = 0; index < introduced.Count; index++)
         {
-            int order = channels.FindIndex(has => has.Channel == channel);
+            (NameSyntax syntax, ChannelValueSymbol value, ChannelSymbol channel) = introduced[index];
             bool IntroducedLater(SpeakerChannel other) =>
-                channels.IndexOf(other) > order && introduced.Any(later => later.Channel == other.Channel && later.Value.Name == value.Name);
+                introduced.Skip(index + 1).Any(later => later.Channel == other.Channel && later.Value.Name == value.Name);
 
             if (channels.FirstOrDefault(other => other.Channel != channel && other.Values.Any(known => known.Name == value.Name) && !IntroducedLater(other)) is { } sharing)
                 ReportSharedValue(syntax, $"{owner}'s `{sharing.Channel.Name}`", channel.Name);

@@ -11,8 +11,8 @@
 @actor rex
     name: Rex
     effect: sad
-//          ^^^ PIB2010
     pose: sad
+//        ^^^ PIB2010
 
 // Must not trigger
 
