@@ -94,6 +94,8 @@ public class BinderTests
     public void Compile_InvalidOperation_ReportsOperatorTypesOnly(string expression, string type) =>
         Assert.Equal(["PIB3003"], Diagnose($"{Operands}@set $out_{type} = {expression}\n").Select(diagnostic => diagnostic.Code));
 
+    private const string Cast = "@channel pose\n@actor mira\n    name: Mira\n    pose: neutral, smug\n\n== a.b\n";
+
     public static TheoryData<string, string, string?> Messages { get; } = new()
     {
         {
@@ -299,6 +301,15 @@ public class BinderTests
     };
 
     [Theory]
+    [MemberData(nameof(Messages))]
+    public void Compile_Problem_ReportsMessageAndHelp(string text, string message, string? help)
+    {
+        Diagnostic diagnostic = Assert.Single(Diagnose(text));
+
+        Assert.Equal((message, help), (diagnostic.Message, diagnostic.Help));
+    }
+
+    [Theory]
     [InlineData("@var $n = 0\n\n== a.b\n@if 0 < $n < 3\n    Hm.\n", "PIB3002")]
     [InlineData("@var $n = 0\n\n== a.b\n@if $n == 1 != true\n    Hm.\n", "PIB3002")]
     [InlineData("@function item_name(id: string) -> string\n\n== a.b\nYou found {item_name (\"key\")}.\n", "PIB2602")]
@@ -311,17 +322,6 @@ public class BinderTests
         Diagnostic diagnostic = Assert.Single(Diagnose("== a.b\nmira:\n"), diagnostic => diagnostic.Code == "PIB2003");
 
         Assert.StartsWith("Write what mira says", diagnostic.Help);
-    }
-
-    private const string Cast = "@channel pose\n@actor mira\n    name: Mira\n    pose: neutral, smug\n\n== a.b\n";
-
-    [Theory]
-    [MemberData(nameof(Messages))]
-    public void Compile_Problem_ReportsMessageAndHelp(string text, string message, string? help)
-    {
-        Diagnostic diagnostic = Assert.Single(Diagnose(text));
-
-        Assert.Equal((message, help), (diagnostic.Message, diagnostic.Help));
     }
 
     [Theory]
