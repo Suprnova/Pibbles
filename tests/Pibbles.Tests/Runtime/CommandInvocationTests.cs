@@ -15,6 +15,12 @@ public class CommandInvocationTests
         elsewhere,
     }
 
+    private enum Feeling
+    {
+        calm,
+        快乐,
+    }
+
     [Fact]
     public void Accessors_EveryType_ReadTheirArguments()
     {
@@ -60,6 +66,18 @@ public class CommandInvocationTests
         Assert.Throws<InvalidOperationException>(() => command.GetEnum("s"));
         Assert.Throws<InvalidOperationException>(() => command.GetActor("node"));
         Assert.Throws<InvalidOperationException>(() => command.GetEnum<Other>("e"));
+    }
+
+    [Fact]
+    public void GetEnum_MemberInAnotherScript_ReturnsItAsWritten()
+    {
+        Game game = Game.Of("@enum feeling: calm, 快乐\n@command feel(f: feeling)\n\n== t.n\n@feel 快乐\n", declarations: false);
+        game.Runner.Start("t.n");
+
+        CommandInvocation command = ((CommandStep)game.Runner.Next()).Command;
+
+        Assert.Equal("快乐", command.GetEnum("f"));
+        Assert.Equal(Feeling.快乐, command.GetEnum<Feeling>("f"));
     }
 
     [Fact]

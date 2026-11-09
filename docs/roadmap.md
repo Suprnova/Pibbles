@@ -34,6 +34,7 @@
 - A precompiled story format
 - Coverage-guided fuzzing (SharpFuzz)
 - A formatter (needs a lossless syntax tree)
+- A lookalike-name check: a style warning for declared names that look the same, such as `mira` and `mirа` with a Cyrillic `а`, from Unicode's confusables data (UTS #39)
 - A command journal that lets a host rebuild its stage by replaying staging commands, if saving stage state by hand turns out painful
 
 **Non-goals** are covered in the [language design](language/design.md#non-goals).

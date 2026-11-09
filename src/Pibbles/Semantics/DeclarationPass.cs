@@ -1,4 +1,3 @@
-using System.Text;
 using Pibbles.Diagnostics;
 using Pibbles.Syntax;
 
@@ -6,8 +5,7 @@ namespace Pibbles.Semantics;
 
 /// <summary>
 /// Gathers every declaration and node name in a story, and the prelude's, into a <see cref="SymbolTable"/>. It expands
-/// relative node and variable names, and reports names that clash, are reserved or aren't ASCII, and types that don't
-/// exist.
+/// relative node and variable names, and reports names that clash or are reserved, and types that don't exist.
 /// </summary>
 /// <remarks>
 /// Enums are declared first and variables last, so every type is known before anything uses one, and a variable's
@@ -363,24 +361,13 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             : $"{twoVariables} Give this one a name that says whose it is.";
     }
 
-    /// <summary>Reports a declared name that's reserved for its kind, or isn't ASCII. Returns whether the name is valid.</summary>
+    /// <summary>Reports a declared name that's reserved for its kind. Returns whether the name is valid.</summary>
     private bool CheckName(NameSyntax name, SymbolKind kind, string? shown = null)
     {
-        if (builtIn)
+        if (builtIn || ReservedWords.UseOf(name.Text, kind) is not { } use)
             return true;
 
-        if (ReservedWords.UseOf(name.Text, kind) is { } use)
-        {
-            Report(DiagnosticCatalog.ReservedName, name.Span, shown ?? name.Text, kind.Describe(), use);
-            return false;
-        }
-
-        int index = name.Text.AsSpan().IndexOfAnyExceptInRange('\0', '\x7F');
-        if (index < 0)
-            return true;
-
-        Rune.DecodeFromUtf16(name.Text.AsSpan(index), out Rune character, out _);
-        Report(DiagnosticCatalog.NonAsciiName, name.Span, shown ?? name.Text, character.ToString());
+        Report(DiagnosticCatalog.ReservedName, name.Span, shown ?? name.Text, kind.Describe(), use);
         return false;
     }
 

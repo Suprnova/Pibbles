@@ -1,0 +1,10 @@
+start names.début
+
+  田中 (笑顔): こんにちは。  #n01
+  $café = 快乐
+  zoë: Ravie. #café  #n02
+  choice
+    1. 田中  #n03
+> #n03
+  田中 (普通): はい。  #n04
+  end

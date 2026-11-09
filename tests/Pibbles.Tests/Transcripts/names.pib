@@ -1,0 +1,23 @@
+// Names in any script: actors, a channel's values, an enum and its member, a variable, a tag and nodes.
+
+@channel pose
+@actor 田中
+    name: 田中
+    pose: 普通, 笑顔
+@actor zoë
+    name: Zoë
+    no pose
+@enum 気分: calm, 快乐
+@var $café: 気分 = calm
+@tag café
+
+== names.début
+田中 (笑顔): こんにちは。 #id:n01
+@set $café = 快乐
+@if $café == 快乐
+    zoë: Ravie. #id:n02 #café
+@jump names.café
+
+== names.café
+-> 田中 #id:n03
+    田中 (普通): はい。 #id:n04

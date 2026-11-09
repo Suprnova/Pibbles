@@ -43,7 +43,7 @@ So does this one.
 This line belongs to the second node.
 ```
 
-- Names use lowercase letters, numbers and underscores. Dots let you group related nodes and variables (`kitchen.fridge`, `$kitchen.door_open`). A file can [set a prefix](#shorter-names-with-a-prefix) so you don't have to repeat the group name.
+- Names use lowercase letters from any language, numbers and underscores, so `田中` and `zoë` are names. Letters that look the same can still differ, such as a Latin `a` and a Cyrillic `а`, and then the names differ too. Dots let you group related nodes and variables (`kitchen.fridge`, `$kitchen.door_open`). A file can [set a prefix](#shorter-names-with-a-prefix) so you don't have to repeat the group name.
 - Every name must be unique across the whole story.
 - The game starts a node when something happens, such as the player walking into a room or clicking an object. When a node runs out of lines, the conversation ends.
 

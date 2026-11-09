@@ -32,6 +32,35 @@ public class CompilationTests
     }
 
     [Fact]
+    public void Create_NamesInAnyScript_DeclareAndResolveAsWritten()
+    {
+        var compilation = Compile("""
+            @actor zoë
+                name: Zoë
+            @actor 田中
+                name: 田中
+            @enum mood: calm, 快乐
+            @tag café
+            @var $café: mood = 快乐
+
+            == kitchen.café
+            田中: こんにちは。 #id:a00001 #café
+            zoë: Salut. #id:a00002
+            @if $café == 快乐
+                @jump kitchen.café
+
+            """);
+
+        Assert.Empty(compilation.Diagnostics);
+        Assert.Contains("zoë", compilation.Symbols.Actors.Keys);
+        Assert.Contains("田中", compilation.Symbols.Actors.Keys);
+        Assert.Equal(["calm", "快乐"], compilation.Symbols.Enums["mood"].Members.Select(member => member.Name));
+        Assert.Contains("café", compilation.Symbols.Tags.Keys);
+        Assert.Contains("café", compilation.Symbols.Variables.Keys);
+        Assert.Contains("kitchen.café", compilation.Symbols.Nodes.Keys);
+    }
+
+    [Fact]
     public void Create_DuplicateInSameFile_SaysWhichLine()
     {
         var compilation = Compile("@enum room: kitchen\n@enum room: cellar\n");
@@ -70,9 +99,9 @@ public class CompilationTests
     {
         var compilation = WithoutStyle.Compile(
             new("story/b.pib", "@enum room: a\n@enum room: b\n@var $x = @\n"),
-            new("story/a.pib", "@enum spot: a, a\n@tag café\n"));
+            new("story/a.pib", "@enum spot: a, a\n@command if()\n"));
 
-        Assert.Equal(["PIB1402", "PIB1103", "PIB1403", "PIB1405"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
+        Assert.Equal(["PIB1402", "PIB1103", "PIB1403", "PIB1404"], compilation.Diagnostics.Select(diagnostic => diagnostic.Code));
     }
 
     [Fact]

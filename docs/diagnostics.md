@@ -100,7 +100,6 @@ The style rules, the `style` category (PIB5xxx), are described in full, with why
 | PIB1402 | Error | There's already an enum called `room`, in story/cast.pib on line 8. | Give one of them another name, or remove one. |
 | PIB1403 | Error | `happy` is already one of Mira's `pose` values. | Remove the second `happy`, or give it another name. |
 | PIB1404 | Error | `if` can't name a command, because I use that word after `@`. | Choose another name. |
-| PIB1405 | Error | `zoë` has `ë` in it, but a name can only use English letters, digits and `_`. | Replace `ë` with a letter from a to z. |
 | PIB1406 | Error | I don't know a type called `postion`. | Did you mean `position`? |
 
 ### PIB15xx: Nodes
@@ -708,17 +707,6 @@ Remove the second `happy`. If it was meant to be another value, give it that nam
 ```
 
 Choose another name, such as `@command check_door()`.
-
-### PIB1405
-
-**The names you declare use only English letters (a to z, in either case), digits and `_`.** The game's code, file names and save files all handle those the same way everywhere. Display names and text are different: they can hold any character.
-
-```text
-@actor zoë
-    name: Zoë
-```
-
-Replace the letter with one from a to z, as in `@actor zoe`, and keep `name: Zoë` for what the player sees.
 
 ### PIB1406
 

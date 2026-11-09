@@ -288,14 +288,6 @@ public static partial class DiagnosticCatalog
         "`{0}` can't name {1}, because I use that word {2}.",
         help: "Choose another name.");
 
-    /// <summary>PIB1405: a declared name with a character outside ASCII.</summary>
-    /// <remarks>Arguments: the name, and its first character outside ASCII.</remarks>
-    public static DiagnosticDescriptor NonAsciiName { get; } = new(
-        "PIB1405",
-        DiagnosticSeverity.Error,
-        "`{0}` has `{1}` in it, but a name can only use English letters, digits and `_`.",
-        help: "Replace `{1}` with a letter from a to z.");
-
     /// <summary>PIB1406: a type that's neither built in nor a declared enum.</summary>
     /// <remarks>Arguments: the type as written, and the closest type, which the help suggests. The help is left out when nothing is close.</remarks>
     public static DiagnosticDescriptor UnknownType { get; } = new(

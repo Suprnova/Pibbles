@@ -53,7 +53,6 @@ public static partial class DiagnosticCatalog
         DuplicateDeclaration,
         RepeatedName,
         ReservedName,
-        NonAsciiName,
         UnknownType,
         UnknownNode,
         DuplicateNode,
