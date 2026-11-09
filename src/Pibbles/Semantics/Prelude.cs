@@ -8,7 +8,7 @@ namespace Pibbles.Semantics;
 /// </summary>
 internal static class Prelude
 {
-    public const string Path = "<prelude>";
+    private const string Path = "<prelude>";
 
     private const string Text = """
         @markup b
