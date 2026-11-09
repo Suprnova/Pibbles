@@ -61,7 +61,7 @@ stub has_item = false
 - **Answers** are `> #id`, which picks an option by its ID (the writer always writes this), or a hand-written `> 2`, which picks the second option as written in the source, counting options `@once` has removed, so the same number means the same option on every visit. The writer uses `> N` for an option without an `#id`. A script that runs out of answers at a choice fails, naming the choice.
 - **Steps are indented** by two spaces, and anything free-form in them has its backslashes and line breaks escaped (`\n`, `\\`). Directives and answers are at column 0, so no step can be read as one, whatever its text says.
 - **What's printed:** every step; every marker inline at its position (`⟨w⟩`, `⟨pause 0.5s⟩`, `⟨page⟩`, `⟨speed 0.3⟩`, `⟨speed⟩`, `⟨@sfx thud⟩`, with ` wait` when the command waits), icons inline (`⟨icon interact⟩`), spans as in the source with all their arguments (`[wave 2 5]…[/wave]`), each option of a choice with its source number, its ID and its state (`(unavailable)`, `(chosen)`), each command's `waits`, every variable change (`$var = value`) before the step that followed it, every runtime warning with its kind and location, and a line's tags and ID after its text. A fallback ID is written `#~`, since it changes whenever lines move. Numbers are normalized, strings quoted, durations written with `s`.
-- **There is no version header.** The format only ever grows.
+- **There is no version header.** Directives and answers only grow ([compatibility](language/reference.md#compatibility)). The printed steps are a snapshot that `pibbles test --update` refreshes.
 
 `pibbles play` matters more than it looks. Writers can test a branch without launching the game or knowing C#, and it gives coding agents an end-to-end check that needs no engine.
 
@@ -232,7 +232,7 @@ Each threshold belongs to one of the [style rules](semantics.md#style-rules). Dr
 
 Every artifact ships in one release at one version: the CLI's `.nupkg` and the VS Code extension's `.vsix`, and later the Godot addon. The pieces change together, since a language change touches the parser and the grammar at once, so a writer always gets a CLI and an editor that agree on the language.
 
-`release.yml` runs on a `v*` tag (`v0.2.0`), or by hand with a version. The version comes from the tag alone: it's passed to `dotnet pack` and `npm version`, so no file in the repository is bumped, and `pibbles --version` reports exactly that version. The workflow runs the .NET tests and the grammar tests, packs both artifacts, and attaches them to a draft GitHub release named `Pibbles <version>`, which is published by hand once it's been checked. Nothing is published to NuGet or the VS Code Marketplace.
+`release.yml` runs on a `v*` tag (`v0.2.0`), or by hand with a version. The version comes from the tag alone: it's passed to `dotnet pack` and `npm version`, so no file in the repository is bumped, and `pibbles --version` reports exactly that version. The workflow runs the .NET tests and the grammar tests, packs both artifacts, and attaches them to a draft GitHub release named `Pibbles <version>`, which is published by hand once it's been checked. The release notes are written by hand on the draft before it's published, and list every change a writer can notice, by the kinds in the language reference's [compatibility](language/reference.md#compatibility) section. Nothing is published to NuGet or the VS Code Marketplace.
 
 Between releases, every CI run uploads the same artifacts with a prerelease version.
 

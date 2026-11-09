@@ -17,7 +17,7 @@ A code's first digit gives its category, a group of codes that writers switch on
 
 The rest of the number follows the doc that explains the code. A code with no category sits with the construct its rule is about, in the language reference's order, whether the rule is about declaring the construct or using it, and whichever stage finds the problem: every tag code is a PIB12xx, from a tag in the wrong place to an unknown one. Each construct has a hundred. Style codes have a hundred for each group of [style rules](semantics.md#style-rules), localization codes one for translations and one for voice, and spelling codes one. The [codes](#codes) are listed by hundred, and a hundred's codes are numbered from 01.
 
-A new code takes the next free number in its construct's hundred. A new construct takes the next free hundred in its range, and a new category a free first digit, 7 to 9. The codes the [extensions](#with-extensions) reserve stay free. From 1.0 on, a code keeps its number.
+A new code takes the next free number in its construct's hundred. A new construct takes the next free hundred in its range, and a new category a free first digit, 7 to 9. The codes the [extensions](#with-extensions) reserve stay free. Style and spelling codes keep their numbers from the syntax freeze, and every other code from 1.0. A retired code is never reused ([compatibility](language/reference.md#compatibility)).
 
 `DiagnosticCatalog` keeps each range's descriptors in a file of their own, in code order, such as `DiagnosticCatalog.Style.cs` for PIB5xxx. `DiagnosticCatalog.cs` holds the helpers and `All`, which lists every descriptor in code order. A new range adds its file.
 
