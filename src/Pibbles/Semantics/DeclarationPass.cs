@@ -55,7 +55,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     {
         foreach (EnumDeclarationSyntax declaration in file.Declarations.OfType<EnumDeclarationSyntax>())
         {
-            List<EnumMemberSymbol> members = DeclareList(declaration.Members, member => member, SymbolKind.EnumMember,
+            List<EnumMemberSymbol> members = DeclareNames(declaration.Members, SymbolKind.EnumMember,
                 $"the members of `{declaration.Name.Text}`", member => new EnumMemberSymbol(member.Text, Location(member.Span)));
             Declare(symbols.Enums, new EnumSymbol(declaration.Name.Text, Location(declaration.Name.Span), members), declaration.Name, SymbolKind.Enum);
         }
@@ -65,7 +65,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
     {
         foreach (ChannelDeclarationSyntax declaration in file.Declarations.OfType<ChannelDeclarationSyntax>())
         {
-            List<ChannelValueSymbol> defaults = DeclareList(declaration.Values, value => value, SymbolKind.ChannelValue,
+            List<ChannelValueSymbol> defaults = DeclareNames(declaration.Values, SymbolKind.ChannelValue,
                 $"the values of `{declaration.Name.Text}`", value => new ChannelValueSymbol(value.Text, Location(value.Span)));
             bool isDuplicate = symbols.Channels.ContainsKey(declaration.Name.Text);
             foreach (ChannelValueSymbol value in defaults)
@@ -187,7 +187,7 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
                 continue;
             }
 
-            List<ChannelValueSymbol> values = DeclareList(edit.Values, value => value, SymbolKind.ChannelValue,
+            List<ChannelValueSymbol> values = DeclareNames(edit.Values, SymbolKind.ChannelValue,
                 $"{owner}'s `{channel.Name}` values", value => new ChannelValueSymbol(value.Text, Location(value.Span)));
             List<ChannelValueSymbol> kept = edit.Edit is ChannelEdit.Add ? lists[channel]! : [];
             foreach (ChannelValueSymbol value in values)
@@ -259,7 +259,11 @@ internal sealed class DeclarationPass(List<Diagnostic> diagnostics, ReferenceInd
             parameter => new ParameterSymbol(parameter.Name.Text, Location(parameter.Name.Span), ResolveType(parameter.Type), parameter.Default));
     }
 
-    /// <summary>Declares the names in one declaration's list, such as the values of a channel, which have to differ from each other.</summary>
+    /// <summary>Declares a list of names, such as the values of a channel, which have to differ from each other.</summary>
+    private List<T> DeclareNames<T>(IEnumerable<NameSyntax> names, SymbolKind kind, string listName, Func<NameSyntax, T> create)
+        where T : Symbol => DeclareList(names, name => name, kind, listName, create);
+
+    /// <summary>Declares the names in one declaration's list, such as the parameters of a command, which have to differ from each other.</summary>
     private List<T> DeclareList<TSyntax, T>(IEnumerable<TSyntax> items, Func<TSyntax, NameSyntax> nameOf, SymbolKind kind, string listName, Func<TSyntax, T> create)
         where T : Symbol
     {
