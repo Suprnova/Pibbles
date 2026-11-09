@@ -96,3 +96,8 @@
 // <------ - keyword.control.pibbles
 @shuffle once
 // <------- - keyword.control.pibbles
+
+== later
+@var $.visits = 0
+// <---- storage.type.declaration.pibbles
+//   ^^^^^^^^ variable.other.pibbles
