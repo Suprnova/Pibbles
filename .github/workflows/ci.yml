@@ -19,9 +19,9 @@ jobs:
       # Every CI build is a prerelease of the next version, such as 0.1.0-ci.42, so each one installs over the last.
       VersionSuffix: ci.${{ github.run_number }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           dotnet-version: 8.0.x
@@ -57,7 +57,7 @@ jobs:
       run:
         working-directory: editors/vscode
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
